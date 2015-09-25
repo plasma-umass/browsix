@@ -24,6 +24,7 @@
     "gulp-typescript": "^2.9.0",
     "gulp-util": "^3.0.6",
     "merge2": "^0.3.6",
-    "run-sequence": "^1.1.4"
+    "run-sequence": "^1.1.4",
+    "tsd": "^0.6.4"
   }
 }

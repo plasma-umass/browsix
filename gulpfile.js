@@ -7,14 +7,14 @@ var lint = require('gulp-tslint');
 var runSequence = require('run-sequence');
 var mocha = require('gulp-mocha');
 
-function tsPipeline(src, dst) {
-    var project = ts.createProject('tsconfig.json', {
-	noExternalResolve: true,
-	sortOutput: true,
-    });
+var project = ts.createProject('tsconfig.json', {
+    noExternalResolve: true,
+    sortOutput: true,
+});
 
+function tsPipeline(src, dst) {
     return function() {
-	var build = gulp.src(src)
+	var build = gulp.src([src, 'typings/**/*.d.ts'])
 	    .pipe(ts(project));
 	return merge(build.js, build.dts).pipe(gulp.dest(dst));
     }
@@ -33,8 +33,9 @@ function tsTask(subdir) {
 
 tsTask('kernel');
 tsTask('browser-node');
+tsTask('bin');
 
-gulp.task('test', ['build-kernel', 'build-browser-node'], function() {
+gulp.task('test', ['build-kernel', 'build-browser-node', 'build-bin'], function() {
     return gulp.src('test/*.ts')
         .pipe(ts(project)).js
 	.pipe(gulp.dest('test'))

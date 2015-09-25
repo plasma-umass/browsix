@@ -6,6 +6,8 @@ var ts = require('gulp-typescript');
 var lint = require('gulp-tslint');
 var runSequence = require('run-sequence');
 var mocha = require('gulp-mocha');
+var browserSync = require('browser-sync');
+var reload = browserSync.reload;
 
 // each user of our tsconfig.json setup needs a different instance of
 // the 'ts project', as gulp-typescript seems to use it as a dumping
@@ -49,4 +51,22 @@ gulp.task('test', ['build-kernel', 'build-browser-node', 'build-bin'], function(
 
 gulp.task('default', function(cb) {
     runSequence(['build-kernel', 'build-browser-node', 'build-bin'], 'test', cb);
+});
+
+gulp.task('serve', ['test'], function () {
+    browserSync({
+        port: 5000,
+        notify: false,
+        logPrefix: 'browsix',
+        snippetOptions: {
+            rule: {
+                match: '<span id="browser-sync-binding"></span>',
+                fn: function (snippet) { return snippet; },
+            },
+        },
+        server: { baseDir: ['.'] },
+    });
+
+    gulp.watch(['index.html'], reload);
+    gulp.watch(['src/**/*.ts'], ['test', reload]);
 });

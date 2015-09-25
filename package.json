@@ -1,0 +1,29 @@
+{
+  "name": "browsix",
+  "version": "0.1.0",
+  "description": "a kernel for the web",
+  "main": "browsix.js",
+  "scripts": {
+    "test": "gulp test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/plasma-umass/project-1-brash-browser-shell-bobby-and-craig.git"
+  },
+  "author": "Bobby Powers, Craig Greenberg",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/plasma-umass/project-1-brash-browser-shell-bobby-and-craig/issues"
+  },
+  "homepage": "https://github.com/plasma-umass/project-1-brash-browser-shell-bobby-and-craig#readme",
+  "devDependencies": {
+    "bower": "^1.5.3",
+    "gulp": "^3.9.0",
+    "gulp-mocha": "^2.1.3",
+    "gulp-tslint": "^3.2.0",
+    "gulp-typescript": "^2.9.0",
+    "gulp-util": "^3.0.6",
+    "merge2": "^0.3.6",
+    "run-sequence": "^1.1.4"
+  }
+}

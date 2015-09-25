@@ -3,29 +3,36 @@
 var gulp = require('gulp');
 var merge = require('merge2');
 var ts = require('gulp-typescript');
+var lint = require('gulp-tslint');
 var runSequence = require('run-sequence');
 var mocha = require('gulp-mocha');
 
-var project = ts.createProject('tsconfig.json', {
-    noExternalResolve: true,
-    sortOutput: true,
-});
+function tsPipeline(src, dst) {
+    var project = ts.createProject('tsconfig.json', {
+	noExternalResolve: true,
+	sortOutput: true,
+    });
 
-gulp.task('build-kernel', function() {
-    var tsBuild = gulp.src('src/kernel/*.ts')
-        .pipe(ts(project));
+    return function() {
+	var build = gulp.src(src)
+	    .pipe(ts(project));
+	return merge(build.js, build.dts).pipe(gulp.dest(dst));
+    }
+}
 
-    return merge(tsBuild.js, tsBuild.dts)
-        .pipe(gulp.dest('lib/kernel'));
-});
+function tsTask(subdir) {
+    gulp.task('lint-'+subdir, function () {
+	return gulp.src('src/'+subdir+'/*.ts')
+	    .pipe(lint())
+            .pipe(lint.report('verbose'));
+    });
+    gulp.task(
+	'build-'+subdir, ['lint-'+subdir], tsPipeline('src/'+subdir+'/*.ts', 'lib/'+subdir));
 
-gulp.task('build-browser-node', function() {
-    var tsBuild = gulp.src('src/browser-node/*.ts')
-        .pipe(ts(project));
+}
 
-    return merge(tsBuild.js, tsBuild.dts)
-        .pipe(gulp.dest('lib/browser-node'));
-});
+tsTask('kernel');
+tsTask('browser-node');
 
 gulp.task('test', ['build-kernel', 'build-browser-node'], function() {
     return gulp.src('test/*.ts')

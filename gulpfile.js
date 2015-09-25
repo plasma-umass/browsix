@@ -7,15 +7,20 @@ var lint = require('gulp-tslint');
 var runSequence = require('run-sequence');
 var mocha = require('gulp-mocha');
 
-var project = ts.createProject('tsconfig.json', {
-    noExternalResolve: true,
-    sortOutput: true,
-});
+// each user of our tsconfig.json setup needs a different instance of
+// the 'ts project', as gulp-typescript seems to use it as a dumping
+// ground.
+function project() {
+	return ts.createProject('tsconfig.json', {
+	    noExternalResolve: true,
+	    sortOutput: true,
+	});
+}
 
 function tsPipeline(src, dst) {
     return function() {
 	var build = gulp.src([src, 'typings/**/*.d.ts'])
-	    .pipe(ts(project));
+	    .pipe(ts(project()));
 	return merge(build.js, build.dts).pipe(gulp.dest(dst));
     }
 }
@@ -37,11 +42,11 @@ tsTask('bin');
 
 gulp.task('test', ['build-kernel', 'build-browser-node', 'build-bin'], function() {
     return gulp.src('test/*.ts')
-        .pipe(ts(project)).js
+        .pipe(ts(project())).js
 	.pipe(gulp.dest('test'))
 	.pipe(mocha());
 });
 
 gulp.task('default', function(cb) {
-    runSequence(['build-kernel', 'build-browser-node'], 'test', cb);
+    runSequence(['build-kernel', 'build-browser-node', 'build-bin'], 'test', cb);
 });

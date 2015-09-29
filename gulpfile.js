@@ -1,6 +1,8 @@
 'use strict';
 
+var browserify = require('browserify');
 var gulp = require('gulp');
+var gutil = require('gulp-util');
 var merge = require('merge2');
 var ts = require('gulp-typescript');
 var lint = require('gulp-tslint');
@@ -8,6 +10,10 @@ var runSequence = require('run-sequence');
 var mocha = require('gulp-mocha');
 var browserSync = require('browser-sync');
 var reload = browserSync.reload;
+var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var uglify = require('gulp-uglify');
+
 
 // each user of our tsconfig.json setup needs a different instance of
 // the 'ts project', as gulp-typescript seems to use it as a dumping
@@ -33,16 +39,35 @@ function tsTask(subdir) {
 	    .pipe(lint())
             .pipe(lint.report('verbose'));
     });
-    gulp.task(
-	'build-'+subdir, ['lint-'+subdir], tsPipeline('src/'+subdir+'/*.ts', 'lib/'+subdir));
 
+    gulp.task('build-'+subdir, ['lint-'+subdir], tsPipeline('src/'+subdir+'/*.ts', 'lib/'+subdir));
+
+    gulp.task('dist-'+subdir, ['build-'+subdir], function() {
+	var b = browserify({
+	    entries: ['./lib/'+subdir+'/'+subdir+'.js'],
+	    builtins: false,
+	    ignoreMissing: true,
+	    insertGlobalVars: {
+		// don't do shit when seeing use of 'process'
+		'process': function () { return "" },
+            },
+	});
+	b.exclude('webworker-threads');
+
+	return b.bundle()
+	    .pipe(source('./lib/'+subdir+'/'+subdir+'.js'))
+	    .pipe(buffer())
+//            .pipe(uglify())
+            .on('error', gutil.log)
+	    .pipe(gulp.dest('./dist/'));
+});
 }
 
 tsTask('kernel');
 tsTask('browser-node');
 tsTask('bin');
 
-gulp.task('test', ['build-kernel', 'build-browser-node', 'build-bin'], function() {
+gulp.task('test', ['dist-kernel', 'dist-browser-node', 'build-bin'], function() {
     return gulp.src('test/*.ts')
         .pipe(ts(project())).js
 	.pipe(gulp.dest('test'))
@@ -50,7 +75,7 @@ gulp.task('test', ['build-kernel', 'build-browser-node', 'build-bin'], function(
 });
 
 gulp.task('default', function(cb) {
-    runSequence(['build-kernel', 'build-browser-node', 'build-bin'], 'test', cb);
+    runSequence(['dist-kernel', 'dist-browser-node', 'build-bin'], 'test', cb);
 });
 
 gulp.task('serve', ['test'], function () {

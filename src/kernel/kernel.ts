@@ -1,5 +1,7 @@
 'use strict';
 
+import { now } from './ipc';
+
 // the following boilerplate allows us to use WebWorkers both in the
 // browser and under node, and give the typescript compiler full
 // information on the Worker type.  We have to disable tslint for this
@@ -16,16 +18,6 @@ if (typeof window === 'undefined' || typeof (<any>window).Worker === 'undefined'
 else
 	var Worker = <WorkerStatic>(<any>window).Worker;
 /* tslint:enable */
-
-let now: ()=>number;
-if (typeof performance !== 'undefined') {
-	now = performance.now.bind(performance);
-} else {
-	now = function(): number {
-		let [sec, nanosec] = process.hrtime();
-		return sec*1e3 + nanosec/1e6;
-	};
-}
 
 export class Kernel {
 	procs: Process[];

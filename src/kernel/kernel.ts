@@ -4,9 +4,8 @@
 
 'use strict';
 
+import * as BrowserFS from 'browserfs';
 import { now } from './ipc';
-
-import browserfs = require('browserfs');
 
 // the following boilerplate allows us to use WebWorkers both in the
 // browser and under node, and give the typescript compiler full
@@ -73,23 +72,33 @@ class Syscalls {
 	[n: string]: any;
 
 	constructor(
-		public kernel: Kernel) {}
+		public task: Task) {}
+
+	exit(ctx: SyscallContext): void {
+		this.task.exit();
+	}
 
 	exec(ctx: SyscallContext, name: string, ...args: string[]): void {
 		console.log('TODO: exec');
+		// ctx.resolve()
 	}
 
 	read(ctx: SyscallContext, len: number): void {
-
+		// ctx.resolve('some string')
 	}
 
 	// XXX: should accept string or Buffer
-	write(ctx: SyscallContext, buf: any): void {
-
+	write(ctx: SyscallContext, fd: number, buf: string|Buffer): void {
 	}
 
-	close(ctx: SyscallContext): void {
+	open(ctx: SyscallContext, path: string): void {
+		console.log('TODO: close');
+		ctx.resolve([0]);
+	}
 
+	close(ctx: SyscallContext, fd: number): void {
+		console.log('TODO: close');
+		ctx.resolve([0]);
 	}
 }
 
@@ -101,18 +110,12 @@ interface OutstandingMap {
 }
 
 export class Kernel {
-	private procs: Task[];
-	private fsPath: string;
+	private tasks: {[pid: number]: Task} = {};
 	private fs: any;
-	private syscalls: Syscalls;
-	private msgIdSeq: number = 1;
-	private taskIdSeq: number = 1;
-	private outstanding: OutstandingMap = {};
+	private taskIdSeq: number = 0;
 
-	constructor(fsPath: string, fs?: any) {
-		this.fsPath = fsPath;
+	constructor(fs: BrowserFS.FileSystem) {
 		this.fs = fs;
-		this.syscalls = new Syscalls(this);
 	}
 
 	// returns the PID.
@@ -120,16 +123,60 @@ export class Kernel {
 		return new Promise<number>(this.runExecutor.bind(this, cmd));
 	}
 
-	private syscallMsgHandler(ev: MessageEvent): void {
-		let syscall = Syscall.From(ev);
-		if (!syscall) {
-			console.log('bad syscall message, dropping');
+	kill(pid: number): void {
+		if (!(pid in this.tasks))
 			return;
-		}
+		let task = this.tasks[pid];
+		task.worker.terminate();
+		delete this.tasks[pid];
+	}
 
-		if (syscall.name in this.syscalls) {
-			this.syscalls[syscall.name].apply(this, syscall.callArgs());
-		}
+	private nextTaskId(): number {
+		return ++this.taskIdSeq;
+	}
+
+	private runExecutor(cmd: string, resolve: (value?: number | PromiseLike<number>) => void, reject: (reason?: any) => void): void {
+		console.log('in run executor for ' + cmd);
+
+		let pid = this.nextTaskId();
+		let task = new Task(this, pid, cmd);
+		this.tasks[pid] = task;
+	}
+}
+
+
+export class Task {
+	kernel: Kernel;
+	worker: Worker;
+
+	pid: number;
+	files: {[n: number]: any} = {};
+
+	parent: Task;
+	children: Task[];
+
+	private syscalls: Syscalls;
+	private msgIdSeq: number = 1;
+	private outstanding: OutstandingMap = {};
+
+	constructor(kernel: Kernel, pid: number, pathToBin: string, parent?: Task) {
+		this.pid = pid;
+		this.parent = parent;
+		this.kernel = kernel;
+		this.worker = new Worker(pathToBin);
+		this.syscalls = new Syscalls(this);
+		this.worker.onmessage = this.syscallHandler.bind(this);
+		console.log('starting PID ' + pid);
+		this.worker.postMessage(now());
+	}
+
+	exit(): void {
+		console.log('sys_exit');
+		this.kernel.kill(this.pid);
+	}
+
+	private nextMsgId(): number {
+		return ++this.msgIdSeq;
 	}
 
 	private reject(msgId: number, reason: any): void {
@@ -146,71 +193,47 @@ export class Kernel {
 			callbacks.resolve(value);
 	}
 
-	private nextMsgId(): number {
-		return ++this.msgIdSeq;
-	}
-
-	private nextTaskId(): number {
-		return ++this.taskIdSeq;
-	}
-
-	private runExecutor(cmd: string, resolve: (value?: number | PromiseLike<number>) => void, reject: (reason?: any) => void): void {
-		console.log('in run executor for ' + cmd);
-
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = {
-			resolve: resolve,
-			reject: reject,
-		};
-
-		if (cmd !== '!socket-server') {
-			this.reject(msgId, 'unknown cmd');
+	private syscallHandler(ev: MessageEvent): void {
+		let syscall = Syscall.From(ev);
+		if (!syscall) {
+			console.log('bad syscall message, dropping');
+			return;
 		}
 
-		let task = new Task(this, this.nextTaskId(), cmd);
-		task.worker.addEventListener('message', this.syscallMsgHandler.bind(this), false);
+		if (syscall.name in this.syscalls) {
+			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
+		}
+
+		// const msgId = this.nextMsgId();
+		// this.outstanding[msgId] = {
+		//	resolve: resolve,
+		//	reject: reject,
+		// };
 	}
 }
-
-
-export class Task {
-	kernel: Kernel;
-	worker: Worker;
-
-	pid: number;
-	files: {[n: number]: any} = {};
-
-	parent: Task;
-	children: Task[];
-
-	constructor(kernel: Kernel, pid: number, pathToBin: string, parent?: Task) {
-		this.pid = pid;
-		this.parent = parent;
-		this.kernel = kernel;
-		this.worker = new Worker(pathToBin);
-		this.worker.onmessage = this.syscallHandler.bind(this);
-		console.log('starting');
-		this.worker.postMessage(now());
-	}
-
-	syscallHandler(event: MessageEvent): void {
-		console.log('killing child');
-		this.worker.terminate();
-	}
-}
-
-
-export var proc = new Task(null, 1, 'dist/lib/browser-node/browser-node.js');
 
 export interface BootCallback {
 	(err: any, kernel: Kernel): void;
 }
 
-export function Boot(fs: any, cb: BootCallback): void {
+// FIXME/TODO: this doesn't match the signature specified in the
+// project.
+export function Boot(fsType: string, cb: BootCallback): void {
 	'use strict';
-	let k = new Kernel(null, fs);
-	cb(null, k);
+	let bfs: any = {};
+	BrowserFS.install(bfs);
+	let rootConstructor = BrowserFS.FileSystem[fsType];
+	if (!rootConstructor) {
+		setTimeout(cb, 0, 'unknown FileSystem type: ' + fsType);
+		return;
+	}
+	let root = new rootConstructor();
+	BrowserFS.initialize(root);
+	let fs: BrowserFS.FileSystem = bfs.require('fs');
+	let k = new Kernel(fs);
+	setTimeout(cb, 0, null, k);
 }
+
 
 // install our Boot method in the global scope
 if (typeof window !== 'undefined')

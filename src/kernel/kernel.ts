@@ -1,8 +1,12 @@
 /// <reference path="../../typings/promise.d.ts" />
+/// <reference path="../../typings/node/node.d.ts" />
+/// <reference path="../../typings/browserfs.d.ts" />
 
 'use strict';
 
 import { now } from './ipc';
+
+import browserfs = require('browserfs');
 
 // the following boilerplate allows us to use WebWorkers both in the
 // browser and under node, and give the typescript compiler full
@@ -112,7 +116,7 @@ export class Kernel {
 	}
 
 	// returns the PID.
-	run(cmd: string): Promise<number> {
+	system(cmd: string): Promise<number> {
 		return new Promise<number>(this.runExecutor.bind(this, cmd));
 	}
 
@@ -190,6 +194,7 @@ export class Task {
 	}
 
 	syscallHandler(event: MessageEvent): void {
+		console.log('killing child');
 		this.worker.terminate();
 	}
 }
@@ -206,3 +211,7 @@ export function Boot(fs: any, cb: BootCallback): void {
 	let k = new Kernel(null, fs);
 	cb(null, k);
 }
+
+// install our Boot method in the global scope
+if (typeof window !== 'undefined')
+	(<any>window).Boot = Boot;

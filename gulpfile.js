@@ -18,49 +18,47 @@ var uglify = require('gulp-uglify');
 // the 'ts project', as gulp-typescript seems to use it as a dumping
 // ground.
 function project() {
-	return ts.createProject('tsconfig.json', {
-	    noExternalResolve: true,
-	    sortOutput: true,
-	    declaration: true,
-	});
+    return ts.createProject('tsconfig.json', {
+        sortOutput: true,
+        declaration: true,
+    });
 }
 
 function tsPipeline(src, dst) {
     return function() {
-	var build = gulp.src([src, 'typings/**/*.d.ts'])
-	    .pipe(ts(project()));
-	return merge(build.js, build.dts).pipe(gulp.dest(dst));
+        var build = gulp.src(src)
+            .pipe(ts(project()));
+        return merge(build.js, build.dts).pipe(gulp.dest(dst));
     }
 }
 
 function tsTask(subdir) {
     gulp.task('lint-'+subdir, function () {
-	return gulp.src('src/'+subdir+'/*.ts')
-	    .pipe(lint())
+        return gulp.src('src/'+subdir+'/*.ts')
+            .pipe(lint())
             .pipe(lint.report('verbose'));
     });
 
     gulp.task('build-'+subdir, ['lint-'+subdir], tsPipeline('src/'+subdir+'/*.ts', 'lib/'+subdir));
 
     gulp.task('dist-'+subdir, ['build-'+subdir], function() {
-	var b = browserify({
-	    entries: ['./lib/'+subdir+'/'+subdir+'.js'],
-	    builtins: false,
-	    ignoreMissing: true,
-	    insertGlobalVars: {
-		// don't do shit when seeing use of 'process'
-		'process': function () { return "" },
+        var b = browserify({
+            entries: ['./lib/'+subdir+'/'+subdir+'.js'],
+            builtins: false,
+            insertGlobalVars: {
+                // don't do shit when seeing use of 'process'
+                'process': function () { return "" },
             },
-	});
-	b.exclude('webworker-threads');
+        });
+        b.exclude('webworker-threads');
 
-	return b.bundle()
-	    .pipe(source('./lib/'+subdir+'/'+subdir+'.js'))
-	    .pipe(buffer())
-//            .pipe(uglify())
+        return b.bundle()
+            .pipe(source('./lib/'+subdir+'/'+subdir+'.js'))
+            .pipe(buffer())
+        //            .pipe(uglify())
             .on('error', gutil.log)
-	    .pipe(gulp.dest('./dist/'));
-});
+            .pipe(gulp.dest('./dist/'));
+    });
 }
 
 tsTask('kernel');
@@ -70,8 +68,8 @@ tsTask('bin');
 gulp.task('test', ['dist-kernel', 'dist-browser-node', 'build-bin'], function() {
     return gulp.src('test/*.ts')
         .pipe(ts(project())).js
-	.pipe(gulp.dest('test'))
-	.pipe(mocha());
+        .pipe(gulp.dest('test'))
+        .pipe(mocha());
 });
 
 gulp.task('default', function(cb) {

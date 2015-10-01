@@ -1,3 +1,5 @@
+/// <reference path="../../typings/node/node.d.ts" />
+
 'use strict';
 
 export var now: ()=>number;

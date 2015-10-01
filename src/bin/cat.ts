@@ -1,6 +1,6 @@
-'use strict';
-
 /// <reference path="../../typings/node/node.d.ts" />
+
+'use strict';
 
 import * as fs from 'fs';
 

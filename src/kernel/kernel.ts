@@ -1,3 +1,5 @@
+/// <reference path="../../typings/promise.d.ts" />
+
 'use strict';
 
 import { now } from './ipc';
@@ -19,46 +21,188 @@ else
 	var Worker = <WorkerStatic>(<any>window).Worker;
 /* tslint:enable */
 
-export class Kernel {
-	procs: Process[];
+enum SyscallError {
+	EIO,
 }
 
-const COUNT = 10000;
+class SyscallContext {
+	constructor(
+		public source: MessagePort,
+		public id:     number) {}
 
-export class Process {
+	reject(reason: string): void {
+		// TODO: send reply
+	}
+
+	resolve(args: any[]): void {
+
+	}
+}
+
+class Syscall {
+	constructor(
+		public ctx:  SyscallContext,
+		public name: string,
+		public args: any[]) {}
+
+	private static requiredOnData: string[] = ['id', 'name', 'args'];
+
+	static From(ev: MessageEvent): Syscall {
+		if (!ev.data)
+			return;
+		for (let i = 0; i < Syscall.requiredOnData.length; i++) {
+			if (!ev.data.hasOwnProperty(Syscall.requiredOnData[i]))
+				return;
+		}
+		let ctx = new SyscallContext(<MessagePort>ev.target, ev.data.id);
+		return new Syscall(ctx, ev.data.name, ev.data.args);
+	}
+
+	callArgs(): any[] {
+		return [this.ctx].concat(this.args);
+	}
+}
+
+// Logically, perhaps, these should all be methods on Kernel.  They're
+// here for encapsulation.
+class Syscalls {
+	[n: string]: any;
+
+	constructor(
+		public kernel: Kernel) {}
+
+	exec(ctx: SyscallContext, name: string, ...args: string[]): void {
+		console.log('TODO: exec');
+	}
+
+	read(ctx: SyscallContext, len: number): void {
+
+	}
+
+	// XXX: should accept string or Buffer
+	write(ctx: SyscallContext, buf: any): void {
+
+	}
+
+	close(ctx: SyscallContext): void {
+
+	}
+}
+
+interface OutstandingMap {
+	[i: number]: {
+		resolve: (value?: any | PromiseLike<any>) => void,
+		reject: (reason?: any) => void,
+	};
+}
+
+export class Kernel {
+	private procs: Task[];
+	private fsPath: string;
+	private fs: any;
+	private syscalls: Syscalls;
+	private msgIdSeq: number = 1;
+	private taskIdSeq: number = 1;
+	private outstanding: OutstandingMap = {};
+
+	constructor(fsPath: string, fs?: any) {
+		this.fsPath = fsPath;
+		this.fs = fs;
+		this.syscalls = new Syscalls(this);
+	}
+
+	// returns the PID.
+	run(cmd: string): Promise<number> {
+		return new Promise<number>(this.runExecutor.bind(this, cmd));
+	}
+
+	private syscallMsgHandler(ev: MessageEvent): void {
+		let syscall = Syscall.From(ev);
+		if (!syscall) {
+			console.log('bad syscall message, dropping');
+			return;
+		}
+
+		if (syscall.name in this.syscalls) {
+			this.syscalls[syscall.name].apply(this, syscall.callArgs());
+		}
+	}
+
+	private reject(msgId: number, reason: any): void {
+		let callbacks = this.outstanding[msgId];
+		delete this.outstanding[msgId];
+		if (callbacks)
+			callbacks.reject(reason);
+	}
+
+	private resolve(msgId: number, value: any): void {
+		let callbacks = this.outstanding[msgId];
+		delete this.outstanding[msgId];
+		if (callbacks)
+			callbacks.resolve(value);
+	}
+
+	private nextMsgId(): number {
+		return ++this.msgIdSeq;
+	}
+
+	private nextTaskId(): number {
+		return ++this.taskIdSeq;
+	}
+
+	private runExecutor(cmd: string, resolve: (value?: number | PromiseLike<number>) => void, reject: (reason?: any) => void): void {
+		console.log('in run executor for ' + cmd);
+
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = {
+			resolve: resolve,
+			reject: reject,
+		};
+
+		if (cmd !== '!socket-server') {
+			this.reject(msgId, 'unknown cmd');
+		}
+
+		let task = new Task(this, this.nextTaskId(), cmd);
+		task.worker.addEventListener('message', this.syscallMsgHandler.bind(this), false);
+	}
+}
+
+
+export class Task {
 	kernel: Kernel;
 	worker: Worker;
 
-	i: number = 0;
-	total: number = 0.0;
-	start: number = now();
+	pid: number;
+	files: {[n: number]: any} = {};
 
-	constructor(kernel: Kernel, pathToBin: string) {
+	parent: Task;
+	children: Task[];
+
+	constructor(kernel: Kernel, pid: number, pathToBin: string, parent?: Task) {
+		this.pid = pid;
+		this.parent = parent;
 		this.kernel = kernel;
 		this.worker = new Worker(pathToBin);
-		this.worker.onmessage = this.messageReceived.bind(this);
+		this.worker.onmessage = this.syscallHandler.bind(this);
 		console.log('starting');
 		this.worker.postMessage(now());
 	}
 
-	messageReceived(event: MessageEvent): void {
-		// event.data
-		this.total += now() - this.start;
-		this.start = now();
-
-		if (this.i < COUNT) {
-			this.worker.postMessage(now());
-			this.i++;
-		} else {
-			console.log('avg: ' + (this.total/this.i) + ' ms');
-			console.log('(' + this.i + ' iterations took ' + this.total + ' ms)');
-			this.worker.terminate();
-		}
+	syscallHandler(event: MessageEvent): void {
+		this.worker.terminate();
 	}
 }
 
-export var proc = new Process(null, 'dist/lib/browser-node/browser-node.js');
 
-export function Boot(): void {
+export var proc = new Task(null, 1, 'dist/lib/browser-node/browser-node.js');
+
+export interface BootCallback {
+	(err: any, kernel: Kernel): void;
+}
+
+export function Boot(fs: any, cb: BootCallback): void {
 	'use strict';
+	let k = new Kernel(null, fs);
+	cb(null, k);
 }

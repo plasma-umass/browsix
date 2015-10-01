@@ -59,9 +59,11 @@ class USyscalls {
 		}
 
 		// interrupts are named, everything else is a response
-		// to a message _we_ sent.
+		// to a message _we_ sent.  Interrupts include the
+		// 'init' message with our args + environment.
 		if (syscall.name) {
 			console.log('received interrupt from kernel');
+			return;
 		}
 
 		// TODO

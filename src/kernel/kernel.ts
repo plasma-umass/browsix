@@ -123,6 +123,8 @@ export class Kernel {
 		return new Promise<number>(this.runExecutor.bind(this, cmd));
 	}
 
+	// implement kill on the Kernel because we need to adjust our
+	// list of all tasks.
 	kill(pid: number): void {
 		if (!(pid in this.tasks))
 			return;
@@ -167,7 +169,12 @@ export class Task {
 		this.syscalls = new Syscalls(this);
 		this.worker.onmessage = this.syscallHandler.bind(this);
 		console.log('starting PID ' + pid);
-		this.worker.postMessage(now());
+
+		this.worker.postMessage({
+			id: -1,
+			name: 'init',
+			args: ['cat', 'a', {}],
+		});
 	}
 
 	exit(): void {

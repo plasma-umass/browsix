@@ -4,8 +4,11 @@ GULP      ?= node_modules/.bin/gulp
 TSLINT    ?= node_modules/.bin/tslint
 MOCHA     ?= node_modules/.bin/mocha
 
+BROWSERFS  = vendor/BrowserFS/dist/browserfs.js
+BROWSERFS_DIR = vendor/BrowserFS
+
 NPM_DEPS   = $(BOWER) $(GULP) $(TSLINT) $(MOCHA)
-BUILD_DEPS = $(NPM_DEPS)
+BUILD_DEPS = $(NPM_DEPS) $(BROWSERFS)
 
 # quiet output, but allow us to look at what commands are being
 # executed by passing 'V=1' to make, without requiring temporarily
@@ -45,6 +48,11 @@ bower_components: $(BOWER) bower.json
 	@echo "  BOWER"
 	$(BOWER) install --silent
 	touch -c $@
+
+$(BROWSERFS): $(BROWSERFS_DIR) .gitmodules
+	@echo "  GIT   $<"
+	git submodule update --init
+	touch $@
 
 test: $(BUILD_DEPS)
 	@echo "  TEST"

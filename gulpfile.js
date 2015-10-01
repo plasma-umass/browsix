@@ -14,7 +14,6 @@ var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var uglify = require('gulp-uglify');
 
-
 // each user of our tsconfig.json setup needs a different instance of
 // the 'ts project', as gulp-typescript seems to use it as a dumping
 // ground.
@@ -22,6 +21,7 @@ function project() {
 	return ts.createProject('tsconfig.json', {
 	    noExternalResolve: true,
 	    sortOutput: true,
+	    declaration: true,
 	});
 }
 

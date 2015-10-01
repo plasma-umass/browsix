@@ -49,9 +49,11 @@ bower_components: $(BOWER) bower.json
 	$(BOWER) install --silent
 	touch -c $@
 
-$(BROWSERFS): $(BROWSERFS_DIR) .gitmodules
+$(BROWSERFS): $(BROWSERFS_DIR) .gitmodules Makefile
 	@echo "  GIT   $<"
 	git submodule update --init
+	@echo "  GRUNT $<"
+	cd $(BROWSERFS_DIR) && npm install && bower install && grunt
 	touch $@
 
 test: $(BUILD_DEPS)

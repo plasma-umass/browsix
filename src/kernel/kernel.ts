@@ -91,9 +91,16 @@ class Syscalls {
 	write(ctx: SyscallContext, fd: number, buf: string|Buffer): void {
 	}
 
-	open(ctx: SyscallContext, path: string): void {
-		console.log('TODO: close');
-		ctx.resolve([0]);
+	open(ctx: SyscallContext, path: string, flags: string, mode: number): void {
+		this.task.kernel.fs.open(path, flags, mode, function(err: any, fd: any): void {
+			if (err) {
+				console.log(err);
+				ctx.reject(err);
+			} else {
+				console.log('resovle' + fd);
+				ctx.resolve([fd]);
+			}
+		});
 	}
 
 	close(ctx: SyscallContext, fd: number): void {
@@ -110,11 +117,12 @@ interface OutstandingMap {
 }
 
 export class Kernel {
+	fs: any; // FIXME
+
 	private tasks: {[pid: number]: Task} = {};
-	private fs: any;
 	private taskIdSeq: number = 0;
 
-	constructor(fs: BrowserFS.FileSystem) {
+	constructor(fs: BrowserFS.fs) {
 		this.fs = fs;
 	}
 
@@ -173,7 +181,7 @@ export class Task {
 		this.worker.postMessage({
 			id: -1,
 			name: 'init',
-			args: ['cat', 'a', {}],
+			args: ['browser-node', '/lib/bin/cat.js', 'a', {}],
 		});
 	}
 
@@ -236,7 +244,7 @@ export function Boot(fsType: string, cb: BootCallback): void {
 	}
 	let root = new rootConstructor();
 	BrowserFS.initialize(root);
-	let fs: BrowserFS.FileSystem = bfs.require('fs');
+	let fs: BrowserFS.fs = bfs.require('fs');
 	let k = new Kernel(fs);
 	setTimeout(cb, 0, null, k);
 }

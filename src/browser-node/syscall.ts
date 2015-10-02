@@ -47,8 +47,8 @@ export class USyscalls {
 		this.port.onmessage = this.resultHandler.bind(this);
 	}
 
-	exit(): void {
-		this.post(this.nextMsgId(), 'exit');
+	exit(code: number): void {
+		this.post(this.nextMsgId(), 'exit', code);
 	}
 
 	open(path: string, flags: string, mode: number): Promise<number> {
@@ -81,8 +81,9 @@ export class USyscalls {
 			return;
 		}
 
-		// TODO
-		console.log('unhandled response' + ev.data);
+		// TODO: handle reject
+		//console.log('unhandled response' + ev.data);
+		this.resolve(response.id, response.args);
 	}
 
 	private reject(msgId: number, reason: any): void {

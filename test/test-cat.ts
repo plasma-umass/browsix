@@ -8,8 +8,11 @@ import { Boot, Kernel } from '../lib/kernel/kernel';
 
 const expect = chai.expect;
 
-const NODE = 'dist/lib/browser-node/browser-node.js';
-const CAT = '/lib/bin/cat.js';
+const IS_KARMA = typeof window !== 'undefined' && typeof (<any>window).__karma__ !== 'undefined';
+const PREFIX = IS_KARMA ? '/base' : '';
+
+const NODE = PREFIX + '/dist/lib/browser-node/browser-node.js';
+const CAT = PREFIX + '/lib/bin/cat.js';
 
 describe('cat /a', function(): void {
 	const A_CONTENTS = 'contents of a';
@@ -42,3 +45,5 @@ describe('cat /a', function(): void {
 		});
 	});
 });
+
+export = this;

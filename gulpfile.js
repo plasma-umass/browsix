@@ -13,6 +13,8 @@ var reload = browserSync.reload;
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var uglify = require('gulp-uglify');
+var karma = require('karma');
+
 
 // each user of our tsconfig.json setup needs a different instance of
 // the 'ts project', as gulp-typescript seems to use it as a dumping
@@ -65,18 +67,49 @@ tsTask('kernel');
 tsTask('browser-node');
 tsTask('bin');
 
-gulp.task('test', ['dist-kernel', 'dist-browser-node', 'build-bin'], function() {
+gulp.task('build-test', ['dist-kernel', 'dist-browser-node', 'build-bin'], function() {
     return gulp.src('test/*.ts')
         .pipe(ts(project())).js
-        .pipe(gulp.dest('test'))
-        .pipe(mocha());
+        .pipe(gulp.dest('test'));
 });
 
-gulp.task('default', function(cb) {
-    runSequence(['dist-kernel', 'dist-browser-node', 'build-bin'], 'test', cb);
+gulp.task('dist-test', ['build-test'], function() {
+    var b = browserify({
+            entries: ['./test/test-cat.js'],
+            builtins: false,
+            insertGlobalVars: {
+                // don't do shit when seeing use of 'process'
+                'process': function () { return "" },
+            },
+        });
+        b.exclude('webworker-threads');
+
+        return b.bundle()
+            .pipe(source('./test/test-cat.js'))
+            .pipe(buffer())
+        //            .pipe(uglify())
+            .on('error', gutil.log)
+            .pipe(gulp.dest('./dist/'));
+
 });
 
-gulp.task('serve', ['test'], function () {
+gulp.task('test-node', ['build-test'], function() {
+    return gulp.src('test/*.js').pipe(mocha());
+});
+
+
+gulp.task('test-browser', ['dist-test'], function(done) {
+    new karma.Server({
+	configFile: __dirname + '/karma.conf.js',
+	singleRun: false,
+    }, done).start();
+});
+
+gulp.task('default', ['test-browser'], function(cb) {
+    // runSequence(['dist-kernel', 'dist-browser-node', 'build-bin'], ['test-browser'], cb);
+});
+
+gulp.task('serve', ['dist-kernel', 'dist-browser-node', 'build-bin'], function () {
     browserSync({
         port: 5000,
         notify: false,
@@ -91,5 +124,5 @@ gulp.task('serve', ['test'], function () {
     });
 
     gulp.watch(['index.html'], reload);
-    gulp.watch(['src/**/*.ts'], ['test', reload]);
+    gulp.watch(['src/**/*.ts'], ['dist-kernel', 'dist-browser-node', 'build-bin', reload]);
 });

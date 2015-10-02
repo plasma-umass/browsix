@@ -34,11 +34,21 @@ class SyscallContext {
 		public id:     number) {}
 
 	reject(reason: string): void {
-		// TODO: send reply
+		// TODO: distinguish reject from resolve with a 4th
+		// field?
+		this.source.postMessage({
+			id: this.id,
+			name: undefined,
+			args: reason,
+		});
 	}
 
 	resolve(args: any[]): void {
-
+		this.source.postMessage({
+			id: this.id,
+			name: undefined,
+			args: args,
+		});
 	}
 }
 
@@ -74,8 +84,10 @@ class Syscalls {
 	constructor(
 		public task: Task) {}
 
-	exit(ctx: SyscallContext): void {
-		this.task.exit();
+	exit(ctx: SyscallContext, code?: number): void {
+		if (!code)
+			code = 0;
+		this.task.exit(code);
 	}
 
 	exec(ctx: SyscallContext, name: string, ...args: string[]): void {
@@ -96,11 +108,13 @@ class Syscalls {
 			if (err) {
 				console.log(err);
 				ctx.reject(err);
-			} else {
-				console.log('resovle' + fd);
-				ctx.resolve([fd]);
+				return;
 			}
-		});
+			console.log('opened "' + path + '": ' + fd);
+			// FIXME: ...
+			this.task.files[3] = fd;
+			ctx.resolve([3]);
+		}.bind(this));
 	}
 
 	close(ctx: SyscallContext, fd: number): void {
@@ -139,6 +153,7 @@ export class Kernel {
 		let task = this.tasks[pid];
 		task.worker.terminate();
 		delete this.tasks[pid];
+		// TODO: resolve system's promise w/ task.exitCode + stdout/stderr
 	}
 
 	private nextTaskId(): number {
@@ -149,11 +164,15 @@ export class Kernel {
 		console.log('in run executor for ' + cmd);
 
 		let pid = this.nextTaskId();
-		let task = new Task(this, pid, cmd);
+		let parts = cmd.match(/\S+/g);
+		let task = new Task(this, null, pid, parts[0], parts.splice(1), {});
 		this.tasks[pid] = task;
 	}
 }
 
+export interface Environment {
+	[name: string]: string;
+}
 
 export class Task {
 	kernel: Kernel;
@@ -162,6 +181,8 @@ export class Task {
 	pid: number;
 	files: {[n: number]: any} = {};
 
+	exitCode: number;
+
 	parent: Task;
 	children: Task[];
 
@@ -169,24 +190,26 @@ export class Task {
 	private msgIdSeq: number = 1;
 	private outstanding: OutstandingMap = {};
 
-	constructor(kernel: Kernel, pid: number, pathToBin: string, parent?: Task) {
+	constructor(kernel: Kernel, parent: Task, pid: number, filename: string, args: string[], env: Environment) {
 		this.pid = pid;
 		this.parent = parent;
 		this.kernel = kernel;
-		this.worker = new Worker(pathToBin);
+		this.worker = new Worker(filename);
 		this.syscalls = new Syscalls(this);
 		this.worker.onmessage = this.syscallHandler.bind(this);
 		console.log('starting PID ' + pid);
+		console.log(['browser-node'].concat(args).concat(<any>env));
 
 		this.worker.postMessage({
 			id: -1,
 			name: 'init',
-			args: ['browser-node', '/lib/bin/cat.js', 'a', {}],
+			args: ['browser-node'].concat(args).concat(<any>env),
 		});
 	}
 
-	exit(): void {
-		console.log('sys_exit');
+	exit(code: number): void {
+		console.log('sys_exit ' + code);
+		this.exitCode = code;
 		this.kernel.kill(this.pid);
 	}
 

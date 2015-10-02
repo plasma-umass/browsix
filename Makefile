@@ -56,9 +56,15 @@ $(BROWSERFS): $(BROWSERFS_DIR) .gitmodules Makefile
 	cd $(BROWSERFS_DIR) && npm install && bower install && grunt
 	touch $@
 
-test: $(BUILD_DEPS)
-	@echo "  TEST"
-	$(GULP) test
+test-browser: $(BUILD_DEPS)
+	@echo "  TEST BROWSER"
+	$(GULP) test-browser
+
+test-node: $(BUILD_DEPS)
+	@echo "  TEST NODE"
+	$(GULP) test-node
+
+test: test-browser
 
 clean:
 	rm -rf dist
@@ -67,4 +73,4 @@ clean:
 distclean: clean
 	rm -rf node_modules bower_components
 
-.PHONY: all clean distclean test
+.PHONY: all clean distclean test test-browser test-node

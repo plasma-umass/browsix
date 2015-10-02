@@ -4,7 +4,6 @@
 'use strict';
 
 import { now } from './ipc';
-import { Readable } from 'stream';
 import { syscall, SyscallResponse } from './syscall';
 
 interface OpenCallback {
@@ -18,11 +17,14 @@ class FS {
 			nmode = nmode;
 		} else {
 			callback = <OpenCallback>mode;
-			nmode = 438; // octal 0666
+			// octal 0666, octal not allowed in strict mode :\
+			nmode = 438;
 		}
 		syscall.open(path, flags, nmode).then(function(fd: number): void {
+			console.log('userspace open: ' + fd);
 			callback(null, fd);
 		}).catch(function(reason: any): void {
+			console.log('userspace open err: ' + reason);
 			callback(reason, null);
 		});
 	}
@@ -46,6 +48,10 @@ class Process {
 		this.argv = argv;
 		this.env = env;
 	}
+
+	exit(code: number): void {
+		syscall.exit(code);
+	}
 }
 
 function _require(moduleName: string): any {
@@ -62,6 +68,7 @@ function _require(moduleName: string): any {
 syscall.addEventListener('init', init.bind(this));
 function init(data: SyscallResponse): void {
 	'use strict';
+	console.log('received init message');
 
 	let args = data.args.slice(0, -1);
 	let env = data.args[data.args.length - 1];

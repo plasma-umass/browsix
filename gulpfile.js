@@ -87,7 +87,7 @@ gulp.task('dist-test', ['build-test'], function() {
         return b.bundle()
             .pipe(source('./test/test-cat.js'))
             .pipe(buffer())
-        //            .pipe(uglify())
+//            .pipe(uglify())
             .on('error', gutil.log)
             .pipe(gulp.dest('./dist/'));
 
@@ -124,5 +124,5 @@ gulp.task('serve', ['dist-kernel', 'dist-browser-node', 'build-bin'], function (
     });
 
     gulp.watch(['index.html'], reload);
-    gulp.watch(['src/**/*.ts'], ['dist-kernel', 'dist-browser-node', 'build-bin', reload]);
+    gulp.watch(['src/**/*.ts', 'test/*.js'], ['dist-kernel', 'dist-browser-node', 'build-bin', reload]);
 });

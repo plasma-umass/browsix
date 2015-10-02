@@ -36,7 +36,7 @@ describe('cat /a', function(): void {
 
 	it('should run `cat /a`', function(done: MochaDone): void {
 		kernel.system(NODE + ' ' + CAT + ' /a').then(function(result: any) {
-			console.log('run succeeded' + result)
+			console.log('run succeeded ' + result)
 			done();
 		}).catch(function(reason: any) {
 			console.log('run failed: ' + reason);
@@ -45,5 +45,3 @@ describe('cat /a', function(): void {
 		});
 	});
 });
-
-export = this;

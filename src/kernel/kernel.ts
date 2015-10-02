@@ -136,6 +136,9 @@ export class Kernel {
 	private tasks: {[pid: number]: Task} = {};
 	private taskIdSeq: number = 0;
 
+	// keyed on PID
+	private systemRequests: OutstandingMap = {};
+
 	constructor(fs: BrowserFS.fs) {
 		this.fs = fs;
 	}
@@ -153,7 +156,12 @@ export class Kernel {
 		let task = this.tasks[pid];
 		task.worker.terminate();
 		delete this.tasks[pid];
-		// TODO: resolve system's promise w/ task.exitCode + stdout/stderr
+		let completions = this.systemRequests[pid];
+		if (completions) {
+			delete this.systemRequests[pid];
+			// TODO: also call resolve w/ stderr + stdout
+			completions.resolve(task.exitCode);
+		}
 	}
 
 	private nextTaskId(): number {
@@ -161,10 +169,12 @@ export class Kernel {
 	}
 
 	private runExecutor(cmd: string, resolve: (value?: number | PromiseLike<number>) => void, reject: (reason?: any) => void): void {
-		console.log('in run executor for ' + cmd);
-
-		let pid = this.nextTaskId();
 		let parts = cmd.match(/\S+/g);
+		let pid = this.nextTaskId();
+		this.systemRequests[pid] = {
+			resolve: resolve,
+			reject: reject,
+		};
 		let task = new Task(this, null, pid, parts[0], parts.splice(1), {});
 		this.tasks[pid] = task;
 	}

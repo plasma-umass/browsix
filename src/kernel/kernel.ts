@@ -6,6 +6,7 @@
 
 import * as BrowserFS from 'browserfs';
 import { now } from './ipc';
+import { Pipe } from './pipe';
 
 // the following boilerplate allows us to use WebWorkers both in the
 // browser and under node, and give the typescript compiler full
@@ -206,6 +207,15 @@ export class Task {
 		this.kernel = kernel;
 		this.worker = new Worker(filename);
 		this.syscalls = new Syscalls(this);
+
+		let stdin = new Pipe();
+		let stderr = new Pipe();
+		let stdout = new Pipe();
+
+		this.files[0] = stdin;
+		this.files[1] = stdout;
+		this.files[2] = stderr;
+
 		this.worker.onmessage = this.syscallHandler.bind(this);
 		console.log('starting PID ' + pid);
 		console.log(['browser-node'].concat(args).concat(<any>env));

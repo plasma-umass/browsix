@@ -55,6 +55,14 @@ export class USyscalls {
 		return new Promise<number>(this.openExecutor.bind(this, path, flags, mode));
 	}
 
+	write(fd: number, buf: string): Promise<number> {
+		return new Promise<number>(this.writeExecutor.bind(this, fd, buf));
+	}
+
+	read(fd: number, length: number): Promise<string> {
+		return new Promise<string>(this.readExecutor.bind(this, fd, length));
+	}
+
 	addEventListener(type: string, handler: SignalHandler): void {
 		if (!handler)
 			return;
@@ -124,6 +132,34 @@ export class USyscalls {
 		};
 
 		this.post(msgId, 'open', path, flags, mode);
+	}
+
+	private writeExecutor(
+		fd: number, buf: string,
+		resolve: (value?: number | PromiseLike<number>) => void,
+		reject: (reason?: any) => void): void {
+
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = {
+			resolve: resolve,
+			reject: reject,
+		};
+
+		this.post(msgId, 'write', fd, buf);
+	}
+
+	private readExecutor(
+		fd: number, length: number,
+		resolve: (value?: number | PromiseLike<number>) => void,
+		reject: (reason?: any) => void): void {
+
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = {
+			resolve: resolve,
+			reject: reject,
+		};
+
+		this.post(msgId, 'read', fd, length);
 	}
 }
 

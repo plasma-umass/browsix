@@ -31,13 +31,13 @@ enum SyscallError {
 
 class SyscallContext {
 	constructor(
-		public source: MessagePort,
+		public task: Task,
 		public id:     number) {}
 
 	reject(reason: string): void {
 		// TODO: distinguish reject from resolve with a 4th
 		// field?
-		this.source.postMessage({
+		this.task.worker.postMessage({
 			id: this.id,
 			name: undefined,
 			args: reason,
@@ -45,7 +45,7 @@ class SyscallContext {
 	}
 
 	resolve(args: any[]): void {
-		this.source.postMessage({
+		this.task.worker.postMessage({
 			id: this.id,
 			name: undefined,
 			args: args,
@@ -61,14 +61,14 @@ class Syscall {
 
 	private static requiredOnData: string[] = ['id', 'name', 'args'];
 
-	static From(ev: MessageEvent): Syscall {
+	static From(task: Task, ev: MessageEvent): Syscall {
 		if (!ev.data)
 			return;
 		for (let i = 0; i < Syscall.requiredOnData.length; i++) {
 			if (!ev.data.hasOwnProperty(Syscall.requiredOnData[i]))
 				return;
 		}
-		let ctx = new SyscallContext(<MessagePort>ev.target, ev.data.id);
+		let ctx = new SyscallContext(task, ev.data.id);
 		return new Syscall(ctx, ev.data.name, ev.data.args);
 	}
 
@@ -156,13 +156,19 @@ export class Kernel {
 			return;
 		let task = this.tasks[pid];
 		task.worker.terminate();
+		console.log('worker terminated');
 		delete this.tasks[pid];
 		let completions = this.systemRequests[pid];
 		if (completions) {
 			delete this.systemRequests[pid];
 			// TODO: also call resolve w/ stderr + stdout
+			console.log('calling resolve on completion');
 			completions.resolve(task.exitCode);
+			console.log('resolved');
 		}
+		// required to trigger flush of microtask queue on
+		// node.
+		setTimeout(function(): void {});
 	}
 
 	private nextTaskId(): number {
@@ -218,7 +224,7 @@ export class Task {
 
 		this.worker.onmessage = this.syscallHandler.bind(this);
 		console.log('starting PID ' + pid);
-		console.log(['browser-node'].concat(args).concat(<any>env));
+		//console.log(['browser-node'].concat(args).concat(<any>env));
 
 		this.worker.postMessage({
 			id: -1,
@@ -252,7 +258,7 @@ export class Task {
 	}
 
 	private syscallHandler(ev: MessageEvent): void {
-		let syscall = Syscall.From(ev);
+		let syscall = Syscall.From(this, ev);
 		if (!syscall) {
 			console.log('bad syscall message, dropping');
 			return;

@@ -9,10 +9,10 @@ import { Boot, Kernel } from '../lib/kernel/kernel';
 const expect = chai.expect;
 
 const IS_KARMA = typeof window !== 'undefined' && typeof (<any>window).__karma__ !== 'undefined';
-const PREFIX = IS_KARMA ? '/base' : '';
+const PREFIX = IS_KARMA ? '/base/' : '';
 
-const NODE = PREFIX + '/dist/lib/browser-node/browser-node.js';
-const CAT = PREFIX + '/lib/bin/cat.js';
+const NODE = PREFIX + 'dist/lib/browser-node/browser-node.js';
+const CAT = PREFIX + 'lib/bin/cat.js';
 
 describe('cat /a', function(): void {
 	const A_CONTENTS = 'contents of a';
@@ -34,14 +34,10 @@ describe('cat /a', function(): void {
 		});
 	});
 
-	it('should run `cat /a`', function(done: MochaDone): void {
-		kernel.system(NODE + ' ' + CAT + ' /a').then(function(result: any) {
+	it('should run `cat /a`', function(): Promise<any> {
+		return kernel.system(NODE + ' ' + CAT + ' /a').then(function(result: any) {
 			console.log('run succeeded ' + result)
-			done();
-		}).catch(function(reason: any) {
-			console.log('run failed: ' + reason);
-			expect(reason).to.be.null;
-			done();
+			expect(result).not.to.be.null;
 		});
 	});
 });

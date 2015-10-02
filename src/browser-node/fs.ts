@@ -26,11 +26,13 @@ export class FS {
 	}
 
 	createReadStream(path: string, options: {fd: any}): NodeJS.ReadableStream {
-		return new ReadStream(path, options);
+		console.log('TODO: createReadStream');
+		return null; // new ReadStream(path, options);
 	}
 }
 export var fs = new FS();
 
+/*
 // from node 4.1
 class StreamReadable {
 	readable: boolean = true;
@@ -218,3 +220,4 @@ class ReadStream extends StreamReadable {
 		}
 	}
 }
+*/

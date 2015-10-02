@@ -1,11 +1,22 @@
 /// <reference path="../../typings/node/node.d.ts" />
 /// <reference path="../../typings/promise.d.ts" />
+/// <reference path="../../node_modules/ts-stream/ts-stream.d.ts" />
 
 'use strict';
 
 import { now } from './ipc';
 import { syscall, SyscallResponse } from './syscall';
 import { fs } from './fs';
+
+import { Stream } from 'ts-stream';
+
+declare var thread: any;
+// node-WebWorker-threads doesn't support setTimeout becuase I think
+// they want me to sink into depression.
+function superSadSetTimeout(cb: any, ms: any): void {
+	'use strict';
+	return (<any>thread).nextTick(cb);
+}
 
 interface Environment {
 	[name: string]: string;
@@ -44,6 +55,9 @@ function init(data: SyscallResponse): void {
 	let args = data.args.slice(0, -1);
 	let env = data.args[data.args.length - 1];
 	let process = new Process(args, env);
+
+	if (typeof (<any>self).setTimeout === 'undefined')
+		(<any>self).setTimeout = superSadSetTimeout;
 
 	(<any>self).process = process;
 	(<any>self).require = _require;

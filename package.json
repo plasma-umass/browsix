@@ -41,6 +41,7 @@
     "webworker-threads": "^0.6.1"
   },
   "dependencies": {
-    "browserfs": "^0.4.1"
+    "browserfs": "^0.4.1",
+    "ts-stream": "^0.7.0"
   }
 }

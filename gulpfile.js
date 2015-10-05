@@ -103,6 +103,8 @@ gulp.task('test-browser', ['dist-test'], function(done) {
 	configFile: __dirname + '/karma.conf.js',
 	singleRun: false,
     }, done).start();
+
+    gulp.watch(['src/**/*.ts', 'test/*.ts'], ['dist-test', reload]);
 });
 
 gulp.task('default', ['test-browser'], function(cb) {

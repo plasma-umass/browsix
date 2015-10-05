@@ -97,11 +97,12 @@ class Syscalls {
 	}
 
 	read(ctx: SyscallContext, len: number): void {
-		// ctx.resolve('some string')
+		console.log('TODO: read');
 	}
 
 	// XXX: should accept string or Buffer
 	write(ctx: SyscallContext, fd: number, buf: string|Buffer): void {
+		console.log('TODO: write');
 	}
 
 	open(ctx: SyscallContext, path: string, flags: string, mode: number): void {
@@ -119,8 +120,36 @@ class Syscalls {
 	}
 
 	close(ctx: SyscallContext, fd: number): void {
-		console.log('TODO: close');
-		ctx.resolve([0]);
+		let file = this.task.files[fd];
+		if (!file) {
+			ctx.reject('bad FD ' + fd);
+			return;
+		}
+		this.task.kernel.fs.close(file, function(err: any): void {
+			if (err) {
+				console.log(err);
+				ctx.reject(err);
+				return;
+			}
+			ctx.resolve([0]);
+		}.bind(this));
+	}
+
+	fstat(ctx: SyscallContext, fd: number): void {
+		let file = this.task.files[fd];
+		if (!file) {
+			ctx.reject('bad FD ' + fd);
+			return;
+		}
+		this.task.kernel.fs.fstat(file, function(err: any, stat: any): void {
+			if (err) {
+				console.log(err);
+				ctx.reject(err);
+				return;
+			}
+			// FIXME: this seems necessary to capture Date fields
+			ctx.resolve(JSON.parse(JSON.stringify(stat)));
+		}.bind(this));
 	}
 }
 

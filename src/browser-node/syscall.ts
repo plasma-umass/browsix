@@ -5,6 +5,23 @@
 import { now } from './ipc';
 
 
+export interface Stat {
+	dev: number;
+	mode: number;
+	nlink: number;
+	uid: number;
+	gid: number;
+	rdev: number;
+	blksize: number;
+	ino: number;
+	size: number;
+	blocks: number;
+	atime: Date;
+	mtime: Date;
+	ctime: Date;
+	birthtime: Date;
+}
+
 export class SyscallResponse {
 	constructor(
 		public id: number,
@@ -55,8 +72,16 @@ export class USyscalls {
 		return new Promise<number>(this.openExecutor.bind(this, path, flags, mode));
 	}
 
+	close(fd: number): Promise<number> {
+		return new Promise<number>(this.closeExecutor.bind(this, fd));
+	}
+
 	write(fd: number, buf: string): Promise<number> {
 		return new Promise<number>(this.writeExecutor.bind(this, fd, buf));
+	}
+
+	fstat(fd: number): Promise<Stat> {
+		return new Promise<Stat>(this.fstatExecutor.bind(this, fd));
 	}
 
 	read(fd: number, length: number): Promise<string> {
@@ -134,6 +159,20 @@ export class USyscalls {
 		this.post(msgId, 'open', path, flags, mode);
 	}
 
+	private closeExecutor(
+		fd: number,
+		resolve: (value?: number | PromiseLike<number>) => void,
+		reject: (reason?: any) => void): void {
+
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = {
+			resolve: resolve,
+			reject: reject,
+		};
+
+		this.post(msgId, 'close', fd);
+	}
+
 	private writeExecutor(
 		fd: number, buf: string,
 		resolve: (value?: number | PromiseLike<number>) => void,
@@ -146,6 +185,20 @@ export class USyscalls {
 		};
 
 		this.post(msgId, 'write', fd, buf);
+	}
+
+	private fstatExecutor(
+		fd: number,
+		resolve: (value?: Stat | PromiseLike<Stat>) => void,
+		reject: (reason?: any) => void): void {
+
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = {
+			resolve: resolve,
+			reject: reject,
+		};
+
+		this.post(msgId, 'fstat', fd);
 	}
 
 	private readExecutor(

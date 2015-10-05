@@ -1,9 +1,28 @@
 'use strict';
 
-import { syscall, SyscallResponse } from './syscall';
+import { syscall, SyscallResponse, Stat } from './syscall';
+
+const READ_FILE_BUFFER_LEN = 8 * 1024;
 
 export interface OpenCallback {
 	(err: any, fd: any): void;
+}
+
+export interface CloseCallback {
+	(err: any, result: number): void;
+}
+
+export interface StatCallback {
+	(err: any, stat: Stat): void;
+}
+
+export interface ReadCallback {
+	(err: any, data: string): void;
+}
+
+export interface ReadOptions {
+	encoding: string;
+	flag:     string; // default = 'r'
 }
 
 export class FS {
@@ -13,8 +32,7 @@ export class FS {
 			nmode = nmode;
 		} else {
 			callback = <OpenCallback>mode;
-			// octal 0666, octal not allowed in strict mode :\
-			nmode = 438;
+			nmode = 0o666;
 		}
 		syscall.open(path, flags, nmode).then(function(fd: number): void {
 			console.log('userspace open: ' + fd);
@@ -25,9 +43,47 @@ export class FS {
 		});
 	}
 
+	close(fd: number, callback: CloseCallback): void {
+		syscall.close(fd).then(function(result: number): void {
+			callback(null, result);
+		}).catch(function(reason: any): void {
+			console.log('userspace close err: ' + reason);
+			callback(reason, null);
+		});
+	}
+
+	fstat(fd: number, callback: StatCallback): void {
+		syscall.fstat(fd).then(function(stat: Stat): void {
+			callback(null, stat);
+		}).catch(function(reason: any): void {
+			console.log('userspace fstat err: ' + reason);
+			callback(reason, null);
+		});
+	}
+
 	createReadStream(path: string, options: {fd: any}): NodeJS.ReadableStream {
 		console.log('TODO: createReadStream');
 		return null; // new ReadStream(path, options);
+	}
+
+	readFile(path: string, options: ReadOptions|ReadCallback, callback: ReadCallback): void {
+		let flag = 'r';
+		if (typeof options === 'object') {
+			flag = (<any>options).flag || 'r';
+		} else {
+			callback = <ReadCallback>options;
+		}
+		let content: string = null;
+
+		syscall.open(path, flag, 0o666).then(function readFileOpen(): Promise<number> {
+			return;
+		}).then(function readFileStat(): Promise<Stat> {
+			return null;
+		}).then(function readFileRead(): Promise<string> {
+			return null;
+		}).then(function readFileClose(): Promise<number> {
+			return null;
+		});
 	}
 }
 export var fs = new FS();

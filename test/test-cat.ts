@@ -15,6 +15,8 @@ const NODE = PREFIX + 'dist/lib/browser-node/browser-node.js';
 const CAT = PREFIX + 'lib/bin/cat.js';
 
 describe('cat /a', function(): void {
+	this.timeout(120000);
+
 	const A_CONTENTS = 'contents of a';
 	let kernel: Kernel = null;
 

@@ -88,12 +88,15 @@ function main(): void {
 					code = 1;
 					process.stderr.write(pathToScript + ': ' + err.message + '\n');
 				} else {
+					fs.fstat(fd, function (errr, stat): void {
+						console.log('file size: ' + stat.size);
+						// if we've opened all of the files,
+						// pipe them to stdout.
+						if (++opened === args.length)
+							setTimeout(concat, 0, files, process.stdout, code);
+					});
 					files[i] = fs.createReadStream(path, {fd: fd.toString()});
 				}
-				// if we've opened all of the files,
-				// pipe them to stdout.
-				if (++opened === args.length)
-					setTimeout(concat, 0, files, process.stdout, code);
 			});
 		});
 	}

@@ -12,6 +12,7 @@ import * as bindingUV from './binding/uv';
 import * as bindingFs from './binding/fs';
 import * as bindingFsEventWrap from './binding/fs_event_wrap';
 import * as bindingConstants from './binding/constants';
+import * as bindingContextify from './binding/contextify';
 
 class Process {
 	argv: string[];
@@ -38,6 +39,8 @@ class Process {
 			return bindingFsEventWrap;
 		case 'constants':
 			return bindingConstants;
+		case 'contextify':
+			return bindingContextify;
 		default:
 			console.log('TODO: unimplemented binding ' + name);
 		}

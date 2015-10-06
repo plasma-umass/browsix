@@ -1,6 +1,6 @@
 'use strict';
 
-const punycode = require('punycode');
+const punycode = require('./punycode');
 
 exports.parse = urlParse;
 exports.resolve = urlResolve;
@@ -75,7 +75,7 @@ const slashedProtocol = {
   'gopher:': true,
   'file:': true
 };
-const querystring = require('querystring');
+const querystring = require('./querystring');
 
 function urlParse(url, parseQueryString, slashesDenoteHost) {
   if (url instanceof Url) return url;

@@ -1,12 +1,12 @@
 'use strict';
 
-const NativeModule = require('native_module');
-const util = require('util');
-const internalUtil = require('internal/util');
-const runInThisContext = require('vm').runInThisContext;
-const assert = require('assert').ok;
-const fs = require('fs');
-const path = require('path');
+const NativeModule = require('./native_module');
+const util = require('./util');
+const internalUtil = require('./internal/util');
+const runInThisContext = require('./vm').runInThisContext;
+const assert = require('./assert').ok;
+const fs = require('./fs');
+const path = require('./path');
 const internalModuleReadFile = process.binding('fs').internalModuleReadFile;
 const internalModuleStat = process.binding('fs').internalModuleStat;
 
@@ -218,7 +218,7 @@ Module._resolveLookupPaths = function(request, parent) {
       paths = parent.paths.concat(paths);
     }
 
-    // Maintain backwards compat with certain broken uses of require('.')
+    // Maintain backwards compat with certain broken uses of require('./.')
     // by putting the module's directory in front of the lookup paths.
     if (request === '.') {
       if (parent && parent.filename) {
@@ -233,7 +233,7 @@ Module._resolveLookupPaths = function(request, parent) {
 
   // with --eval, parent.id is not set and parent.filename is null
   if (!parent || !parent.id || !parent.filename) {
-    // make require('./path/to/foo') work - normally the path is taken
+    // make require('././path/to/foo') work - normally the path is taken
     // from realpath(__filename) but with eval there is no filename
     var mainPaths = ['.'].concat(modulePaths);
     mainPaths = Module._nodeModulePaths('.').concat(mainPaths);
@@ -247,7 +247,7 @@ Module._resolveLookupPaths = function(request, parent) {
   var parentIdPath = isIndex ? parent.id : path.dirname(parent.id);
   var id = path.resolve(parentIdPath, request);
 
-  // make sure require('./path') and require('path') get distinct ids, even
+  // make sure require('././path') and require('path') get distinct ids, even
   // when called from the toplevel js file
   if (parentIdPath === '.' && id.indexOf('/') === -1) {
     id = './' + id;

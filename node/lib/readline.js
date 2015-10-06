@@ -8,11 +8,11 @@
 
 const kHistorySize = 30;
 
-const util = require('util');
-const internalUtil = require('internal/util');
+const util = require('./util');
+const internalUtil = require('./internal/util');
 const inherits = util.inherits;
-const Buffer = require('buffer').Buffer;
-const EventEmitter = require('events');
+const Buffer = require('./buffer').Buffer;
+const EventEmitter = require('./events');
 
 
 exports.createInterface = function(input, output, completer, terminal) {
@@ -116,7 +116,7 @@ function Interface(input, output, completer, terminal) {
       input.removeListener('data', ondata);
       input.removeListener('end', onend);
     });
-    var StringDecoder = require('string_decoder').StringDecoder; // lazy load
+    var StringDecoder = require('./string_decoder').StringDecoder; // lazy load
     this._decoder = new StringDecoder('utf8');
 
   } else {
@@ -903,7 +903,7 @@ const ESCAPE_DECODER = Symbol('escape-decoder');
 
 function emitKeypressEvents(stream) {
   if (stream[KEYPRESS_DECODER]) return;
-  var StringDecoder = require('string_decoder').StringDecoder; // lazy load
+  var StringDecoder = require('./string_decoder').StringDecoder; // lazy load
   stream[KEYPRESS_DECODER] = new StringDecoder('utf8');
 
   stream[ESCAPE_DECODER] = emitKeys(stream);

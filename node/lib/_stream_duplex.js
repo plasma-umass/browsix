@@ -7,9 +7,9 @@
 
 module.exports = Duplex;
 
-const util = require('util');
-const Readable = require('_stream_readable');
-const Writable = require('_stream_writable');
+const util = require('./util');
+const Readable = require('./_stream_readable');
+const Writable = require('./_stream_writable');
 
 util.inherits(Duplex, Readable);
 

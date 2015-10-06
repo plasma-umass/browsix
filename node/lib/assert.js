@@ -26,8 +26,8 @@
 
 // UTILITY
 const compare = process.binding('buffer').compare;
-const util = require('util');
-const Buffer = require('buffer').Buffer;
+const util = require('./util');
+const Buffer = require('./buffer').Buffer;
 const pSlice = Array.prototype.slice;
 
 // 1. The assert module provides functions that throw

@@ -1,9 +1,9 @@
 'use strict';
 
-const tls = require('tls');
-const url = require('url');
-const http = require('http');
-const util = require('util');
+const tls = require('./tls');
+const url = require('./url');
+const http = require('./http');
+const util = require('./util');
 const inherits = util.inherits;
 const debug = util.debuglog('https');
 

@@ -2,8 +2,8 @@
 
 module.exports = {SocketListSend, SocketListReceive};
 
-const EventEmitter = require('events');
-const util = require('util');
+const EventEmitter = require('./events');
+const util = require('./util');
 
 // This object keep track of the socket there are sended
 function SocketListSend(slave, key) {

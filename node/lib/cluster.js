@@ -1,11 +1,11 @@
 'use strict';
 
-const EventEmitter = require('events');
-const assert = require('assert');
-const dgram = require('dgram');
-const fork = require('child_process').fork;
-const net = require('net');
-const util = require('util');
+const EventEmitter = require('./events');
+const assert = require('./assert');
+const dgram = require('./dgram');
+const fork = require('./child_process').fork;
+const net = require('./net');
+const util = require('./util');
 const SCHED_NONE = 1;
 const SCHED_RR = 2;
 

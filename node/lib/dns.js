@@ -1,7 +1,7 @@
 'use strict';
 
-const net = require('net');
-const util = require('util');
+const net = require('./net');
+const util = require('./util');
 
 const cares = process.binding('cares_wrap');
 const uv = process.binding('uv');

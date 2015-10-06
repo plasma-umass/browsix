@@ -1,13 +1,13 @@
 'use strict';
 
-const assert = require('assert');
-const EventEmitter = require('events');
-const stream = require('stream');
-const tls = require('tls');
-const util = require('util');
-const common = require('_tls_common');
+const assert = require('./assert');
+const EventEmitter = require('./events');
+const stream = require('./stream');
+const tls = require('./tls');
+const util = require('./util');
+const common = require('./_tls_common');
 const debug = util.debuglog('tls-legacy');
-const Buffer = require('buffer').Buffer;
+const Buffer = require('./buffer').Buffer;
 const Timer = process.binding('timer_wrap').Timer;
 var Connection = null;
 try {

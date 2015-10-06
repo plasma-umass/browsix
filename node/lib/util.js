@@ -1,8 +1,8 @@
 'use strict';
 
 const uv = process.binding('uv');
-const Buffer = require('buffer').Buffer;
-const internalUtil = require('internal/util');
+const Buffer = require('./buffer').Buffer;
+const internalUtil = require('./internal/util');
 
 var Debug;
 var ObjectIsPromise;
@@ -187,7 +187,7 @@ function getConstructorOf(obj) {
 
 function ensureDebugIsInitialized() {
   if (Debug === undefined) {
-    const runInDebugContext = require('vm').runInDebugContext;
+    const runInDebugContext = require('./vm').runInDebugContext;
     const result = runInDebugContext('[Debug, ObjectIsPromise]');
     Debug = result[0];
     ObjectIsPromise = result[1];
@@ -773,7 +773,7 @@ exports.p = internalUtil.deprecate(function() {
 
 
 exports.exec = internalUtil.deprecate(function() {
-  return require('child_process').exec.apply(this, arguments);
+  return require('./child_process').exec.apply(this, arguments);
 }, 'util.exec is deprecated. Use child_process.exec instead.');
 
 

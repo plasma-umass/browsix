@@ -21,15 +21,15 @@
 
 'use strict';
 
-const util = require('util');
+const util = require('./util');
 const inherits = util.inherits;
-const Stream = require('stream');
-const vm = require('vm');
-const path = require('path');
-const fs = require('fs');
-const rl = require('readline');
-const Console = require('console').Console;
-const domain = require('domain');
+const Stream = require('./stream');
+const vm = require('./vm');
+const path = require('./path');
+const fs = require('./fs');
+const rl = require('./readline');
+const Console = require('./console').Console;
+const domain = require('./domain');
 const debug = util.debuglog('repl');
 
 try {
@@ -44,7 +44,7 @@ try {
 }
 
 // hack for repl require to work properly with node_modules folders
-module.paths = require('module')._nodeModulePaths(module.filename);
+module.paths = require('./module')._nodeModulePaths(module.filename);
 
 // If obj.hasOwnProperty has been overridden, then calling
 // obj.hasOwnProperty(prop) will break.
@@ -624,7 +624,7 @@ REPLServer.prototype.complete = function(line, callback) {
 
     completionGroupsLoaded();
   } else if (match = line.match(requireRE)) {
-    // require('...<Tab>')
+    // require('./...<Tab>')
     var exts = Object.keys(require.extensions);
     var indexRe = new RegExp('^index(' + exts.map(regexpEscape).join('|') +
                              ')$');
@@ -634,7 +634,7 @@ REPLServer.prototype.complete = function(line, callback) {
     var filter = match[1];
     var dir, files, f, name, base, ext, abs, subfiles, s;
     group = [];
-    var paths = module.paths.concat(require('module').globalPaths);
+    var paths = module.paths.concat(require('./module').globalPaths);
     for (i = 0; i < paths.length; i++) {
       dir = path.resolve(paths[i], subdir);
       try {

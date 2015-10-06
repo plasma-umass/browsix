@@ -1,8 +1,8 @@
 'use strict';
 
 const binding = process.binding('os');
-const util = require('util');
-const internalUtil = require('internal/util');
+const util = require('./util');
+const internalUtil = require('./internal/util');
 const isWindows = process.platform === 'win32';
 
 exports.hostname = binding.getHostname;

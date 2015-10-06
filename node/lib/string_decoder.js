@@ -1,6 +1,6 @@
 'use strict';
 
-const Buffer = require('buffer').Buffer;
+const Buffer = require('./buffer').Buffer;
 
 function assertEncoding(encoding) {
   // Do not cache `Buffer.isEncoding`, some modules monkey-patch it to support

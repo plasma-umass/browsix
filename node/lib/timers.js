@@ -1,9 +1,9 @@
 'use strict';
 
 const Timer = process.binding('timer_wrap').Timer;
-const L = require('_linklist');
-const assert = require('assert').ok;
-const util = require('util');
+const L = require('./_linklist');
+const assert = require('./assert').ok;
+const util = require('./util');
 const debug = util.debuglog('timer');
 const kOnTimeout = Timer.kOnTimeout | 0;
 

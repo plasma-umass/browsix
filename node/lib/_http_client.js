@@ -1,19 +1,19 @@
 'use strict';
 
-const util = require('util');
-const net = require('net');
-const url = require('url');
-const EventEmitter = require('events');
+const util = require('./util');
+const net = require('./net');
+const url = require('./url');
+const EventEmitter = require('./events');
 const HTTPParser = process.binding('http_parser').HTTPParser;
-const assert = require('assert').ok;
-const common = require('_http_common');
+const assert = require('./assert').ok;
+const common = require('./_http_common');
 const httpSocketSetup = common.httpSocketSetup;
 const parsers = common.parsers;
 const freeParser = common.freeParser;
 const debug = common.debug;
-const OutgoingMessage = require('_http_outgoing').OutgoingMessage;
-const Agent = require('_http_agent');
-const Buffer = require('buffer').Buffer;
+const OutgoingMessage = require('./_http_outgoing').OutgoingMessage;
+const Agent = require('./_http_agent');
+const Buffer = require('./buffer').Buffer;
 
 
 function ClientRequest(options, cb) {

@@ -2,7 +2,7 @@
 'use strict';
 
 const binding = process.binding('buffer');
-const internalUtil = require('internal/util');
+const internalUtil = require('./internal/util');
 const bindingObj = {};
 
 exports.Buffer = Buffer;

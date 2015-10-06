@@ -1,13 +1,13 @@
 'use strict';
 
-const StringDecoder = require('string_decoder').StringDecoder;
-const Buffer = require('buffer').Buffer;
-const EventEmitter = require('events');
-const net = require('net');
-const dgram = require('dgram');
-const util = require('util');
-const constants = require('constants');
-const assert = require('assert');
+const StringDecoder = require('./string_decoder').StringDecoder;
+const Buffer = require('./buffer').Buffer;
+const EventEmitter = require('./events');
+const net = require('./net');
+const dgram = require('./dgram');
+const util = require('./util');
+const constants = require('./constants');
+const assert = require('./assert');
 
 const Process = process.binding('process_wrap').Process;
 const WriteWrap = process.binding('stream_wrap').WriteWrap;
@@ -16,7 +16,7 @@ const Pipe = process.binding('pipe_wrap').Pipe;
 const TTY = process.binding('tty_wrap').TTY;
 const TCP = process.binding('tcp_wrap').TCP;
 const UDP = process.binding('udp_wrap').UDP;
-const SocketList = require('internal/socket_list');
+const SocketList = require('./internal/socket_list');
 
 const errnoException = util._errnoException;
 const SocketListSend = SocketList.SocketListSend;

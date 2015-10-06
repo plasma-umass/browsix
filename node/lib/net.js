@@ -1,15 +1,15 @@
 'use strict';
 
-const EventEmitter = require('events');
-const stream = require('stream');
-const timers = require('timers');
-const util = require('util');
-const internalUtil = require('internal/util');
-const assert = require('assert');
+const EventEmitter = require('./events');
+const stream = require('./stream');
+const timers = require('./timers');
+const util = require('./util');
+const internalUtil = require('./internal/util');
+const assert = require('./assert');
 const cares = process.binding('cares_wrap');
 const uv = process.binding('uv');
 
-const Buffer = require('buffer').Buffer;
+const Buffer = require('./buffer').Buffer;
 const TTYWrap = process.binding('tty_wrap');
 const TCP = process.binding('tcp_wrap').TCP;
 const Pipe = process.binding('pipe_wrap').Pipe;
@@ -905,7 +905,7 @@ Socket.prototype.connect = function(options, cb) {
 
 
 function lookupAndConnect(self, options) {
-  const dns = require('dns');
+  const dns = require('./dns');
   var host = options.host || 'localhost';
   var port = options.port;
   var localAddress = options.localAddress;
@@ -1261,7 +1261,7 @@ function emitListeningNT(self) {
 function listen(self, address, port, addressType, backlog, fd, exclusive) {
   exclusive = !!exclusive;
 
-  if (!cluster) cluster = require('cluster');
+  if (!cluster) cluster = require('./cluster');
 
   if (cluster.isMaster || exclusive) {
     self._listen2(address, port, addressType, backlog, fd);
@@ -1368,7 +1368,7 @@ Server.prototype.listen = function() {
   }
 
   function listenAfterLookup(port, address, backlog, exclusive) {
-    require('dns').lookup(address, function(err, ip, addressType) {
+    require('./dns').lookup(address, function(err, ip, addressType) {
       if (err) {
         self.emit('error', err);
       } else {

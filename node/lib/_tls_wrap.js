@@ -1,14 +1,14 @@
 'use strict';
 
-const assert = require('assert');
-const crypto = require('crypto');
-const net = require('net');
-const tls = require('tls');
-const util = require('util');
-const common = require('_tls_common');
-const StreamWrap = require('_stream_wrap').StreamWrap;
-const Buffer = require('buffer').Buffer;
-const Duplex = require('stream').Duplex;
+const assert = require('./assert');
+const crypto = require('./crypto');
+const net = require('./net');
+const tls = require('./tls');
+const util = require('./util');
+const common = require('./_tls_common');
+const StreamWrap = require('./_stream_wrap').StreamWrap;
+const Buffer = require('./buffer').Buffer;
+const Duplex = require('./stream').Duplex;
 const debug = util.debuglog('tls');
 const Timer = process.binding('timer_wrap').Timer;
 const tls_wrap = process.binding('tls_wrap');

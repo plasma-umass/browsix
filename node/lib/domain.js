@@ -5,8 +5,8 @@
 // No new pull requests targeting this module will be accepted
 // unless they address existing, critical bugs.
 
-const util = require('util');
-const EventEmitter = require('events');
+const util = require('./util');
+const EventEmitter = require('./events');
 const inherits = util.inherits;
 
 // communicate with events module, but don't require that

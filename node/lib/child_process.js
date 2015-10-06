@@ -1,15 +1,15 @@
 'use strict';
 
-const util = require('util');
-const internalUtil = require('internal/util');
+const util = require('./util');
+const internalUtil = require('./internal/util');
 const debug = util.debuglog('child_process');
-const constants = require('constants');
+const constants = require('./constants');
 
 const uv = process.binding('uv');
 const spawn_sync = process.binding('spawn_sync');
-const Buffer = require('buffer').Buffer;
+const Buffer = require('./buffer').Buffer;
 const Pipe = process.binding('pipe_wrap').Pipe;
-const child_process = require('internal/child_process');
+const child_process = require('./internal/child_process');
 
 const errnoException = util._errnoException;
 const _validateStdio = child_process._validateStdio;

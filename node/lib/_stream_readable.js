@@ -3,10 +3,10 @@
 module.exports = Readable;
 Readable.ReadableState = ReadableState;
 
-const EE = require('events');
-const Stream = require('stream');
-const Buffer = require('buffer').Buffer;
-const util = require('util');
+const EE = require('./events');
+const Stream = require('./stream');
+const Buffer = require('./buffer').Buffer;
+const util = require('./util');
 const debug = util.debuglog('stream');
 var StringDecoder;
 
@@ -71,7 +71,7 @@ function ReadableState(options, stream) {
   this.encoding = null;
   if (options.encoding) {
     if (!StringDecoder)
-      StringDecoder = require('string_decoder').StringDecoder;
+      StringDecoder = require('./string_decoder').StringDecoder;
     this.decoder = new StringDecoder(options.encoding);
     this.encoding = options.encoding;
   }
@@ -184,7 +184,7 @@ function needMoreData(state) {
 // backwards compatibility.
 Readable.prototype.setEncoding = function(enc) {
   if (!StringDecoder)
-    StringDecoder = require('string_decoder').StringDecoder;
+    StringDecoder = require('./string_decoder').StringDecoder;
   this._readableState.decoder = new StringDecoder(enc);
   this._readableState.encoding = enc;
   return this;

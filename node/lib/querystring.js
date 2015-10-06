@@ -3,7 +3,7 @@
 'use strict';
 
 const QueryString = exports;
-const Buffer = require('buffer').Buffer;
+const Buffer = require('./buffer').Buffer;
 
 
 function charCode(c) {

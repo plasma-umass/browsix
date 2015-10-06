@@ -1,12 +1,12 @@
 'use strict';
 
-const assert = require('assert').ok;
-const Stream = require('stream');
-const timers = require('timers');
-const util = require('util');
-const internalUtil = require('internal/util');
-const Buffer = require('buffer').Buffer;
-const common = require('_http_common');
+const assert = require('./assert').ok;
+const Stream = require('./stream');
+const timers = require('./timers');
+const util = require('./util');
+const internalUtil = require('./internal/util');
+const Buffer = require('./buffer').Buffer;
+const common = require('./_http_common');
 
 const CRLF = common.CRLF;
 const chunkExpression = common.chunkExpression;

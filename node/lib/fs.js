@@ -3,16 +3,16 @@
 
 'use strict';
 
-const SlowBuffer = require('buffer').SlowBuffer;
-const util = require('util');
-const pathModule = require('path');
+const SlowBuffer = require('./buffer').SlowBuffer;
+const util = require('./util');
+const pathModule = require('./path');
 
 const binding = process.binding('fs');
-const constants = require('constants');
+const constants = require('./constants');
 const fs = exports;
-const Buffer = require('buffer').Buffer;
-const Stream = require('stream').Stream;
-const EventEmitter = require('events');
+const Buffer = require('./buffer').Buffer;
+const Stream = require('./stream').Stream;
+const EventEmitter = require('./events');
 const FSReqWrap = binding.FSReqWrap;
 const FSEvent = process.binding('fs_event_wrap').FSEvent;
 
@@ -20,7 +20,7 @@ const Readable = Stream.Readable;
 const Writable = Stream.Writable;
 
 const kMinPoolSpace = 128;
-const kMaxLength = require('buffer').kMaxLength;
+const kMaxLength = require('./buffer').kMaxLength;
 
 const O_APPEND = constants.O_APPEND || 0;
 const O_CREAT = constants.O_CREAT || 0;

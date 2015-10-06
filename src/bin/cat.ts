@@ -76,7 +76,7 @@ function main(): void {
 					setTimeout(concat, 0, files, process.stdout, code);
 				return;
 			}
-			fs.open(path, 'r', function(err, fd): void {
+			fs.open(path, 'r', function(err: any, fd: any): void {
 				if (err) {
 					// if we couldn't open the
 					// specified file we should
@@ -88,15 +88,12 @@ function main(): void {
 					code = 1;
 					process.stderr.write(pathToScript + ': ' + err.message + '\n');
 				} else {
-					fs.fstat(fd, function (errr, stat): void {
-						console.log('file size: ' + stat.size);
-						// if we've opened all of the files,
-						// pipe them to stdout.
-						if (++opened === args.length)
-							setTimeout(concat, 0, files, process.stdout, code);
-					});
-					files[i] = fs.createReadStream(path, {fd: fd.toString()});
+					files[i] = fs.createReadStream(path, {fd: fd});
 				}
+				// if we've opened all of the files,
+				// pipe them to stdout.
+				if (++opened === args.length)
+					setTimeout(concat, 0, files, process.stdout, code);
 			});
 		});
 	}

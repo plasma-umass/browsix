@@ -17,6 +17,8 @@ import * as bindingContextify from './binding/contextify';
 class Process {
 	argv: string[];
 	env: Environment;
+	queue: any[] = [];
+	draining: boolean = false;
 
 	constructor(argv: string[], environ: Environment) {
 		this.argv = argv;
@@ -45,6 +47,35 @@ class Process {
 			console.log('TODO: unimplemented binding ' + name);
 		}
 		return null;
+	}
+
+	// this is from acorn
+	nextTick(fun: any, self: any): void {
+		this.queue.push([fun, self]);
+		if (!this.draining) {
+			setTimeout(this.drainQueue.bind(this), 0);
+		}
+	}
+
+	// this is from acorn
+	private drainQueue(): void {
+		if (this.draining) {
+			return;
+		}
+		this.draining = true;
+		let currentQueue: any[];
+		let len = this.queue.length;
+		while (len) {
+			currentQueue = this.queue;
+			this.queue = [];
+			let i = -1;
+			while (++i < len) {
+				let [fn, self] = currentQueue[i];
+				fn(self);
+			}
+			len = this.queue.length;
+		}
+		this.draining = false;
 	}
 }
 let process = new Process(undefined, {});

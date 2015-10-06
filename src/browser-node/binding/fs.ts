@@ -6,8 +6,8 @@ import { syscall } from '../syscall';
 
 
 export class FSReqWrap {
+	oncomplete: (err: any, ...rest: any[])=>void = undefined;
 	constructor() {
-		console.log('TODO: FSReqWrap');
 	}
 }
 
@@ -17,7 +17,8 @@ export function FSInitialize() {
 export function open(path: string, flags: string, mode: number, req: FSReqWrap): void {
 	console.log('TODO: open ' + flags);
 
-	syscall.open(path, flags, mode).then(function openFinished(): void {
-		console.log('TODO: open finished');
+	syscall.open(path, flags, mode).then(function openFinished(fd: number): void {
+		if (req.oncomplete)
+			req.oncomplete(null, fd);
 	});
 }

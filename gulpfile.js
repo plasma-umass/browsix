@@ -41,7 +41,7 @@ function tsTask(subdir) {
             .pipe(lint.report('verbose'));
     });
 
-    gulp.task('build-'+subdir, ['lint-'+subdir], tsPipeline('src/'+subdir+'/*.ts', 'lib/'+subdir));
+    gulp.task('build-'+subdir, ['lint-'+subdir], tsPipeline(['src/'+subdir+'/*.ts', 'src/'+subdir+'/**/*.ts'], 'lib/'+subdir));
 
     gulp.task('dist-'+subdir, ['build-'+subdir], function() {
         var b = browserify({

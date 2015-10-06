@@ -8,6 +8,11 @@ import { now } from './ipc';
 import { syscall, SyscallResponse } from './syscall';
 import { fs } from './fs';
 
+import * as bindingBuffer from './binding/buffer';
+import * as bindingUV from './binding/uv';
+import * as bindingFsEventWrap from './binding/fs_event_wrap';
+import * as bindingConstants from './binding/constants';
+
 import { Stream } from 'ts-stream';
 
 declare var thread: any;
@@ -33,6 +38,22 @@ class Process {
 
 	exit(code: number): void {
 		syscall.exit(code);
+	}
+
+	binding(name: string): any {
+		switch (name) {
+		case 'buffer':
+			return bindingBuffer;
+		case 'uv':
+			return bindingUV;
+		case 'fs_event_wrap':
+			return bindingFsEventWrap;
+		case 'constants':
+			return bindingConstants;
+		default:
+			console.log('TODO: unimplemented binding ' + name);
+		}
+		return null;
 	}
 }
 

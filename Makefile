@@ -64,7 +64,7 @@ test-node: $(BUILD_DEPS)
 	@echo "  TEST NODE"
 	$(GULP) test-node
 
-test: test-browser
+test: test-node
 
 clean:
 	rm -rf dist

@@ -2,7 +2,8 @@
 // sizeof(int32_t) == sizeof(intptr_t) ? 0x3fffffff : 0x7fffffff;
 export const kMaxLength = 0x3fffffff; // 1024 MB aught to be enough for anybody.
 
-function setupBufferJS(prototype: any, bindingObj: any): void { // (Buffer.prototype, bindingObj);
+export function setupBufferJS(prototype: any, bindingObj: any): void { // (Buffer.prototype, bindingObj);
+	bindingObj.flags = [0];
 /*
   env->set_buffer_prototype_object(proto);
 

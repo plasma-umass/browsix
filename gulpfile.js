@@ -80,6 +80,7 @@ gulp.task('dist-test', ['build-test'], function() {
             insertGlobalVars: {
                 // don't do shit when seeing use of 'process'
                 'process': function () { return "" },
+                'buffer': function () { return "require(./buffer)" },
             },
         });
         b.exclude('webworker-threads');

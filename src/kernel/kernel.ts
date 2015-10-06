@@ -4,9 +4,11 @@
 
 'use strict';
 
+import * as constants from './constants';
 import * as BrowserFS from 'browserfs';
 import { now } from './ipc';
 import { Pipe } from './pipe';
+
 
 // the following boilerplate allows us to use WebWorkers both in the
 // browser and under node, and give the typescript compiler full
@@ -24,6 +26,54 @@ if (typeof window === 'undefined' || typeof (<any>window).Worker === 'undefined'
 else
 	var Worker = <WorkerStatic>(<any>window).Worker;
 /* tslint:enable */
+
+
+const O_APPEND = constants.O_APPEND || 0;
+const O_CREAT = constants.O_CREAT || 0;
+const O_EXCL = constants.O_EXCL || 0;
+const O_RDONLY = constants.O_RDONLY || 0;
+const O_RDWR = constants.O_RDWR || 0;
+const O_SYNC = constants.O_SYNC || 0;
+const O_TRUNC = constants.O_TRUNC || 0;
+const O_WRONLY = constants.O_WRONLY || 0;
+
+// based on stringToFlags from node's lib/fs.js
+function flagsToString(flag: any): string {
+	'use strict';
+	// Only mess with numbers
+	if (typeof flag !== 'number') {
+		return flag;
+	}
+
+	switch (flag) {
+	case O_RDONLY:
+		return 'r';
+	case O_RDONLY | O_SYNC:
+		return 'rs';
+	case O_RDWR:
+		return 'r+';
+	case O_RDWR | O_SYNC:
+		return 'rs+';
+	case O_TRUNC | O_CREAT | O_WRONLY:
+		return 'w';
+	case O_TRUNC | O_CREAT | O_WRONLY | O_EXCL:
+		return 'wx';
+	case O_TRUNC | O_CREAT | O_RDWR:
+		return 'w+';
+	case O_TRUNC | O_CREAT | O_RDWR | O_EXCL:
+		return 'wx+';
+	case O_APPEND | O_CREAT | O_WRONLY:
+		return 'a';
+	case O_APPEND | O_CREAT | O_WRONLY | O_EXCL:
+		return 'ax';
+	case O_APPEND | O_CREAT | O_RDWR:
+		return 'a+';
+	case O_APPEND | O_CREAT | O_RDWR | O_EXCL:
+		return 'ax+';
+	}
+
+	throw new Error('Unknown file open flag: ' + flag);
+}
 
 enum SyscallError {
 	EIO,
@@ -106,7 +156,7 @@ class Syscalls {
 	}
 
 	open(ctx: SyscallContext, path: string, flags: string, mode: number): void {
-		this.task.kernel.fs.open(path, flags, mode, function(err: any, fd: any): void {
+		this.task.kernel.fs.open(path, flagsToString(flags), mode, function(err: any, fd: any): void {
 			if (err) {
 				console.log(err);
 				ctx.reject(err);

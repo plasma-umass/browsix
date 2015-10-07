@@ -92,9 +92,9 @@ import * as fs from './fs';
 declare var thread: any;
 // node-WebWorker-threads doesn't support setTimeout becuase I think
 // they want me to sink into depression.
-function superSadSetTimeout(cb: any, ms: any): void {
+function superSadSetTimeout(cb: any, ms: any, ...args: any[]): void {
 	'use strict';
-	return (<any>thread).nextTick(cb);
+	return (<any>thread).nextTick(cb.bind.apply(cb, [this].concat(args)));
 }
 
 interface Environment {

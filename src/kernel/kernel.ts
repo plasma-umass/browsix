@@ -140,7 +140,7 @@ class Syscalls {
 	exit(ctx: SyscallContext, code?: number): void {
 		if (!code)
 			code = 0;
-		ctx.task.exit(code);
+		this.kernel.exit(ctx.task, code);
 	}
 
 	exec(ctx: SyscallContext, name: string, ...args: string[]): void {
@@ -259,24 +259,31 @@ export class Kernel {
 		return new Promise<[number, string, string]>(this.runExecutor.bind(this, cmd));
 	}
 
-	// implement kill on the Kernel because we need to adjust our
-	// list of all tasks.
-	kill(pid: number): void {
-		if (!(pid in this.tasks))
-			return;
-		let task = this.tasks[pid];
+	exit(task: Task, code: number): void {
+		task.exit(code);
 		task.worker.terminate();
-		console.log('worker terminated');
-		delete this.tasks[pid];
-		let completions = this.systemRequests[pid];
+		console.log('pid ' + task.pid + ' exited.');
+		delete this.tasks[task.pid];
+		let completions = this.systemRequests[task.pid];
 		if (completions) {
-			delete this.systemRequests[pid];
+			delete this.systemRequests[task.pid];
 			// TODO: also call resolve w/ stderr + stdout
 			completions.resolve([task.exitCode, task.files[1].read(), task.files[2].read()]);
 		}
 		// required to trigger flush of microtask queue on
 		// node.
 		setTimeout(function(): void {});
+	}
+
+	// implement kill on the Kernel because we need to adjust our
+	// list of all tasks.
+	kill(pid: number): void {
+		if (!(pid in this.tasks))
+			return;
+		let task = this.tasks[pid];
+		// TODO: this should deliver a signal and then wait a
+		// short amount of time before killing the worker
+		this.exit(task, -666);
 	}
 
 	doSyscall(syscall: Syscall): void {
@@ -350,7 +357,6 @@ export class Task {
 
 	exit(code: number): void {
 		this.exitCode = code;
-		this.kernel.kill(this.pid);
 	}
 
 	private nextMsgId(): number {

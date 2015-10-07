@@ -289,7 +289,7 @@ export class Kernel {
 
 	doSyscall(syscall: Syscall): void {
 		if (syscall.name in this.syscalls) {
-			console.log('sys_' + syscall.name);
+			console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
 			console.log('unknown syscall ' + syscall.name);

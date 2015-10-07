@@ -115,7 +115,6 @@ function _require(moduleName: string): any {
 syscall.addEventListener('init', init.bind(this));
 function init(data: SyscallResponse): void {
 	'use strict';
-	console.log('received init message');
 
 	let args = data.args.slice(0, -1);
 	let environ = data.args[data.args.length - 1];

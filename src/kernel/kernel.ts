@@ -175,6 +175,7 @@ class Syscalls {
 	open(ctx: SyscallContext, path: string, flags: string, mode: number): void {
 		this.kernel.fs.open(path, flagsToString(flags), mode, function(err: any, fd: any): void {
 			if (err) {
+				console.log('open failed');
 				console.log(err);
 				ctx.complete(err, null);
 				return;
@@ -182,9 +183,8 @@ class Syscalls {
 			// FIXME: this isn't POSIX semantics - we
 			// don't necessarily reuse lowest free FD.
 			let n = Object.keys(ctx.task.files).length;
-			console.log('opened "' + path + '": ' + n);
 			ctx.task.files[n] = fd;
-			ctx.complete(null, n);
+			ctx.complete(undefined, n);
 		}.bind(this));
 	}
 
@@ -264,7 +264,6 @@ export class Kernel {
 	exit(task: Task, code: number): void {
 		task.exit(code);
 		task.worker.terminate();
-		console.log('pid ' + task.pid + ' exited.');
 		delete this.tasks[task.pid];
 		let callback = this.systemRequests[task.pid];
 		if (callback) {
@@ -290,6 +289,7 @@ export class Kernel {
 
 	doSyscall(syscall: Syscall): void {
 		if (syscall.name in this.syscalls) {
+			console.log('sys_' + syscall.name);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
 			console.log('unknown syscall ' + syscall.name);
@@ -336,7 +336,6 @@ export class Task {
 		this.files[2] = stderr;
 
 		this.worker.onmessage = this.syscallHandler.bind(this);
-		console.log('starting PID ' + pid);
 		//console.log(['browser-node'].concat(args).concat(<any>env));
 
 		this.worker.postMessage({

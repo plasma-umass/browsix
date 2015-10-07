@@ -24,7 +24,6 @@ export function open(path: string, flags: string, mode: number, req: FSReqWrap):
 
 export function fstat(): void {
 	console.log('TODO: fstat');
-
 }
 
 export function read(fd: number, buffer: any, offset: number, len: number, pos: number, req: FSReqWrap): void {

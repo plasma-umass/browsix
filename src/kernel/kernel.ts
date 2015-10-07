@@ -200,6 +200,9 @@ class Syscalls {
 			ctx.reject('bad FD ' + fd);
 			return;
 		}
+		// FIXME: handle pipes better
+		if (fd < 3)
+			return;
 		this.task.kernel.fs.close(file, function(err: any): void {
 			if (err) {
 				console.log(err);
@@ -336,7 +339,6 @@ export class Task {
 	}
 
 	exit(code: number): void {
-		console.log('sys_exit ' + code);
 		this.exitCode = code;
 		this.kernel.kill(this.pid);
 	}

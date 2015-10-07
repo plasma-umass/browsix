@@ -184,8 +184,6 @@ export class USyscalls {
 			reject: reject,
 		};
 
-		console.log('pipe writing ' + buf);
-		console.log(buf);
 		this.post(msgId, 'pwrite', fd, buf, pos);
 	}
 

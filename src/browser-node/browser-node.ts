@@ -113,7 +113,6 @@ function _require(moduleName: string): any {
 }
 
 syscall.addEventListener('init', init.bind(this));
-console.log('add init listener');
 function init(data: SyscallResponse): void {
 	'use strict';
 	console.log('received init message');

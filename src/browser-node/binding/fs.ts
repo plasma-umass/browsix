@@ -58,6 +58,10 @@ export function writeBuffer(fd: number, buffer: any, offset: number, len: number
 	});
 }
 
-export function close(): void {
-	console.log('TODO: close');
+export function close(fd: number, req: FSReqWrap): void {
+	syscall.close(fd).then(function closeFinished(status: number): void {
+		req.complete(null, status);
+	}).catch(function closeFailed(err: any) {
+		req.complete(err, null);
+	});
 }

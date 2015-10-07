@@ -1,5 +1,3 @@
-/// <reference path="../../typings/promise.d.ts" />
-
 'use strict';
 
 import { now } from './ipc';
@@ -41,12 +39,12 @@ export class SyscallResponse {
 	}
 }
 
+export interface SyscallCallback {
+	(...args: any[]): void;
+}
 
 interface UOutstandingMap {
-	[i: number]: {
-		resolve: (value?: any | PromiseLike<any>) => void,
-		reject: (reason?: any) => void,
-	};
+	[i: number]: SyscallCallback;
 }
 
 export interface SignalHandler {
@@ -68,24 +66,34 @@ export class USyscalls {
 		this.post(this.nextMsgId(), 'exit', code);
 	}
 
-	open(path: string, flags: string, mode: number): Promise<number> {
-		return new Promise<number>(this.openExecutor.bind(this, path, flags, mode));
+	open(path: string, flags: string, mode: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'open', path, flags, mode);
 	}
 
-	close(fd: number): Promise<number> {
-		return new Promise<number>(this.closeExecutor.bind(this, fd));
+	close(fd: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'close', fd);
 	}
 
-	pwrite(fd: number, buf: string, pos: number): Promise<number> {
-		return new Promise<number>(this.pwriteExecutor.bind(this, fd, buf, pos));
+	pwrite(fd: number, buf: string, pos: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'pwrite', fd, buf, pos);
 	}
 
-	fstat(fd: number): Promise<Stat> {
-		return new Promise<Stat>(this.fstatExecutor.bind(this, fd));
+	fstat(fd: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'fstat', fd);
 	}
 
-	pread(fd: number, length: number, offset: number): Promise<string> {
-		return new Promise<string>(this.preadExecutor.bind(this, fd, length, offset));
+	pread(fd: number, length: number, offset: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'pread', fd, length, offset);
 	}
 
 	addEventListener(type: string, handler: SignalHandler): void {
@@ -116,21 +124,17 @@ export class USyscalls {
 
 		// TODO: handle reject
 		//console.log('unhandled response' + ev.data);
-		this.resolve(response.id, response.args);
+		this.complete(response.id, response.args);
 	}
 
-	private reject(msgId: number, reason: any): void {
-		let callbacks = this.outstanding[msgId];
-		delete this.outstanding[msgId];
-		if (callbacks)
-			callbacks.reject(reason);
-	}
-
-	private resolve(msgId: number, value: any): void {
-		let callbacks = this.outstanding[msgId];
-		delete this.outstanding[msgId];
-		if (callbacks)
-			callbacks.resolve(value);
+	private complete(id: number, args: any[]): void {
+		let cb = this.outstanding[id];
+		delete this.outstanding[id];
+		if (cb) {
+			cb.apply(undefined, args);
+		} else {
+			console.log('unknown callback for msg ' + id + ' - ' + args);
+		}
 	}
 
 	private nextMsgId(): number {
@@ -143,76 +147,6 @@ export class USyscalls {
 			name: name,
 			args: args,
 		});
-	}
-
-	private openExecutor(
-		path: string, flags: string, mode: number,
-		resolve: (value?: number | PromiseLike<number>) => void,
-		reject: (reason?: any) => void): void {
-
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = {
-			resolve: resolve,
-			reject: reject,
-		};
-
-		this.post(msgId, 'open', path, flags, mode);
-	}
-
-	private closeExecutor(
-		fd: number,
-		resolve: (value?: number | PromiseLike<number>) => void,
-		reject: (reason?: any) => void): void {
-
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = {
-			resolve: resolve,
-			reject: reject,
-		};
-
-		this.post(msgId, 'close', fd);
-	}
-
-	private pwriteExecutor(
-		fd: number, buf: string, pos: number,
-		resolve: (value?: number | PromiseLike<number>) => void,
-		reject: (reason?: any) => void): void {
-
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = {
-			resolve: resolve,
-			reject: reject,
-		};
-
-		this.post(msgId, 'pwrite', fd, buf, pos);
-	}
-
-	private fstatExecutor(
-		fd: number,
-		resolve: (value?: Stat | PromiseLike<Stat>) => void,
-		reject: (reason?: any) => void): void {
-
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = {
-			resolve: resolve,
-			reject: reject,
-		};
-
-		this.post(msgId, 'fstat', fd);
-	}
-
-	private preadExecutor(
-		fd: number, length: number, offset: number,
-		resolve: (value?: number | PromiseLike<number>) => void,
-		reject: (reason?: any) => void): void {
-
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = {
-			resolve: resolve,
-			reject: reject,
-		};
-
-		this.post(msgId, 'pread', fd, length, offset);
 	}
 }
 

@@ -37,21 +37,16 @@ describe('cat /a', function(): void {
 	});
 
 	it('should run `cat /a`', function(done: MochaDone): void {
-		kernel.system(
-			NODE + ' ' + CAT + ' /a',
-			function(code number, stdout: string, stderr: string): void {
-				try {
-					expect(code).to.equal(0);
-					expect(stdout).to.equal(A_CONTENTS);
-					expect(stderr).to.equal('');
-				} catch (e) {
-					console.log('fuck');
-					console.log(e);
-					throw e;
-				}
-				console.log('blerg');
+		kernel.system(NODE + ' ' + CAT + ' /a', catExited);
+		function catExited(code: number, stdout: string, stderr: string): void {
+			try {
+				expect(code).to.equal(0);
+				expect(stdout).to.equal(A_CONTENTS);
+				expect(stderr).to.equal('');
 				done();
-				console.log('done cb');
-			}.bind(this));
+			} catch (e) {
+				done(e);
+			}
+		}
 	});
 });

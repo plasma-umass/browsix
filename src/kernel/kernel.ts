@@ -81,7 +81,7 @@ enum SyscallError {
 	EIO,
 }
 
-class SyscallContext {
+export class SyscallContext {
 	constructor(
 		public task: Task,
 		public id:     number) {}
@@ -105,7 +105,7 @@ class SyscallContext {
 	}
 }
 
-class Syscall {
+export class Syscall {
 	constructor(
 		public ctx:  SyscallContext,
 		public name: string,
@@ -135,12 +135,12 @@ class Syscalls {
 	[n: string]: any;
 
 	constructor(
-		public task: Task) {}
+		public kernel: Kernel) {}
 
 	exit(ctx: SyscallContext, code?: number): void {
 		if (!code)
 			code = 0;
-		this.task.exit(code);
+		ctx.task.exit(code);
 	}
 
 	exec(ctx: SyscallContext, name: string, ...args: string[]): void {
@@ -149,7 +149,7 @@ class Syscalls {
 	}
 
 	pread(ctx: SyscallContext, fd: number, len: number, off: number): void {
-		let file = this.task.files[fd];
+		let file = ctx.task.files[fd];
 		if (!file) {
 			ctx.reject('bad FD ' + fd);
 			return;
@@ -159,7 +159,7 @@ class Syscalls {
 		if (off === -1)
 			off = null;
 		let buf = new Buffer(len);
-		this.task.kernel.fs.read(file, buf, 0, len, off, function(err: any, lenRead: number): void {
+		this.kernel.fs.read(file, buf, 0, len, off, function(err: any, lenRead: number): void {
 			if (err) {
 				console.log(err);
 				ctx.reject(err);
@@ -171,7 +171,7 @@ class Syscalls {
 
 	// XXX: should accept string or Buffer
 	pwrite(ctx: SyscallContext, fd: number, buf: string|Buffer): void {
-		let file = this.task.files[fd];
+		let file = ctx.task.files[fd];
 		if (!file) {
 			ctx.reject('bad FD ' + fd);
 			return;
@@ -181,7 +181,7 @@ class Syscalls {
 	}
 
 	open(ctx: SyscallContext, path: string, flags: string, mode: number): void {
-		this.task.kernel.fs.open(path, flagsToString(flags), mode, function(err: any, fd: any): void {
+		this.kernel.fs.open(path, flagsToString(flags), mode, function(err: any, fd: any): void {
 			if (err) {
 				console.log(err);
 				ctx.reject(err);
@@ -189,13 +189,13 @@ class Syscalls {
 			}
 			console.log('opened "' + path + '": ' + fd);
 			// FIXME: ...
-			this.task.files[3] = fd;
+			ctx.task.files[3] = fd;
 			ctx.resolve([3]);
 		}.bind(this));
 	}
 
 	close(ctx: SyscallContext, fd: number): void {
-		let file = this.task.files[fd];
+		let file = ctx.task.files[fd];
 		if (!file) {
 			ctx.reject('bad FD ' + fd);
 			return;
@@ -203,7 +203,7 @@ class Syscalls {
 		// FIXME: handle pipes better
 		if (fd < 3)
 			return;
-		this.task.kernel.fs.close(file, function(err: any): void {
+		this.kernel.fs.close(file, function(err: any): void {
 			if (err) {
 				console.log(err);
 				ctx.reject(err);
@@ -214,12 +214,12 @@ class Syscalls {
 	}
 
 	fstat(ctx: SyscallContext, fd: number): void {
-		let file = this.task.files[fd];
+		let file = ctx.task.files[fd];
 		if (!file) {
 			ctx.reject('bad FD ' + fd);
 			return;
 		}
-		this.task.kernel.fs.fstat(file, function(err: any, stat: any): void {
+		this.kernel.fs.fstat(file, function(err: any, stat: any): void {
 			if (err) {
 				console.log(err);
 				ctx.reject(err);
@@ -244,11 +244,14 @@ export class Kernel {
 	private tasks: {[pid: number]: Task} = {};
 	private taskIdSeq: number = 0;
 
+	private syscalls: Syscalls;
+
 	// keyed on PID
 	private systemRequests: OutstandingMap = {};
 
 	constructor(fs: BrowserFS.fs) {
 		this.fs = fs;
+		this.syscalls = new Syscalls(this);
 	}
 
 	// returns the PID.
@@ -274,6 +277,14 @@ export class Kernel {
 		// required to trigger flush of microtask queue on
 		// node.
 		setTimeout(function(): void {});
+	}
+
+	doSyscall(syscall: Syscall): void {
+		if (syscall.name in this.syscalls) {
+			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
+		} else {
+			console.log('unknown syscall ' + syscall.name);
+		}
 	}
 
 	private nextTaskId(): number {
@@ -317,7 +328,6 @@ export class Task {
 		this.parent = parent;
 		this.kernel = kernel;
 		this.worker = new Worker(filename);
-		this.syscalls = new Syscalls(this);
 
 		let stdin = new Pipe();
 		let stderr = new Pipe();
@@ -368,17 +378,12 @@ export class Task {
 			return;
 		}
 
-		if (syscall.name in this.syscalls) {
-			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
-		} else {
-			console.log('unknown syscall ' + syscall.name);
-		}
-
-		// const msgId = this.nextMsgId();
-		// this.outstanding[msgId] = {
-		//	resolve: resolve,
-		//	reject: reject,
-		// };
+		// many syscalls influence not just the state
+		// maintained in this task structure, but state in the
+		// kernel.  To easily capture this, route all syscalls
+		// into the kernel, which may call back into this task
+		// if need be.
+		this.kernel.doSyscall(syscall);
 	}
 }
 

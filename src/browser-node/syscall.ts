@@ -76,16 +76,16 @@ export class USyscalls {
 		return new Promise<number>(this.closeExecutor.bind(this, fd));
 	}
 
-	write(fd: number, buf: string): Promise<number> {
-		return new Promise<number>(this.writeExecutor.bind(this, fd, buf));
+	pwrite(fd: number, buf: string, pos: number): Promise<number> {
+		return new Promise<number>(this.pwriteExecutor.bind(this, fd, buf, pos));
 	}
 
 	fstat(fd: number): Promise<Stat> {
 		return new Promise<Stat>(this.fstatExecutor.bind(this, fd));
 	}
 
-	read(fd: number, length: number): Promise<string> {
-		return new Promise<string>(this.readExecutor.bind(this, fd, length));
+	pread(fd: number, length: number, offset: number): Promise<string> {
+		return new Promise<string>(this.preadExecutor.bind(this, fd, length, offset));
 	}
 
 	addEventListener(type: string, handler: SignalHandler): void {
@@ -173,8 +173,8 @@ export class USyscalls {
 		this.post(msgId, 'close', fd);
 	}
 
-	private writeExecutor(
-		fd: number, buf: string,
+	private pwriteExecutor(
+		fd: number, buf: string, pos: number,
 		resolve: (value?: number | PromiseLike<number>) => void,
 		reject: (reason?: any) => void): void {
 
@@ -184,7 +184,9 @@ export class USyscalls {
 			reject: reject,
 		};
 
-		this.post(msgId, 'write', fd, buf);
+		console.log('pipe writing ' + buf);
+		console.log(buf);
+		this.post(msgId, 'pwrite', fd, buf, pos);
 	}
 
 	private fstatExecutor(
@@ -201,8 +203,8 @@ export class USyscalls {
 		this.post(msgId, 'fstat', fd);
 	}
 
-	private readExecutor(
-		fd: number, length: number,
+	private preadExecutor(
+		fd: number, length: number, offset: number,
 		resolve: (value?: number | PromiseLike<number>) => void,
 		reject: (reason?: any) => void): void {
 
@@ -212,7 +214,7 @@ export class USyscalls {
 			reject: reject,
 		};
 
-		this.post(msgId, 'read', fd, length);
+		this.post(msgId, 'pread', fd, length, offset);
 	}
 }
 

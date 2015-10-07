@@ -10,6 +10,8 @@ import { now } from './ipc';
 import { Pipe } from './pipe';
 
 
+let Buffer: any;
+
 // the following boilerplate allows us to use WebWorkers both in the
 // browser and under node, and give the typescript compiler full
 // information on the Worker type.  We have to disable tslint for this
@@ -146,13 +148,36 @@ class Syscalls {
 		// ctx.resolve()
 	}
 
-	read(ctx: SyscallContext, len: number): void {
-		console.log('TODO: read');
+	pread(ctx: SyscallContext, fd: number, len: number, off: number): void {
+		let file = this.task.files[fd];
+		if (!file) {
+			ctx.reject('bad FD ' + fd);
+			return;
+		}
+		// node uses both 'undefined' and -1 to represent
+		// 'dont do pread, do a read', BrowserFS uses null :(
+		if (off === -1)
+			off = null;
+		let buf = new Buffer(len);
+		this.task.kernel.fs.read(file, buf, 0, len, off, function(err: any, lenRead: number): void {
+			if (err) {
+				console.log(err);
+				ctx.reject(err);
+				return;
+			}
+			ctx.resolve(buf.toString('utf-8', 0, lenRead));
+		}.bind(this));
 	}
 
 	// XXX: should accept string or Buffer
-	write(ctx: SyscallContext, fd: number, buf: string|Buffer): void {
-		console.log('TODO: write');
+	pwrite(ctx: SyscallContext, fd: number, buf: string|Buffer): void {
+		let file = this.task.files[fd];
+		if (!file) {
+			ctx.reject('bad FD ' + fd);
+			return;
+		}
+		file.write(buf);
+		console.log('TODO: write ' + fd);
 	}
 
 	open(ctx: SyscallContext, path: string, flags: string, mode: number): void {
@@ -224,8 +249,8 @@ export class Kernel {
 	}
 
 	// returns the PID.
-	system(cmd: string): Promise<number> {
-		return new Promise<number>(this.runExecutor.bind(this, cmd));
+	system(cmd: string): Promise<[number, string, string]> {
+		return new Promise<[number, string, string]>(this.runExecutor.bind(this, cmd));
 	}
 
 	// implement kill on the Kernel because we need to adjust our
@@ -241,9 +266,7 @@ export class Kernel {
 		if (completions) {
 			delete this.systemRequests[pid];
 			// TODO: also call resolve w/ stderr + stdout
-			console.log('calling resolve on completion');
-			completions.resolve(task.exitCode);
-			console.log('resolved');
+			completions.resolve([task.exitCode, task.files[1].read(), task.files[2].read()]);
 		}
 		// required to trigger flush of microtask queue on
 		// node.
@@ -345,6 +368,8 @@ export class Task {
 
 		if (syscall.name in this.syscalls) {
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
+		} else {
+			console.log('unknown syscall ' + syscall.name);
 		}
 
 		// const msgId = this.nextMsgId();
@@ -365,6 +390,7 @@ export function Boot(fsType: string, cb: BootCallback): void {
 	'use strict';
 	let bfs: any = {};
 	BrowserFS.install(bfs);
+	Buffer = bfs.Buffer;
 	let rootConstructor = BrowserFS.FileSystem[fsType];
 	if (!rootConstructor) {
 		setTimeout(cb, 0, 'unknown FileSystem type: ' + fsType);

@@ -37,9 +37,13 @@ describe('cat /a', function(): void {
 	});
 
 	it('should run `cat /a`', function(): Promise<any> {
-		return kernel.system(NODE + ' ' + CAT + ' /a').then(function(result: any) {
-			console.log('run succeeded ' + result)
-			expect(result).not.to.be.null;
+		return kernel.system(NODE + ' ' + CAT + ' /a').then(function(value: [number, string, string]) {
+			let code: number = value[0];
+			let stdout: string = value[1];
+			let stderr: string = value[2];
+			expect(code).not.to.be.null;
+			expect(stdout).to.equal(A_CONTENTS);
+			expect(stderr).to.equal('');
 		});
 	});
 });

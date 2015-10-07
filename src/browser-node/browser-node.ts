@@ -20,12 +20,18 @@ class Process {
 	queue: any[] = [];
 	draining: boolean = false;
 
+	stdin: any;
+	stdout: any;
+	stderr: any;
+
 	constructor(argv: string[], environ: Environment) {
 		this.argv = argv;
 		this.env = environ;
 	}
 
 	exit(code: number): void {
+		this.stdout.end();
+		this.stderr.end();
 		syscall.exit(code);
 	}
 
@@ -50,8 +56,8 @@ class Process {
 	}
 
 	// this is from acorn
-	nextTick(fun: any, self: any): void {
-		this.queue.push([fun, self]);
+	nextTick(fun: any, ...args: any[]): void {
+		this.queue.push([fun, args]);
 		if (!this.draining) {
 			setTimeout(this.drainQueue.bind(this), 0);
 		}
@@ -70,8 +76,8 @@ class Process {
 			this.queue = [];
 			let i = -1;
 			while (++i < len) {
-				let [fn, self] = currentQueue[i];
-				fn(self);
+				let [fn, args] = currentQueue[i];
+				fn.apply(this, args);
 			}
 			len = this.queue.length;
 		}
@@ -82,7 +88,6 @@ let process = new Process(undefined, {});
 (<any>self).process = process;
 
 import * as fs from './fs';
-
 
 declare var thread: any;
 // node-WebWorker-threads doesn't support setTimeout becuase I think
@@ -117,6 +122,9 @@ function init(data: SyscallResponse): void {
 	let environ = data.args[data.args.length - 1];
 	process.argv = args;
 	process.env = environ;
+	process.stdin = new fs.createReadStream('<stdin>', {fd: 0});
+	process.stdout = new fs.createWriteStream('<stdout>', {fd: 1});
+	process.stderr = new fs.createWriteStream('<stderr>', {fd: 2});
 
 	if (typeof (<any>self).setTimeout === 'undefined')
 		(<any>self).setTimeout = superSadSetTimeout;

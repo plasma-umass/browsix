@@ -129,8 +129,12 @@ gulp.task('test-browser', ['dist-test'], function(done) {
     gulp.watch(['src/**/*.ts', 'test/*.ts'], ['dist-test', reload]);
 });
 
-gulp.task('default', ['test-browser'], function(cb) {
-    // runSequence(['dist-kernel', 'dist-browser-node', 'build-bin'], ['test-browser'], cb);
+
+gulp.task('default', ['dist-test'], function(done) {
+    new karma.Server({
+	configFile: __dirname + '/karma.conf.js',
+	singleRun: true,
+    }, done).start();
 });
 
 gulp.task('serve', ['dist-kernel', 'dist-browser-node', 'build-bin'], function() {

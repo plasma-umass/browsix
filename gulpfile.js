@@ -3,6 +3,7 @@
 var browserify = require('browserify');
 var gulp = require('gulp');
 var gutil = require('gulp-util');
+var copy = require('gulp-copy');
 var merge = require('merge2');
 var ts = require('gulp-typescript');
 var lint = require('gulp-tslint');
@@ -34,14 +35,17 @@ function tsPipeline(src, dst) {
     }
 }
 
-function tsTask(subdir) {
-    gulp.task('lint-'+subdir, function () {
+function tsTask(subdir, buildDeps) {
+    if (!buildDeps)
+	buildDeps = [];
+
+    gulp.task('lint-'+subdir, function() {
         return gulp.src('src/'+subdir+'/*.ts')
             .pipe(lint())
             .pipe(lint.report('verbose'));
     });
 
-    gulp.task('build-'+subdir, ['lint-'+subdir], tsPipeline(['src/'+subdir+'/*.ts', 'src/'+subdir+'/**/*.ts'], 'lib/'+subdir));
+    gulp.task('build-'+subdir, buildDeps.concat(['lint-'+subdir]), tsPipeline(['src/'+subdir+'/*.ts', 'src/'+subdir+'/**/*.ts'], 'lib/'+subdir));
 
     gulp.task('dist-'+subdir, ['build-'+subdir], function() {
         var b = browserify({
@@ -49,7 +53,7 @@ function tsTask(subdir) {
             builtins: false,
             insertGlobalVars: {
                 // don't do shit when seeing use of 'process'
-                'process': function () { return "" },
+                'process': function() { return "" },
             },
         });
         b.exclude('webworker-threads');
@@ -63,8 +67,25 @@ function tsTask(subdir) {
     });
 }
 
+gulp.task('copy-node', function() {
+    return gulp.src([
+	'node/lib/internal/util.js',
+	'node/lib/_stream_*.js',
+	'node/lib/events.js',
+	'node/lib/constants.js',
+	'node/lib/path.js',
+	'node/lib/stream.js',
+	'node/lib/util.js',
+	'node/lib/buffer.js',
+	'node/lib/fs.js',
+	'node/lib/vm.js',
+	'node/lib/domain.js',
+	'node/lib/string_decoder.js',
+    ]).pipe(copy('./lib/browser-node/', {prefix: 2}));
+});
+
 tsTask('kernel');
-tsTask('browser-node');
+tsTask('browser-node', ['copy-node']);
 tsTask('bin');
 
 gulp.task('build-test', ['dist-kernel', 'dist-browser-node', 'build-bin'], function() {
@@ -79,8 +100,8 @@ gulp.task('dist-test', ['build-test'], function() {
             builtins: false,
             insertGlobalVars: {
                 // don't do shit when seeing use of 'process'
-                'process': function () { return "" },
-                'buffer': function () { return "require(./buffer)" },
+                'process': function() { return "" },
+                'buffer': function() { return "require(./buffer)" },
             },
         });
         b.exclude('webworker-threads');
@@ -94,7 +115,7 @@ gulp.task('dist-test', ['build-test'], function() {
 
 });
 
-gulp.task('test-node', ['build-test'], function() {
+gulp.task('test-node', ['dist-test'], function() {
     return gulp.src('test/*.js').pipe(mocha());
 });
 
@@ -112,7 +133,7 @@ gulp.task('default', ['test-browser'], function(cb) {
     // runSequence(['dist-kernel', 'dist-browser-node', 'build-bin'], ['test-browser'], cb);
 });
 
-gulp.task('serve', ['dist-kernel', 'dist-browser-node', 'build-bin'], function () {
+gulp.task('serve', ['dist-kernel', 'dist-browser-node', 'build-bin'], function() {
     browserSync({
         port: 5000,
         notify: false,
@@ -120,7 +141,7 @@ gulp.task('serve', ['dist-kernel', 'dist-browser-node', 'build-bin'], function (
         snippetOptions: {
             rule: {
                 match: '<span id="browser-sync-binding"></span>',
-                fn: function (snippet) { return snippet; },
+                fn: function(snippet) { return snippet; },
             },
         },
         server: { baseDir: ['.'] },

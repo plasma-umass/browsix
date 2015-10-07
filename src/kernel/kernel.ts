@@ -1,4 +1,3 @@
-/// <reference path="../../typings/promise.d.ts" />
 /// <reference path="../../typings/node/node.d.ts" />
 /// <reference path="../../typings/browserfs.d.ts" />
 
@@ -86,17 +85,7 @@ export class SyscallContext {
 		public task: Task,
 		public id:     number) {}
 
-	reject(reason: string): void {
-		// TODO: distinguish reject from resolve with a 4th
-		// field?
-		this.task.worker.postMessage({
-			id: this.id,
-			name: undefined,
-			args: reason,
-		});
-	}
-
-	resolve(args: any[]): void {
+	complete(...args: any[]): void {
 		this.task.worker.postMessage({
 			id: this.id,
 			name: undefined,
@@ -132,7 +121,7 @@ export class Syscall {
 // Logically, perhaps, these should all be methods on Kernel.  They're
 // here for encapsulation.
 class Syscalls {
-	[n: string]: any;
+	[syscallNumber: string]: any;
 
 	constructor(
 		public kernel: Kernel) {}
@@ -145,13 +134,12 @@ class Syscalls {
 
 	exec(ctx: SyscallContext, name: string, ...args: string[]): void {
 		console.log('TODO: exec');
-		// ctx.resolve()
 	}
 
 	pread(ctx: SyscallContext, fd: number, len: number, off: number): void {
 		let file = ctx.task.files[fd];
 		if (!file) {
-			ctx.reject('bad FD ' + fd);
+			ctx.complete('bad FD ' + fd, null);
 			return;
 		}
 		// node uses both 'undefined' and -1 to represent
@@ -162,10 +150,10 @@ class Syscalls {
 		this.kernel.fs.read(file, buf, 0, len, off, function(err: any, lenRead: number): void {
 			if (err) {
 				console.log(err);
-				ctx.reject(err);
+				ctx.complete(err, null);
 				return;
 			}
-			ctx.resolve(buf.toString('utf-8', 0, lenRead));
+			ctx.complete(null, buf.toString('utf-8', 0, lenRead));
 		}.bind(this));
 	}
 
@@ -173,10 +161,14 @@ class Syscalls {
 	pwrite(ctx: SyscallContext, fd: number, buf: string|Buffer): void {
 		let file = ctx.task.files[fd];
 		if (!file) {
-			ctx.reject('bad FD ' + fd);
+			ctx.complete('bad FD ' + fd, null);
 			return;
 		}
-		file.write(buf);
+		if (fd < 3) {
+			file.write(buf);
+			ctx.complete(null, buf.length);
+			return;
+		}
 		console.log('TODO: write ' + fd);
 	}
 
@@ -184,20 +176,22 @@ class Syscalls {
 		this.kernel.fs.open(path, flagsToString(flags), mode, function(err: any, fd: any): void {
 			if (err) {
 				console.log(err);
-				ctx.reject(err);
+				ctx.complete(err, null);
 				return;
 			}
-			console.log('opened "' + path + '": ' + fd);
-			// FIXME: ...
-			ctx.task.files[3] = fd;
-			ctx.resolve([3]);
+			// FIXME: this isn't POSIX semantics - we
+			// don't necessarily reuse lowest free FD.
+			let n = Object.keys(ctx.task.files).length;
+			console.log('opened "' + path + '": ' + n);
+			ctx.task.files[n] = fd;
+			ctx.complete(null, n);
 		}.bind(this));
 	}
 
 	close(ctx: SyscallContext, fd: number): void {
 		let file = ctx.task.files[fd];
 		if (!file) {
-			ctx.reject('bad FD ' + fd);
+			ctx.complete('bad FD ' + fd, null);
 			return;
 		}
 		// FIXME: handle pipes better
@@ -206,36 +200,37 @@ class Syscalls {
 		this.kernel.fs.close(file, function(err: any): void {
 			if (err) {
 				console.log(err);
-				ctx.reject(err);
+				ctx.complete(err, null);
 				return;
 			}
-			ctx.resolve([0]);
+			ctx.complete(null, 0);
 		}.bind(this));
 	}
 
 	fstat(ctx: SyscallContext, fd: number): void {
 		let file = ctx.task.files[fd];
 		if (!file) {
-			ctx.reject('bad FD ' + fd);
+			ctx.complete('bad FD ' + fd, null);
 			return;
 		}
 		this.kernel.fs.fstat(file, function(err: any, stat: any): void {
 			if (err) {
 				console.log(err);
-				ctx.reject(err);
+				ctx.complete(err, null);
 				return;
 			}
 			// FIXME: this seems necessary to capture Date fields
-			ctx.resolve(JSON.parse(JSON.stringify(stat)));
+			ctx.complete(null, JSON.parse(JSON.stringify(stat)));
 		}.bind(this));
 	}
 }
 
+export interface SystemCallback {
+	(code: number, stdout: string, stderr: string): void;
+}
+
 interface OutstandingMap {
-	[i: number]: {
-		resolve: (value?: any | PromiseLike<any>) => void,
-		reject: (reason?: any) => void,
-	};
+	[i: number]: SystemCallback;
 }
 
 export class Kernel {
@@ -255,8 +250,15 @@ export class Kernel {
 	}
 
 	// returns the PID.
-	system(cmd: string): Promise<[number, string, string]> {
-		return new Promise<[number, string, string]>(this.runExecutor.bind(this, cmd));
+	system(cmd: string, cb: SystemCallback): void {
+		let parts = cmd.match(/\S+/g);
+		let pid = this.nextTaskId();
+
+		this.systemRequests[pid] = cb;
+
+		// FIXME: fill in environment
+		let task = new Task(this, null, pid, parts[0], parts.splice(1), {});
+		this.tasks[pid] = task;
 	}
 
 	exit(task: Task, code: number): void {
@@ -264,14 +266,14 @@ export class Kernel {
 		task.worker.terminate();
 		console.log('pid ' + task.pid + ' exited.');
 		delete this.tasks[task.pid];
-		let completions = this.systemRequests[task.pid];
-		if (completions) {
+		let callback = this.systemRequests[task.pid];
+		if (callback) {
 			delete this.systemRequests[task.pid];
 			// TODO: also call resolve w/ stderr + stdout
-			completions.resolve([task.exitCode, task.files[1].read(), task.files[2].read()]);
+			callback(task.exitCode, task.files[1].read(), task.files[2].read());
+		} else {
+			console.log('task exit but no CB registered');
 		}
-		// required to trigger flush of microtask queue on
-		// node.
 		setTimeout(function(): void {});
 	}
 
@@ -297,17 +299,6 @@ export class Kernel {
 	private nextTaskId(): number {
 		return ++this.taskIdSeq;
 	}
-
-	private runExecutor(cmd: string, resolve: (value?: number | PromiseLike<number>) => void, reject: (reason?: any) => void): void {
-		let parts = cmd.match(/\S+/g);
-		let pid = this.nextTaskId();
-		this.systemRequests[pid] = {
-			resolve: resolve,
-			reject: reject,
-		};
-		let task = new Task(this, null, pid, parts[0], parts.splice(1), {});
-		this.tasks[pid] = task;
-	}
 }
 
 export interface Environment {
@@ -319,7 +310,7 @@ export class Task {
 	worker: Worker;
 
 	pid: number;
-	files: {[n: number]: any} = {};
+	files: {[n: number]: any; } = {};
 
 	exitCode: number;
 
@@ -361,20 +352,6 @@ export class Task {
 
 	private nextMsgId(): number {
 		return ++this.msgIdSeq;
-	}
-
-	private reject(msgId: number, reason: any): void {
-		let callbacks = this.outstanding[msgId];
-		delete this.outstanding[msgId];
-		if (callbacks)
-			callbacks.reject(reason);
-	}
-
-	private resolve(msgId: number, value: any): void {
-		let callbacks = this.outstanding[msgId];
-		delete this.outstanding[msgId];
-		if (callbacks)
-			callbacks.resolve(value);
 	}
 
 	private syscallHandler(ev: MessageEvent): void {

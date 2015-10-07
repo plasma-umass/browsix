@@ -21,7 +21,7 @@ describe('cat /a', function(): void {
 	let kernel: Kernel = null;
 
 	it('should boot', function(done: MochaDone): void {
-		Boot('InMemory', function(err: any, freshKernel: Kernel) {
+		Boot('InMemory', function(err: any, freshKernel: Kernel): void {
 			expect(err).to.be.null;
 			expect(freshKernel).not.to.be.null;
 			kernel = freshKernel;
@@ -30,20 +30,28 @@ describe('cat /a', function(): void {
 	});
 
 	it('should create /a', function(done: MochaDone): void {
-		kernel.fs.writeFile('/a', A_CONTENTS, function(err: any) {
+		kernel.fs.writeFile('/a', A_CONTENTS, function(err: any): void {
 			expect(err).to.be.undefined;
 			done();
 		});
 	});
 
-	it('should run `cat /a`', function(): Promise<any> {
-		return kernel.system(NODE + ' ' + CAT + ' /a').then(function(value: [number, string, string]) {
-			let code: number = value[0];
-			let stdout: string = value[1];
-			let stderr: string = value[2];
-			expect(code).not.to.be.null;
-			expect(stdout).to.equal(A_CONTENTS);
-			expect(stderr).to.equal('');
-		});
+	it('should run `cat /a`', function(done: MochaDone): void {
+		kernel.system(
+			NODE + ' ' + CAT + ' /a',
+			function(code number, stdout: string, stderr: string): void {
+				try {
+					expect(code).to.equal(0);
+					expect(stdout).to.equal(A_CONTENTS);
+					expect(stderr).to.equal('');
+				} catch (e) {
+					console.log('fuck');
+					console.log(e);
+					throw e;
+				}
+				console.log('blerg');
+				done();
+				console.log('done cb');
+			}.bind(this));
 	});
 });

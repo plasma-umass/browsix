@@ -32,7 +32,10 @@ class Process {
 	exit(code: number): void {
 		this.stdout.end();
 		this.stderr.end();
-		syscall.exit(code);
+		// ending the above streams I think calls close() via
+		// nextTick, if exit isn't called via setTimeout under
+		// node it deadlock's the WebWorker-threads :\
+		setTimeout(function(): void { syscall.exit(code); }, 0);
 	}
 
 	binding(name: string): any {

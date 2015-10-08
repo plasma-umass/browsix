@@ -63,7 +63,11 @@ export class USyscalls {
 	}
 
 	exit(code: number): void {
-		this.post(this.nextMsgId(), 'exit', code);
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = function(...args: any[]): void {
+			console.log('received callback for exit(), should clean up');
+		};
+		this.post(msgId, 'exit', code);
 	}
 
 	open(path: string, flags: string, mode: number, cb: SyscallCallback): void {

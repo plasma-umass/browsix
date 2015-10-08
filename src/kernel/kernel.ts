@@ -1,13 +1,16 @@
 /// <reference path="../../typings/node/node.d.ts" />
-/// <reference path="../../typings/browserfs.d.ts" />
+/// <reference path="../../typings/async/async.d.ts" />
+/// <reference path="../../typings/dropboxjs/dropboxjs.d.ts" />
 
 'use strict';
 
 import * as constants from './constants';
-import * as BrowserFS from 'browserfs';
+import * as vfs from './vfs';
 import { now } from './ipc';
 import { Pipe } from './pipe';
 
+import * as BrowserFS from '../vendor/BrowserFS/src/core/browserfs.ts';
+import { fs } from '../vendor/BrowserFS/src/core/node_fs.ts';
 
 let Buffer: any;
 
@@ -244,7 +247,7 @@ export class Kernel {
 	// keyed on PID
 	private systemRequests: OutstandingMap = {};
 
-	constructor(fs: BrowserFS.fs) {
+	constructor(fs: fs) {
 		this.fs = fs;
 		this.syscalls = new Syscalls(this);
 	}
@@ -387,7 +390,7 @@ export function Boot(fsType: string, cb: BootCallback): void {
 	}
 	let root = new rootConstructor();
 	BrowserFS.initialize(root);
-	let fs: BrowserFS.fs = bfs.require('fs');
+	let fs: fs = bfs.require('fs');
 	let k = new Kernel(fs);
 	setTimeout(cb, 0, null, k);
 }

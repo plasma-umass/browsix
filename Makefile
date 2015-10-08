@@ -52,8 +52,6 @@ bower_components: $(BOWER) bower.json
 $(BROWSERFS): $(BROWSERFS_DIR) .gitmodules Makefile
 	@echo "  GIT   $<"
 	git submodule update --init
-	@echo "  GRUNT $<"
-	cd $(BROWSERFS_DIR) && npm install && bower install && grunt
 	touch $@
 
 test-browser: $(BUILD_DEPS)

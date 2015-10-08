@@ -42,7 +42,9 @@
     "webworker-threads": "^0.6.1"
   },
   "dependencies": {
+    "async": "^1.4.2",
     "browserfs": "^0.4.1",
+    "dropbox": "^0.10.3",
     "ts-stream": "^0.7.0"
   }
 }

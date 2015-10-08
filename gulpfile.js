@@ -35,17 +35,21 @@ function tsPipeline(src, dst) {
     }
 }
 
-function tsTask(subdir, buildDeps) {
-    if (!buildDeps)
-	buildDeps = [];
+function tsTask(subdir, options) {
+    options = options || {};
+    var buildDeps = options.buildDeps || [];
+    var otherSources = options.otherSources || [];
 
     gulp.task('lint-'+subdir, function() {
-        return gulp.src('src/'+subdir+'/*.ts')
+        return gulp.src(['src/'+subdir+'/*.ts'])
             .pipe(lint())
             .pipe(lint.report('verbose'));
     });
 
-    gulp.task('build-'+subdir, buildDeps.concat(['lint-'+subdir]), tsPipeline(['src/'+subdir+'/*.ts', 'src/'+subdir+'/**/*.ts'], 'lib/'+subdir));
+    if (!options.hasOwnProperty('lint') || options.lint)
+	buildDeps = buildDeps.concat(['lint-'+subdir]);
+
+    gulp.task('build-'+subdir, buildDeps, tsPipeline(['src/'+subdir+'/*.ts', 'src/'+subdir+'/**/*.ts'].concat(otherSources), 'lib/'+subdir));
 
     gulp.task('dist-'+subdir, ['build-'+subdir], function() {
         var b = browserify({
@@ -84,8 +88,9 @@ gulp.task('copy-node', function() {
     ]).pipe(copy('./lib/browser-node/', {prefix: 2}));
 });
 
-tsTask('kernel');
-tsTask('browser-node', ['copy-node']);
+//tsTask('vendor/BrowserFS/src', {otherSources: ['!src/vendor/BrowserFS/src/browserify_main.ts'], lint: false});
+tsTask('kernel', {otherSources: ['src/vendor/BrowserFS/src/**/*.ts', '!src/vendor/BrowserFS/src/browserify_main.ts']});//, {buildDeps: ['build-vendor/BrowserFS/src']});
+tsTask('browser-node', {buildDeps: ['copy-node']});
 tsTask('bin');
 
 gulp.task('build-test', ['dist-kernel', 'dist-browser-node', 'build-bin'], function() {

@@ -4,3 +4,6 @@
 [submodule "src/vendor/BrowserFS"]
 	path = src/vendor/BrowserFS
 	url = https://github.com/jvilk/BrowserFS
+[submodule "src/kernel/vendor/BrowserFS"]
+	path = src/kernel/vendor/BrowserFS
+	url = https://github.com/bpowers/BrowserFS

@@ -9,8 +9,8 @@ import * as vfs from './vfs';
 import { now } from './ipc';
 import { Pipe } from './pipe';
 
-import * as BrowserFS from '../vendor/BrowserFS/src/core/browserfs.ts';
-import { fs } from '../vendor/BrowserFS/src/core/node_fs.ts';
+import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
+import { fs } from './vendor/BrowserFS/src/core/node_fs';
 
 let Buffer: any;
 

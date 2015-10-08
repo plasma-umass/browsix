@@ -88,8 +88,7 @@ gulp.task('copy-node', function() {
     ]).pipe(copy('./lib/browser-node/', {prefix: 2}));
 });
 
-//tsTask('vendor/BrowserFS/src', {otherSources: ['!src/vendor/BrowserFS/src/browserify_main.ts'], lint: false});
-tsTask('kernel', {otherSources: ['src/vendor/BrowserFS/src/**/*.ts', '!src/vendor/BrowserFS/src/browserify_main.ts']});//, {buildDeps: ['build-vendor/BrowserFS/src']});
+tsTask('kernel', {otherSources: ['!src/kernel/vendor/BrowserFS/test/**/*.ts', '!src/kernel/vendor/BrowserFS/src/browserify_main.ts']});
 tsTask('browser-node', {buildDeps: ['copy-node']});
 tsTask('bin');
 

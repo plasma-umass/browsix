@@ -177,7 +177,7 @@ class Syscalls {
 		}.bind(this));
 	}
 
-	// XXX: should accept string or Buffer
+	// XXX: should accept string or Buffer, and offset
 	pwrite(ctx: SyscallContext, fd: number, buf: string|Buffer): void {
 		let file = ctx.task.files[fd];
 		if (!file) {

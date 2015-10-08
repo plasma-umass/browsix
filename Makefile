@@ -4,8 +4,8 @@ GULP      ?= node_modules/.bin/gulp
 TSLINT    ?= node_modules/.bin/tslint
 MOCHA     ?= node_modules/.bin/mocha
 
-BROWSERFS  = vendor/BrowserFS/dist/browserfs.js
-BROWSERFS_DIR = vendor/BrowserFS
+BROWSERFS  = src/vendor/BrowserFS/dist/browserfs.js
+BROWSERFS_DIR = src/vendor/BrowserFS
 
 NPM_DEPS   = $(BOWER) $(GULP) $(TSLINT) $(MOCHA)
 BUILD_DEPS = $(NPM_DEPS) $(BROWSERFS)

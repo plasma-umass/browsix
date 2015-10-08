@@ -26,7 +26,7 @@ require('./vendor/BrowserFS/src/backend/in_memory');
 // from + for John's BrowserFS
 // TODO: don't copy paste code :\
 if (typeof setImmediate === 'undefined') {
-	global.setImmediate = function(fn: () => void): void {
+	global.setImmediate = function(fn: () => void): any {
 		return setTimeout(fn, 0);
 	};
 }

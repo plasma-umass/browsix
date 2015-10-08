@@ -12,7 +12,24 @@ import { Pipe } from './pipe';
 import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
 import { fs } from './vendor/BrowserFS/src/core/node_fs';
 
+
 let Buffer: any;
+
+require('./vendor/BrowserFS/src/backend/in_memory');
+//require('./vendor/BrowserFS/src/backend/html5fs');
+//require('./vendor/BrowserFS/src/backend/dropbox');
+//require('./vendor/BrowserFS/src/backend/localStorage');
+//require('./vendor/BrowserFS/src/backend/mountable_file_system');
+//require('./vendor/BrowserFS/src/backend/overlay');
+//require('./vendor/BrowserFS/src/backend/zipfs');
+
+// from + for John's BrowserFS
+// TODO: don't copy paste code :\
+if (typeof setImmediate === 'undefined') {
+	global.setImmediate = function(fn: () => void): void {
+		return setTimeout(fn, 0);
+	};
+}
 
 // the following boilerplate allows us to use WebWorkers both in the
 // browser and under node, and give the typescript compiler full

@@ -109,7 +109,7 @@ function decodeCodePointsArray (codePoints: any): any {
 	return res;
 }
 
-function utf8ToBytes(string: string, units: number): any {
+function utf8ToBytes(string: string, units?: number): any {
 	units = units || Infinity;
 	let codePoint: any;
 	let length = string.length;
@@ -274,8 +274,8 @@ export function createFromArrayBuffer(obj: any): void {
 export function compare(a: any, b: any): void {
 	console.log('TODO: compare');
 }
-export function byteLengthUtf8(str: string): void {
-	console.log('TODO: byteLengthUtf8');
+export function byteLengthUtf8(str: string): number {
+	return (<any>utf8ToBytes(str)).length;
 }
 export function indexOfString(buf: any, val: any, byteOffset: number): void {
 	console.log('TODO: indexOfString');

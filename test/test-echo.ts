@@ -12,11 +12,11 @@ const IS_KARMA = typeof window !== 'undefined' && typeof (<any>window).__karma__
 const PREFIX = IS_KARMA ? '/base/' : '';
 
 const NODE = PREFIX + 'dist/lib/browser-node/browser-node.js';
-const CAT = PREFIX + 'lib/bin/cat.js';
+const ECHO = PREFIX + 'lib/bin/echo.js';
 
-export const name = 'test-cat';
+export const name = 'test-echo';
 
-describe('cat /a /b', function(): void {
+describe('echo a b c', function(): void {
 	const A_CONTENTS = 'contents of a';
 	const B_CONTENTS = 'wish you were here';
 	let kernel: Kernel = null;
@@ -30,31 +30,18 @@ describe('cat /a /b', function(): void {
 		});
 	});
 
-	it('should create /a', function(done: MochaDone): void {
-		kernel.fs.writeFile('/a', A_CONTENTS, function(err: any): void {
-			expect(err).to.be.undefined;
-			done();
-		});
-	});
-
-	it('should create /b', function(done: MochaDone): void {
-		kernel.fs.writeFile('/b', B_CONTENTS, function(err: any): void {
-			expect(err).to.be.undefined;
-			done();
-		});
-	});
-
-	it('should run `cat /a /b`', function(done: MochaDone): void {
-		kernel.system(NODE + ' ' + CAT + ' /a /b', catExited);
-		function catExited(code: number, stdout: string, stderr: string): void {
+	it('should run `echo a b c`', function(done: MochaDone): void {
+		kernel.system(NODE + ' ' + ECHO + ' a b c', echoExited);
+		function echoExited(code: number, stdout: string, stderr: string): void {
 			try {
 				expect(code).to.equal(0);
-				expect(stdout).to.equal(A_CONTENTS + B_CONTENTS);
+				expect(stdout).to.equal('a b c\n');
 				expect(stderr).to.equal('');
 				done();
 			} catch (e) {
 				done(e);
 			}
+			console.log('DONE');
 		}
 	});
 });

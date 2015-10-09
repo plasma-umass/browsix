@@ -49,6 +49,29 @@ export function writeBuffer(fd: number, buffer: any, offset: number, len: number
 	syscall.pwrite(fd, str, pos, req.complete.bind(req));
 }
 
+// FIXME: be efficient
+export function writeBuffers(fd: number, chunks: any, pos: number, req: FSReqWrap): void {
+	let errored = false;
+	let done = 0;
+	let written = 0;
+	function chunkComplete(err: any, count: number): void {
+		done++;
+		if (err && !errored) {
+			req.complete(err, undefined);
+			errored = true;
+			return;
+		}
+		written += count;
+		if (done === chunks.length)
+			req.complete(null, written);
+	}
+	for (let i = 0; i < chunks.length; i++) {
+		let chunkReq = new FSReqWrap();
+		chunkReq.oncomplete = chunkComplete;
+		writeBuffer(fd, chunks[i], 0, chunks[i].length, undefined, chunkReq);
+	}
+}
+
 export function close(fd: number, req: FSReqWrap): void {
 	syscall.close(fd, req.complete.bind(req));
 }

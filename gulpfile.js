@@ -100,7 +100,7 @@ gulp.task('build-test', ['dist-kernel', 'dist-browser-node', 'build-bin'], funct
 
 gulp.task('dist-test', ['build-test'], function() {
     var b = browserify({
-            entries: ['./test/test-cat.js'],
+            entries: ['./test/test-all.js'],
             builtins: false,
             insertGlobalVars: {
                 // don't do shit when seeing use of 'process'
@@ -111,7 +111,7 @@ gulp.task('dist-test', ['build-test'], function() {
         b.exclude('webworker-threads');
 
         return b.bundle()
-            .pipe(source('./test/test-cat.js'))
+            .pipe(source('./test/test-all.js'))
             .pipe(buffer())
 //            .pipe(uglify())
             .on('error', gutil.log)

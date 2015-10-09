@@ -10,10 +10,8 @@ import * as fs from 'fs';
 function main(): void {
 	'use strict';
 
-	let argv = process.argv;
-	let pathToNode = argv[0];
-	let pathToScript = argv[1];
-	let args = argv.slice(2);
+	let pathToScript = process.argv[1];
+	let args = process.argv.slice(2);
 
 	let nflag: boolean = false;
 
@@ -33,8 +31,13 @@ function main(): void {
 	if (!nflag)
 		out += '\n';
 
-	process.stdout.write(out, 'utf-8', function(): void {
-		process.exit(0);
+	process.stdout.write(out, 'utf-8', function(err: any): void {
+		let code = 0;
+		if (err) {
+			process.stderr.write(pathToScript + ': ' + err);
+			code = -1;
+		}
+		process.exit(code);
 	});
 }
 

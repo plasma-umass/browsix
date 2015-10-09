@@ -31,7 +31,7 @@ describe('echo a b c', function(): void {
 	});
 
 	it('should run `echo a b c`', function(done: MochaDone): void {
-		kernel.system(NODE + ' ' + ECHO + ' a b c', echoExited);
+		kernel.system(NODE + ' ' + ECHO + ' a b   c', echoExited);
 		function echoExited(code: number, stdout: string, stderr: string): void {
 			try {
 				expect(code).to.equal(0);
@@ -41,7 +41,6 @@ describe('echo a b c', function(): void {
 			} catch (e) {
 				done(e);
 			}
-			console.log('DONE');
 		}
 	});
 });

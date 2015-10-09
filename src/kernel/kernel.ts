@@ -283,17 +283,27 @@ export class Kernel {
 
 	exit(task: Task, code: number): void {
 		task.exit(code);
-		task.worker.terminate();
 		delete this.tasks[task.pid];
 		let callback = this.systemRequests[task.pid];
-		if (callback) {
-			delete this.systemRequests[task.pid];
-			// TODO: also call resolve w/ stderr + stdout
-			callback(task.exitCode, task.files[1].read(), task.files[2].read());
-		} else {
-			console.log('task exit but no CB registered');
+		delete this.systemRequests[task.pid];
+
+		// run this in the next tick to allow any work queued
+		// up in the process of task.worker.terminate() to
+		// execute before completing our callback.
+		// Practically, without this our unit tests sometimes
+		// hang :(
+		setTimeout(function(): void {
+			task.worker.terminate();
+			setTimeout(workerTerminated);
+		});
+		function workerTerminated(): void {
+			if (callback) {
+				// TODO: also call resolve w/ stderr + stdout
+				callback(task.exitCode, task.files[1].read(), task.files[2].read());
+			} else {
+				console.log('task exit but no CB registered');
+			}
 		}
-		setTimeout(function(): void {});
 	}
 
 	// implement kill on the Kernel because we need to adjust our

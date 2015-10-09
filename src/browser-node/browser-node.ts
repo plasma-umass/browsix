@@ -30,8 +30,11 @@ class Process {
 	}
 
 	exit(code: number): void {
-		this.stdout.end();
-		this.stderr.end();
+		// FIXME: we should make sure stdout and stderr are
+		// flushed.
+		//this.stdout.end();
+		//this.stderr.end();
+
 		// ending the above streams I think calls close() via
 		// nextTick, if exit isn't called via setTimeout under
 		// node it deadlock's the WebWorker-threads :\

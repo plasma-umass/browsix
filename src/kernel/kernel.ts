@@ -344,6 +344,10 @@ export class Task {
 
 	exitCode: number;
 
+	exePath: string;
+	args: string[];
+	env: Environment;
+
 	parent: Task;
 	children: Task[];
 
@@ -355,7 +359,17 @@ export class Task {
 		this.pid = pid;
 		this.parent = parent;
 		this.kernel = kernel;
-		this.worker = new Worker(filename);
+		this.exePath = filename;
+		this.args = args;
+		this.env = env;
+
+		kernel.fs.readFile(filename, 'utf-8', this.fileRead.bind(this));
+	}
+
+	fileRead(err: any, data: string): void {
+		if (err)
+			console.log('error in exec: ' + err);
+		this.worker = new Worker(this.exePath);
 
 		let stdin = new Pipe();
 		let stderr = new Pipe();
@@ -371,7 +385,7 @@ export class Task {
 		this.worker.postMessage({
 			id: -1,
 			name: 'init',
-			args: ['browser-node'].concat(args).concat(<any>env),
+			args: ['browser-node'].concat(this.args).concat(<any>this.env),
 		});
 	}
 

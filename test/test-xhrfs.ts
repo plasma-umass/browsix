@@ -14,15 +14,13 @@ const PREFIX = IS_KARMA ? '/base/' : '';
 const NODE = PREFIX + 'dist/lib/browser-node/browser-node.js';
 const ECHO = PREFIX + 'lib/bin/echo.js';
 
-export const name = 'test-echo';
+export const name = 'test-xhrfs';
 
-describe('echo a b c', function(): void {
-	const A_CONTENTS = 'contents of a';
-	const B_CONTENTS = 'wish you were here';
+describe('find /bin/node', function(): void {
 	let kernel: Kernel = null;
 
 	it('should boot', function(done: MochaDone): void {
-		Boot('InMemory', [], function(err: any, freshKernel: Kernel): void {
+		Boot('XmlHttpRequest', ['index.json', PREFIX+'fs/'], function(err: any, freshKernel: Kernel): void {
 			expect(err).to.be.null;
 			expect(freshKernel).not.to.be.null;
 			kernel = freshKernel;
@@ -30,13 +28,13 @@ describe('echo a b c', function(): void {
 		});
 	});
 
-	it('should run `echo a b c`', function(done: MochaDone): void {
-		kernel.system(NODE + ' ' + ECHO + ' a b   c', echoExited);
-		function echoExited(code: number, stdout: string, stderr: string): void {
+	it('should open /bin/node', function(done: MochaDone): void {
+		kernel.fs.open('/bin/node', 'r', nodeOpened);
+		function nodeOpened(err: any, fd: any): void {
 			try {
-				expect(code).to.equal(0);
-				expect(stdout).to.equal('a b c\n');
-				expect(stderr).to.equal('');
+				console.log('err: ' + err);
+				console.log(err);
+				expect(err).to.be.null;
 				done();
 			} catch (e) {
 				done(e);

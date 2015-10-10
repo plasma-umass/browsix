@@ -19,7 +19,7 @@ var karma = require('karma');
 
 // each user of our tsconfig.json setup needs a different instance of
 // the 'ts project', as gulp-typescript seems to use it as a dumping
-// ground.
+// ground for mutable state.
 function project() {
     return ts.createProject('tsconfig.json', {
         sortOutput: true,
@@ -35,10 +35,15 @@ function tsPipeline(src, dst) {
     }
 }
 
+// creates tasks representing the build lifecycle of a typescript package:
+// - lint (optional)
+// - build w/ tsc
+// - dist  w/ browserify
 function tsTask(subdir, options) {
     options = options || {};
     var buildDeps = options.buildDeps || [];
     var otherSources = options.otherSources || [];
+    var sources = ['src/'+subdir+'/*.ts', 'src/'+subdir+'/**/*.ts'].concat(otherSources);
 
     gulp.task('lint-'+subdir, function() {
         return gulp.src(['src/'+subdir+'/*.ts'])
@@ -46,17 +51,19 @@ function tsTask(subdir, options) {
             .pipe(lint.report('verbose'));
     });
 
+    // lint by default, but if lint is specified as 'false' skip it.
     if (!options.hasOwnProperty('lint') || options.lint)
 	buildDeps = buildDeps.concat(['lint-'+subdir]);
 
-    gulp.task('build-'+subdir, buildDeps, tsPipeline(['src/'+subdir+'/*.ts', 'src/'+subdir+'/**/*.ts'].concat(otherSources), 'lib/'+subdir));
+    gulp.task('build-'+subdir, buildDeps, tsPipeline(sources, 'lib/'+subdir));
 
     gulp.task('dist-'+subdir, ['build-'+subdir], function() {
         var b = browserify({
             entries: ['./lib/'+subdir+'/'+subdir+'.js'],
             builtins: false,
             insertGlobalVars: {
-                // don't do shit when seeing use of 'process'
+                // don't do anything when seeing use of 'process' - we
+                // handle this ourselves.
                 'process': function() { return "" },
             },
         });
@@ -65,7 +72,7 @@ function tsTask(subdir, options) {
         return b.bundle()
             .pipe(source('./lib/'+subdir+'/'+subdir+'.js'))
             .pipe(buffer())
-        //            .pipe(uglify())
+//          .pipe(uglify())
             .on('error', gutil.log)
             .pipe(gulp.dest('./dist/'));
     });
@@ -88,6 +95,9 @@ gulp.task('copy-node', function() {
     ]).pipe(copy('./lib/browser-node/', {prefix: 2}));
 });
 
+// the kernel directly uses BrowserFS's typescript modules - we need
+// to explicitly exclude tests and the browserify main here to avoid
+// confusing tsc :\
 tsTask('kernel', {otherSources: ['!src/kernel/vendor/BrowserFS/test/**/*.ts', '!src/kernel/vendor/BrowserFS/src/browserify_main.ts']});
 tsTask('browser-node', {buildDeps: ['copy-node']});
 tsTask('bin');
@@ -99,21 +109,21 @@ gulp.task('build-test', ['dist-kernel', 'dist-browser-node', 'build-bin'], funct
 });
 
 gulp.task('dist-test', ['build-test'], function() {
+    const testMain = './test/test-all.js';
     var b = browserify({
-            entries: ['./test/test-all.js'],
+            entries: [testMain],
             builtins: false,
             insertGlobalVars: {
                 // don't do shit when seeing use of 'process'
                 'process': function() { return "" },
-                'buffer': function() { return "require(./buffer)" },
             },
         });
         b.exclude('webworker-threads');
 
         return b.bundle()
-            .pipe(source('./test/test-all.js'))
+            .pipe(source(testMain))
             .pipe(buffer())
-//            .pipe(uglify())
+//          .pipe(uglify())
             .on('error', gutil.log)
             .pipe(gulp.dest('./dist/'));
 
@@ -128,9 +138,10 @@ gulp.task('test-browser', ['dist-test'], function(done) {
     new karma.Server({
 	configFile: __dirname + '/karma.conf.js',
 	singleRun: false,
+	autoWatchBatchDelay: 1000,
     }, done).start();
 
-    gulp.watch(['src/**/*.ts', 'test/*.ts'], ['dist-test', reload]);
+    gulp.watch(['src/**/*.ts', 'test/*.ts'], ['dist-test']);
 });
 
 
@@ -138,6 +149,7 @@ gulp.task('default', ['dist-test'], function(done) {
     new karma.Server({
 	configFile: __dirname + '/karma.conf.js',
 	singleRun: true,
+	browsers: ['Firefox'],
     }, done).start();
 });
 

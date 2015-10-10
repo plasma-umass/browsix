@@ -16,6 +16,7 @@ import { fs } from './vendor/BrowserFS/src/core/node_fs';
 let Buffer: any;
 
 require('./vendor/BrowserFS/src/backend/in_memory');
+require('./vendor/BrowserFS/src/backend/XmlHttpRequest');
 //require('./vendor/BrowserFS/src/backend/html5fs');
 //require('./vendor/BrowserFS/src/backend/dropbox');
 //require('./vendor/BrowserFS/src/backend/localStorage');
@@ -419,7 +420,7 @@ export interface BootCallback {
 
 // FIXME/TODO: this doesn't match the signature specified in the
 // project.
-export function Boot(fsType: string, cb: BootCallback): void {
+export function Boot(fsType: string, fsArgs: any[], cb: BootCallback): void {
 	'use strict';
 	let bfs: any = {};
 	BrowserFS.install(bfs);
@@ -429,7 +430,7 @@ export function Boot(fsType: string, cb: BootCallback): void {
 		setTimeout(cb, 0, 'unknown FileSystem type: ' + fsType);
 		return;
 	}
-	let root = new rootConstructor();
+	let root = new (Function.prototype.bind.apply(rootConstructor, [null].concat(fsArgs)));
 	BrowserFS.initialize(root);
 	let fs: fs = bfs.require('fs');
 	let k = new Kernel(fs);

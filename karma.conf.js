@@ -24,7 +24,12 @@ module.exports = function(config) {
 		pattern: 'dist/lib/browser-node/*.js',
 		included: false,
 		nocache: true,
-	    }
+	    },
+	    {
+		pattern: 'fs/**/*',
+		included: false,
+		nocache: true,
+	    },
         ],
 
 
@@ -64,9 +69,7 @@ module.exports = function(config) {
 
         // start these browsers
         // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-        browsers: [
-	    'Firefox',
-	],
+        browsers: [],
 
 
         // Continuous Integration mode

@@ -17,11 +17,11 @@ let Buffer: any;
 
 require('./vendor/BrowserFS/src/backend/in_memory');
 require('./vendor/BrowserFS/src/backend/XmlHttpRequest');
+require('./vendor/BrowserFS/src/backend/overlay');
 //require('./vendor/BrowserFS/src/backend/html5fs');
 //require('./vendor/BrowserFS/src/backend/dropbox');
 //require('./vendor/BrowserFS/src/backend/localStorage');
 //require('./vendor/BrowserFS/src/backend/mountable_file_system');
-//require('./vendor/BrowserFS/src/backend/overlay');
 //require('./vendor/BrowserFS/src/backend/zipfs');
 
 // from + for John's BrowserFS
@@ -195,17 +195,22 @@ class Syscalls {
 
 	open(ctx: SyscallContext, path: string, flags: string, mode: number): void {
 		this.kernel.fs.open(path, flagsToString(flags), mode, function(err: any, fd: any): void {
-			if (err) {
-				console.log('open failed');
-				console.log(err);
-				ctx.complete(err, null);
-				return;
-			}
-			// FIXME: this isn't POSIX semantics - we
-			// don't necessarily reuse lowest free FD.
-			let n = Object.keys(ctx.task.files).length;
-			ctx.task.files[n] = fd;
-			ctx.complete(undefined, n);
+			let callback = function(): void {
+				if (err) {
+					console.log('open failed');
+					console.log(err);
+					ctx.complete(err, null);
+					return;
+				}
+				// FIXME: this isn't POSIX semantics - we
+				// don't necessarily reuse lowest free FD.
+				let n = Object.keys(ctx.task.files).length;
+				ctx.task.files[n] = fd;
+				ctx.complete(undefined, n);
+			};
+
+			this.kernel.makeTaskRunnable(ctx.task, callback);
+			this.kernel.schedule();
 		}.bind(this));
 	}
 
@@ -270,6 +275,19 @@ export class Kernel {
 		this.syscalls = new Syscalls(this);
 	}
 
+
+	makeTaskRunnable(task: Task, callback: ()=>void): void {
+		callback();
+		// TODO: enqueue task on a run queue
+	}
+
+	schedule(): void {
+		// pick next task to run, if possible
+
+		// record when this task started to run (we sent a
+		// response message to their syscall)
+	}
+
 	// returns the PID.
 	system(cmd: string, cb: SystemCallback): void {
 		let parts = cmd.match(/\S+/g);
@@ -319,6 +337,8 @@ export class Kernel {
 	}
 
 	doSyscall(syscall: Syscall): void {
+		// TODO: record stats on how long the task was runnign for
+
 		if (syscall.name in this.syscalls) {
 			console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
@@ -339,6 +359,8 @@ export interface Environment {
 export class Task {
 	kernel: Kernel;
 	worker: Worker;
+
+	state: string;
 
 	pid: number;
 	files: {[n: number]: any; } = {};
@@ -363,14 +385,21 @@ export class Task {
 		this.exePath = filename;
 		this.args = args;
 		this.env = env;
+		this.state = 'starting';
 
 		kernel.fs.readFile(filename, 'utf-8', this.fileRead.bind(this));
 	}
 
 	fileRead(err: any, data: string): void {
-		if (err)
+		if (err) {
+			this.state = 'finished';
 			console.log('error in exec: ' + err);
-		this.worker = new Worker(this.exePath);
+			throw err;
+		}
+
+		let blob = new Blob([data], {type: 'text/javascript'});
+
+		this.worker = new Worker(window.URL.createObjectURL(blob));
 
 		let stdin = new Pipe();
 		let stderr = new Pipe();
@@ -431,7 +460,9 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback): void {
 		return;
 	}
 	let root = new (Function.prototype.bind.apply(rootConstructor, [null].concat(fsArgs)));
-	BrowserFS.initialize(root);
+	let writable = new BrowserFS.FileSystem['InMemory']();
+	let overlaid = new BrowserFS.FileSystem['OverlayFS'](writable, root);
+	BrowserFS.initialize(overlaid);
 	let fs: fs = bfs.require('fs');
 	let k = new Kernel(fs);
 	setTimeout(cb, 0, null, k);

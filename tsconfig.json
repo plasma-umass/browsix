@@ -3,7 +3,7 @@
         "target": "es5",
         "module": "commonjs",
         "noImplicitAny": true,
-        "removeComments": true,
+        "removeComments": false,
         "newLine": "LF"
     }
 }

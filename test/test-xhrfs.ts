@@ -9,10 +9,9 @@ import { Boot, Kernel } from '../lib/kernel/kernel';
 const expect = chai.expect;
 
 const IS_KARMA = typeof window !== 'undefined' && typeof (<any>window).__karma__ !== 'undefined';
-const PREFIX = IS_KARMA ? '/base/' : '';
+const ROOT = IS_KARMA ? '/base/fs/' : '/fs/';
 
-const NODE = PREFIX + 'dist/lib/browser-node/browser-node.js';
-const ECHO = PREFIX + 'lib/bin/echo.js';
+const NODE = '/usr/bin/node';
 
 export const name = 'test-xhrfs';
 
@@ -20,7 +19,7 @@ describe('find /bin/node', function(): void {
 	let kernel: Kernel = null;
 
 	it('should boot', function(done: MochaDone): void {
-		Boot('XmlHttpRequest', ['index.json', PREFIX+'fs/'], function(err: any, freshKernel: Kernel): void {
+		Boot('XmlHttpRequest', ['index.json', ROOT], function(err: any, freshKernel: Kernel): void {
 			expect(err).to.be.null;
 			expect(freshKernel).not.to.be.null;
 			kernel = freshKernel;
@@ -29,12 +28,12 @@ describe('find /bin/node', function(): void {
 	});
 
 	it('should open /bin/node', function(done: MochaDone): void {
-		kernel.fs.open('/bin/node', 'r', nodeOpened);
+		kernel.fs.open('/usr/bin/node', 'r', nodeOpened);
 		function nodeOpened(err: any, fd: any): void {
 			try {
-				console.log('err: ' + err);
 				console.log(err);
 				expect(err).to.be.null;
+				expect(fd).not.to.be.null;
 				done();
 			} catch (e) {
 				done(e);

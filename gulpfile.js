@@ -4,6 +4,7 @@ var browserify = require('browserify');
 var gulp = require('gulp');
 var gutil = require('gulp-util');
 var copy = require('gulp-copy');
+var rename = require('gulp-rename');
 var merge = require('merge2');
 var ts = require('gulp-typescript');
 var lint = require('gulp-tslint');
@@ -15,6 +16,7 @@ var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var uglify = require('gulp-uglify');
 var karma = require('karma');
+var run = require('gulp-run');
 
 
 // each user of our tsconfig.json setup needs a different instance of
@@ -53,7 +55,7 @@ function tsTask(subdir, options) {
 
     // lint by default, but if lint is specified as 'false' skip it.
     if (!options.hasOwnProperty('lint') || options.lint)
-	buildDeps = buildDeps.concat(['lint-'+subdir]);
+        buildDeps = buildDeps.concat(['lint-'+subdir]);
 
     gulp.task('build-'+subdir, buildDeps, tsPipeline(sources, 'lib/'+subdir));
 
@@ -72,7 +74,7 @@ function tsTask(subdir, options) {
         return b.bundle()
             .pipe(source('./lib/'+subdir+'/'+subdir+'.js'))
             .pipe(buffer())
-//          .pipe(uglify())
+        //          .pipe(uglify())
             .on('error', gutil.log)
             .pipe(gulp.dest('./dist/'));
     });
@@ -80,18 +82,18 @@ function tsTask(subdir, options) {
 
 gulp.task('copy-node', function() {
     return gulp.src([
-	'node/lib/internal/util.js',
-	'node/lib/_stream_*.js',
-	'node/lib/events.js',
-	'node/lib/constants.js',
-	'node/lib/path.js',
-	'node/lib/stream.js',
-	'node/lib/util.js',
-	'node/lib/buffer.js',
-	'node/lib/fs.js',
-	'node/lib/vm.js',
-	'node/lib/domain.js',
-	'node/lib/string_decoder.js',
+        'node/lib/internal/util.js',
+        'node/lib/_stream_*.js',
+        'node/lib/events.js',
+        'node/lib/constants.js',
+        'node/lib/path.js',
+        'node/lib/stream.js',
+        'node/lib/util.js',
+        'node/lib/buffer.js',
+        'node/lib/fs.js',
+        'node/lib/vm.js',
+        'node/lib/domain.js',
+        'node/lib/string_decoder.js',
     ]).pipe(copy('./lib/browser-node/', {prefix: 2}));
 });
 
@@ -102,7 +104,25 @@ tsTask('kernel', {otherSources: ['!src/kernel/vendor/BrowserFS/test/**/*.ts', '!
 tsTask('browser-node', {buildDeps: ['copy-node']});
 tsTask('bin');
 
-gulp.task('build-test', ['dist-kernel', 'dist-browser-node', 'build-bin'], function() {
+gulp.task('build-fs', ['dist-kernel', 'dist-browser-node', 'build-bin'], function() {
+    const copyKernel = gulp.src('dist/lib/kernel/kernel.js').pipe(copy('./fs/boot/', {prefix: 3}));
+    const copyNode = gulp.src('dist/lib/browser-node/browser-node.js')
+          .pipe(rename(function(path) { path.basename = 'node'; path.extname = ''; }))
+          .pipe(gulp.dest('./fs/usr/bin/'));
+    const copyBin = gulp.src('lib/bin/*.js')
+          .pipe(rename(function(path) { path.extname = ''; }))
+          .pipe(gulp.dest('./fs/usr/bin/'));
+
+    return merge(copyKernel, copyNode, copyBin);
+});
+
+gulp.task('index-fs', ['build-fs'], function() {
+    return run('./xhrfs-index fs').exec()
+        .pipe(rename(function(path) { path.basename = 'index'; path.extname = '.json'; }))
+        .pipe(gulp.dest('./fs'));
+});
+
+gulp.task('build-test', ['index-fs'], function() {
     return gulp.src('test/*.ts')
         .pipe(ts(project())).js
         .pipe(gulp.dest('test'));
@@ -111,21 +131,21 @@ gulp.task('build-test', ['dist-kernel', 'dist-browser-node', 'build-bin'], funct
 gulp.task('dist-test', ['build-test'], function() {
     const testMain = './test/test-all.js';
     var b = browserify({
-            entries: [testMain],
-            builtins: false,
-            insertGlobalVars: {
-                // don't do shit when seeing use of 'process'
-                'process': function() { return "" },
-            },
-        });
-        b.exclude('webworker-threads');
+        entries: [testMain],
+        builtins: false,
+        insertGlobalVars: {
+            // don't do shit when seeing use of 'process'
+            'process': function() { return "" },
+        },
+    });
+    b.exclude('webworker-threads');
 
-        return b.bundle()
-            .pipe(source(testMain))
-            .pipe(buffer())
-//          .pipe(uglify())
-            .on('error', gutil.log)
-            .pipe(gulp.dest('./dist/'));
+    return b.bundle()
+        .pipe(source(testMain))
+        .pipe(buffer())
+    //          .pipe(uglify())
+        .on('error', gutil.log)
+        .pipe(gulp.dest('./dist/'));
 
 });
 
@@ -136,9 +156,9 @@ gulp.task('test-node', ['dist-test'], function() {
 
 gulp.task('test-browser', ['dist-test'], function(done) {
     new karma.Server({
-	configFile: __dirname + '/karma.conf.js',
-	singleRun: false,
-	autoWatchBatchDelay: 1000,
+        configFile: __dirname + '/karma.conf.js',
+        singleRun: false,
+        autoWatchBatchDelay: 1000,
     }, done).start();
 
     gulp.watch(['src/**/*.ts', 'test/*.ts'], ['dist-test']);
@@ -147,9 +167,9 @@ gulp.task('test-browser', ['dist-test'], function(done) {
 
 gulp.task('default', ['dist-test'], function(done) {
     new karma.Server({
-	configFile: __dirname + '/karma.conf.js',
-	singleRun: true,
-	browsers: ['Firefox'],
+        configFile: __dirname + '/karma.conf.js',
+        singleRun: true,
+        browsers: ['Firefox'],
     }, done).start();
 });
 

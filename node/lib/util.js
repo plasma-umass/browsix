@@ -1,13 +1,13 @@
 'use strict';
 
-const uv = process.binding('uv');
-const Buffer = require('./buffer').Buffer;
-const internalUtil = require('./internal/util');
+var uv = process.binding('uv');
+var Buffer = require('././buffer').Buffer;
+var internalUtil = require('././internal/util');
 
 var Debug;
 var ObjectIsPromise;
 
-const formatRegExp = /%[sdj%]/g;
+var formatRegExp = /%[sdj%]/g;
 exports.format = function(f) {
   if (typeof f !== 'string') {
     var objects = [];
@@ -187,8 +187,8 @@ function getConstructorOf(obj) {
 
 function ensureDebugIsInitialized() {
   if (Debug === undefined) {
-    const runInDebugContext = require('./vm').runInDebugContext;
-    const result = runInDebugContext('[Debug, ObjectIsPromise]');
+    var runInDebugContext = require('././vm').runInDebugContext;
+    var result = runInDebugContext('[Debug, ObjectIsPromise]');
     Debug = result[0];
     ObjectIsPromise = result[1];
   }
@@ -199,7 +199,7 @@ function inspectPromise(p) {
   ensureDebugIsInitialized();
   if (!ObjectIsPromise(p))
     return null;
-  const mirror = Debug.MakeMirror(p, true);
+  var mirror = Debug.MakeMirror(p, true);
   return {status: mirror.status(), value: mirror.promiseValue().value_};
 }
 
@@ -687,7 +687,7 @@ function pad(n) {
 }
 
 
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
                 'Oct', 'Nov', 'Dec'];
 
 // 26 Feb 16:19:34
@@ -773,7 +773,7 @@ exports.p = internalUtil.deprecate(function() {
 
 
 exports.exec = internalUtil.deprecate(function() {
-  return require('./child_process').exec.apply(this, arguments);
+  return require('././child_process').exec.apply(this, arguments);
 }, 'util.exec is deprecated. Use child_process.exec instead.');
 
 

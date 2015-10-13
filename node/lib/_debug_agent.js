@@ -1,16 +1,16 @@
 'use strict';
 
-const assert = require('./assert');
-const net = require('./net');
-const util = require('./util');
-const Buffer = require('./buffer').Buffer;
-const Transform = require('./stream').Transform;
+var assert = require('././assert');
+var net = require('././net');
+var util = require('././util');
+var Buffer = require('././buffer').Buffer;
+var Transform = require('././stream').Transform;
 
 exports.start = function start() {
   var agent = new Agent();
 
   // Do not let `agent.listen()` request listening from cluster master
-  const cluster = require('./cluster');
+  var cluster = require('././cluster');
   cluster.isWorker = false;
   cluster.isMaster = true;
 

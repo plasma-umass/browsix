@@ -3,38 +3,38 @@
 
 'use strict';
 
-const SlowBuffer = require('./buffer').SlowBuffer;
-const util = require('./util');
-const pathModule = require('./path');
+var SlowBuffer = require('././buffer').SlowBuffer;
+var util = require('././util');
+var pathModule = require('././path');
 
-const binding = process.binding('fs');
-const constants = require('./constants');
-const fs = exports;
-const Buffer = require('./buffer').Buffer;
-const Stream = require('./stream').Stream;
-const EventEmitter = require('./events');
-const FSReqWrap = binding.FSReqWrap;
-const FSEvent = process.binding('fs_event_wrap').FSEvent;
+var binding = process.binding('fs');
+var constants = require('././constants');
+var fs = exports;
+var Buffer = require('././buffer').Buffer;
+var Stream = require('././stream').Stream;
+var EventEmitter = require('././events');
+var FSReqWrap = binding.FSReqWrap;
+var FSEvent = process.binding('fs_event_wrap').FSEvent;
 
-const Readable = Stream.Readable;
-const Writable = Stream.Writable;
+var Readable = Stream.Readable;
+var Writable = Stream.Writable;
 
-const kMinPoolSpace = 128;
-const kMaxLength = require('./buffer').kMaxLength;
+var kMinPoolSpace = 128;
+var kMaxLength = require('././buffer').kMaxLength;
 
-const O_APPEND = constants.O_APPEND || 0;
-const O_CREAT = constants.O_CREAT || 0;
-const O_EXCL = constants.O_EXCL || 0;
-const O_RDONLY = constants.O_RDONLY || 0;
-const O_RDWR = constants.O_RDWR || 0;
-const O_SYNC = constants.O_SYNC || 0;
-const O_TRUNC = constants.O_TRUNC || 0;
-const O_WRONLY = constants.O_WRONLY || 0;
+var O_APPEND = constants.O_APPEND || 0;
+var O_CREAT = constants.O_CREAT || 0;
+var O_EXCL = constants.O_EXCL || 0;
+var O_RDONLY = constants.O_RDONLY || 0;
+var O_RDWR = constants.O_RDWR || 0;
+var O_SYNC = constants.O_SYNC || 0;
+var O_TRUNC = constants.O_TRUNC || 0;
+var O_WRONLY = constants.O_WRONLY || 0;
 
-const isWindows = process.platform === 'win32';
+var isWindows = process.platform === 'win32';
 
-const DEBUG = process.env.NODE_DEBUG && /fs/.test(process.env.NODE_DEBUG);
-const errnoException = util._errnoException;
+var DEBUG = process.env.NODE_DEBUG && /fs/.test(process.env.NODE_DEBUG);
+var errnoException = util._errnoException;
 
 function throwOptionsError(options) {
   throw new TypeError('Expected options to be either an object or a string, ' +
@@ -253,7 +253,7 @@ fs.readFile = function(path, options, callback_) {
                req);
 };
 
-const kReadFileBufferLength = 8 * 1024;
+var kReadFileBufferLength = 8 * 1024;
 
 function ReadFileContext(callback, encoding) {
   this.fd = undefined;
@@ -1309,7 +1309,7 @@ StatWatcher.prototype.stop = function() {
 };
 
 
-const statWatchers = new Map();
+var statWatchers = new Map();
 
 fs.watchFile = function(filename, options, listener) {
   nullCheck(filename);
@@ -1879,7 +1879,7 @@ function writev(fd, chunks, position, callback) {
     callback(err, written || 0, chunks);
   }
 
-  const req = new FSReqWrap();
+  var req = new FSReqWrap();
   req.oncomplete = wrapper;
   binding.writeBuffers(fd, chunks, position, req);
 }
@@ -1891,9 +1891,9 @@ WriteStream.prototype._writev = function(data, cb) {
       this._writev(data, cb);
     });
 
-  const self = this;
-  const len = data.length;
-  const chunks = new Array(len);
+  var self = this;
+  var len = data.length;
+  var chunks = new Array(len);
   var size = 0;
 
   for (var i = 0; i < len; i++) {

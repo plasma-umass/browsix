@@ -1,18 +1,18 @@
 'use strict';
 
-const Interface = require('./readline').Interface;
-const REPL = require('./repl');
-const path = require('./path');
-const fs = require('./fs');
-const os = require('./os');
-const debug = require('./util').debuglog('repl');
+var Interface = require('././readline').Interface;
+var REPL = require('././repl');
+var path = require('././path');
+var fs = require('././fs');
+var os = require('././os');
+var debug = require('././util').debuglog('repl');
 
 module.exports = Object.create(REPL);
 module.exports.createInternalRepl = createRepl;
 
 // XXX(chrisdickinson): The 15ms debounce value is somewhat arbitrary.
 // The debounce is to guard against code pasted into the REPL.
-const kDebounceHistoryMS = 15;
+var kDebounceHistoryMS = 15;
 
 // XXX(chrisdickinson): hack to make sure that the internal debugger
 // uses the original repl.
@@ -51,7 +51,7 @@ function createRepl(env, opts, cb) {
     opts.replMode = REPL.REPL_MODE_MAGIC;
   }
 
-  const historySize = Number(env.NODE_REPL_HISTORY_SIZE);
+  var historySize = Number(env.NODE_REPL_HISTORY_SIZE);
   if (!isNaN(historySize) && historySize > 0) {
     opts.historySize = historySize;
   } else {
@@ -60,7 +60,7 @@ function createRepl(env, opts, cb) {
     opts.historySize = 1000;
   }
 
-  const repl = REPL.start(opts);
+  var repl = REPL.start(opts);
   if (opts.terminal && env.NODE_REPL_HISTORY !== '') {
     return setupHistory(repl, env.NODE_REPL_HISTORY,
                         env.NODE_REPL_HISTORY_FILE, cb);
@@ -168,7 +168,7 @@ function setupHistory(repl, historyPath, oldHistoryPath, ready) {
       return;
     }
     writing = true;
-    const historyData = repl.history.join(os.EOL);
+    var historyData = repl.history.join(os.EOL);
     fs.write(repl._historyHandle, historyData, 0, 'utf8', onwritten);
   }
 

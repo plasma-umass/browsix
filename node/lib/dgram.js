@@ -1,28 +1,28 @@
 'use strict';
 
-const assert = require('./assert');
-const Buffer = require('./buffer').Buffer;
-const util = require('./util');
-const EventEmitter = require('./events');
-const constants = require('./constants');
+var assert = require('././assert');
+var Buffer = require('././buffer').Buffer;
+var util = require('././util');
+var EventEmitter = require('././events');
+var constants = require('././constants');
 
-const UDP = process.binding('udp_wrap').UDP;
-const SendWrap = process.binding('udp_wrap').SendWrap;
+var UDP = process.binding('udp_wrap').UDP;
+var SendWrap = process.binding('udp_wrap').SendWrap;
 
-const BIND_STATE_UNBOUND = 0;
-const BIND_STATE_BINDING = 1;
-const BIND_STATE_BOUND = 2;
+var BIND_STATE_UNBOUND = 0;
+var BIND_STATE_BINDING = 1;
+var BIND_STATE_BOUND = 2;
 
 // lazily loaded
 var cluster = null;
 var dns = null;
 
-const errnoException = util._errnoException;
-const exceptionWithHostPort = util._exceptionWithHostPort;
+var errnoException = util._errnoException;
+var exceptionWithHostPort = util._exceptionWithHostPort;
 
 function lookup(address, family, callback) {
   if (!dns)
-    dns = require('./dns');
+    dns = require('././dns');
 
   return dns.lookup(address, family, callback);
 }
@@ -174,7 +174,7 @@ Socket.prototype.bind = function(port /*, address, callback*/) {
     }
 
     if (!cluster)
-      cluster = require('./cluster');
+      cluster = require('././cluster');
 
     var flags = 0;
     if (self._reuseAddr)

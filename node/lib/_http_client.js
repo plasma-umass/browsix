@@ -1,19 +1,19 @@
 'use strict';
 
-const util = require('./util');
-const net = require('./net');
-const url = require('./url');
-const EventEmitter = require('./events');
-const HTTPParser = process.binding('http_parser').HTTPParser;
-const assert = require('./assert').ok;
-const common = require('./_http_common');
-const httpSocketSetup = common.httpSocketSetup;
-const parsers = common.parsers;
-const freeParser = common.freeParser;
-const debug = common.debug;
-const OutgoingMessage = require('./_http_outgoing').OutgoingMessage;
-const Agent = require('./_http_agent');
-const Buffer = require('./buffer').Buffer;
+var util = require('././util');
+var net = require('././net');
+var url = require('././url');
+var EventEmitter = require('././events');
+var HTTPParser = process.binding('http_parser').HTTPParser;
+var assert = require('././assert').ok;
+var common = require('././_http_common');
+var httpSocketSetup = common.httpSocketSetup;
+var parsers = common.parsers;
+var freeParser = common.freeParser;
+var debug = common.debug;
+var OutgoingMessage = require('././_http_outgoing').OutgoingMessage;
+var Agent = require('././_http_agent');
+var Buffer = require('././buffer').Buffer;
 
 
 function ClientRequest(options, cb) {
@@ -54,7 +54,7 @@ function ClientRequest(options, cb) {
                     'Expected "' + expectedProtocol + '".');
   }
 
-  const defaultPort = options.defaultPort ||
+  var defaultPort = options.defaultPort ||
                       self.agent && self.agent.defaultPort;
 
   var port = options.port = options.port || defaultPort || 80;

@@ -21,16 +21,16 @@
 
 'use strict';
 
-const util = require('./util');
-const inherits = util.inherits;
-const Stream = require('./stream');
-const vm = require('./vm');
-const path = require('./path');
-const fs = require('./fs');
-const rl = require('./readline');
-const Console = require('./console').Console;
-const domain = require('./domain');
-const debug = util.debuglog('repl');
+var util = require('././util');
+var inherits = util.inherits;
+var Stream = require('././stream');
+var vm = require('././vm');
+var path = require('././path');
+var fs = require('././fs');
+var rl = require('././readline');
+var Console = require('././console').Console;
+var domain = require('././domain');
+var debug = util.debuglog('repl');
 
 try {
   // hack for require.resolve("./relative") to work properly.
@@ -39,12 +39,12 @@ try {
   // path.resolve('repl') fails when the current working directory has been
   // deleted.  Fall back to the directory name of the (absolute) executable
   // path.  It's not really correct but what are the alternatives?
-  const dirname = path.dirname(process.execPath);
+  var dirname = path.dirname(process.execPath);
   module.filename = path.resolve(dirname, 'repl');
 }
 
 // hack for repl require to work properly with node_modules folders
-module.paths = require('./module')._nodeModulePaths(module.filename);
+module.paths = require('././module')._nodeModulePaths(module.filename);
 
 // If obj.hasOwnProperty has been overridden, then calling
 // obj.hasOwnProperty(prop) will break.
@@ -64,7 +64,7 @@ exports._builtinLibs = ['assert', 'buffer', 'child_process', 'cluster',
   'string_decoder', 'tls', 'tty', 'url', 'util', 'v8', 'vm', 'zlib'];
 
 
-const BLOCK_SCOPED_ERROR = 'Block-scoped declarations (let, ' +
+var BLOCK_SCOPED_ERROR = 'Block-scoped declarations (let, ' +
     'const, function, class) not yet supported outside strict mode';
 
 
@@ -115,9 +115,9 @@ function REPLServer(prompt,
   // just for backwards compat, see github.com/joyent/node/pull/7127
   self.rli = this;
 
-  const savedRegExMatches = ['', '', '', '', '', '', '', '', '', ''];
-  const sep = '\u0000\u0000\u0000';
-  const regExMatcher = new RegExp(`^${sep}(.*)${sep}(.*)${sep}(.*)${sep}(.*)` +
+  var savedRegExMatches = ['', '', '', '', '', '', '', '', '', ''];
+  var sep = '\u0000\u0000\u0000';
+  var regExMatcher = new RegExp(`^${sep}(.*)${sep}(.*)${sep}(.*)${sep}(.*)` +
                                   `${sep}(.*)${sep}(.*)${sep}(.*)${sep}(.*)` +
                                   `${sep}(.*)$`);
 
@@ -342,9 +342,9 @@ function REPLServer(prompt,
     if (self._inTemplateLiteral) {
       self._inTemplateLiteral = false;
     } else {
-      const wasWithinStrLiteral = self._currentStringLiteral !== null;
+      var wasWithinStrLiteral = self._currentStringLiteral !== null;
       self._currentStringLiteral = parseLine(cmd, self._currentStringLiteral);
-      const isWithinStrLiteral = self._currentStringLiteral !== null;
+      var isWithinStrLiteral = self._currentStringLiteral !== null;
 
       if (!wasWithinStrLiteral && !isWithinStrLiteral) {
         // Current line has nothing to do with String literals, trim both ends
@@ -558,8 +558,8 @@ ArrayStream.prototype.writable = true;
 ArrayStream.prototype.resume = function() {};
 ArrayStream.prototype.write = function() {};
 
-const requireRE = /\brequire\s*\(['"](([\w\.\/-]+\/)?([\w\.\/-]*))/;
-const simpleExpressionRE =
+var requireRE = /\brequire\s*\(['"](([\w\.\/-]+\/)?([\w\.\/-]*))/;
+var simpleExpressionRE =
     /(([a-zA-Z_$](?:\w|\$)*)\.)*([a-zA-Z_$](?:\w|\$)*)\.?$/;
 
 function intFilter(item) {
@@ -624,7 +624,7 @@ REPLServer.prototype.complete = function(line, callback) {
 
     completionGroupsLoaded();
   } else if (match = line.match(requireRE)) {
-    // require('./...<Tab>')
+    // require('././...<Tab>')
     var exts = Object.keys(require.extensions);
     var indexRe = new RegExp('^index(' + exts.map(regexpEscape).join('|') +
                              ')$');
@@ -634,7 +634,7 @@ REPLServer.prototype.complete = function(line, callback) {
     var filter = match[1];
     var dir, files, f, name, base, ext, abs, subfiles, s;
     group = [];
-    var paths = module.paths.concat(require('./module').globalPaths);
+    var paths = module.paths.concat(require('././module').globalPaths);
     for (i = 0; i < paths.length; i++) {
       dir = path.resolve(paths[i], subdir);
       try {
@@ -1061,8 +1061,8 @@ function regexpEscape(s) {
  * @return {String} The converted command.
  */
 REPLServer.prototype.convertToContext = function(cmd) {
-  const scopeVar = /^\s*var\s*([_\w\$]+)(.*)$/m;
-  const scopeFunc = /^\s*function\s*([_\w\$]+)/;
+  var scopeVar = /^\s*var\s*([_\w\$]+)(.*)$/m;
+  var scopeFunc = /^\s*function\s*([_\w\$]+)/;
   var self = this, matches;
 
   // Replaces: var foo = "bar";  with: self.context.foo = bar;

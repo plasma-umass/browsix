@@ -14,20 +14,20 @@
 
 'use strict';
 
-const v8binding = process.binding('v8');
+var v8binding = process.binding('v8');
 
-const heapStatisticsBuffer =
+var heapStatisticsBuffer =
     new Uint32Array(v8binding.heapStatisticsArrayBuffer);
 
-const kTotalHeapSizeIndex = v8binding.kTotalHeapSizeIndex;
-const kTotalHeapSizeExecutableIndex = v8binding.kTotalHeapSizeExecutableIndex;
-const kTotalPhysicalSizeIndex = v8binding.kTotalPhysicalSizeIndex;
-const kTotalAvailableSize = v8binding.kTotalAvailableSize;
-const kUsedHeapSizeIndex = v8binding.kUsedHeapSizeIndex;
-const kHeapSizeLimitIndex = v8binding.kHeapSizeLimitIndex;
+var kTotalHeapSizeIndex = v8binding.kTotalHeapSizeIndex;
+var kTotalHeapSizeExecutableIndex = v8binding.kTotalHeapSizeExecutableIndex;
+var kTotalPhysicalSizeIndex = v8binding.kTotalPhysicalSizeIndex;
+var kTotalAvailableSize = v8binding.kTotalAvailableSize;
+var kUsedHeapSizeIndex = v8binding.kUsedHeapSizeIndex;
+var kHeapSizeLimitIndex = v8binding.kHeapSizeLimitIndex;
 
 exports.getHeapStatistics = function() {
-  const buffer = heapStatisticsBuffer;
+  var buffer = heapStatisticsBuffer;
 
   v8binding.updateHeapStatisticsArrayBuffer();
 

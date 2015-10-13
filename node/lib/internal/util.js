@@ -1,6 +1,6 @@
 'use strict';
 
-const prefix = '(node) ';
+var prefix = '(node) ';
 
 // All the internal deprecations have to use this function only, as this will
 // prepend the prefix to the actual message.

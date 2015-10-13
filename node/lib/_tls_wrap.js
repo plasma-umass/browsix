@@ -1,19 +1,19 @@
 'use strict';
 
-const assert = require('./assert');
-const crypto = require('./crypto');
-const net = require('./net');
-const tls = require('./tls');
-const util = require('./util');
-const common = require('./_tls_common');
-const StreamWrap = require('./_stream_wrap').StreamWrap;
-const Buffer = require('./buffer').Buffer;
-const Duplex = require('./stream').Duplex;
-const debug = util.debuglog('tls');
-const Timer = process.binding('timer_wrap').Timer;
-const tls_wrap = process.binding('tls_wrap');
-const TCP = process.binding('tcp_wrap').TCP;
-const Pipe = process.binding('pipe_wrap').Pipe;
+var assert = require('././assert');
+var crypto = require('././crypto');
+var net = require('././net');
+var tls = require('././tls');
+var util = require('././util');
+var common = require('././_tls_common');
+var StreamWrap = require('././_stream_wrap').StreamWrap;
+var Buffer = require('././buffer').Buffer;
+var Duplex = require('././stream').Duplex;
+var debug = util.debuglog('tls');
+var Timer = process.binding('timer_wrap').Timer;
+var tls_wrap = process.binding('tls_wrap');
+var TCP = process.binding('tcp_wrap').TCP;
+var Pipe = process.binding('pipe_wrap').Pipe;
 
 function onhandshakestart() {
   debug('onhandshakestart');

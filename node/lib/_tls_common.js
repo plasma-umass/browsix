@@ -1,13 +1,13 @@
 'use strict';
 
-const constants = require('./constants');
-const tls = require('./tls');
+var constants = require('././constants');
+var tls = require('././tls');
 
 // Lazily loaded
 var crypto = null;
 
-const binding = process.binding('crypto');
-const NativeSecureContext = binding.SecureContext;
+var binding = process.binding('crypto');
+var NativeSecureContext = binding.SecureContext;
 
 function SecureContext(secureProtocol, flags, context) {
   if (!(this instanceof SecureContext)) {
@@ -120,7 +120,7 @@ exports.createSecureContext = function createSecureContext(options, context) {
     var passphrase = options.passphrase;
 
     if (!crypto)
-      crypto = require('./crypto');
+      crypto = require('././crypto');
 
     pfx = crypto._toBuf(pfx);
     if (passphrase)

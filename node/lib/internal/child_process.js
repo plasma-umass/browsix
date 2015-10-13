@@ -1,26 +1,26 @@
 'use strict';
 
-const StringDecoder = require('./string_decoder').StringDecoder;
-const Buffer = require('./buffer').Buffer;
-const EventEmitter = require('./events');
-const net = require('./net');
-const dgram = require('./dgram');
-const util = require('./util');
-const constants = require('./constants');
-const assert = require('./assert');
+var StringDecoder = require('././string_decoder').StringDecoder;
+var Buffer = require('././buffer').Buffer;
+var EventEmitter = require('././events');
+var net = require('././net');
+var dgram = require('././dgram');
+var util = require('././util');
+var constants = require('././constants');
+var assert = require('././assert');
 
-const Process = process.binding('process_wrap').Process;
-const WriteWrap = process.binding('stream_wrap').WriteWrap;
-const uv = process.binding('uv');
-const Pipe = process.binding('pipe_wrap').Pipe;
-const TTY = process.binding('tty_wrap').TTY;
-const TCP = process.binding('tcp_wrap').TCP;
-const UDP = process.binding('udp_wrap').UDP;
-const SocketList = require('./internal/socket_list');
+var Process = process.binding('process_wrap').Process;
+var WriteWrap = process.binding('stream_wrap').WriteWrap;
+var uv = process.binding('uv');
+var Pipe = process.binding('pipe_wrap').Pipe;
+var TTY = process.binding('tty_wrap').TTY;
+var TCP = process.binding('tcp_wrap').TCP;
+var UDP = process.binding('udp_wrap').UDP;
+var SocketList = require('././internal/socket_list');
 
-const errnoException = util._errnoException;
-const SocketListSend = SocketList.SocketListSend;
-const SocketListReceive = SocketList.SocketListReceive;
+var errnoException = util._errnoException;
+var SocketListSend = SocketList.SocketListSend;
+var SocketListReceive = SocketList.SocketListReceive;
 
 module.exports = {
   ChildProcess,
@@ -31,7 +31,7 @@ module.exports = {
 
 // this object contain function to convert TCP objects to native handle objects
 // and back again.
-const handleConversion = {
+var handleConversion = {
   'net.Native': {
     simultaneousAccepts: true,
 
@@ -397,7 +397,7 @@ function setupChannel(target, channel) {
   target._channel = channel;
   target._handleQueue = null;
 
-  const control = new class extends EventEmitter {
+  var control = new class extends EventEmitter {
     constructor() {
       super();
       this.channel = channel;
@@ -507,7 +507,7 @@ function setupChannel(target, channel) {
       this._send(message, handle, false, callback);
       return;
     }
-    const ex = new Error('channel closed');
+    var ex = new Error('channel closed');
     if (typeof callback === 'function') {
       process.nextTick(callback, ex);
     } else {
@@ -603,7 +603,7 @@ function setupChannel(target, channel) {
         process.nextTick(function() { req.oncomplete(); });
       }
     } else if (!swallowErrors) {
-      const ex = errnoException(err, 'write');
+      var ex = errnoException(err, 'write');
       if (typeof callback === 'function') {
         process.nextTick(callback, ex);
       } else {
@@ -673,7 +673,7 @@ function setupChannel(target, channel) {
 }
 
 
-const INTERNAL_PREFIX = 'NODE_';
+var INTERNAL_PREFIX = 'NODE_';
 function handleMessage(target, message, handle) {
   var eventName = 'message';
   if (message !== null &&

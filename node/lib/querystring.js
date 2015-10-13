@@ -2,8 +2,8 @@
 
 'use strict';
 
-const QueryString = exports;
-const Buffer = require('./buffer').Buffer;
+var QueryString = exports;
+var Buffer = require('././buffer').Buffer;
 
 
 function charCode(c) {

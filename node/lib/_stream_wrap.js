@@ -1,20 +1,20 @@
 'use strict';
 
-const assert = require('./assert');
-const util = require('./util');
-const Socket = require('./net').Socket;
-const JSStream = process.binding('js_stream').JSStream;
-const uv = process.binding('uv');
-const debug = util.debuglog('stream_wrap');
+var assert = require('././assert');
+var util = require('././util');
+var Socket = require('././net').Socket;
+var JSStream = process.binding('js_stream').JSStream;
+var uv = process.binding('uv');
+var debug = util.debuglog('stream_wrap');
 
 function StreamWrap(stream) {
-  const handle = new JSStream();
+  var handle = new JSStream();
 
   this.stream = stream;
 
   this._list = null;
 
-  const self = this;
+  var self = this;
   handle.close = function(cb) {
     debug('close');
     self.doClose(cb);
@@ -60,7 +60,7 @@ function StreamWrap(stream) {
 util.inherits(StreamWrap, Socket);
 module.exports = StreamWrap;
 
-// require('./_stream_wrap').StreamWrap
+// require('././_stream_wrap').StreamWrap
 StreamWrap.StreamWrap = StreamWrap;
 
 StreamWrap.prototype.isAlive = function isAlive() {
@@ -82,9 +82,9 @@ StreamWrap.prototype.readStop = function readStop() {
 };
 
 StreamWrap.prototype.doShutdown = function doShutdown(req) {
-  const self = this;
-  const handle = this._handle;
-  const item = this._enqueue('shutdown', req);
+  var self = this;
+  var handle = this._handle;
+  var item = this._enqueue('shutdown', req);
 
   this.stream.end(function() {
     // Ensure that write was dispatched
@@ -99,13 +99,13 @@ StreamWrap.prototype.doShutdown = function doShutdown(req) {
 };
 
 StreamWrap.prototype.doWrite = function doWrite(req, bufs) {
-  const self = this;
-  const handle = self._handle;
+  var self = this;
+  var handle = self._handle;
 
   var pending = bufs.length;
 
   // Queue the request to be able to cancel it
-  const item = self._enqueue('write', req);
+  var item = self._enqueue('write', req);
 
   self.stream.cork();
   bufs.forEach(function(buf) {
@@ -150,7 +150,7 @@ function QueueItem(type, req) {
 }
 
 StreamWrap.prototype._enqueue = function enqueue(type, req) {
-  const item = new QueueItem(type, req);
+  var item = new QueueItem(type, req);
   if (this._list === null) {
     this._list = item;
     return item;
@@ -191,16 +191,16 @@ StreamWrap.prototype._dequeue = function dequeue(item) {
 };
 
 StreamWrap.prototype.doClose = function doClose(cb) {
-  const self = this;
-  const handle = self._handle;
+  var self = this;
+  var handle = self._handle;
 
   setImmediate(function() {
     while (self._list !== null) {
-      const item = self._list;
-      const req = item.req;
+      var item = self._list;
+      var req = item.req;
       self._dequeue(item);
 
-      const errCode = uv.UV_ECANCELED;
+      var errCode = uv.UV_ECANCELED;
       if (item.type === 'write') {
         handle.doAfterWrite(req);
         handle.finishWrite(req, errCode);

@@ -1,15 +1,15 @@
 'use strict';
 
-const util = require('./util');
-const path = require('./path');
-const net = require('./net');
-const vm = require('./vm');
-const Module = require('./module');
-const repl = Module.requireRepl();
-const inherits = util.inherits;
-const assert = require('./assert');
-const spawn = require('./child_process').spawn;
-const Buffer = require('./buffer').Buffer;
+var util = require('././util');
+var path = require('././path');
+var net = require('././net');
+var vm = require('././vm');
+var Module = require('././module');
+var repl = Module.requireRepl();
+var inherits = util.inherits;
+var assert = require('././assert');
+var spawn = require('././child_process').spawn;
+var Buffer = require('././buffer').Buffer;
 
 exports.start = function(argv, stdin, stdout) {
   argv || (argv = process.argv.slice(2));
@@ -139,7 +139,7 @@ Protocol.prototype.serialize = function(req) {
 };
 
 
-const NO_FRAME = -1;
+var NO_FRAME = -1;
 
 function Client() {
   net.Stream.call(this);
@@ -179,7 +179,7 @@ Client.prototype._addHandle = function(desc) {
 };
 
 
-const natives = process.binding('natives');
+var natives = process.binding('natives');
 
 
 Client.prototype._addScript = function(desc) {
@@ -641,7 +641,7 @@ Client.prototype.fullTrace = function(cb) {
 };
 
 
-const commands = [
+var commands = [
   [
     'run (r)',
     'cont (c)',
@@ -769,11 +769,11 @@ function Interface(stdin, stdout, args) {
   process.once('SIGHUP', process.exit.bind(process, 0));
 
   var proto = Interface.prototype;
-  const ignored = ['pause', 'resume', 'exitRepl', 'handleBreak',
+  var ignored = ['pause', 'resume', 'exitRepl', 'handleBreak',
                    'requireConnection', 'killChild', 'trySpawn',
                    'controlEval', 'debugEval', 'print', 'childPrint',
                    'clearline'];
-  const shortcut = {
+  var shortcut = {
     'run': 'r',
     'cont': 'c',
     'next': 'n',
@@ -1636,7 +1636,7 @@ Interface.prototype.trySpawn = function(cb) {
   } else if (this.args.length === 3) {
     // `node debug -p pid`
     if (this.args[1] === '-p' && /^\d+$/.test(this.args[2])) {
-      const pid = parseInt(this.args[2], 10);
+      var pid = parseInt(this.args[2], 10);
       try {
         process._debugProcess(pid);
       } catch (e) {

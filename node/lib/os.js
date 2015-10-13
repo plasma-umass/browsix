@@ -1,9 +1,9 @@
 'use strict';
 
-const binding = process.binding('os');
-const util = require('./util');
-const internalUtil = require('./internal/util');
-const isWindows = process.platform === 'win32';
+var binding = process.binding('os');
+var util = require('././util');
+var internalUtil = require('././internal/util');
+var isWindows = process.platform === 'win32';
 
 exports.hostname = binding.getHostname;
 exports.loadavg = binding.getLoadAvg;
@@ -25,7 +25,7 @@ exports.platform = function() {
   return process.platform;
 };
 
-const trailingSlashRe = isWindows ? /[^:]\\$/
+var trailingSlashRe = isWindows ? /[^:]\\$/
                                   : /.\/$/;
 
 exports.tmpdir = function() {

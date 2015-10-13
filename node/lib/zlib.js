@@ -1,12 +1,12 @@
 'use strict';
 
-const Buffer = require('./buffer').Buffer;
-const Transform = require('./_stream_transform');
-const binding = process.binding('zlib');
-const util = require('./util');
-const assert = require('./assert').ok;
-const kMaxLength = require('./buffer').kMaxLength;
-const kRangeErrorMessage = 'Cannot create final Buffer. ' +
+var Buffer = require('././buffer').Buffer;
+var Transform = require('././_stream_transform');
+var binding = process.binding('zlib');
+var util = require('././util');
+var assert = require('././assert').ok;
+var kMaxLength = require('././buffer').kMaxLength;
+var kRangeErrorMessage = 'Cannot create final Buffer. ' +
     'It would be larger than 0x' + kMaxLength.toString(16) + ' bytes.';
 
 // zlib doesn't provide these, so kludge them in following the same
@@ -31,7 +31,7 @@ binding.Z_MAX_LEVEL = 9;
 binding.Z_DEFAULT_LEVEL = binding.Z_DEFAULT_COMPRESSION;
 
 // expose all the zlib constants
-const bkeys = Object.keys(binding);
+var bkeys = Object.keys(binding);
 for (var bk = 0; bk < bkeys.length; bk++) {
   var bkey = bkeys[bk];
   if (bkey.match(/^Z/)) {
@@ -42,7 +42,7 @@ for (var bk = 0; bk < bkeys.length; bk++) {
 }
 
 // translation table for return codes.
-const codes = {
+var codes = {
   Z_OK: binding.Z_OK,
   Z_STREAM_END: binding.Z_STREAM_END,
   Z_NEED_DICT: binding.Z_NEED_DICT,
@@ -54,7 +54,7 @@ const codes = {
   Z_VERSION_ERROR: binding.Z_VERSION_ERROR
 };
 
-const ckeys = Object.keys(codes);
+var ckeys = Object.keys(codes);
 for (var ck = 0; ck < ckeys.length; ck++) {
   var ckey = ckeys[ck];
   codes[codes[ckey]] = ckey;

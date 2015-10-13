@@ -1,17 +1,17 @@
 'use strict';
 
-const EventEmitter = require('./events');
-const assert = require('./assert');
-const dgram = require('./dgram');
-const fork = require('./child_process').fork;
-const net = require('./net');
-const util = require('./util');
-const SCHED_NONE = 1;
-const SCHED_RR = 2;
+var EventEmitter = require('././events');
+var assert = require('././assert');
+var dgram = require('././dgram');
+var fork = require('././child_process').fork;
+var net = require('././net');
+var util = require('././util');
+var SCHED_NONE = 1;
+var SCHED_RR = 2;
 
-const uv = process.binding('uv');
+var uv = process.binding('uv');
 
-const cluster = new EventEmitter();
+var cluster = new EventEmitter();
 module.exports = cluster;
 cluster.Worker = Worker;
 cluster.isWorker = ('NODE_UNIQUE_ID' in process.env);
@@ -310,9 +310,9 @@ function masterInit() {
 
   cluster.fork = function(env) {
     cluster.setupMaster();
-    const id = ++ids;
-    const workerProcess = createWorkerProcess(id, env);
-    const worker = new Worker({
+    var id = ++ids;
+    var workerProcess = createWorkerProcess(id, env);
+    var worker = new Worker({
       id: id,
       process: workerProcess
     });
@@ -532,7 +532,7 @@ function workerInit() {
 
   // obj is a net#Server or a dgram#Socket object.
   cluster._getServer = function(obj, options, cb) {
-    const key = [ options.address,
+    var key = [ options.address,
                 options.port,
                 options.addressType,
                 options.fd ].join(':');
@@ -541,7 +541,7 @@ function workerInit() {
     else
       indexes[key]++;
 
-    const message = util._extend({
+    var message = util._extend({
       act: 'queryServer',
       index: indexes[key],
       data: null
@@ -559,7 +559,7 @@ function workerInit() {
     });
     obj.once('listening', function() {
       cluster.worker.state = 'listening';
-      const address = obj.address();
+      var address = obj.address();
       message.act = 'listening';
       message.port = address && address.port || options.port;
       send(message);

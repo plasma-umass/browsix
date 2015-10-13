@@ -1,7 +1,7 @@
 'use strict';
 
-const binding = process.binding('contextify');
-const Script = binding.ContextifyScript;
+var binding = process.binding('contextify');
+var Script = binding.ContextifyScript;
 
 // The binding provides a few useful primitives:
 // - ContextifyScript(code, { filename = "evalmachine.anonymous",

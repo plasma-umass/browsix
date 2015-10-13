@@ -1,11 +1,11 @@
 'use strict';
 
-const tls = require('./tls');
-const url = require('./url');
-const http = require('./http');
-const util = require('./util');
-const inherits = util.inherits;
-const debug = util.debuglog('https');
+var tls = require('././tls');
+var url = require('././url');
+var http = require('././http');
+var util = require('././util');
+var inherits = util.inherits;
+var debug = util.debuglog('https');
 
 function Server(opts, requestListener) {
   if (!(this instanceof Server)) return new Server(opts, requestListener);
@@ -60,7 +60,7 @@ function createConnection(port, host, options) {
   debug('createConnection', options);
 
   if (options._agentKey) {
-    const session = this._getSession(options._agentKey);
+    var session = this._getSession(options._agentKey);
     if (session) {
       debug('reuse session for %j', options._agentKey);
       options = util._extend({
@@ -69,8 +69,8 @@ function createConnection(port, host, options) {
     }
   }
 
-  const self = this;
-  const socket = tls.connect(options, function() {
+  var self = this;
+  var socket = tls.connect(options, function() {
     if (!options._agentKey)
       return;
 
@@ -139,7 +139,7 @@ Agent.prototype._cacheSession = function _cacheSession(key, session) {
 
   // Put new entry
   if (this._sessionCache.list.length >= this.maxCachedSessions) {
-    const oldKey = this._sessionCache.list.shift();
+    var oldKey = this._sessionCache.list.shift();
     debug('evicting %j', oldKey);
     delete this._sessionCache.map[oldKey];
   }
@@ -148,7 +148,7 @@ Agent.prototype._cacheSession = function _cacheSession(key, session) {
   this._sessionCache.map[key] = session;
 };
 
-const globalAgent = new Agent();
+var globalAgent = new Agent();
 
 exports.globalAgent = globalAgent;
 exports.Agent = Agent;

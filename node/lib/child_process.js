@@ -1,20 +1,20 @@
 'use strict';
 
-const util = require('./util');
-const internalUtil = require('./internal/util');
-const debug = util.debuglog('child_process');
-const constants = require('./constants');
+var util = require('././util');
+var internalUtil = require('././internal/util');
+var debug = util.debuglog('child_process');
+var constants = require('././constants');
 
-const uv = process.binding('uv');
-const spawn_sync = process.binding('spawn_sync');
-const Buffer = require('./buffer').Buffer;
-const Pipe = process.binding('pipe_wrap').Pipe;
-const child_process = require('./internal/child_process');
+var uv = process.binding('uv');
+var spawn_sync = process.binding('spawn_sync');
+var Buffer = require('././buffer').Buffer;
+var Pipe = process.binding('pipe_wrap').Pipe;
+var child_process = require('././internal/child_process');
 
-const errnoException = util._errnoException;
-const _validateStdio = child_process._validateStdio;
-const setupChannel = child_process.setupChannel;
-const ChildProcess = exports.ChildProcess = child_process.ChildProcess;
+var errnoException = util._errnoException;
+var _validateStdio = child_process._validateStdio;
+var setupChannel = child_process.setupChannel;
+var ChildProcess = exports.ChildProcess = child_process.ChildProcess;
 
 exports.fork = function(modulePath /*, args, options*/) {
 
@@ -50,7 +50,7 @@ exports._forkChild = function(fd) {
   var p = new Pipe(true);
   p.open(fd);
   p.unref();
-  const control = setupChannel(process, p);
+  var control = setupChannel(process, p);
   process.on('newListener', function(name) {
     if (name === 'message' || name === 'disconnect') control.ref();
   });

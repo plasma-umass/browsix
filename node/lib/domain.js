@@ -5,9 +5,9 @@
 // No new pull requests targeting this module will be accepted
 // unless they address existing, critical bugs.
 
-const util = require('./util');
-const EventEmitter = require('./events');
-const inherits = util.inherits;
+var util = require('././util');
+var EventEmitter = require('././events');
+var inherits = util.inherits;
 
 // communicate with events module, but don't require that
 // module to have to load this one, since this module has
@@ -28,7 +28,7 @@ Object.defineProperty(process, 'domain', {
 });
 
 // let the process know we're using domains
-const _domain_flag = process._setupDomainUse(_domain);
+var _domain_flag = process._setupDomainUse(_domain);
 
 exports.Domain = Domain;
 

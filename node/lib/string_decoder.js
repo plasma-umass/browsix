@@ -1,6 +1,6 @@
 'use strict';
 
-const Buffer = require('./buffer').Buffer;
+var Buffer = require('././buffer').Buffer;
 
 function assertEncoding(encoding) {
   // Do not cache `Buffer.isEncoding`, some modules monkey-patch it to support
@@ -18,7 +18,7 @@ function assertEncoding(encoding) {
 // to reason about this code, so it should be split up in the future.
 // @TODO There should be a utf8-strict encoding that rejects invalid UTF-8 code
 // points as used by CESU-8.
-const StringDecoder = exports.StringDecoder = function(encoding) {
+var StringDecoder = exports.StringDecoder = function(encoding) {
   this.encoding = (encoding || 'utf8').toLowerCase().replace(/[-_]/, '');
   assertEncoding(encoding);
   switch (this.encoding) {

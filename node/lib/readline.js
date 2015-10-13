@@ -6,13 +6,13 @@
 
 'use strict';
 
-const kHistorySize = 30;
+var kHistorySize = 30;
 
-const util = require('./util');
-const internalUtil = require('./internal/util');
-const inherits = util.inherits;
-const Buffer = require('./buffer').Buffer;
-const EventEmitter = require('./events');
+var util = require('././util');
+var internalUtil = require('././internal/util');
+var inherits = util.inherits;
+var Buffer = require('././buffer').Buffer;
+var EventEmitter = require('././events');
 
 
 exports.createInterface = function(input, output, completer, terminal) {
@@ -29,7 +29,7 @@ exports.createInterface = function(input, output, completer, terminal) {
 function Interface(input, output, completer, terminal) {
   if (!(this instanceof Interface)) {
     // call the constructor preserving original number of arguments
-    const self = Object.create(Interface.prototype);
+    var self = Object.create(Interface.prototype);
     Interface.apply(self, arguments);
     return self;
   }
@@ -116,7 +116,7 @@ function Interface(input, output, completer, terminal) {
       input.removeListener('data', ondata);
       input.removeListener('end', onend);
     });
-    var StringDecoder = require('./string_decoder').StringDecoder; // lazy load
+    var StringDecoder = require('././string_decoder').StringDecoder; // lazy load
     this._decoder = new StringDecoder('utf8');
 
   } else {
@@ -310,7 +310,7 @@ Interface.prototype.write = function(d, key) {
 };
 
 // \r\n, \n, or \r followed by something other than \n
-const lineEnding = /\r?\n|\r(?!\n)/;
+var lineEnding = /\r?\n|\r(?!\n)/;
 Interface.prototype._normalWrite = function(b) {
   if (b === undefined) {
     return;
@@ -898,12 +898,12 @@ exports.Interface = Interface;
  * accepts a readable Stream instance and makes it emit "keypress" events
  */
 
-const KEYPRESS_DECODER = Symbol('keypress-decoder');
-const ESCAPE_DECODER = Symbol('escape-decoder');
+var KEYPRESS_DECODER = Symbol('keypress-decoder');
+var ESCAPE_DECODER = Symbol('escape-decoder');
 
 function emitKeypressEvents(stream) {
   if (stream[KEYPRESS_DECODER]) return;
-  var StringDecoder = require('./string_decoder').StringDecoder; // lazy load
+  var StringDecoder = require('././string_decoder').StringDecoder; // lazy load
   stream[KEYPRESS_DECODER] = new StringDecoder('utf8');
 
   stream[ESCAPE_DECODER] = emitKeys(stream);
@@ -976,8 +976,8 @@ exports.emitKeypressEvents = emitKeypressEvents;
 */
 
 // Regexes used for ansi escape code splitting
-const metaKeyCodeReAnywhere = /(?:\x1b)([a-zA-Z0-9])/;
-const functionKeyCodeReAnywhere = new RegExp('(?:\x1b+)(O|N|\\[|\\[\\[)(?:' + [
+var metaKeyCodeReAnywhere = /(?:\x1b)([a-zA-Z0-9])/;
+var functionKeyCodeReAnywhere = new RegExp('(?:\x1b+)(O|N|\\[|\\[\\[)(?:' + [
   '(\\d+)(?:;(\\d+))?([~^$])',
   '(?:M([@ #!a`])(.)(.))', // mouse
   '(?:1;)?(\\d+)?([a-zA-Z])'
@@ -1064,7 +1064,7 @@ function* emitKeys(stream) {
          * So the generic regexp is like /^((\d;)?\d)?[A-Za-z]$/
          *
          */
-        const cmdStart = s.length - 1;
+        var cmdStart = s.length - 1;
 
         // skip one or two leading digits
         if (ch >= '0' && ch <= '9') {
@@ -1088,7 +1088,7 @@ function* emitKeys(stream) {
          * We buffered enough data, now trying to extract code
          * and modifier from it
          */
-        const cmd = s.slice(cmdStart);
+        var cmd = s.slice(cmdStart);
         var match;
 
         if ((match = cmd.match(/^(\d\d?)(;(\d))?([~^$])$/))) {

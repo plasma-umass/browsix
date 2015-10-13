@@ -1,9 +1,9 @@
 /* eslint-disable require-buffer */
 'use strict';
 
-const binding = process.binding('buffer');
-const internalUtil = require('./internal/util');
-const bindingObj = {};
+var binding = process.binding('buffer');
+var internalUtil = require('././internal/util');
+var bindingObj = {};
 
 exports.Buffer = Buffer;
 exports.SlowBuffer = SlowBuffer;
@@ -16,8 +16,8 @@ var poolSize, poolOffset, allocPool;
 
 
 binding.setupBufferJS(Buffer.prototype, bindingObj);
-const flags = bindingObj.flags;
-const kNoZeroFill = 0;
+var flags = bindingObj.flags;
+var kNoZeroFill = 0;
 
 
 function createPool() {
@@ -67,7 +67,7 @@ function SlowBuffer(length) {
     length = 0;
   if (length > 0)
     flags[kNoZeroFill] = 1;
-  const ui8 = new Uint8Array(+length);
+  var ui8 = new Uint8Array(+length);
   Object.setPrototypeOf(ui8, Buffer.prototype);
   return ui8;
 }
@@ -78,7 +78,7 @@ SlowBuffer.__proto__ = Buffer;
 
 function allocate(size) {
   if (size === 0) {
-    const ui8 = new Uint8Array(size);
+    var ui8 = new Uint8Array(size);
     Object.setPrototypeOf(ui8, Buffer.prototype);
     return ui8;
   }
@@ -95,7 +95,7 @@ function allocate(size) {
     // being zero filled.
     if (size > 0)
       flags[kNoZeroFill] = 1;
-    const ui8 = new Uint8Array(size);
+    var ui8 = new Uint8Array(size);
     Object.setPrototypeOf(ui8, Buffer.prototype);
     return ui8;
   }
@@ -477,7 +477,7 @@ Buffer.prototype.set = internalUtil.deprecate(function set(offset, v) {
 // TODO(trevnorris): fix these checks to follow new standard
 // write(string, offset = 0, length = buffer.length, encoding = 'utf8')
 var writeWarned = false;
-const writeMsg = 'Buffer.write(string, encoding, offset, length) is ' +
+var writeMsg = 'Buffer.write(string, encoding, offset, length) is ' +
                  'deprecated. Use write(string[, offset[, length]]' +
                  '[, encoding]) instead.';
 Buffer.prototype.write = function(string, offset, length, encoding) {
@@ -571,7 +571,7 @@ Buffer.prototype.toJSON = function() {
 // TODO(trevnorris): currently works like Array.prototype.slice(), which
 // doesn't follow the new standard for throwing on out of range indexes.
 Buffer.prototype.slice = function slice(start, end) {
-  const buffer = this.subarray(start, end);
+  var buffer = this.subarray(start, end);
   Object.setPrototypeOf(buffer, Buffer.prototype);
   return buffer;
 };

@@ -1,21 +1,21 @@
 'use strict';
 
-const util = require('./util');
-const net = require('./net');
-const EventEmitter = require('./events');
-const HTTPParser = process.binding('http_parser').HTTPParser;
-const assert = require('./assert').ok;
-const common = require('./_http_common');
-const parsers = common.parsers;
-const freeParser = common.freeParser;
-const debug = common.debug;
-const CRLF = common.CRLF;
-const continueExpression = common.continueExpression;
-const chunkExpression = common.chunkExpression;
-const httpSocketSetup = common.httpSocketSetup;
-const OutgoingMessage = require('./_http_outgoing').OutgoingMessage;
+var util = require('././util');
+var net = require('././net');
+var EventEmitter = require('././events');
+var HTTPParser = process.binding('http_parser').HTTPParser;
+var assert = require('././assert').ok;
+var common = require('././_http_common');
+var parsers = common.parsers;
+var freeParser = common.freeParser;
+var debug = common.debug;
+var CRLF = common.CRLF;
+var continueExpression = common.continueExpression;
+var chunkExpression = common.chunkExpression;
+var httpSocketSetup = common.httpSocketSetup;
+var OutgoingMessage = require('././_http_outgoing').OutgoingMessage;
 
-const STATUS_CODES = exports.STATUS_CODES = {
+var STATUS_CODES = exports.STATUS_CODES = {
   100 : 'Continue',
   101 : 'Switching Protocols',
   102 : 'Processing',                 // RFC 2518, obsoleted by RFC 4918
@@ -79,7 +79,7 @@ const STATUS_CODES = exports.STATUS_CODES = {
   511 : 'Network Authentication Required' // RFC 6585
 };
 
-const kOnExecute = HTTPParser.kOnExecute | 0;
+var kOnExecute = HTTPParser.kOnExecute | 0;
 
 
 function ServerResponse(req) {
@@ -117,7 +117,7 @@ function onServerResponseClose() {
   // array. That is, in the example below, b still gets called even though
   // it's been removed by a:
   //
-  //   var EventEmitter = require('./events');
+  //   var EventEmitter = require('././events');
   //   var obj = new EventEmitter();
   //   obj.on('event', a);
   //   obj.on('event', b);

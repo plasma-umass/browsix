@@ -1,9 +1,9 @@
 'use strict';
 
-const net = require('./net');
-const util = require('./util');
-const EventEmitter = require('./events');
-const debug = util.debuglog('http');
+var net = require('././net');
+var util = require('././util');
+var EventEmitter = require('././events');
+var debug = util.debuglog('http');
 
 // New Agent code.
 

@@ -1,14 +1,14 @@
 'use strict';
 
-const Timer = process.binding('timer_wrap').Timer;
-const L = require('./_linklist');
-const assert = require('./assert').ok;
-const util = require('./util');
-const debug = util.debuglog('timer');
-const kOnTimeout = Timer.kOnTimeout | 0;
+var Timer = process.binding('timer_wrap').Timer;
+var L = require('././_linklist');
+var assert = require('././assert').ok;
+var util = require('././util');
+var debug = util.debuglog('timer');
+var kOnTimeout = Timer.kOnTimeout | 0;
 
 // Timeout values > TIMEOUT_MAX are set to 1.
-const TIMEOUT_MAX = 2147483647; // 2^31-1
+var TIMEOUT_MAX = 2147483647; // 2^31-1
 
 // IDLE TIMEOUTS
 //
@@ -116,7 +116,7 @@ function listOnTimeoutNT(list) {
 }
 
 
-const unenroll = exports.unenroll = function(item) {
+var unenroll = exports.unenroll = function(item) {
   L.remove(item);
 
   var list = lists[item._idleTimeout];
@@ -292,7 +292,7 @@ exports.clearInterval = function(timer) {
 };
 
 
-const Timeout = function(after) {
+var Timeout = function(after) {
   this._called = false;
   this._idleTimeout = after;
   this._idlePrev = this;

@@ -1,26 +1,26 @@
 'use strict';
 
-const assert = require('./assert').ok;
-const Stream = require('./stream');
-const timers = require('./timers');
-const util = require('./util');
-const internalUtil = require('./internal/util');
-const Buffer = require('./buffer').Buffer;
-const common = require('./_http_common');
+var assert = require('././assert').ok;
+var Stream = require('././stream');
+var timers = require('././timers');
+var util = require('././util');
+var internalUtil = require('././internal/util');
+var Buffer = require('././buffer').Buffer;
+var common = require('././_http_common');
 
-const CRLF = common.CRLF;
-const chunkExpression = common.chunkExpression;
-const debug = common.debug;
+var CRLF = common.CRLF;
+var chunkExpression = common.chunkExpression;
+var debug = common.debug;
 
-const connectionExpression = /^Connection$/i;
-const transferEncodingExpression = /^Transfer-Encoding$/i;
-const closeExpression = /close/i;
-const contentLengthExpression = /^Content-Length$/i;
-const dateExpression = /^Date$/i;
-const expectExpression = /^Expect$/i;
-const trailerExpression = /^Trailer$/i;
+var connectionExpression = /^Connection$/i;
+var transferEncodingExpression = /^Transfer-Encoding$/i;
+var closeExpression = /close/i;
+var contentLengthExpression = /^Content-Length$/i;
+var dateExpression = /^Date$/i;
+var expectExpression = /^Expect$/i;
+var trailerExpression = /^Trailer$/i;
 
-const automaticHeaders = {
+var automaticHeaders = {
   connection: true,
   'content-length': true,
   'transfer-encoding': true,
@@ -514,7 +514,7 @@ OutgoingMessage.prototype.addTrailers = function(headers) {
 };
 
 
-const crlf_buf = new Buffer('\r\n');
+var crlf_buf = new Buffer('\r\n');
 
 
 OutgoingMessage.prototype.end = function(data, encoding, callback) {

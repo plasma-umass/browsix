@@ -1,7 +1,7 @@
 'use strict';
 
-const util = require('./util');
-const isWindows = process.platform === 'win32';
+var util = require('././util');
+var isWindows = process.platform === 'win32';
 
 function assertPath(path) {
   if (typeof path !== 'string') {
@@ -62,11 +62,11 @@ function trimArray(arr) {
 
 // Regex to split a windows path into three parts: [*, device, slash,
 // tail] windows-only
-const splitDeviceRe =
+var splitDeviceRe =
     /^([a-zA-Z]:|[\\\/]{2}[^\\\/]+[\\\/]+[^\\\/]+)?([\\\/])?([\s\S]*?)$/;
 
 // Regex to split the tail part of the above into [*, dir, basename, ext]
-const splitTailRe =
+var splitTailRe =
     /^([\s\S]*?)((?:\.{1,2}|[^\\\/]+?|)(\.[^.\/\\]*|))(?:[\\\/]*)$/;
 
 var win32 = {};
@@ -402,13 +402,13 @@ win32.delimiter = ';';
 
 // Split a filename into [root, dir, basename, ext], unix version
 // 'root' is just a slash, or nothing.
-const splitPathRe =
+var splitPathRe =
     /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
 var posix = {};
 
 
 function posixSplitPath(filename) {
-  const out = splitPathRe.exec(filename);
+  var out = splitPathRe.exec(filename);
   out.shift();
   return out;
 }

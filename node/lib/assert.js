@@ -25,16 +25,16 @@
 'use strict';
 
 // UTILITY
-const compare = process.binding('buffer').compare;
-const util = require('./util');
-const Buffer = require('./buffer').Buffer;
-const pSlice = Array.prototype.slice;
+var compare = process.binding('buffer').compare;
+var util = require('././util');
+var Buffer = require('././buffer').Buffer;
+var pSlice = Array.prototype.slice;
 
 // 1. The assert module provides functions that throw
 // AssertionError's when particular conditions are not met. The
 // assert module must conform to the following interface.
 
-const assert = module.exports = ok;
+var assert = module.exports = ok;
 
 // 2. The AssertionError is defined in assert.
 // new assert.AssertionError({ message: message,

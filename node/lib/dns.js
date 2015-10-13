@@ -1,16 +1,16 @@
 'use strict';
 
-const net = require('./net');
-const util = require('./util');
+var net = require('././net');
+var util = require('././util');
 
-const cares = process.binding('cares_wrap');
-const uv = process.binding('uv');
+var cares = process.binding('cares_wrap');
+var uv = process.binding('uv');
 
-const GetAddrInfoReqWrap = cares.GetAddrInfoReqWrap;
-const GetNameInfoReqWrap = cares.GetNameInfoReqWrap;
-const QueryReqWrap = cares.QueryReqWrap;
+var GetAddrInfoReqWrap = cares.GetAddrInfoReqWrap;
+var GetNameInfoReqWrap = cares.GetNameInfoReqWrap;
+var QueryReqWrap = cares.QueryReqWrap;
 
-const isIp = net.isIP;
+var isIp = net.isIP;
 
 
 function errnoException(err, syscall, hostname) {

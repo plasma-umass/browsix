@@ -24,7 +24,7 @@ EventEmitter.init = function() {
   this.domain = null;
   if (EventEmitter.usingDomains) {
     // if there is an active domain, then attach to it.
-    domain = domain || require('./domain');
+    domain = domain || require('././domain');
     if (domain.active && !(this instanceof domain.Domain)) {
       this.domain = domain.active;
     }
@@ -404,10 +404,10 @@ EventEmitter.listenerCount = function(emitter, type) {
 
 EventEmitter.prototype.listenerCount = listenerCount;
 function listenerCount(type) {
-  const events = this._events;
+  var events = this._events;
 
   if (events) {
-    const evlistener = events[type];
+    var evlistener = events[type];
 
     if (typeof evlistener === 'function') {
       return 1;

@@ -3,11 +3,11 @@
 module.exports = Readable;
 Readable.ReadableState = ReadableState;
 
-const EE = require('./events');
-const Stream = require('./stream');
-const Buffer = require('./buffer').Buffer;
-const util = require('./util');
-const debug = util.debuglog('stream');
+var EE = require('././events');
+var Stream = require('././stream');
+var Buffer = require('././buffer').Buffer;
+var util = require('././util');
+var debug = util.debuglog('stream');
 var StringDecoder;
 
 util.inherits(Readable, Stream);
@@ -71,7 +71,7 @@ function ReadableState(options, stream) {
   this.encoding = null;
   if (options.encoding) {
     if (!StringDecoder)
-      StringDecoder = require('./string_decoder').StringDecoder;
+      StringDecoder = require('././string_decoder').StringDecoder;
     this.decoder = new StringDecoder(options.encoding);
     this.encoding = options.encoding;
   }
@@ -184,14 +184,14 @@ function needMoreData(state) {
 // backwards compatibility.
 Readable.prototype.setEncoding = function(enc) {
   if (!StringDecoder)
-    StringDecoder = require('./string_decoder').StringDecoder;
+    StringDecoder = require('././string_decoder').StringDecoder;
   this._readableState.decoder = new StringDecoder(enc);
   this._readableState.encoding = enc;
   return this;
 };
 
 // Don't raise the hwm > 8MB
-const MAX_HWM = 0x800000;
+var MAX_HWM = 0x800000;
 function computeNewHighWaterMark(n) {
   if (n >= MAX_HWM) {
     n = MAX_HWM;
@@ -783,7 +783,7 @@ Readable.prototype.wrap = function(stream) {
   }
 
   // proxy certain important events.
-  const events = ['error', 'close', 'destroy', 'pause', 'resume'];
+  var events = ['error', 'close', 'destroy', 'pause', 'resume'];
   events.forEach(function(ev) {
     stream.on(ev, self.emit.bind(self, ev));
   });

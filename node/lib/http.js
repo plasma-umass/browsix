@@ -1,31 +1,31 @@
 'use strict';
 
-const util = require('./util');
-const internalUtil = require('./internal/util');
-const EventEmitter = require('./events');
+var util = require('././util');
+var internalUtil = require('././internal/util');
+var EventEmitter = require('././events');
 
 
-exports.IncomingMessage = require('./_http_incoming').IncomingMessage;
+exports.IncomingMessage = require('././_http_incoming').IncomingMessage;
 
 
-const common = require('./_http_common');
+var common = require('././_http_common');
 exports.METHODS = common.methods.slice().sort();
 
 
-exports.OutgoingMessage = require('./_http_outgoing').OutgoingMessage;
+exports.OutgoingMessage = require('././_http_outgoing').OutgoingMessage;
 
 
-const server = require('./_http_server');
+var server = require('././_http_server');
 exports.ServerResponse = server.ServerResponse;
 exports.STATUS_CODES = server.STATUS_CODES;
 
 
-const agent = require('./_http_agent');
-const Agent = exports.Agent = agent.Agent;
+var agent = require('././_http_agent');
+var Agent = exports.Agent = agent.Agent;
 exports.globalAgent = agent.globalAgent;
 
-const client = require('./_http_client');
-const ClientRequest = exports.ClientRequest = client.ClientRequest;
+var client = require('././_http_client');
+var ClientRequest = exports.ClientRequest = client.ClientRequest;
 
 exports.request = function(options, cb) {
   return new ClientRequest(options, cb);
@@ -38,7 +38,7 @@ exports.get = function(options, cb) {
 };
 
 exports._connectionListener = server._connectionListener;
-const Server = exports.Server = server.Server;
+var Server = exports.Server = server.Server;
 
 exports.createServer = function(requestListener) {
   return new Server(requestListener);

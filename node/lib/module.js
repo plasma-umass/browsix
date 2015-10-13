@@ -1,14 +1,14 @@
 'use strict';
 
-const NativeModule = require('./native_module');
-const util = require('./util');
-const internalUtil = require('./internal/util');
-const runInThisContext = require('./vm').runInThisContext;
-const assert = require('./assert').ok;
-const fs = require('./fs');
-const path = require('./path');
-const internalModuleReadFile = process.binding('fs').internalModuleReadFile;
-const internalModuleStat = process.binding('fs').internalModuleStat;
+var NativeModule = require('././native_module');
+var util = require('././util');
+var internalUtil = require('././internal/util');
+var runInThisContext = require('././vm').runInThisContext;
+var assert = require('././assert').ok;
+var fs = require('././fs');
+var path = require('././path');
+var internalModuleReadFile = process.binding('fs').internalModuleReadFile;
+var internalModuleStat = process.binding('fs').internalModuleStat;
 
 
 // If obj.hasOwnProperty has been overridden, then calling
@@ -45,7 +45,7 @@ Module._debug = util.debuglog('module');
 
 
 // We use this alias for the preprocessor that filters it out
-const debug = Module._debug;
+var debug = Module._debug;
 
 
 // given a module name, and a list of paths to test, returns the first
@@ -60,7 +60,7 @@ const debug = Module._debug;
 //   -> a/index.<ext>
 
 // check if the directory is a package.json dir
-const packageMainCache = {};
+var packageMainCache = {};
 
 function readPackage(requestPath) {
   if (hasOwnProperty(packageMainCache, requestPath)) {
@@ -101,7 +101,7 @@ Module._realpathCache = {};
 
 // check if the file exists and is not a directory
 function tryFile(requestPath) {
-  const rc = internalModuleStat(path._makeLong(requestPath));
+  var rc = internalModuleStat(path._makeLong(requestPath));
   return rc === 0 && toRealPath(requestPath);
 }
 
@@ -144,7 +144,7 @@ Module._findPath = function(request, paths) {
     var filename;
 
     if (!trailingSlash) {
-      const rc = internalModuleStat(path._makeLong(basePath));
+      var rc = internalModuleStat(path._makeLong(basePath));
       if (rc === 0) {  // File.
         filename = toRealPath(basePath);
       } else if (rc === 1) {  // Directory.
@@ -218,7 +218,7 @@ Module._resolveLookupPaths = function(request, parent) {
       paths = parent.paths.concat(paths);
     }
 
-    // Maintain backwards compat with certain broken uses of require('./.')
+    // Maintain backwards compat with certain broken uses of require('././.')
     // by putting the module's directory in front of the lookup paths.
     if (request === '.') {
       if (parent && parent.filename) {
@@ -233,7 +233,7 @@ Module._resolveLookupPaths = function(request, parent) {
 
   // with --eval, parent.id is not set and parent.filename is null
   if (!parent || !parent.id || !parent.filename) {
-    // make require('././path/to/foo') work - normally the path is taken
+    // make require('./././path/to/foo') work - normally the path is taken
     // from realpath(__filename) but with eval there is no filename
     var mainPaths = ['.'].concat(modulePaths);
     mainPaths = Module._nodeModulePaths('.').concat(mainPaths);
@@ -247,7 +247,7 @@ Module._resolveLookupPaths = function(request, parent) {
   var parentIdPath = isIndex ? parent.id : path.dirname(parent.id);
   var id = path.resolve(parentIdPath, request);
 
-  // make sure require('././path') and require('path') get distinct ids, even
+  // make sure require('./././path') and require('path') get distinct ids, even
   // when called from the toplevel js file
   if (parentIdPath === '.' && id.indexOf('/') === -1) {
     id = './' + id;
@@ -478,7 +478,7 @@ Module.runMain = function() {
 };
 
 Module._initPaths = function() {
-  const isWindows = process.platform === 'win32';
+  var isWindows = process.platform === 'win32';
 
   if (isWindows) {
     var homeDir = process.env.USERPROFILE;

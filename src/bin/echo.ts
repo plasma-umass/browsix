@@ -4,31 +4,27 @@
 
 import * as fs from 'fs';
 
-// This is heavily based on the design of echo.c from sbase:
-// http://git.suckless.org/sbase/tree/echo.c .
-
 function main(): void {
 	'use strict';
 
 	let pathToScript = process.argv[1];
 	let args = process.argv.slice(2);
 
-	let nflag: boolean = false;
+	let trailingNewline: boolean = true;
 
 	if (args.length && args[0] === '-n') {
-		nflag = true;
+		trailingNewline = false;
 		args = args.slice(1);
 	}
 
 	let out = '';
-
 	for (let i = 0; i < args.length; i++) {
 		if (i !== 0)
 			out += ' ';
 		out += args[i];
 	}
 
-	if (!nflag)
+	if (trailingNewline)
 		out += '\n';
 
 	process.stdout.write(out, 'utf-8', function(err: any): void {

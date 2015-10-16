@@ -18,6 +18,7 @@ let Buffer: any;
 require('./vendor/BrowserFS/src/backend/in_memory');
 require('./vendor/BrowserFS/src/backend/XmlHttpRequest');
 require('./vendor/BrowserFS/src/backend/overlay');
+require('./vendor/BrowserFS/src/backend/async_mirror');
 //require('./vendor/BrowserFS/src/backend/html5fs');
 //require('./vendor/BrowserFS/src/backend/dropbox');
 //require('./vendor/BrowserFS/src/backend/localStorage');
@@ -459,7 +460,12 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback): void {
 		setTimeout(cb, 0, 'unknown FileSystem type: ' + fsType);
 		return;
 	}
-	let root = new (Function.prototype.bind.apply(rootConstructor, [null].concat(fsArgs)));
+	let asyncRoot = new (Function.prototype.bind.apply(rootConstructor, [null].concat(fsArgs)));
+
+	// FIXME: this is a bit gross
+	let syncRoot = new BrowserFS.FileSystem['InMemory']();
+	let root = new BrowserFS.FileSystem['AsyncMirrorFS'](syncRoot, asyncRoot);
+
 	let writable = new BrowserFS.FileSystem['InMemory']();
 	let overlaid = new BrowserFS.FileSystem['OverlayFS'](writable, root);
 	BrowserFS.initialize(overlaid);

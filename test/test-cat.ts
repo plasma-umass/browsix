@@ -22,7 +22,7 @@ describe('cat /a /b', function(): void {
 	let kernel: Kernel = null;
 
 	it('should boot', function(done: MochaDone): void {
-		Boot('XmlHttpRequest', ['index.json', ROOT], function(err: any, freshKernel: Kernel): void {
+		Boot('XmlHttpRequest', ['index.json', ROOT, true], function(err: any, freshKernel: Kernel): void {
 			expect(err).to.be.null;
 			expect(freshKernel).not.to.be.null;
 			kernel = freshKernel;

@@ -466,12 +466,24 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback): void {
 	let syncRoot = new BrowserFS.FileSystem['InMemory']();
 	let root = new BrowserFS.FileSystem['AsyncMirrorFS'](syncRoot, asyncRoot);
 
-	let writable = new BrowserFS.FileSystem['InMemory']();
-	let overlaid = new BrowserFS.FileSystem['OverlayFS'](writable, root);
-	BrowserFS.initialize(overlaid);
-	let fs: fs = bfs.require('fs');
-	let k = new Kernel(fs);
-	setTimeout(cb, 0, null, k);
+	root.initialize((err: any) => {
+		if (err) {
+			cb(err, undefined);
+			return;
+		}
+		let writable = new BrowserFS.FileSystem['InMemory']();
+		let overlaid = new BrowserFS.FileSystem['OverlayFS'](writable, root);
+		overlaid.initialize((errInner: any) => {
+			if (errInner) {
+				cb(errInner, undefined);
+				return;
+			}
+			BrowserFS.initialize(overlaid);
+			let fs: fs = bfs.require('fs');
+			let k = new Kernel(fs);
+			setTimeout(cb, 0, null, k);
+		});
+	});
 }
 
 

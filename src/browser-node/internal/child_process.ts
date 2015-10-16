@@ -11,6 +11,18 @@ export function setupChannel(): void {
 }
 
 export class ChildProcess {
+	
+	_closesNeeded: number = 1;
+	_closesGot: number = 0;
+	connected: boolean = false;
+
+	signalCode: number = null;
+	exitCode: number = null;
+	killed: boolean = false;
+	spawnfile: any = null;
+
+	_handle = new Process();
+
 	constructor() {
 		(<any>console).trace('FIXME: implement ChildProcess');
 	}

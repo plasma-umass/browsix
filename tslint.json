@@ -41,7 +41,7 @@
     "no-shadowed-variable": true,
     "no-duplicate-variable": true,
     "no-empty": false,
-    "no-eval": false,
+    "no-eval": true,
     "no-internal-module": true,
     "no-require-imports": false,
     "no-string-literal": false,

@@ -121,50 +121,6 @@ function _require(moduleName: string): any {
 if (typeof (<any>self).setTimeout === 'undefined')
 	(<any>self).setTimeout = superSadSetTimeout;
 
-
-const whitelist = {
-	'Array': true,
-	'ArrayBuffer': true,
-	'Boolean': true,
-	'Date': true,
-	'Event': true,
-	'EventSource': true,
-	'EventTarget': true,
-	'Float32Array': true,
-	'Float64Array': true,
-	'Function': true,
-	'Int8Array': true,
-	'Int16Array': true,
-	'Int32Array': true,
-	'JSON': true,
-	'Math': true,
-	'NaN': true,
-	'Number': true,
-	'Object': true,
-	'Promise': true,
-	'Set': true,
-	'String': true,
-	'Uint8Array': true,
-	'Uint8ClampedArray': true,
-	'Uint16Array': true,
-	'Uint32Array': true,
-	'atob': true,
-	'btoa': true,
-	'clearInterval': true,
-	'clearTimeout': true,
-	'hasOwnProperty': true,
-	'isFinite': true,
-	'isNaN': true,
-	'isPrototypeOf': true,
-	'parseFloat': true,
-	'parseInt': true,
-	'self': true,
-	'setTimeout': true,
-	'setInterval': true,
-	'undefined': true,
-};
-
-
 syscall.addEventListener('init', init.bind(this));
 function init(data: SyscallResponse): void {
 	'use strict';
@@ -177,23 +133,12 @@ function init(data: SyscallResponse): void {
 	process.stdout = new fs.createWriteStream('<stdout>', {fd: 1});
 	process.stderr = new fs.createWriteStream('<stderr>', {fd: 2});
 
-	let __eval = (<any>self).eval;
-
-	for (let property in self) {
-		if (!(property in whitelist)) {
-			try {
-				delete self[property];
-			} catch (e) {
-			}
-		}
-	}
-
 	fs.readFile(args[1], 'utf-8', (err: any, contents: string) => {
 
 		(<any>self).process = process;
 		(<any>self).require = _require;
 		try {
-			__eval(contents);
+			(<any>self).eval(contents);
 		} catch (e) {
 			console.log(e);
 		}

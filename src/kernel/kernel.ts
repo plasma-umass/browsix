@@ -429,7 +429,7 @@ export class Task {
 					args: ['browser-node'].concat(this.args).concat(<any>this.env),
 				});
 			},
-			5000);
+			0);
 	}
 
 	exit(code: number): void {

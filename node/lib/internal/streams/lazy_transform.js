@@ -3,8 +3,8 @@
 // for the stream, one conventional and one non-conventional.
 'use strict';
 
-var stream = require('././stream');
-var util = require('././util');
+var stream = require('./stream');
+var util = require('./util');
 
 module.exports = LazyTransform;
 

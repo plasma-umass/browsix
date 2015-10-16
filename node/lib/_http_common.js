@@ -1,14 +1,14 @@
 'use strict';
 
-var FreeList = require('././internal/freelist').FreeList;
+var FreeList = require('./internal/freelist').FreeList;
 var HTTPParser = process.binding('http_parser').HTTPParser;
 
-var incoming = require('././_http_incoming');
+var incoming = require('./_http_incoming');
 var IncomingMessage = incoming.IncomingMessage;
 var readStart = incoming.readStart;
 var readStop = incoming.readStop;
 
-var debug = require('././util').debuglog('http');
+var debug = require('./util').debuglog('http');
 exports.debug = debug;
 
 exports.CRLF = '\r\n';

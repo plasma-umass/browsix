@@ -1,8 +1,8 @@
 'use strict';
 
-var util = require('././util');
-var internalUtil = require('././internal/util');
-var net = require('././net');
+var util = require('./util');
+var internalUtil = require('./internal/util');
+var net = require('./net');
 var TTY = process.binding('tty_wrap').TTY;
 var isTTY = process.binding('tty_wrap').isTTY;
 var inherits = util.inherits;
@@ -94,16 +94,16 @@ WriteStream.prototype._refreshSize = function() {
 
 // backwards-compat
 WriteStream.prototype.cursorTo = function(x, y) {
-  require('././readline').cursorTo(this, x, y);
+  require('./readline').cursorTo(this, x, y);
 };
 WriteStream.prototype.moveCursor = function(dx, dy) {
-  require('././readline').moveCursor(this, dx, dy);
+  require('./readline').moveCursor(this, dx, dy);
 };
 WriteStream.prototype.clearLine = function(dir) {
-  require('././readline').clearLine(this, dir);
+  require('./readline').clearLine(this, dir);
 };
 WriteStream.prototype.clearScreenDown = function() {
-  require('././readline').clearScreenDown(this);
+  require('./readline').clearScreenDown(this);
 };
 WriteStream.prototype.getWindowSize = function() {
   return [this.columns, this.rows];

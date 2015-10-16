@@ -1,9 +1,9 @@
 'use strict';
 
-var tls = require('././tls');
-var url = require('././url');
-var http = require('././http');
-var util = require('././util');
+var tls = require('./tls');
+var url = require('./url');
+var http = require('./http');
+var util = require('./util');
 var inherits = util.inherits;
 var debug = util.debuglog('https');
 

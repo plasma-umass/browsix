@@ -1,14 +1,14 @@
 'use strict';
 
-var assert = require('././assert');
-var crypto = require('././crypto');
-var net = require('././net');
-var tls = require('././tls');
-var util = require('././util');
-var common = require('././_tls_common');
-var StreamWrap = require('././_stream_wrap').StreamWrap;
-var Buffer = require('././buffer').Buffer;
-var Duplex = require('././stream').Duplex;
+var assert = require('./assert');
+var crypto = require('./crypto');
+var net = require('./net');
+var tls = require('./tls');
+var util = require('./util');
+var common = require('./_tls_common');
+var StreamWrap = require('./_stream_wrap').StreamWrap;
+var Buffer = require('./buffer').Buffer;
+var Duplex = require('./stream').Duplex;
 var debug = util.debuglog('tls');
 var Timer = process.binding('timer_wrap').Timer;
 var tls_wrap = process.binding('tls_wrap');
@@ -296,7 +296,7 @@ proxiedMethods.forEach(function(name) {
 
 tls_wrap.TLSWrap.prototype.close = function closeProxy(cb) {
   if (this._parentWrap && this._parentWrap._handle === this._parent) {
-    setImmediate(cb);
+    this._parentWrap.once('close', cb);
     return this._parentWrap.destroy();
   }
   return this._parent.close(cb);

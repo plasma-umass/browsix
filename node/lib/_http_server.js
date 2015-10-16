@@ -1,11 +1,11 @@
 'use strict';
 
-var util = require('././util');
-var net = require('././net');
-var EventEmitter = require('././events');
+var util = require('./util');
+var net = require('./net');
+var EventEmitter = require('./events');
 var HTTPParser = process.binding('http_parser').HTTPParser;
-var assert = require('././assert').ok;
-var common = require('././_http_common');
+var assert = require('./assert').ok;
+var common = require('./_http_common');
 var parsers = common.parsers;
 var freeParser = common.freeParser;
 var debug = common.debug;
@@ -13,7 +13,7 @@ var CRLF = common.CRLF;
 var continueExpression = common.continueExpression;
 var chunkExpression = common.chunkExpression;
 var httpSocketSetup = common.httpSocketSetup;
-var OutgoingMessage = require('././_http_outgoing').OutgoingMessage;
+var OutgoingMessage = require('./_http_outgoing').OutgoingMessage;
 
 var STATUS_CODES = exports.STATUS_CODES = {
   100 : 'Continue',
@@ -117,7 +117,7 @@ function onServerResponseClose() {
   // array. That is, in the example below, b still gets called even though
   // it's been removed by a:
   //
-  //   var EventEmitter = require('././events');
+  //   var EventEmitter = require('./events');
   //   var obj = new EventEmitter();
   //   obj.on('event', a);
   //   obj.on('event', b);
@@ -265,6 +265,10 @@ function connectionListener(socket) {
   var outgoingData = 0;
 
   function updateOutgoingData(delta) {
+    // `outgoingData` is an approximate amount of bytes queued through all
+    // inactive responses. If more data than the high watermark is queued - we
+    // need to pause TCP socket/HTTP parser, and wait until the data will be
+    // sent to the client.
     outgoingData += delta;
     if (socket._paused && outgoingData < socket._writableState.highWaterMark)
       return socketOnDrain();

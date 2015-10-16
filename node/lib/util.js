@@ -1,11 +1,11 @@
 'use strict';
 
 var uv = process.binding('uv');
-var Buffer = require('././buffer').Buffer;
-var internalUtil = require('././internal/util');
+var Buffer = require('./buffer').Buffer;
+var internalUtil = require('./internal/util');
+var binding = process.binding('util');
 
 var Debug;
-var ObjectIsPromise;
 
 var formatRegExp = /%[sdj%]/g;
 exports.format = function(f) {
@@ -187,17 +187,15 @@ function getConstructorOf(obj) {
 
 function ensureDebugIsInitialized() {
   if (Debug === undefined) {
-    var runInDebugContext = require('././vm').runInDebugContext;
-    var result = runInDebugContext('[Debug, ObjectIsPromise]');
-    Debug = result[0];
-    ObjectIsPromise = result[1];
+    var runInDebugContext = require('./vm').runInDebugContext;
+    Debug = runInDebugContext('Debug');
   }
 }
 
 
 function inspectPromise(p) {
   ensureDebugIsInitialized();
-  if (!ObjectIsPromise(p))
+  if (!binding.isPromise(p))
     return null;
   var mirror = Debug.MakeMirror(p, true);
   return {status: mirror.status(), value: mirror.promiseValue().value_};
@@ -292,7 +290,10 @@ function formatValue(ctx, value, recurseTimes) {
   var base = '', empty = false, braces, formatter;
 
   if (Array.isArray(value)) {
-    if (constructor === Array)
+    // We can't use `constructor === Array` because this could
+    // have come from a Debug context.
+    // Otherwise, an Array will print "Array [...]".
+    if (constructor && constructor.name === 'Array')
       constructor = null;
     braces = ['[', ']'];
     empty = value.length === 0;
@@ -320,11 +321,23 @@ function formatValue(ctx, value, recurseTimes) {
       braces = ['{', '}'];
       formatter = formatPromise;
     } else {
-      if (constructor === Object)
-        constructor = null;
-      braces = ['{', '}'];
-      empty = true;  // No other data than keys.
-      formatter = formatObject;
+      if (binding.isMapIterator(value)) {
+        constructor = { name: 'MapIterator' };
+        braces = ['{', '}'];
+        empty = false;
+        formatter = formatCollectionIterator;
+      } else if (binding.isSetIterator(value)) {
+        constructor = { name: 'SetIterator' };
+        braces = ['{', '}'];
+        empty = false;
+        formatter = formatCollectionIterator;
+      } else {
+        if (constructor === Object)
+          constructor = null;
+        braces = ['{', '}'];
+        empty = true;  // No other data than keys.
+        formatter = formatObject;
+      }
     }
   }
 
@@ -495,6 +508,18 @@ function formatMap(ctx, value, recurseTimes, visibleKeys, keys) {
     output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
                                key, false));
   });
+  return output;
+}
+
+function formatCollectionIterator(ctx, value, recurseTimes, visibleKeys, keys) {
+  ensureDebugIsInitialized();
+  var mirror = Debug.MakeMirror(value, true);
+  var nextRecurseTimes = recurseTimes === null ? null : recurseTimes - 1;
+  var vals = mirror.preview();
+  var output = [];
+  for (let o of vals) {
+    output.push(formatValue(ctx, o, nextRecurseTimes));
+  }
   return output;
 }
 
@@ -773,7 +798,7 @@ exports.p = internalUtil.deprecate(function() {
 
 
 exports.exec = internalUtil.deprecate(function() {
-  return require('././child_process').exec.apply(this, arguments);
+  return require('./child_process').exec.apply(this, arguments);
 }, 'util.exec is deprecated. Use child_process.exec instead.');
 
 

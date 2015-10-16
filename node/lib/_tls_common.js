@@ -1,7 +1,7 @@
 'use strict';
 
-var constants = require('././constants');
-var tls = require('././tls');
+var constants = require('./constants');
+var tls = require('./tls');
 
 // Lazily loaded
 var crypto = null;
@@ -120,7 +120,7 @@ exports.createSecureContext = function createSecureContext(options, context) {
     var passphrase = options.passphrase;
 
     if (!crypto)
-      crypto = require('././crypto');
+      crypto = require('./crypto');
 
     pfx = crypto._toBuf(pfx);
     if (passphrase)

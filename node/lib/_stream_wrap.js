@@ -1,8 +1,8 @@
 'use strict';
 
-var assert = require('././assert');
-var util = require('././util');
-var Socket = require('././net').Socket;
+var assert = require('./assert');
+var util = require('./util');
+var Socket = require('./net').Socket;
 var JSStream = process.binding('js_stream').JSStream;
 var uv = process.binding('uv');
 var debug = util.debuglog('stream_wrap');
@@ -60,7 +60,7 @@ function StreamWrap(stream) {
 util.inherits(StreamWrap, Socket);
 module.exports = StreamWrap;
 
-// require('././_stream_wrap').StreamWrap
+// require('./_stream_wrap').StreamWrap
 StreamWrap.StreamWrap = StreamWrap;
 
 StreamWrap.prototype.isAlive = function isAlive() {

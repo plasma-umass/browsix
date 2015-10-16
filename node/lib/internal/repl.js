@@ -1,11 +1,11 @@
 'use strict';
 
-var Interface = require('././readline').Interface;
-var REPL = require('././repl');
-var path = require('././path');
-var fs = require('././fs');
-var os = require('././os');
-var debug = require('././util').debuglog('repl');
+var Interface = require('./readline').Interface;
+var REPL = require('./repl');
+var path = require('./path');
+var fs = require('./fs');
+var os = require('./os');
+var debug = require('./util').debuglog('repl');
 
 module.exports = Object.create(REPL);
 module.exports.createInternalRepl = createRepl;

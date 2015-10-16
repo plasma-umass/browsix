@@ -3,16 +3,16 @@
 
 'use strict';
 
-var SlowBuffer = require('././buffer').SlowBuffer;
-var util = require('././util');
-var pathModule = require('././path');
+var SlowBuffer = require('./buffer').SlowBuffer;
+var util = require('./util');
+var pathModule = require('./path');
 
 var binding = process.binding('fs');
-var constants = require('././constants');
+var constants = require('./constants');
 var fs = exports;
-var Buffer = require('././buffer').Buffer;
-var Stream = require('././stream').Stream;
-var EventEmitter = require('././events');
+var Buffer = require('./buffer').Buffer;
+var Stream = require('./stream').Stream;
+var EventEmitter = require('./events');
 var FSReqWrap = binding.FSReqWrap;
 var FSEvent = process.binding('fs_event_wrap').FSEvent;
 
@@ -20,7 +20,7 @@ var Readable = Stream.Readable;
 var Writable = Stream.Writable;
 
 var kMinPoolSpace = 128;
-var kMaxLength = require('././buffer').kMaxLength;
+var kMaxLength = require('./buffer').kMaxLength;
 
 var O_APPEND = constants.O_APPEND || 0;
 var O_CREAT = constants.O_CREAT || 0;
@@ -1219,7 +1219,9 @@ function FSWatcher() {
   this._handle.onchange = function(status, event, filename) {
     if (status < 0) {
       self._handle.close();
-      self.emit('error', errnoException(status, 'watch'));
+      var error = errnoException(status, `watch ${filename}`);
+      error.filename = filename;
+      self.emit('error', error);
     } else {
       self.emit('change', event, filename);
     }
@@ -1234,7 +1236,9 @@ FSWatcher.prototype.start = function(filename, persistent, recursive) {
                                recursive);
   if (err) {
     this._handle.close();
-    throw errnoException(err, 'watch');
+    var error = errnoException(err, `watch ${filename}`);
+    error.filename = filename;
+    throw error;
   }
 };
 

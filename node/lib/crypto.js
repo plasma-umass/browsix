@@ -15,12 +15,12 @@ try {
   throw new Error('node.js not compiled with openssl crypto support.');
 }
 
-var Buffer = require('././buffer').Buffer;
-var constants = require('././constants');
-var stream = require('././stream');
-var util = require('././util');
-var internalUtil = require('././internal/util');
-var LazyTransform = require('././internal/streams/lazy_transform');
+var Buffer = require('./buffer').Buffer;
+var constants = require('./constants');
+var stream = require('./stream');
+var util = require('./util');
+var internalUtil = require('./internal/util');
+var LazyTransform = require('./internal/streams/lazy_transform');
 
 var DH_GENERATOR = 2;
 
@@ -39,8 +39,8 @@ function toBuf(str, encoding) {
 exports._toBuf = toBuf;
 
 
-var assert = require('././assert');
-var StringDecoder = require('././string_decoder').StringDecoder;
+var assert = require('./assert');
+var StringDecoder = require('./string_decoder').StringDecoder;
 
 
 exports.createHash = exports.Hash = Hash;
@@ -655,11 +655,11 @@ function filterDuplicates(names) {
 // Legacy API
 exports.__defineGetter__('createCredentials',
   internalUtil.deprecate(function() {
-    return require('././tls').createSecureContext;
+    return require('./tls').createSecureContext;
   }, 'crypto.createCredentials is deprecated. ' +
      'Use tls.createSecureContext instead.'));
 
 exports.__defineGetter__('Credentials', internalUtil.deprecate(function() {
-  return require('././tls').SecureContext;
+  return require('./tls').SecureContext;
 }, 'crypto.Credentials is deprecated. ' +
    'Use tls.createSecureContext instead.'));

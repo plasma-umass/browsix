@@ -1,11 +1,11 @@
 'use strict';
 
-var net = require('././net');
-var url = require('././url');
-var util = require('././util');
+var net = require('./net');
+var url = require('./url');
+var util = require('./util');
 var binding = process.binding('crypto');
-var Buffer = require('././buffer').Buffer;
-var constants = require('././constants');
+var Buffer = require('./buffer').Buffer;
+var constants = require('./constants');
 
 // Allow {CLIENT_RENEG_LIMIT} client-initiated session renegotiations
 // every {CLIENT_RENEG_WINDOW} seconds. An error event is emitted if more
@@ -222,10 +222,10 @@ exports.parseCertString = function parseCertString(s) {
 };
 
 // Public API
-exports.createSecureContext = require('././_tls_common').createSecureContext;
-exports.SecureContext = require('././_tls_common').SecureContext;
-exports.TLSSocket = require('././_tls_wrap').TLSSocket;
-exports.Server = require('././_tls_wrap').Server;
-exports.createServer = require('././_tls_wrap').createServer;
-exports.connect = require('././_tls_wrap').connect;
-exports.createSecurePair = require('././_tls_legacy').createSecurePair;
+exports.createSecureContext = require('./_tls_common').createSecureContext;
+exports.SecureContext = require('./_tls_common').SecureContext;
+exports.TLSSocket = require('./_tls_wrap').TLSSocket;
+exports.Server = require('./_tls_wrap').Server;
+exports.createServer = require('./_tls_wrap').createServer;
+exports.connect = require('./_tls_wrap').connect;
+exports.createSecurePair = require('./_tls_legacy').createSecurePair;

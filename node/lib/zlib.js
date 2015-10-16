@@ -1,11 +1,11 @@
 'use strict';
 
-var Buffer = require('././buffer').Buffer;
-var Transform = require('././_stream_transform');
+var Buffer = require('./buffer').Buffer;
+var Transform = require('./_stream_transform');
 var binding = process.binding('zlib');
-var util = require('././util');
-var assert = require('././assert').ok;
-var kMaxLength = require('././buffer').kMaxLength;
+var util = require('./util');
+var assert = require('./assert').ok;
+var kMaxLength = require('./buffer').kMaxLength;
 var kRangeErrorMessage = 'Cannot create final Buffer. ' +
     'It would be larger than 0x' + kMaxLength.toString(16) + ' bytes.';
 

@@ -1,15 +1,15 @@
 'use strict';
 
-var EventEmitter = require('././events');
-var stream = require('././stream');
-var timers = require('././timers');
-var util = require('././util');
-var internalUtil = require('././internal/util');
-var assert = require('././assert');
+var EventEmitter = require('./events');
+var stream = require('./stream');
+var timers = require('./timers');
+var util = require('./util');
+var internalUtil = require('./internal/util');
+var assert = require('./assert');
 var cares = process.binding('cares_wrap');
 var uv = process.binding('uv');
 
-var Buffer = require('././buffer').Buffer;
+var Buffer = require('./buffer').Buffer;
 var TTYWrap = process.binding('tty_wrap');
 var TCP = process.binding('tcp_wrap').TCP;
 var Pipe = process.binding('pipe_wrap').Pipe;
@@ -727,6 +727,9 @@ Socket.prototype.__defineGetter__('bytesWritten', function() {
       data = this._pendingData,
       encoding = this._pendingEncoding;
 
+  if (!state)
+    return undefined;
+
   state.getBuffer().forEach(function(el) {
     if (el.chunk instanceof Buffer)
       bytes += el.chunk.length;
@@ -905,7 +908,7 @@ Socket.prototype.connect = function(options, cb) {
 
 
 function lookupAndConnect(self, options) {
-  var dns = require('././dns');
+  var dns = require('./dns');
   var host = options.host || 'localhost';
   var port = options.port;
   var localAddress = options.localAddress;
@@ -1261,7 +1264,7 @@ function emitListeningNT(self) {
 function listen(self, address, port, addressType, backlog, fd, exclusive) {
   exclusive = !!exclusive;
 
-  if (!cluster) cluster = require('././cluster');
+  if (!cluster) cluster = require('./cluster');
 
   if (cluster.isMaster || exclusive) {
     self._listen2(address, port, addressType, backlog, fd);
@@ -1368,7 +1371,7 @@ Server.prototype.listen = function() {
   }
 
   function listenAfterLookup(port, address, backlog, exclusive) {
-    require('././dns').lookup(address, function(err, ip, addressType) {
+    require('./dns').lookup(address, function(err, ip, addressType) {
       if (err) {
         self.emit('error', err);
       } else {

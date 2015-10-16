@@ -1,6 +1,6 @@
 'use strict';
 
-var util = require('././util');
+var util = require('./util');
 
 function Console(stdout, stderr) {
   if (!(this instanceof Console)) {
@@ -84,7 +84,7 @@ Console.prototype.trace = function trace() {
 Console.prototype.assert = function(expression) {
   if (!expression) {
     var arr = Array.prototype.slice.call(arguments, 1);
-    require('././assert').ok(false, util.format.apply(this, arr));
+    require('./assert').ok(false, util.format.apply(this, arr));
   }
 };
 

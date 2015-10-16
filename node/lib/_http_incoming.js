@@ -1,7 +1,7 @@
 'use strict';
 
-var util = require('././util');
-var Stream = require('././stream');
+var util = require('./util');
+var Stream = require('./stream');
 
 function readStart(socket) {
   if (socket && !socket._paused && socket.readable)

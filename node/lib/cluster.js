@@ -1,11 +1,11 @@
 'use strict';
 
-var EventEmitter = require('././events');
-var assert = require('././assert');
-var dgram = require('././dgram');
-var fork = require('././child_process').fork;
-var net = require('././net');
-var util = require('././util');
+var EventEmitter = require('./events');
+var assert = require('./assert');
+var dgram = require('./dgram');
+var fork = require('./child_process').fork;
+var net = require('./net');
+var util = require('./util');
 var SCHED_NONE = 1;
 var SCHED_RR = 2;
 

@@ -2,7 +2,7 @@
 'use strict';
 
 var binding = process.binding('buffer');
-var internalUtil = require('././internal/util');
+var internalUtil = require('./internal/util');
 var bindingObj = {};
 
 exports.Buffer = Buffer;
@@ -58,8 +58,8 @@ function Buffer(arg) {
   return fromObject(arg);
 }
 
-Buffer.prototype.__proto__ = Uint8Array.prototype;
-Buffer.__proto__ = Uint8Array;
+Object.setPrototypeOf(Buffer.prototype, Uint8Array.prototype);
+Object.setPrototypeOf(Buffer, Uint8Array);
 
 
 function SlowBuffer(length) {
@@ -72,8 +72,8 @@ function SlowBuffer(length) {
   return ui8;
 }
 
-SlowBuffer.prototype.__proto__ = Buffer.prototype;
-SlowBuffer.__proto__ = Buffer;
+Object.setPrototypeOf(SlowBuffer.prototype, Uint8Array.prototype);
+Object.setPrototypeOf(SlowBuffer, Uint8Array);
 
 
 function allocate(size) {
@@ -308,6 +308,8 @@ Buffer.byteLength = byteLength;
 Object.defineProperty(Buffer.prototype, 'parent', {
   enumerable: true,
   get: function() {
+    if (!(this instanceof Buffer))
+      return undefined;
     if (this.byteLength === 0 ||
         this.byteLength === this.buffer.byteLength) {
       return undefined;
@@ -318,6 +320,8 @@ Object.defineProperty(Buffer.prototype, 'parent', {
 Object.defineProperty(Buffer.prototype, 'offset', {
   enumerable: true,
   get: function() {
+    if (!(this instanceof Buffer))
+      return undefined;
     return this.byteOffset;
   }
 });
@@ -414,20 +418,53 @@ Buffer.prototype.compare = function compare(b) {
   return binding.compare(this, b);
 };
 
+function slowIndexOf(buffer, val, byteOffset, encoding) {
+  var loweredCase = false;
+  for (;;) {
+    switch (encoding) {
+      case 'utf8':
+      case 'utf-8':
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+      case 'binary':
+        return binding.indexOfString(buffer, val, byteOffset, encoding);
 
-Buffer.prototype.indexOf = function indexOf(val, byteOffset) {
+      case 'base64':
+      case 'ascii':
+      case 'hex':
+        return binding.indexOfBuffer(
+            buffer, Buffer(val, encoding), byteOffset, encoding);
+
+      default:
+        if (loweredCase) {
+          throw new TypeError('Unknown encoding: ' + encoding);
+        }
+
+        encoding = ('' + encoding).toLowerCase();
+        loweredCase = true;
+    }
+  }
+}
+
+Buffer.prototype.indexOf = function indexOf(val, byteOffset, encoding) {
   if (byteOffset > 0x7fffffff)
     byteOffset = 0x7fffffff;
   else if (byteOffset < -0x80000000)
     byteOffset = -0x80000000;
   byteOffset >>= 0;
 
-  if (typeof val === 'string')
-    return binding.indexOfString(this, val, byteOffset);
-  if (val instanceof Buffer)
-    return binding.indexOfBuffer(this, val, byteOffset);
-  if (typeof val === 'number')
+  if (typeof val === 'string') {
+    if (encoding === undefined) {
+      return binding.indexOfString(this, val, byteOffset, encoding);
+    }
+    return slowIndexOf(this, val, byteOffset, encoding);
+  } else if (val instanceof Buffer) {
+    return binding.indexOfBuffer(this, val, byteOffset, encoding);
+  } else if (typeof val === 'number') {
     return binding.indexOfNumber(this, val, byteOffset);
+  }
 
   throw new TypeError('val must be string, number or Buffer');
 };

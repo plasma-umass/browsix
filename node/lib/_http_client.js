@@ -1,19 +1,19 @@
 'use strict';
 
-var util = require('././util');
-var net = require('././net');
-var url = require('././url');
-var EventEmitter = require('././events');
+var util = require('./util');
+var net = require('./net');
+var url = require('./url');
+var EventEmitter = require('./events');
 var HTTPParser = process.binding('http_parser').HTTPParser;
-var assert = require('././assert').ok;
-var common = require('././_http_common');
+var assert = require('./assert').ok;
+var common = require('./_http_common');
 var httpSocketSetup = common.httpSocketSetup;
 var parsers = common.parsers;
 var freeParser = common.freeParser;
 var debug = common.debug;
-var OutgoingMessage = require('././_http_outgoing').OutgoingMessage;
-var Agent = require('././_http_agent');
-var Buffer = require('././buffer').Buffer;
+var OutgoingMessage = require('./_http_outgoing').OutgoingMessage;
+var Agent = require('./_http_agent');
+var Buffer = require('./buffer').Buffer;
 
 
 function ClientRequest(options, cb) {

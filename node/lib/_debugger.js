@@ -1,15 +1,15 @@
 'use strict';
 
-var util = require('././util');
-var path = require('././path');
-var net = require('././net');
-var vm = require('././vm');
-var Module = require('././module');
+var util = require('./util');
+var path = require('./path');
+var net = require('./net');
+var vm = require('./vm');
+var Module = require('./module');
 var repl = Module.requireRepl();
 var inherits = util.inherits;
-var assert = require('././assert');
-var spawn = require('././child_process').spawn;
-var Buffer = require('././buffer').Buffer;
+var assert = require('./assert');
+var spawn = require('./child_process').spawn;
+var Buffer = require('./buffer').Buffer;
 
 exports.start = function(argv, stdin, stdout) {
   argv || (argv = process.argv.slice(2));

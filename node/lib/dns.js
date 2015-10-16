@@ -1,7 +1,7 @@
 'use strict';
 
-var net = require('././net');
-var util = require('././util');
+var net = require('./net');
+var util = require('./util');
 
 var cares = process.binding('cares_wrap');
 var uv = process.binding('uv');

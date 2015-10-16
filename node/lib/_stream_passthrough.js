@@ -6,8 +6,8 @@
 
 module.exports = PassThrough;
 
-var Transform = require('././_stream_transform');
-var util = require('././util');
+var Transform = require('./_stream_transform');
+var util = require('./util');
 util.inherits(PassThrough, Transform);
 
 function PassThrough(options) {

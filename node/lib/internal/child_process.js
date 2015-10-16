@@ -1,13 +1,13 @@
 'use strict';
 
-var StringDecoder = require('././string_decoder').StringDecoder;
-var Buffer = require('././buffer').Buffer;
-var EventEmitter = require('././events');
-var net = require('././net');
-var dgram = require('././dgram');
-var util = require('././util');
-var constants = require('././constants');
-var assert = require('././assert');
+var StringDecoder = require('./string_decoder').StringDecoder;
+var Buffer = require('./buffer').Buffer;
+var EventEmitter = require('./events');
+var net = require('./net');
+var dgram = require('./dgram');
+var util = require('./util');
+var constants = require('./constants');
+var assert = require('./assert');
 
 var Process = process.binding('process_wrap').Process;
 var WriteWrap = process.binding('stream_wrap').WriteWrap;
@@ -16,7 +16,7 @@ var Pipe = process.binding('pipe_wrap').Pipe;
 var TTY = process.binding('tty_wrap').TTY;
 var TCP = process.binding('tcp_wrap').TCP;
 var UDP = process.binding('udp_wrap').UDP;
-var SocketList = require('././internal/socket_list');
+var SocketList = require('./internal/socket_list');
 
 var errnoException = util._errnoException;
 var SocketListSend = SocketList.SocketListSend;

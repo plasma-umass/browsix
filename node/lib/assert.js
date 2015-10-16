@@ -26,8 +26,8 @@
 
 // UTILITY
 var compare = process.binding('buffer').compare;
-var util = require('././util');
-var Buffer = require('././buffer').Buffer;
+var util = require('./util');
+var Buffer = require('./buffer').Buffer;
 var pSlice = Array.prototype.slice;
 
 // 1. The assert module provides functions that throw
@@ -268,13 +268,17 @@ function expectedException(actual, expected) {
 
   if (Object.prototype.toString.call(expected) == '[object RegExp]') {
     return expected.test(actual);
-  } else if (actual instanceof expected) {
-    return true;
-  } else if (expected.call({}, actual) === true) {
-    return true;
   }
 
-  return false;
+  try {
+    if (actual instanceof expected) {
+      return true;
+    }
+  } catch (e) {
+    // Ignore.  The instanceof check doesn't work for arrow functions.
+  }
+
+  return expected.call({}, actual) === true;
 }
 
 function _throws(shouldThrow, block, expected, message) {

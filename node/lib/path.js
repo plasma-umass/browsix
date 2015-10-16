@@ -1,6 +1,6 @@
 'use strict';
 
-var util = require('././util');
+var util = require('./util');
 var isWindows = process.platform === 'win32';
 
 function assertPath(path) {

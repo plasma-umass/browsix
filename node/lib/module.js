@@ -1,12 +1,13 @@
 'use strict';
 
-var NativeModule = require('././native_module');
-var util = require('././util');
-var internalUtil = require('././internal/util');
-var runInThisContext = require('././vm').runInThisContext;
-var assert = require('././assert').ok;
-var fs = require('././fs');
-var path = require('././path');
+var NativeModule = require('./native_module');
+var util = require('./util');
+var internalModule = require('./internal/module');
+var internalUtil = require('./internal/util');
+var runInThisContext = require('./vm').runInThisContext;
+var assert = require('./assert').ok;
+var fs = require('./fs');
+var path = require('./path');
 var internalModuleReadFile = process.binding('fs').internalModuleReadFile;
 var internalModuleStat = process.binding('fs').internalModuleStat;
 
@@ -218,7 +219,7 @@ Module._resolveLookupPaths = function(request, parent) {
       paths = parent.paths.concat(paths);
     }
 
-    // Maintain backwards compat with certain broken uses of require('././.')
+    // Maintain backwards compat with certain broken uses of require('./.')
     // by putting the module's directory in front of the lookup paths.
     if (request === '.') {
       if (parent && parent.filename) {
@@ -233,7 +234,7 @@ Module._resolveLookupPaths = function(request, parent) {
 
   // with --eval, parent.id is not set and parent.filename is null
   if (!parent || !parent.id || !parent.filename) {
-    // make require('./././path/to/foo') work - normally the path is taken
+    // make require('././path/to/foo') work - normally the path is taken
     // from realpath(__filename) but with eval there is no filename
     var mainPaths = ['.'].concat(modulePaths);
     mainPaths = Module._nodeModulePaths('.').concat(mainPaths);
@@ -247,7 +248,7 @@ Module._resolveLookupPaths = function(request, parent) {
   var parentIdPath = isIndex ? parent.id : path.dirname(parent.id);
   var id = path.resolve(parentIdPath, request);
 
-  // make sure require('./././path') and require('path') get distinct ids, even
+  // make sure require('././path') and require('path') get distinct ids, even
   // when called from the toplevel js file
   if (parentIdPath === '.' && id.indexOf('/') === -1) {
     id = './' + id;
@@ -435,21 +436,10 @@ Module.prototype._compile = function(content, filename) {
 };
 
 
-function stripBOM(content) {
-  // Remove byte order marker. This catches EF BB BF (the UTF-8 BOM)
-  // because the buffer-to-string conversion in `fs.readFileSync()`
-  // translates it to FEFF, the UTF-16 BOM.
-  if (content.charCodeAt(0) === 0xFEFF) {
-    content = content.slice(1);
-  }
-  return content;
-}
-
-
 // Native extension for .js
 Module._extensions['.js'] = function(module, filename) {
   var content = fs.readFileSync(filename, 'utf8');
-  module._compile(stripBOM(content), filename);
+  module._compile(internalModule.stripBOM(content), filename);
 };
 
 
@@ -457,7 +447,7 @@ Module._extensions['.js'] = function(module, filename) {
 Module._extensions['.json'] = function(module, filename) {
   var content = fs.readFileSync(filename, 'utf8');
   try {
-    module.exports = JSON.parse(stripBOM(content));
+    module.exports = JSON.parse(internalModule.stripBOM(content));
   } catch (err) {
     err.message = filename + ': ' + err.message;
     throw err;
@@ -466,7 +456,9 @@ Module._extensions['.json'] = function(module, filename) {
 
 
 //Native extension for .node
-Module._extensions['.node'] = process.dlopen;
+Module._extensions['.node'] = function(module, filename) {
+  return process.dlopen(module, path._makeLong(filename));
+};
 
 
 // bootstrap main module.

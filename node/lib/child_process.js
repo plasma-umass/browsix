@@ -1,15 +1,15 @@
 'use strict';
 
-var util = require('././util');
-var internalUtil = require('././internal/util');
+var util = require('./util');
+var internalUtil = require('./internal/util');
 var debug = util.debuglog('child_process');
-var constants = require('././constants');
+var constants = require('./constants');
 
 var uv = process.binding('uv');
 var spawn_sync = process.binding('spawn_sync');
-var Buffer = require('././buffer').Buffer;
+var Buffer = require('./buffer').Buffer;
 var Pipe = process.binding('pipe_wrap').Pipe;
-var child_process = require('././internal/child_process');
+var child_process = require('./internal/child_process');
 
 var errnoException = util._errnoException;
 var _validateStdio = child_process._validateStdio;

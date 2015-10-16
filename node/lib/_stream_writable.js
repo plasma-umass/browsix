@@ -7,10 +7,10 @@
 module.exports = Writable;
 Writable.WritableState = WritableState;
 
-var util = require('././util');
-var internalUtil = require('././internal/util');
-var Stream = require('././stream');
-var Buffer = require('././buffer').Buffer;
+var util = require('./util');
+var internalUtil = require('./internal/util');
+var Stream = require('./stream');
+var Buffer = require('./buffer').Buffer;
 
 util.inherits(Writable, Stream);
 

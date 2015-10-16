@@ -1,8 +1,8 @@
 'use strict';
 
 var binding = process.binding('os');
-var util = require('././util');
-var internalUtil = require('././internal/util');
+var util = require('./util');
+var internalUtil = require('./internal/util');
 var isWindows = process.platform === 'win32';
 
 exports.hostname = binding.getHostname;

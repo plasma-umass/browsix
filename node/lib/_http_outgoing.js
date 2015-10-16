@@ -1,12 +1,12 @@
 'use strict';
 
-var assert = require('././assert').ok;
-var Stream = require('././stream');
-var timers = require('././timers');
-var util = require('././util');
-var internalUtil = require('././internal/util');
-var Buffer = require('././buffer').Buffer;
-var common = require('././_http_common');
+var assert = require('./assert').ok;
+var Stream = require('./stream');
+var timers = require('./timers');
+var util = require('./util');
+var internalUtil = require('./internal/util');
+var Buffer = require('./buffer').Buffer;
+var common = require('./_http_common');
 
 var CRLF = common.CRLF;
 var chunkExpression = common.chunkExpression;
@@ -46,9 +46,16 @@ utcDate._onTimeout = function() {
 function OutgoingMessage() {
   Stream.call(this);
 
+  // Queue that holds all currently pending data, until the response will be
+  // assigned to the socket (until it will its turn in the HTTP pipeline).
   this.output = [];
   this.outputEncodings = [];
   this.outputCallbacks = [];
+
+  // `outputSize` is an approximate measure of how much data is queued on this
+  // response. `_onPendingData` will be invoked to update similar global
+  // per-connection counter. That counter will be used to pause/unpause the
+  // TCP socket and HTTP Parser and thus handle the backpressure.
   this.outputSize = 0;
 
   this.writable = true;
@@ -150,10 +157,12 @@ OutgoingMessage.prototype._writeRaw = function(data, encoding, callback) {
       var output = this.output;
       var outputEncodings = this.outputEncodings;
       var outputCallbacks = this.outputCallbacks;
+      connection.cork();
       for (var i = 0; i < outputLength; i++) {
         connection.write(output[i], outputEncodings[i],
                          outputCallbacks[i]);
       }
+      connection.uncork();
 
       this.output = [];
       this.outputEncodings = [];
@@ -630,10 +639,12 @@ OutgoingMessage.prototype._flush = function() {
       var output = this.output;
       var outputEncodings = this.outputEncodings;
       var outputCallbacks = this.outputCallbacks;
+      socket.cork();
       for (var i = 0; i < outputLength; i++) {
         ret = socket.write(output[i], outputEncodings[i],
                            outputCallbacks[i]);
       }
+      socket.uncork();
 
       this.output = [];
       this.outputEncodings = [];

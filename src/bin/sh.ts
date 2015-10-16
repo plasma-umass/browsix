@@ -46,7 +46,6 @@ function parsetree_is_valid(parsetree: string[][]): boolean {
 
 function run_child(commandPath: string): void {
 	'use strict';
-
 	let pathToScript = process.argv[1];
 	let args = process.argv.slice(2);
 
@@ -62,40 +61,27 @@ function run_child(commandPath: string): void {
 		// pass our stdin, stdout, stderr to the child
 		stdio: [0, 1, 2],
 	};
-
+	console.log(args[0] + " " + args.slice(1) + " " + opts);
+	//let child = child_process.spawn(args(0));
 	let child = child_process.spawn(args[0], args.slice(1), opts);
 	child.on('error', (err: any) => {
+		console.log('eee: ' + err);
 		process.stderr.write('error: ' + err, () => {
 			process.exit(1);
 		});
 	});
+	//child.stdout.on('data', (data: any) => {
+	//	process.stdout.write('out: ' + data, () => {
+	//		console.log('stdout: ' + data);
+	//	});
+	//});
 	child.on('exit', (code: number) => {
+		console.log("ex: " + code);
 		process.exit(code);
 	});
-	//let execFile = child_process.execFileSync, child: any;
-	//child = execFile(commandPath, function (error: string, stdout: string, stderr: string): void {
-	//	console.log('stdout: ' + stdout);
-	//	console.log('stderr: ' + stderr);
-	//	if (error !== null) {
-	//		console.log('exec error: ' + error);
-	//	}
-	//});
-
-	// child.stdout.on('data', function (data: any): void {
-	// 	console.log('stdout: ' + data);
-	// });
-
-	// child.stderr.on('data', function (data: any): void {
-	// 	console.log('stderr: ' + data);
-	// });
-
-	// console.log('listenerCount: ' + child.listenerCount('data'));
-	// child.on('close', function (code: number): void {
-	// 	console.log('child process exited with code ' + code);
-	// });
 }
 
-function main1(): void {
+function main(): void {
 	'use strict';
 
 	// get statement
@@ -111,6 +97,7 @@ function main1(): void {
 	//console.log(tokens);
 
 	// parse tokens into command sequence.
+	// do path expansion for commands.
 	// raise error if | is not surrounded by
 	// commands.
 	let code = 0;
@@ -132,7 +119,6 @@ function main1(): void {
 		code = 1;
 		process.exit(code);
 	}
-
 	run_child(parsetree[0][0]);
 
 	// iterate over commands, setup pipes, and execute commands
@@ -168,36 +154,6 @@ function main1(): void {
 
 	// set statement exit code and exit
 	process.exit(code);
-}
-
-function main(): void {
-	'use strict';
-
-	let pathToScript = process.argv[1];
-	let args = process.argv.slice(2);
-
-	if (args.length < 1) {
-		let usage = 'usage: ' + path.basename(pathToScript) + ' CMD [ARGS...]\n';
-		process.stderr.write(usage, (err: any) => {
-			process.exit(1);
-		});
-		return;
-	}
-
-	let opts = {
-		// pass our stdin, stdout, stderr to the child
-		stdio: [0, 1, 2],
-	};
-	console.log(args);
-	let child = child_process.spawn(args[0], args.slice(1), opts);
-	child.on('error', (err: any) => {
-		process.stderr.write('error: ' + err, () => {
-			process.exit(1);
-		});
-	});
-	child.on('exit', (code: number) => {
-		process.exit(code);
-	});
 }
 
 main();

@@ -113,6 +113,8 @@ function _require(moduleName: string): any {
 	switch (moduleName) {
 	case 'fs':
 		return fs;
+	case 'path':
+		return require('./path');
 	default:
 		throw new ReferenceError('unknown module ' + moduleName);
 	}

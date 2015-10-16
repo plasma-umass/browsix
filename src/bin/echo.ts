@@ -27,7 +27,7 @@ function main(): void {
 	if (trailingNewline)
 		out += '\n';
 
-	process.stdout.write(out, 'utf-8', function(err: any): void {
+	process.stdout.write(out, 'utf-8', (err: any) => {
 		let code = 0;
 		if (err) {
 			process.stderr.write(pathToScript + ': ' + err);

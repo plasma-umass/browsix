@@ -83,11 +83,13 @@ function tsTask(subdir, options) {
 gulp.task('copy-node', function() {
     return gulp.src([
         'node/lib/internal/util.js',
+        // 'node/lib/internal/child_process.js', -- not this, we have to override ourselves
         'node/lib/_stream_*.js',
         'node/lib/events.js',
         'node/lib/constants.js',
         'node/lib/path.js',
         'node/lib/stream.js',
+        'node/lib/string_decoder.js',
         'node/lib/util.js',
         'node/lib/buffer.js',
         'node/lib/fs.js',

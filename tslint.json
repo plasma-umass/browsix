@@ -31,8 +31,7 @@
         "debug",
         "info",
         "time",
-        "timeEnd",
-        "trace"
+        "timeEnd"
     ],
     "no-construct": true,
     "no-constructor-vars": false,
@@ -76,8 +75,7 @@
         "variable-declaration": "nospace"
     }],
     "use-strict": [true,
-        "check-module",
-        "check-function"
+        "check-module"
     ],
     "variable-name": false,
     "whitespace": [true,

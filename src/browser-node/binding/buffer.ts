@@ -1,3 +1,4 @@
+'use strict';
 
 // sizeof(int32_t) == sizeof(intptr_t) ? 0x3fffffff : 0x7fffffff;
 export const kMaxLength = 0x3fffffff; // 1024 MB aught to be enough for anybody.

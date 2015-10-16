@@ -1,3 +1,5 @@
+'use strict';
+
 // from node 4.1.1
 export const E2BIG = 7;
 export const EACCES = 13;

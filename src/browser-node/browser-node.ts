@@ -13,6 +13,9 @@ import * as bindingFs from './binding/fs';
 import * as bindingFsEventWrap from './binding/fs_event_wrap';
 import * as bindingConstants from './binding/constants';
 import * as bindingContextify from './binding/contextify';
+import * as bindingPipeWrap from './binding/pipe_wrap';
+import * as bindingSpawnSync from './binding/spawn_sync';
+import * as bindingUtil from './binding/util';
 
 class Process {
 	argv: string[];
@@ -55,8 +58,14 @@ class Process {
 			return bindingConstants;
 		case 'contextify':
 			return bindingContextify;
+		case 'pipe_wrap':
+			return bindingPipeWrap;
+		case 'spawn_sync':
+			return bindingSpawnSync;
+		case 'util':
+			return bindingUtil;
 		default:
-			console.log('TODO: unimplemented binding ' + name);
+			(<any>console).trace('TODO: unimplemented binding ' + name);
 		}
 		return null;
 	}
@@ -93,6 +102,9 @@ class Process {
 let process = new Process(undefined, {});
 (<any>self).process = process;
 
+if (typeof (<any>self).setTimeout === 'undefined')
+	(<any>self).setTimeout = superSadSetTimeout;
+
 import * as fs from './fs';
 
 declare var thread: any;
@@ -113,15 +125,14 @@ function _require(moduleName: string): any {
 	switch (moduleName) {
 	case 'fs':
 		return fs;
+	case 'child_process':
+		return require('./child_process');
 	case 'path':
 		return require('./path');
 	default:
 		throw new ReferenceError('unknown module ' + moduleName);
 	}
 }
-
-if (typeof (<any>self).setTimeout === 'undefined')
-	(<any>self).setTimeout = superSadSetTimeout;
 
 syscall.addEventListener('init', init.bind(this));
 function init(data: SyscallResponse): void {
@@ -136,6 +147,11 @@ function init(data: SyscallResponse): void {
 	process.stderr = new fs.createWriteStream('<stderr>', {fd: 2});
 
 	fs.readFile(args[1], 'utf-8', (err: any, contents: string) => {
+		if (err) {
+			process.stderr.write('error: ' + err, () => {
+				process.exit(1);
+			});
+		}
 
 		(<any>self).process = process;
 		(<any>self).require = _require;

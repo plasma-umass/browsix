@@ -96,6 +96,7 @@ gulp.task('copy-node', function() {
         'node/lib/vm.js',
         'node/lib/domain.js',
         'node/lib/string_decoder.js',
+        'node/lib/child_process.js',
     ]).pipe(copy('./lib/browser-node/', {prefix: 2}));
 });
 

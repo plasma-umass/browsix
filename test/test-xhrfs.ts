@@ -8,6 +8,8 @@ import { Boot, Kernel } from '../lib/kernel/kernel';
 
 const expect = chai.expect;
 
+const MINS = 60 * 1000; // milliseconds
+
 const IS_KARMA = typeof window !== 'undefined' && typeof (<any>window).__karma__ !== 'undefined';
 const ROOT = IS_KARMA ? '/base/fs/' : '/fs/';
 
@@ -16,6 +18,8 @@ const NODE = '/usr/bin/node';
 export const name = 'test-xhrfs';
 
 describe('find /bin/node', function(): void {
+	this.timeout(10 * MINS);
+
 	let kernel: Kernel = null;
 
 	it('should boot', function(done: MochaDone): void {
@@ -27,11 +31,10 @@ describe('find /bin/node', function(): void {
 		});
 	});
 
-	it('should open /bin/node', function(done: MochaDone): void {
+	it('should open /usr/bin/node', function(done: MochaDone): void {
 		kernel.fs.open('/usr/bin/node', 'r', nodeOpened);
 		function nodeOpened(err: any, fd: any): void {
 			try {
-				console.log(err);
 				expect(err).to.be.null;
 				expect(fd).not.to.be.null;
 				done();

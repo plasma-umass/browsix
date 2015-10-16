@@ -413,11 +413,23 @@ export class Task {
 		this.worker.onmessage = this.syscallHandler.bind(this);
 		//console.log(['browser-node'].concat(args).concat(<any>env));
 
-		this.worker.postMessage({
-			id: -1,
-			name: 'init',
-			args: ['browser-node'].concat(this.args).concat(<any>this.env),
-		});
+		// FIXME: eventually remove this.  Chrome used to have
+		// a 'pause worker on startup' option, but that has
+		// been removed.  We need a chance to hit 'pause' to
+		// debug a worker, because the Blob URL changes on
+		// every reload, which means we can't have breakpoints
+		// persist across page reloads :\ So: if you need to
+		// pause the worker, change '0' to something like
+		// '5000' below.
+		self.setTimeout(
+			() => {
+				this.worker.postMessage({
+					id: -1,
+					name: 'init',
+					args: ['browser-node'].concat(this.args).concat(<any>this.env),
+				});
+			},
+			0);
 	}
 
 	exit(code: number): void {

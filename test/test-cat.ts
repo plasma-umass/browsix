@@ -8,6 +8,8 @@ import { Boot, Kernel } from '../lib/kernel/kernel';
 
 const expect = chai.expect;
 
+const MINS = 60 * 1000; // milliseconds
+
 const IS_KARMA = typeof window !== 'undefined' && typeof (<any>window).__karma__ !== 'undefined';
 const ROOT = IS_KARMA ? '/base/fs/' : '/fs/';
 
@@ -17,6 +19,8 @@ const CAT = '/usr/bin/cat';
 export const name = 'test-cat';
 
 describe('cat /a /b', function(): void {
+	this.timeout(10 * MINS);
+
 	const A_CONTENTS = 'contents of a';
 	const B_CONTENTS = 'wish you were here';
 	let kernel: Kernel = null;

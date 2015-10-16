@@ -118,6 +118,9 @@ function _require(moduleName: string): any {
 	}
 }
 
+if (typeof (<any>self).setTimeout === 'undefined')
+	(<any>self).setTimeout = superSadSetTimeout;
+
 syscall.addEventListener('init', init.bind(this));
 function init(data: SyscallResponse): void {
 	'use strict';
@@ -130,14 +133,14 @@ function init(data: SyscallResponse): void {
 	process.stdout = new fs.createWriteStream('<stdout>', {fd: 1});
 	process.stderr = new fs.createWriteStream('<stderr>', {fd: 2});
 
-	if (typeof (<any>self).setTimeout === 'undefined')
-		(<any>self).setTimeout = superSadSetTimeout;
+	fs.readFile(args[1], 'utf-8', (err: any, contents: string) => {
 
-	(<any>self).process = process;
-	(<any>self).require = _require;
-	try {
-		(<any>self).importScripts(args[1]);
-	} catch (e) {
-		console.log(''+e.fileName + ':' + e.lineNumber + '- ' + e);
-	}
+		(<any>self).process = process;
+		(<any>self).require = _require;
+		try {
+			(<any>self).eval(contents);
+		} catch (e) {
+			console.log(e);
+		}
+	});
 }

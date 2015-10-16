@@ -233,13 +233,11 @@ export function setupBufferJS(prototype: any, bindingObj: any): void { // (Buffe
 			for (i = len - 1; i >= 0; i--) {
 				target[i + targetStart] = this[i + start];
 			}
-		} else if (len < 1000) {
+		} else {
 			// ascending copy from start
 			for (i = 0; i < len; i++) {
 				target[i + targetStart] = this[i + start];
 			}
-		} else {
-			target.set(this.subarray(start, start + len), targetStart);
 		}
 
 		return len;

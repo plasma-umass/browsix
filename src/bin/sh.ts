@@ -2,6 +2,8 @@
 'use strict';
 
 import * as fs from 'fs';
+import * as child_process from 'child_process';
+import * as path from 'path';
 import { Pipe } from '../kernel/pipe';
 
 //
@@ -41,21 +43,59 @@ function parsetree_is_valid(parsetree: string[][]): boolean {
 	// TODO: check if util exists on file system.
 	return true;
 }
-// TODO: create exec system call
-function exec(command: string[]): number {
+
+function run_child(commandPath: string): void {
 	'use strict';
-	console.log("executing: " + command);
-	return 1;
+
+	let pathToScript = process.argv[1];
+	let args = process.argv.slice(2);
+
+	if (args.length < 1) {
+		let usage = 'usage: ' + path.basename(pathToScript) + ' CMD [ARGS...]\n';
+		process.stderr.write(usage, (err: any) => {
+			process.exit(1);
+		});
+		return;
+	}
+
+	let opts = {
+		// pass our stdin, stdout, stderr to the child
+		stdio: [0, 1, 2],
+	};
+
+	let child = child_process.spawn(args[0], args.slice(1), opts);
+	child.on('error', (err: any) => {
+		process.stderr.write('error: ' + err, () => {
+			process.exit(1);
+		});
+	});
+	child.on('exit', (code: number) => {
+		process.exit(code);
+	});
+	//let execFile = child_process.execFileSync, child: any;
+	//child = execFile(commandPath, function (error: string, stdout: string, stderr: string): void {
+	//	console.log('stdout: ' + stdout);
+	//	console.log('stderr: ' + stderr);
+	//	if (error !== null) {
+	//		console.log('exec error: ' + error);
+	//	}
+	//});
+
+	// child.stdout.on('data', function (data: any): void {
+	// 	console.log('stdout: ' + data);
+	// });
+
+	// child.stderr.on('data', function (data: any): void {
+	// 	console.log('stderr: ' + data);
+	// });
+
+	// console.log('listenerCount: ' + child.listenerCount('data'));
+	// child.on('close', function (code: number): void {
+	// 	console.log('child process exited with code ' + code);
+	// });
 }
 
-//TODO: create wait system call
-function wait(command: string[]): number {
-	'use strict';
-	console.log("executing: " + command);
-	return 1;
-}
-
-function main(): void {
+function main1(): void {
 	'use strict';
 
 	// get statement
@@ -78,7 +118,7 @@ function main(): void {
 	let parsetree: string[][] = [];
 	try {
 		parsetree = parse(tokens, utilpath);
-		//console.log(parsetree);
+		console.log(parsetree);
 	} catch (e) {
 		console.log(e);
 		if (e instanceof SyntaxError) {
@@ -92,29 +132,34 @@ function main(): void {
 		code = 1;
 		process.exit(code);
 	}
+
+	run_child(parsetree[0][0]);
+
 	// iterate over commands, setup pipes, and execute commands
-	let pids: number[] = [];
+	// let pids: number[] = [];
 	// first command gets input from stdin, last writes output to stdout,
 	// all commands write err to stderr
-	let stdin = process.stdin;
-	let stderr = process.stderr;
-	for (var i = 0; i < parsetree.length-1; i++) {
-		let command = parsetree[i];
+	//let stdin = process.stdin;
+	//let stderr = process.stderr;
+	//for (var i = 0; i < parsetree.length-1; i++) {
+		//let command = parsetree[i];
 		// pipe returns a buffer, not a file descriptor(?)
-		let stdout = new Pipe();
+		//let child_process = require('child_process').spawn();
+		//let child = child_process.execFile(command[0], ["hi"]);
+		// let stdout = new Pipe();
 		// TODO: figure out the type signature for streams.  NodeJS.ReadableStream works, but there's
 		// no corresponding NodeJS.WritableStream nor NodeJS.Stream exported (why would there be?),
 		// and Pipe is none of the above. Want to run the following:
 		// let pid = exec(command,[stdin, stdout, stderr]);
-		let pid = exec(command);
-		pids.push(pid);
+		//let pid = exec(command);
+		//pids.push(pid);
 		// TODO: Pipe and process.stdin are different types. Want to run the following:
 		//stdin = stdout;
-	}
-	let command = parsetree[parsetree.length-1];
-	let stdout = process.stdout;
-	let pid = exec(command);
-	pids.push(pid);
+	//}
+	//let command = parsetree[parsetree.length-1];
+	//let stdout = process.stdout;
+	//let pid = exec(command);
+	//pids.push(pid);
 
 	// iterate over processids, waiting for them to complete, and get command exit codes
 	//for (var i = 0; i < pids.length; i++) {
@@ -122,8 +167,37 @@ function main(): void {
 	//}
 
 	// set statement exit code and exit
-	console.log("done");
 	process.exit(code);
+}
+
+function main(): void {
+	'use strict';
+
+	let pathToScript = process.argv[1];
+	let args = process.argv.slice(2);
+
+	if (args.length < 1) {
+		let usage = 'usage: ' + path.basename(pathToScript) + ' CMD [ARGS...]\n';
+		process.stderr.write(usage, (err: any) => {
+			process.exit(1);
+		});
+		return;
+	}
+
+	let opts = {
+		// pass our stdin, stdout, stderr to the child
+		stdio: [0, 1, 2],
+	};
+	console.log(args);
+	let child = child_process.spawn(args[0], args.slice(1), opts);
+	child.on('error', (err: any) => {
+		process.stderr.write('error: ' + err, () => {
+			process.exit(1);
+		});
+	});
+	child.on('exit', (code: number) => {
+		process.exit(code);
+	});
 }
 
 main();

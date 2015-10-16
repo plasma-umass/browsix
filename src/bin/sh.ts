@@ -62,23 +62,33 @@ function run_child(commandPath: string): void {
 		stdio: [0, 1, 2],
 	};
 	console.log(args[0] + " " + args.slice(1) + " " + opts);
-	//let child = child_process.spawn(args(0));
-	let child = child_process.spawn(args[0], args.slice(1), opts);
-	child.on('error', (err: any) => {
-		console.log('eee: ' + err);
-		process.stderr.write('error: ' + err, () => {
-			process.exit(1);
-		});
+	let child = child_process.execFile(args[0], args.slice(1), (error: Error, stdout: Buffer, stderr: Buffer) => {
+		console.log('stdout: ' + stdout.toString());
+		console.log('stderr: ' + stderr.toString());
+		if (error !== null) {
+			console.log('exec error: ' + error);
+		}
 	});
-	//child.stdout.on('data', (data: any) => {
-	//	process.stdout.write('out: ' + data, () => {
-	//		console.log('stdout: ' + data);
-	//	});
-	//});
-	child.on('exit', (code: number) => {
-		console.log("ex: " + code);
-		process.exit(code);
-	});
+	// child.on('error', (err: any) => {
+	// 	console.log('eee: ' + err);
+	// 	process.stderr.write('error: ' + err, () => {
+	// 		process.exit(1);
+	// 	});
+	// });
+	// child.stdout.on('data', (data: any) => {
+	// 	console.log('stdout: ' + data);
+	// });
+	// let child = child_process.spawn(args[0], args.slice(1), opts);
+	// child.on('error', (err: any) => {
+	// 	console.log('eee: ' + err);
+	// 	process.stderr.write('error: ' + err, () => {
+	// 		process.exit(1);
+	// 	});
+	// });
+	// child.on('exit', (code: number) => {
+	// 	console.log("ex: " + code);
+	// 	process.exit(code);
+	// });
 }
 
 function main(): void {

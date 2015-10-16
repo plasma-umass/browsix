@@ -20,12 +20,19 @@ function main(): void {
 		return;
 	}
 
-	child_process.execFile(args[0], args.slice(1), (error: any, stdout: Buffer, stderr: Buffer) => {
-		process.stdout.write(stdout, (err: any) => {
-			process.stderr.write(stderr, (errInner: any) => {
-				process.exit(1);
-			});
+	let opts = {
+		// pass our stdin, stdout, stderr to the child
+		stdio: [0, 1, 2],
+	};
+
+	let child = child_process.spawn(args[0], args.slice(1), opts);
+	child.on('error', (err: any) => {
+		process.stderr.write('error: ' + err, () => {
+			process.exit(1);
 		});
+	});
+	child.on('exit', (code: number) => {
+		process.exit(code);
 	});
 }
 

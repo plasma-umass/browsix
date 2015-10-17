@@ -4,6 +4,8 @@
 'use strict';
 
 import * as fs from 'fs';
+import * as readline from 'readline';
+
 // This is heavily based on the design of cat.c from sbase:
 // http://git.suckless.org/sbase/tree/cat.c .  Seemingly more
 // traditional 'node' way to do things would be to read the entire
@@ -23,9 +25,8 @@ function getPosition(str: string, m: string, i: number): number {
 	return str.split(m, i).join(m).length;
 }
 
-function concat(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, code: number): void {
+function head(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, numlines: number, code: number): void {
 	'use strict';
-
 	if (!inputs || !inputs.length) {
 		process.exit(code);
 		return;
@@ -33,26 +34,33 @@ function concat(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, 
 
 	let current = inputs[0];
 	inputs = inputs.slice(1);
-
+	let n = 0;
 	if (!current) {
 		// use setTimeout to avoid a deep stack as well as
 		// cooperatively yield
-		setTimeout(concat, 0, inputs, output, code);
+		setTimeout(head, 0, inputs, output, code);
 		return;
 	}
 
 	current.on('readable', function(): void {
-		let buf = current.read();
-		if (buf !== null) {
-			let last_char = getPosition(buf.toString(), '\n', 10);
-			output.write(buf.toString().slice(0, last_char+1));
-		}
+		let rl = readline.createInterface({
+			input: current,
+			output: null
+		});
+		rl.on('line', (line: string) => {
+			n++;
+			output.write(line+"\n");
+			if (n >= numlines) {
+				rl.close();
+				process.exit(0);
+			}
+		});
 	});
 
 	current.on('end', function(): void {
 		// use setTimeout to avoid a deep stack as well as
 		// cooperatively yield
-		setTimeout(concat, 0, inputs, output, code);
+		setTimeout(head, 0, inputs, output, code);
 	});
 }
 
@@ -67,11 +75,16 @@ function main(): void {
 	// exit code to use - if we fail to open an input file it gets
 	// set to 1 below.
 	let code = 0;
-
+	let def_numlines = 10;
 	if (!args.length) {
-		// no args?  just copy stdin to stdout
-		setTimeout(concat, 0, [process.stdin], process.stdout, code);
+		// no args?  just copy default num lines from stdin to stdout
+		setTimeout(head, 0, [process.stdin], process.stdout, def_numlines, code);
 	} else {
+		let numlines = def_numlines;
+		if (args.length && args[0] === '-n') {
+			numlines = +args[1];
+			args = args.slice(2);
+		}
 		let files: NodeJS.ReadableStream[] = [];
 		let opened = 0;
 		// use map instead of a for loop so that we easily get
@@ -82,7 +95,7 @@ function main(): void {
 				// if we've opened all of the files, pipe them to
 				// stdout.
 				if (++opened === args.length)
-					setTimeout(concat, 0, files, process.stdout, code);
+					setTimeout(head, 0, files, process.stdout, numlines, code);
 				return;
 			}
 			fs.open(path, 'r', function(err: any, fd: any): void {
@@ -102,7 +115,7 @@ function main(): void {
 				// if we've opened all of the files,
 				// pipe them to stdout.
 				if (++opened === args.length)
-					setTimeout(concat, 0, files, process.stdout, code);
+					setTimeout(head, 0, files, process.stdout, numlines, code);
 			});
 		});
 	}

@@ -4,6 +4,7 @@
 import * as fs from 'fs';
 import * as child_process from 'child_process';
 import * as path from 'path';
+import * as stream from 'stream';
 import { Pipe } from '../kernel/pipe';
 
 //
@@ -49,6 +50,33 @@ function run_child(commandPath: string): void {
 	let pathToScript = process.argv[1];
 	let args = process.argv.slice(2);
 
+	let opts = {
+		// pass our stdin, stdout, stderr to the child
+		stdio: [0, 1, 2],
+	};
+
+	let child = child_process.spawn('node', args, opts);
+	child.on('error', (err: any) => {
+		process.stderr.write('error: ' + err, () => {
+			process.exit(1);
+		});
+	});
+	child.on('exit', (code: number) => {
+		console.log("ex: " + code);
+		process.exit(code);
+	});
+}
+
+function main(): void {
+	'use strict';
+	///
+	// Note: assumes the statement to be executed is a _string_ in argv[2] 
+	///
+	// get statement
+	let argv = process.argv;
+	let pathToNode = argv[0];
+	let pathToScript = argv[1];
+	let args = argv.slice(2);
 	if (args.length < 1) {
 		let usage = 'usage: ' + path.basename(pathToScript) + ' CMD [ARGS...]\n';
 		process.stderr.write(usage, (err: any) => {
@@ -56,49 +84,6 @@ function run_child(commandPath: string): void {
 		});
 		return;
 	}
-
-	let opts = {
-		// pass our stdin, stdout, stderr to the child
-		stdio: [0, 1, 2],
-	};
-	console.log(args[0] + " " + args.slice(1) + " " + opts);
-	let child = child_process.execFile(args[0], args.slice(1), (error: Error, stdout: Buffer, stderr: Buffer) => {
-		console.log('stdout: ' + stdout.toString());
-		console.log('stderr: ' + stderr.toString());
-		if (error !== null) {
-			console.log('exec error: ' + error);
-		}
-	});
-	// child.on('error', (err: any) => {
-	// 	console.log('eee: ' + err);
-	// 	process.stderr.write('error: ' + err, () => {
-	// 		process.exit(1);
-	// 	});
-	// });
-	// child.stdout.on('data', (data: any) => {
-	// 	console.log('stdout: ' + data);
-	// });
-	// let child = child_process.spawn(args[0], args.slice(1), opts);
-	// child.on('error', (err: any) => {
-	// 	console.log('eee: ' + err);
-	// 	process.stderr.write('error: ' + err, () => {
-	// 		process.exit(1);
-	// 	});
-	// });
-	// child.on('exit', (code: number) => {
-	// 	console.log("ex: " + code);
-	// 	process.exit(code);
-	// });
-}
-
-function main(): void {
-	'use strict';
-
-	// get statement
-	let argv = process.argv;
-	let pathToNode = argv[0];
-	let pathToScript = argv[1];
-	let args = argv.slice(2);
 	let statement = args[0];
 	//console.log(statement);
 
@@ -110,60 +95,68 @@ function main(): void {
 	// do path expansion for commands.
 	// raise error if | is not surrounded by
 	// commands.
-	let code = 0;
 	let utilpath = "lib/bin/";
 	let parsetree: string[][] = [];
 	try {
 		parsetree = parse(tokens, utilpath);
-		console.log(parsetree);
 	} catch (e) {
 		console.log(e);
 		if (e instanceof SyntaxError) {
 			process.stderr.write('SyntaxError: a pipe can only be between two commands.\n');
-			code = 1;
-			process.exit(code);
+			process.exit(1);
 		}
 	}
 	// check if parse tree is valid
 	if (! parsetree_is_valid(parsetree)) {
-		code = 1;
-		process.exit(code);
+		process.exit(1);
 	}
-	run_child(parsetree[0][0]);
-
 	// iterate over commands, setup pipes, and execute commands
-	// let pids: number[] = [];
-	// first command gets input from stdin, last writes output to stdout,
-	// all commands write err to stderr
-	//let stdin = process.stdin;
-	//let stderr = process.stderr;
-	//for (var i = 0; i < parsetree.length-1; i++) {
-		//let command = parsetree[i];
-		// pipe returns a buffer, not a file descriptor(?)
-		//let child_process = require('child_process').spawn();
-		//let child = child_process.execFile(command[0], ["hi"]);
-		// let stdout = new Pipe();
-		// TODO: figure out the type signature for streams.  NodeJS.ReadableStream works, but there's
-		// no corresponding NodeJS.WritableStream nor NodeJS.Stream exported (why would there be?),
-		// and Pipe is none of the above. Want to run the following:
-		// let pid = exec(command,[stdin, stdout, stderr]);
-		//let pid = exec(command);
-		//pids.push(pid);
-		// TODO: Pipe and process.stdin are different types. Want to run the following:
-		//stdin = stdout;
-	//}
-	//let command = parsetree[parsetree.length-1];
-	//let stdout = process.stdout;
-	//let pid = exec(command);
-	//pids.push(pid);
+	let stdin = process.stdin;
+	let stderr = process.stderr;
+	for (var i = 0; i < parsetree.length-1; i++) {
+		let cmd = parsetree[i];
+		console.log("cmd: " + cmd);
+		let opts = {
+			// pass our stdin, stdout, stderr to the child
+			stdio: [stdin, 1, stderr],
+		};
+
+		let child = child_process.spawn('node', cmd, opts);
+		child.on('error', (err: any) => {
+			process.stderr.write('error: ' + err, () => {
+				process.exit(1);
+			});
+		});
+
+		child.on('exit', (code: number) => {
+			process.exit(code);
+		});
+		stdin = child.stdout;
+	}
+	// execute last command with our stdout
+	let cmd = parsetree[parsetree.length-1];
+	console.log("cmd: " + cmd);
+	let opts = {
+		// pass our stdin, stdout, stderr to the child
+		stdio: [stdin, process.stdout, stderr],
+	};
+	let child = child_process.spawn('node', cmd, opts);
+	child.on('error', (err: any) => {
+		process.stderr.write('error: ' + err, () => {
+			process.exit(1);
+		});
+	});
+	child.on('exit', (code: number) => {
+		process.exit(code);
+	});
 
 	// iterate over processids, waiting for them to complete, and get command exit codes
-	//for (var i = 0; i < pids.length; i++) {
-	//	pid = pids[i];
-	//}
+	// //for (var i = 0; i < pids.length; i++) {
+	// //	pid = pids[i];
+	// //}
 
-	// set statement exit code and exit
-	process.exit(code);
+	// // set statement exit code and exit
+	// //process.exit(code);
 }
 
 main();

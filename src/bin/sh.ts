@@ -67,6 +67,51 @@ function run_child(commandPath: string): void {
 	});
 }
 
+function remove_pid(pids: number[], pid: number): number[] {
+	'use strict';
+	let index = pids.indexOf(pid, 0);
+	if (index !== undefined) {
+		pids.splice(index, 1);
+	}
+	return pids;
+}
+
+function execute_child(cmd: string[], opts: Object, pids: number[], codes: number[]): child_process.ChildProcess {
+	'use strict';
+	let child = child_process.spawn('node', cmd, opts);
+	pids.push(child.pid);
+	//console.log("exec pid: " + child.pid);
+	child.on('error', (err: any) => {
+		process.stderr.write('error: ' + err, () => {
+			process.exit(1);
+		});
+	});
+
+	child.on('exit', (code: number) => {
+		codes.push(code);
+		pids = remove_pid(pids, child.pid);
+		//console.log('removing pid: ' + child.pid);
+		//console.log('remainging pids: ' + pids);
+		if (pids.length === 0) {
+			//console.log('exiting!');
+			//console.log('codes are: ' + codes);
+			exit_process(codes);
+		}
+	});
+	return child;
+}
+
+function exit_process(codes: number[]): void {
+	'use strict';
+	let code = 0;
+	for (var i = 0; i < codes.length; i++) {
+		if (codes[i] !== 0) {
+			code = codes[i];
+		}
+	}
+	process.exit(code);
+}
+
 function main(): void {
 	'use strict';
 	///
@@ -113,50 +158,24 @@ function main(): void {
 	// iterate over commands, setup pipes, and execute commands
 	let stdin = process.stdin;
 	let stderr = process.stderr;
+	let pids: number[] = [];
+	let codes: number[] = [];
 	for (var i = 0; i < parsetree.length-1; i++) {
 		let cmd = parsetree[i];
-		console.log("cmd: " + cmd);
 		let opts = {
 			// pass our stdin, stdout, stderr to the child
 			stdio: [stdin, 1, stderr],
 		};
-
-		let child = child_process.spawn('node', cmd, opts);
-		child.on('error', (err: any) => {
-			process.stderr.write('error: ' + err, () => {
-				process.exit(1);
-			});
-		});
-
-		child.on('exit', (code: number) => {
-			process.exit(code);
-		});
+		let child = execute_child(cmd, opts, pids, codes);
 		stdin = child.stdout;
 	}
 	// execute last command with our stdout
 	let cmd = parsetree[parsetree.length-1];
-	console.log("cmd: " + cmd);
 	let opts = {
 		// pass our stdin, stdout, stderr to the child
 		stdio: [stdin, process.stdout, stderr],
 	};
-	let child = child_process.spawn('node', cmd, opts);
-	child.on('error', (err: any) => {
-		process.stderr.write('error: ' + err, () => {
-			process.exit(1);
-		});
-	});
-	child.on('exit', (code: number) => {
-		process.exit(code);
-	});
-
-	// iterate over processids, waiting for them to complete, and get command exit codes
-	// //for (var i = 0; i < pids.length; i++) {
-	// //	pid = pids[i];
-	// //}
-
-	// // set statement exit code and exit
-	// //process.exit(code);
+	let child = execute_child(cmd, opts, pids, codes);
 }
 
 main();

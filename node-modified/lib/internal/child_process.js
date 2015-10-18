@@ -1,13 +1,12 @@
 'use strict';
 
-var StringDecoder = require('./string_decoder').StringDecoder;
-var Buffer = require('./buffer').Buffer;
-var EventEmitter = require('./events');
-var net = require('./net');
-var dgram = require('./dgram');
-var util = require('./util');
-var constants = require('./constants');
-var assert = require('./assert');
+var StringDecoder = require('../string_decoder').StringDecoder;
+var Buffer = require('../buffer').Buffer;
+var EventEmitter = require('../events');
+//var net = require('./net');
+var util = require('../util');
+var constants = require('../constants');
+var assert = require('../assert');
 
 var Process = process.binding('process_wrap').Process;
 var uv = process.binding('uv');
@@ -102,6 +101,7 @@ function flushStdio(subprocess) {
 
 
 function createSocket(pipe, readable) {
+    /*
   var s = new net.Socket({ handle: pipe });
 
   if (readable) {
@@ -113,6 +113,8 @@ function createSocket(pipe, readable) {
   }
 
   return s;
+    */
+    throw new Error('createSocket not implemented');
 }
 
 

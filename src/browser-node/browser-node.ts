@@ -13,7 +13,9 @@ import * as bindingFs from './binding/fs';
 import * as bindingFsEventWrap from './binding/fs_event_wrap';
 import * as bindingConstants from './binding/constants';
 import * as bindingContextify from './binding/contextify';
+import * as bindingProcessWrap from './binding/process_wrap';
 import * as bindingPipeWrap from './binding/pipe_wrap';
+import * as bindingTTYWrap from './binding/tty_wrap';
 import * as bindingSpawnSync from './binding/spawn_sync';
 import * as bindingUtil from './binding/util';
 
@@ -58,13 +60,18 @@ class Process {
 			return bindingConstants;
 		case 'contextify':
 			return bindingContextify;
+		case 'process_wrap':
+			return bindingProcessWrap;
 		case 'pipe_wrap':
 			return bindingPipeWrap;
+		case 'tty_wrap':
+			return bindingTTYWrap;
 		case 'spawn_sync':
 			return bindingSpawnSync;
 		case 'util':
 			return bindingUtil;
 		default:
+			console.log('TODO: unimplemented binding ' + name);
 			(<any>console).trace('TODO: unimplemented binding ' + name);
 		}
 		return null;

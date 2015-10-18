@@ -5,7 +5,7 @@
 'use strict';
 
 import { now } from './ipc';
-import { syscall, SyscallResponse } from './syscall';
+import { syscall, SyscallCallback, SyscallResponse } from './syscall';
 
 import * as bindingBuffer from './binding/buffer';
 import * as bindingUV from './binding/uv';
@@ -22,6 +22,7 @@ import * as bindingUtil from './binding/util';
 class Process {
 	argv: string[];
 	env: Environment;
+	pwd: string;
 	queue: any[] = [];
 	draining: boolean = false;
 
@@ -32,6 +33,17 @@ class Process {
 	constructor(argv: string[], environ: Environment) {
 		this.argv = argv;
 		this.env = environ;
+	}
+
+	init(cb: SyscallCallback): void {
+		syscall.getcwd((cwd: string) => {
+			this.pwd = cwd;
+			setTimeout(cb);
+		});
+	}
+
+	cwd(): string {
+		return this.pwd;
 	}
 
 	exit(code: number): void {
@@ -153,19 +165,21 @@ function init(data: SyscallResponse): void {
 	process.stdout = new fs.createWriteStream('<stdout>', {fd: 1});
 	process.stderr = new fs.createWriteStream('<stderr>', {fd: 2});
 
-	fs.readFile(args[1], 'utf-8', (err: any, contents: string) => {
-		if (err) {
-			process.stderr.write('error: ' + err, () => {
-				process.exit(1);
-			});
-		}
+	process.init(() => {
+		fs.readFile(args[1], 'utf-8', (err: any, contents: string) => {
+			if (err) {
+				process.stderr.write('error: ' + err, () => {
+					process.exit(1);
+				});
+			}
 
-		(<any>self).process = process;
-		(<any>self).require = _require;
-		try {
-			(<any>self).eval(contents);
-		} catch (e) {
-			console.log(e);
-		}
+			(<any>self).process = process;
+			(<any>self).require = _require;
+			try {
+				(<any>self).eval(contents);
+			} catch (e) {
+				console.log(e);
+			}
+		});
 	});
 }

@@ -148,14 +148,22 @@ class Syscalls {
 	constructor(
 		public kernel: Kernel) {}
 
+	getcwd(ctx: SyscallContext): void {
+		ctx.complete(ctx.task.cwd);
+	}
+
 	exit(ctx: SyscallContext, code?: number): void {
 		if (!code)
 			code = 0;
 		this.kernel.exit(ctx.task, code);
 	}
 
-	exec(ctx: SyscallContext, name: string, ...args: string[]): void {
-		console.log('TODO: exec');
+	spawn(ctx: SyscallContext, cwd: string, name: string, args: string[], env: string[], files: number[]): void {
+		if (true)
+			throw new Error('blerg');
+		this.kernel.spawn(ctx.task, cwd, name, args, env, files, (err: any, pid: number) => {
+			ctx.complete(err, pid);
+		});
 	}
 
 	pread(ctx: SyscallContext, fd: number, len: number, off: number): void {
@@ -292,13 +300,18 @@ export class Kernel {
 	// returns the PID.
 	system(cmd: string, cb: SystemCallback): void {
 		let parts = cmd.match(/\S+/g);
-		let pid = this.nextTaskId();
-
-		this.systemRequests[pid] = cb;
 
 		// FIXME: fill in environment
-		let task = new Task(this, null, pid, parts[0], parts.splice(1), {});
-		this.tasks[pid] = task;
+		let env: string[] = [];
+		this.spawn(null, '/', parts[0], parts.slice(1), env, null, (err: any, pid: number) => {
+			if (err) {
+				// FIXME: maybe some better sort of
+				// error code
+				cb(-666, '', '');
+				return;
+			}
+			this.systemRequests[pid] = cb;
+		});
 	}
 
 	exit(task: Task, code: number): void {
@@ -313,7 +326,7 @@ export class Kernel {
 		// Practically, without this our unit tests sometimes
 		// hang :(
 		setTimeout(function(): void {
-			task.worker.terminate();
+			// task.worker.terminate();
 			setTimeout(workerTerminated);
 		});
 		function workerTerminated(): void {
@@ -348,6 +361,13 @@ export class Kernel {
 		}
 	}
 
+	spawn(parent: Task, cwd: string, name: string, args: string[], env: string[], files: number[], cb: (err: any, pid: number)=>void): void {
+		let pid = this.nextTaskId();
+
+		let task = new Task(this, parent, pid, '/', name, args, env, files, cb);
+		this.tasks[pid] = task;
+	}
+
 	private nextTaskId(): number {
 		return ++this.taskIdSeq;
 	}
@@ -370,7 +390,8 @@ export class Task {
 
 	exePath: string;
 	args: string[];
-	env: Environment;
+	env: string[];
+	cwd: string;
 
 	parent: Task;
 	children: Task[];
@@ -378,15 +399,23 @@ export class Task {
 	private syscalls: Syscalls;
 	private msgIdSeq: number = 1;
 	private outstanding: OutstandingMap = {};
+	private cb: (err: any, pid: number) => void;
 
-	constructor(kernel: Kernel, parent: Task, pid: number, filename: string, args: string[], env: Environment) {
+	constructor(
+		kernel: Kernel, parent: Task, pid: number, cwd: string,
+		filename: string, args: string[], env: string[], files: number[],
+		cb: (err: any, pid: number)=>void) {
+
 		this.pid = pid;
 		this.parent = parent;
 		this.kernel = kernel;
 		this.exePath = filename;
 		this.args = args;
 		this.env = env;
+		this.cwd = cwd;
 		this.state = 'starting';
+
+		this.cb = cb;
 
 		kernel.fs.readFile(filename, 'utf-8', this.fileRead.bind(this));
 	}
@@ -399,6 +428,8 @@ export class Task {
 		}
 
 		let blob = new Blob([data], {type: 'text/javascript'});
+
+		console.log('execing ' + this.exePath + ':: ' + this.args.join(' '));
 
 		this.worker = new Worker(window.URL.createObjectURL(blob));
 
@@ -428,8 +459,10 @@ export class Task {
 					name: 'init',
 					args: ['browser-node'].concat(this.args).concat(<any>this.env),
 				});
+				this.cb(null, this.pid);
+				this.cb = undefined;
 			},
-			0);
+			8000);
 	}
 
 	exit(code: number): void {
@@ -493,6 +526,8 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback): void {
 			BrowserFS.initialize(overlaid);
 			let fs: fs = bfs.require('fs');
 			let k = new Kernel(fs);
+			// FIXME: this is for debugging purposes
+			(<any>window).kernel = k;
 			setTimeout(cb, 0, null, k);
 		});
 	});

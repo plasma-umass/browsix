@@ -70,6 +70,18 @@ export class USyscalls {
 		this.post(msgId, 'exit', code);
 	}
 
+	getcwd(cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'getcwd');
+	}
+
+	spawn(cwd: string, name: string, args: string[], env: string[], files: number[], cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'spawn', cwd, name, args, env, files);
+	}
+
 	open(path: string, flags: string, mode: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;

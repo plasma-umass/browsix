@@ -20,7 +20,7 @@ const ECHO = '/usr/bin/echo';
 export const name = 'test-exec';
 
 describe('echo a b c', function(): void {
-	//this.timeout(10 * MINS);
+	this.timeout(10 * MINS);
 
 	let kernel: Kernel = null;
 
@@ -34,7 +34,7 @@ describe('echo a b c', function(): void {
 	});
 
 	it('should run `exec /usr/bin/echo hi`', function(done: MochaDone): void {
-		kernel.system(NODE + ' ' + EXEC + ' ' + ECHO + ' hi', echoExited);
+		kernel.system(NODE + ' ' + EXEC + ' ' + NODE + ' ' + ECHO + ' hi', echoExited);
 		function echoExited(code: number, stdout: string, stderr: string): void {
 			try {
 				expect(code).to.equal(0);

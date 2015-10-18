@@ -21,7 +21,7 @@ export class ChildProcess {
 	killed: boolean = false;
 	spawnfile: any = null;
 
-	_handle = new Process();
+	_handle = null; // new Process();
 
 	constructor() {
 		(<any>console).trace('FIXME: implement ChildProcess');

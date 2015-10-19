@@ -13,10 +13,6 @@ const MINS = 60 * 1000; // milliseconds
 const IS_KARMA = typeof window !== 'undefined' && typeof (<any>window).__karma__ !== 'undefined';
 const ROOT = IS_KARMA ? '/base/fs/' : '/fs/';
 
-const NODE = '/usr/bin/node';
-const EXEC = '/usr/bin/exec';
-const ECHO = '/usr/bin/echo';
-
 export const name = 'test-exec';
 
 describe('echo a b c', function(): void {
@@ -34,7 +30,7 @@ describe('echo a b c', function(): void {
 	});
 
 	it('should run `exec /usr/bin/echo hi`', function(done: MochaDone): void {
-		kernel.system(NODE + ' ' + EXEC + ' ' + NODE + ' ' + ECHO + ' hi', echoExited);
+		kernel.system('/usr/bin/exec /usr/bin/echo hi', echoExited);
 		function echoExited(code: number, stdout: string, stderr: string): void {
 			try {
 				expect(code).to.equal(0);

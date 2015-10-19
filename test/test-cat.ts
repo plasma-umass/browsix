@@ -13,9 +13,6 @@ const MINS = 60 * 1000; // milliseconds
 const IS_KARMA = typeof window !== 'undefined' && typeof (<any>window).__karma__ !== 'undefined';
 const ROOT = IS_KARMA ? '/base/fs/' : '/fs/';
 
-const NODE = '/usr/bin/node';
-const CAT = '/usr/bin/cat';
-
 export const name = 'test-cat';
 
 describe('cat /a /b', function(): void {
@@ -49,7 +46,7 @@ describe('cat /a /b', function(): void {
 	});
 
 	it('should run `cat /a /b`', function(done: MochaDone): void {
-		kernel.system(NODE + ' ' + CAT + ' /a /b', catExited);
+		kernel.system('/usr/bin/cat /a /b', catExited);
 		function catExited(code: number, stdout: string, stderr: string): void {
 			try {
 				expect(code).to.equal(0);

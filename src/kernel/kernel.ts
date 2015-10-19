@@ -440,7 +440,7 @@ export class Task {
 			let newlinePos = data.indexOf('\n');
 			if (newlinePos < 0)
 				throw new Error('shebang with no newline: ' + data);
-			let shebang = data.slice(0, newlinePos);
+			let shebang = data.slice(2, newlinePos);
 			data = data.slice(newlinePos+1);
 
 			let parts = shebang.match(/\S+/g);
@@ -449,6 +449,7 @@ export class Task {
 			if (parts.length === 2 && (parts[0] === '/usr/bin/env' || parts[0] === '/bin/env'))
 				cmd = '/usr/bin/' + parts[1];
 
+			this.args = [cmd].concat(this.args);
 			this.kernel.fs.readFile(cmd, 'utf-8', this.fileRead.bind(this));
 			return;
 		}

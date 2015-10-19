@@ -54,6 +54,10 @@ $(BROWSERFS): $(BROWSERFS_DIR) .gitmodules Makefile
 	git submodule update --init
 	touch $@
 
+bin: $(BUILD_DEPS)
+	@echo "  BIN"
+	node_modules/.bin/gulp index-fs
+
 test-browser: $(BUILD_DEPS)
 	@echo "  TEST BROWSER"
 	$(GULP) test-browser

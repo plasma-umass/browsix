@@ -159,8 +159,6 @@ class Syscalls {
 	}
 
 	spawn(ctx: SyscallContext, cwd: string, name: string, args: string[], env: string[], files: number[]): void {
-		if (true)
-			throw new Error('blerg');
 		this.kernel.spawn(ctx.task, cwd, name, args, env, files, (err: any, pid: number) => {
 			ctx.complete(err, pid);
 		});
@@ -303,7 +301,7 @@ export class Kernel {
 
 		// FIXME: fill in environment
 		let env: string[] = [];
-		this.spawn(null, '/', parts[0], parts.slice(1), env, null, (err: any, pid: number) => {
+		this.spawn(null, '/', parts[0], parts, env, null, (err: any, pid: number) => {
 			if (err) {
 				// FIXME: maybe some better sort of
 				// error code
@@ -411,7 +409,7 @@ export class Task {
 		this.kernel = kernel;
 		this.exePath = filename;
 		this.args = args;
-		this.env = env;
+		this.env = env || [];
 		this.cwd = cwd;
 		this.state = 'starting';
 
@@ -428,8 +426,6 @@ export class Task {
 		}
 
 		let blob = new Blob([data], {type: 'text/javascript'});
-
-		console.log('execing ' + this.exePath + ':: ' + this.args.join(' '));
 
 		this.worker = new Worker(window.URL.createObjectURL(blob));
 
@@ -457,12 +453,15 @@ export class Task {
 				this.worker.postMessage({
 					id: -1,
 					name: 'init',
-					args: ['browser-node'].concat(this.args).concat(<any>this.env),
+					args: [
+						this.args,
+						this.env,
+					],
 				});
 				this.cb(null, this.pid);
 				this.cb = undefined;
 			},
-			8000);
+			0);
 	}
 
 	exit(code: number): void {

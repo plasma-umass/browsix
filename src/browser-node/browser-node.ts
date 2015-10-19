@@ -157,8 +157,8 @@ syscall.addEventListener('init', init.bind(this));
 function init(data: SyscallResponse): void {
 	'use strict';
 
-	let args = data.args.slice(0, -1);
-	let environ = data.args[data.args.length - 1];
+	let args = data.args[0];
+	let environ = data.args[1];
 	process.argv = args;
 	process.env = environ;
 	process.stdin = new fs.createReadStream('<stdin>', {fd: 0});

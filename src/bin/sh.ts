@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as child_process from 'child_process';
 import * as path from 'path';
 import * as stream from 'stream';
-import { Pipe } from '../kernel/pipe';
+import * as pipe2 from 'node-pipe2';
 
 //
 // We split on the pipe, which works since pipe is the only operator.
@@ -156,24 +156,32 @@ function main(): void {
 		process.exit(1);
 	}
 	// iterate over commands, setup pipes, and execute commands
-	let stdin = process.stdin;
-	let stderr = process.stderr;
+	let stderr = 2;
 	let pids: number[] = [];
 	let codes: number[] = [];
-	for (var i = 0; i < parsetree.length-1; i++) {
+	let pipes: number[][] = [];
+	let pin = 0;
+	//setup pipes
+	for (let i = 0; i < parsetree.length-1; i++) {
+		pipe2((perr: any, rfd: number, wfd: number) => {
+			pipes.push([rfd, wfd]);
+		});
+	}
+	for (let i = 0; i < parsetree.length-1; i++) {
 		let cmd = parsetree[i];
+		let pout = pipes[i][1];
 		let opts = {
 			// pass our stdin, stdout, stderr to the child
-			stdio: [stdin, 1, stderr],
+			stdio: [pin, pout, stderr],
 		};
 		let child = execute_child(cmd, opts, pids, codes);
-		stdin = child.stdout;
+		pin = pipes[i][0];
 	}
 	// execute last command with our stdout
 	let cmd = parsetree[parsetree.length-1];
 	let opts = {
 		// pass our stdin, stdout, stderr to the child
-		stdio: [stdin, process.stdout, stderr],
+		stdio: [pin, 1, stderr],
 	};
 	let child = execute_child(cmd, opts, pids, codes);
 }

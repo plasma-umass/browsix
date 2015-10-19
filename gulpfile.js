@@ -98,6 +98,7 @@ gulp.task('copy-node', function() {
         'node/lib/assert.js',
         'node/lib/fs.js',
         'node/lib/vm.js',
+		'node/lib/readline.js',
         'node/lib/domain.js',
         'node/lib/string_decoder.js',
         'node/lib/child_process.js',

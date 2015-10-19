@@ -153,6 +153,8 @@ function _require(moduleName: string): any {
 		return require('./child_process');
 	case 'path':
 		return require('./path');
+	case 'readline':
+		return require('./readline');
 	default:
 		throw new ReferenceError('unknown module ' + moduleName);
 	}

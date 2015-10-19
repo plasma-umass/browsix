@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /// <reference path="../../typings/node/node.d.ts" />
 
 'use strict';
@@ -49,10 +48,11 @@ function head(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 		});
 		rl.on('line', (line: string) => {
 			n++;
-			output.write(line+"\n");
-			if (n >= numlines) {
+			if (n > numlines) {
 				rl.close();
 				process.exit(0);
+			} else {
+				output.write(line+"\n");
 			}
 		});
 	});

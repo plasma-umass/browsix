@@ -18,6 +18,8 @@ var uglify = require('gulp-uglify');
 var karma = require('karma');
 var run = require('gulp-run');
 
+var addShebang = require('./gulp-plugins/add-shebang');
+
 
 // each user of our tsconfig.json setup needs a different instance of
 // the 'ts project', as gulp-typescript seems to use it as a dumping
@@ -115,6 +117,7 @@ gulp.task('build-fs', ['dist-kernel', 'dist-browser-node', 'build-bin'], functio
           .pipe(gulp.dest('./fs/usr/bin/'));
     const copyBin = gulp.src('lib/bin/*.js')
           .pipe(rename(function(path) { path.extname = ''; }))
+          .pipe(addShebang('#!/usr/bin/node\n'))
           .pipe(gulp.dest('./fs/usr/bin/'));
 
     return merge(copyKernel, copyNode, copyBin);

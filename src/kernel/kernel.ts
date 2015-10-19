@@ -433,6 +433,26 @@ export class Task {
 			throw err;
 		}
 
+		// handles shebang lines, and special-cases /usr/bin/env.
+		// TODO: abstract this into something like a binfmt
+		// handler
+		if (data.length > 2 && data[0] === '#' && data[1] === '!') {
+			let newlinePos = data.indexOf('\n');
+			if (newlinePos < 0)
+				throw new Error('shebang with no newline: ' + data);
+			let shebang = data.slice(0, newlinePos);
+			data = data.slice(newlinePos+1);
+
+			let parts = shebang.match(/\S+/g);
+
+			let cmd = parts[0];
+			if (parts.length === 2 && (parts[0] === '/usr/bin/env' || parts[0] === '/bin/env'))
+				cmd = '/usr/bin/' + parts[1];
+
+			this.kernel.fs.readFile(cmd, 'utf-8', this.fileRead.bind(this));
+			return;
+		}
+
 		let blob = new Blob([data], {type: 'text/javascript'});
 
 		this.worker = new Worker(window.URL.createObjectURL(blob));

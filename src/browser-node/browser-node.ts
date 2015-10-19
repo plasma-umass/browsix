@@ -178,6 +178,9 @@ function init(data: SyscallResponse): void {
 				});
 			}
 
+			// this is what node does in Module._compile.
+			contents = contents.replace(/^\#\!.*/, '');
+
 			(<any>self).process = process;
 			(<any>self).require = _require;
 			try {

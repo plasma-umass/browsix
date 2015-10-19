@@ -90,11 +90,11 @@ function execute_child(cmd: string[], opts: Object, pids: number[], codes: numbe
 	child.on('exit', (code: number) => {
 		codes.push(code);
 		pids = remove_pid(pids, child.pid);
-		console.log('removing pid: ' + child.pid);
-		console.log('remainging pids: ' + pids);
+		//console.log('removing pid: ' + child.pid);
+		//console.log('remainging pids: ' + pids);
 		if (pids.length === 0) {
-			console.log('exiting!');
-			console.log('codes are: ' + codes);
+			//console.log('exiting!');
+			//console.log('codes are: ' + codes);
 			exit_process(codes);
 		}
 	});
@@ -175,6 +175,7 @@ function main(): void {
 			stdio: [pin, pout, stderr],
 		};
 		let child = execute_child(cmd, opts, pids, codes);
+		fs.close(pipes[i][1]);
 		pin = pipes[i][0];
 	}
 	// execute last command with our stdout
@@ -186,7 +187,6 @@ function main(): void {
 	let child = execute_child(cmd, opts, pids, codes);
 	for (let i = 0; i < pipes.length; i++) {
 		fs.close(pipes[i][0]);
-		fs.close(pipes[i][1]);
 	}
 }
 

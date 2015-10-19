@@ -36,6 +36,11 @@ class Process {
 	}
 
 	init(cb: SyscallCallback): void {
+		// TODO: getcwd has to be called first, as node makes
+		// access to it syncronous, and with our
+		// message-passing syscall interface every syscall is
+		// async.  This has to be kept up to date with any
+		// calls to chdir(2).
 		syscall.getcwd((cwd: string) => {
 			this.pwd = cwd;
 			setTimeout(cb);

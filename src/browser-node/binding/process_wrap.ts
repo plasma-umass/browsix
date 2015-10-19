@@ -47,8 +47,6 @@ export class Process {
 
 		syscall.spawn(cwd, opts.file, opts.args, opts.envPairs, files, (err: any, pid: number) => {
 			syscall.addEventListener('child', this.handleSigchild.bind(this));
-
-			console.log('spawn completed: ' + pid);
 		});
 
 		return null;
@@ -69,6 +67,7 @@ export class Process {
 	}
 
 	handleSigchild(data: SyscallResponse): void {
+		let pid = data.args[0];
 		let exitCode = data.args[1];
 		let signalCode = data.args[2];
 		if (this.onexit)

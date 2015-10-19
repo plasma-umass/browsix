@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /// <reference path="../../typings/node/node.d.ts" />
 
 'use strict';

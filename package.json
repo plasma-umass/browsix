@@ -49,7 +49,7 @@
     "async": "^1.4.2",
     "browserfs": "^0.4.1",
     "dropbox": "^0.10.3",
-    "node-pipe2": "^0.1.3",
+    "node-pipe2": "^0.1.4",
     "ts-stream": "^0.7.0"
   }
 }

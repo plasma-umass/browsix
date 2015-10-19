@@ -1,11 +1,12 @@
 /// <reference path="../../typings/node/node.d.ts" />
+
 'use strict';
 
 import * as fs from 'fs';
 import * as child_process from 'child_process';
 import * as path from 'path';
 import * as stream from 'stream';
-import { Pipe } from '../kernel/pipe';
+import * as pipe2 from 'node-pipe2';
 
 //
 // We split on the pipe, which works since pipe is the only operator.
@@ -161,13 +162,19 @@ function main(): void {
 	let pids: number[] = [];
 	let codes: number[] = [];
 	for (var i = 0; i < parsetree.length-1; i++) {
-		let cmd = parsetree[i];
-		let opts = {
-			// pass our stdin, stdout, stderr to the child
-			stdio: [stdin, 1, stderr],
-		};
-		let child = execute_child(cmd, opts, pids, codes);
-		stdin = child.stdout;
+		pipe2((err: any, rfd: number, wfd: number) => {
+			console.log('got pipe!');
+			let cmd = parsetree[i];
+			let opts = {
+				// pass our stderr to the child.  if
+				// it is the first child, give it our
+				// stdin too.  Otherwise give it the
+				// write end of the pipe.
+				stdio: [i === 0 ? 0 : rfd, wfd, 2],
+			};
+			let child = execute_child(cmd, opts, pids, codes);
+			stdin = child.stdout;
+		});
 	}
 	// execute last command with our stdout
 	let cmd = parsetree[parsetree.length-1];

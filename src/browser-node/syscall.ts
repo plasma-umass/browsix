@@ -139,7 +139,6 @@ export class USyscalls {
 		}
 
 		// TODO: handle reject
-		//console.log('unhandled response' + ev.data);
 		this.complete(response.id, response.args);
 	}
 

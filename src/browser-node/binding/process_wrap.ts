@@ -1,6 +1,6 @@
 'use strict';
 
-import { syscall } from '../syscall';
+import { syscall, SyscallResponse } from '../syscall';
 import * as uv from './uv';
 
 // FIXME: internal/child_process checks for specific errors.  I think
@@ -28,6 +28,8 @@ export interface SpawnOptions {
 }
 
 export class Process {
+	onexit: Function = undefined;
+
 	constructor() {}
 
 	spawn(opts: SpawnOptions): any {
@@ -43,14 +45,33 @@ export class Process {
 		if (!cwd)
 			cwd = process.cwd();
 
-		syscall.spawn(cwd, opts.file, opts.args, opts.envPairs, files, (err: any) => {
-			console.log('spawn completed.');
+		syscall.spawn(cwd, opts.file, opts.args, opts.envPairs, files, (err: any, pid: number) => {
+			syscall.addEventListener('child', this.handleSigchild.bind(this));
+
+			console.log('spawn completed: ' + pid);
 		});
 
 		return null;
 	}
 
 	close(): void {
-		console.log('Process close');
+		// TODO: anything we need to take care of w.r.t. HandleWrap?
+	}
+
+	ref(): void {
+		// TODO: ref
+		console.log('TODO: Process.ref');
+	}
+
+	unref(): void {
+		// TODO: unref
+		console.log('TODO: Process.unref');
+	}
+
+	handleSigchild(data: SyscallResponse): void {
+		let exitCode = data.args[1];
+		let signalCode = data.args[2];
+		if (this.onexit)
+			this.onexit(exitCode, signalCode);
 	}
 }

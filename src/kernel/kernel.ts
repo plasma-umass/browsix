@@ -315,7 +315,7 @@ export class Kernel {
 	exit(task: Task, code: number): void {
 		task.exit(code);
 		delete this.tasks[task.pid];
-		let callback = this.systemRequests[task.pid];
+		let cb = this.systemRequests[task.pid];
 		delete this.systemRequests[task.pid];
 
 		// run this in the next tick to allow any work queued
@@ -323,17 +323,15 @@ export class Kernel {
 		// execute before completing our callback.
 		// Practically, without this our unit tests sometimes
 		// hang :(
-		setTimeout(function(): void {
-			// task.worker.terminate();
+		setTimeout(() => {
+			task.worker.terminate();
+			if (task.parent)
+				task.parent.signal('child', [task.pid, code, 0]);
 			setTimeout(workerTerminated);
 		});
 		function workerTerminated(): void {
-			if (callback) {
-				// TODO: also call resolve w/ stderr + stdout
-				callback(task.exitCode, task.files[1].read(), task.files[2].read());
-			} else {
-				console.log('task exit but no CB registered');
-			}
+			if (cb)
+				cb(task.exitCode, task.files[1].read(), task.files[2].read());
 		}
 	}
 
@@ -413,6 +411,16 @@ export class Task {
 		this.cwd = cwd;
 		this.state = 'starting';
 
+		if (files && parent) {
+			this.files[0] = parent.files[files[0]];
+			this.files[1] = parent.files[files[1]];
+			this.files[2] = parent.files[files[2]];
+		} else {
+			this.files[0] = new Pipe();
+			this.files[1] = new Pipe();
+			this.files[2] = new Pipe();
+		}
+
 		this.cb = cb;
 
 		kernel.fs.readFile(filename, 'utf-8', this.fileRead.bind(this));
@@ -428,38 +436,24 @@ export class Task {
 		let blob = new Blob([data], {type: 'text/javascript'});
 
 		this.worker = new Worker(window.URL.createObjectURL(blob));
-
-		let stdin = new Pipe();
-		let stderr = new Pipe();
-		let stdout = new Pipe();
-
-		this.files[0] = stdin;
-		this.files[1] = stdout;
-		this.files[2] = stderr;
-
 		this.worker.onmessage = this.syscallHandler.bind(this);
-		//console.log(['browser-node'].concat(args).concat(<any>env));
 
-		// FIXME: eventually remove this.  Chrome used to have
-		// a 'pause worker on startup' option, but that has
-		// been removed.  We need a chance to hit 'pause' to
-		// debug a worker, because the Blob URL changes on
-		// every reload, which means we can't have breakpoints
-		// persist across page reloads :\ So: if you need to
-		// pause the worker, change '0' to something like
-		// '5000' below.
+		this.signal('init', [this.args, this.env], () => {
+			this.cb(null, this.pid);
+			this.cb = undefined;
+		});
+	}
+
+	signal(name: string, args: any[], cb?: Function): void {
 		self.setTimeout(
 			() => {
 				this.worker.postMessage({
 					id: -1,
-					name: 'init',
-					args: [
-						this.args,
-						this.env,
-					],
+					name: name,
+					args: args,
 				});
-				this.cb(null, this.pid);
-				this.cb = undefined;
+				if (cb)
+					cb();
 			},
 			0);
 	}

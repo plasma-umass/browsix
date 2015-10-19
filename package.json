@@ -22,6 +22,7 @@
     "browserify": "^11.2.0",
     "chai": "^3.3.0",
     "gulp": "^3.9.0",
+    "gulp-chmod": "^1.3.0",
     "gulp-copy": "0.0.2",
     "gulp-mocha": "^2.1.3",
     "gulp-rename": "^1.2.2",

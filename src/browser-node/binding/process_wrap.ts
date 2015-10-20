@@ -29,6 +29,7 @@ export interface SpawnOptions {
 
 export class Process {
 	onexit: Function = undefined;
+	pid: number;
 
 	constructor() {}
 
@@ -46,6 +47,11 @@ export class Process {
 			cwd = process.cwd();
 
 		syscall.spawn(cwd, opts.file, opts.args, opts.envPairs, files, (err: any, pid: number) => {
+			if (err) {
+				console.log('TODO: spawn failed');
+				return;
+			}
+			this.pid = pid;
 			syscall.addEventListener('child', this.handleSigchild.bind(this));
 		});
 
@@ -68,6 +74,9 @@ export class Process {
 
 	handleSigchild(data: SyscallResponse): void {
 		let pid = data.args[0];
+		if (pid != this.pid) {
+			return;
+		}
 		let exitCode = data.args[1];
 		let signalCode = data.args[2];
 		if (this.onexit)

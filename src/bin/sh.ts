@@ -78,7 +78,7 @@ function remove_pid(pids: number[], pid: number): number[] {
 
 function execute_child(cmd: string[], opts: Object, pids: number[], codes: number[]): child_process.ChildProcess {
 	'use strict';
-	let child = child_process.spawn('node', cmd, opts);
+	let child = child_process.spawn(cmd[0], cmd.slice(1), opts);
 	pids.push(child.pid);
 	//console.log("exec pid: " + child.pid);
 	child.on('error', (err: any) => {
@@ -161,32 +161,48 @@ function main(): void {
 	let codes: number[] = [];
 	let pipes: number[][] = [];
 	let pin = 0;
-	//setup pipes
-	for (let i = 0; i < parsetree.length-1; i++) {
-		pipe2((perr: any, rfd: number, wfd: number) => {
-			pipes.push([rfd, wfd]);
-		});
-	}
-	for (let i = 0; i < parsetree.length-1; i++) {
-		let cmd = parsetree[i];
-		let pout = pipes[i][1];
+
+	// called below
+	function spawnChildren(): void {
+		for (let i = 0; i < parsetree.length-1; i++) {
+			let cmd = parsetree[i];
+			let pout = pipes[i][1];
+			let opts = {
+				// pass our stdin, stdout, stderr to the child
+				stdio: [pin, pout, stderr],
+			};
+			let child = execute_child(cmd, opts, pids, codes);
+			fs.close(pipes[i][1]);
+			pin = pipes[i][0];
+		}
+		// execute last command with our stdout
+		let cmd = parsetree[parsetree.length-1];
 		let opts = {
 			// pass our stdin, stdout, stderr to the child
-			stdio: [pin, pout, stderr],
+			stdio: [pin, 1, stderr],
 		};
 		let child = execute_child(cmd, opts, pids, codes);
-		fs.close(pipes[i][1]);
-		pin = pipes[i][0];
+		for (let i = 0; i < pipes.length; i++) {
+			fs.close(pipes[i][0]);
+		}
 	}
-	// execute last command with our stdout
-	let cmd = parsetree[parsetree.length-1];
-	let opts = {
-		// pass our stdin, stdout, stderr to the child
-		stdio: [pin, 1, stderr],
-	};
-	let child = execute_child(cmd, opts, pids, codes);
-	for (let i = 0; i < pipes.length; i++) {
-		fs.close(pipes[i][0]);
+
+	let outstanding = parsetree.length-1;
+	if (!outstanding) {
+		spawnChildren();
+		return;
+	}
+
+	//setup pipes
+	for (let i = 0; i < parsetree.length-1; i++) {
+		pipe2((err: any, rfd: number, wfd: number) => {
+			if (err)
+				throw new Error('Pipe failed!');
+			pipes.push([rfd, wfd]);
+			outstanding--;
+			if (!outstanding)
+				spawnChildren();
+		});
 	}
 }
 

@@ -123,7 +123,7 @@ class Process {
 		this.draining = false;
 	}
 }
-let process = new Process(undefined, {});
+let process = new Process(undefined, { NODE_DEBUG: 'fs' });
 (<any>self).process = process;
 
 if (typeof (<any>self).setTimeout === 'undefined')
@@ -143,6 +143,10 @@ interface Environment {
 	[name: string]: string;
 }
 
+function pipe2(cb: (err: any, rfd: number, wfd: number) => void): void {
+	syscall.pipe2(0, cb);
+}
+
 function _require(moduleName: string): any {
 	'use strict';
 
@@ -155,6 +159,8 @@ function _require(moduleName: string): any {
 		return require('./path');
 	case 'readline':
 		return require('./readline');
+	case 'node-pipe2':
+		return pipe2;
 	default:
 		throw new ReferenceError('unknown module ' + moduleName);
 	}

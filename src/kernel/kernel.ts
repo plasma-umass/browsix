@@ -8,6 +8,7 @@ import * as constants from './constants';
 import * as vfs from './vfs';
 import { now } from './ipc';
 import { Pipe } from './pipe';
+import { SyscallContext, ITask } from './syscall-ctx';
 
 import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
 import { fs } from './vendor/BrowserFS/src/core/node_fs';
@@ -104,20 +105,6 @@ enum SyscallError {
 	EIO,
 }
 
-export class SyscallContext {
-	constructor(
-		public task: Task,
-		public id:     number) {}
-
-	complete(...args: any[]): void {
-		this.task.worker.postMessage({
-			id: this.id,
-			name: undefined,
-			args: args,
-		});
-	}
-}
-
 export class Syscall {
 	constructor(
 		public ctx:  SyscallContext,
@@ -157,11 +144,11 @@ class Syscalls {
 	exit(ctx: SyscallContext, code?: number): void {
 		if (!code)
 			code = 0;
-		this.kernel.exit(ctx.task, code);
+		this.kernel.exit(<Task>ctx.task, code);
 	}
 
 	spawn(ctx: SyscallContext, cwd: string, name: string, args: string[], env: string[], files: number[]): void {
-		this.kernel.spawn(ctx.task, cwd, name, args, env, files, (err: any, pid: number) => {
+		this.kernel.spawn(<Task>ctx.task, cwd, name, args, env, files, (err: any, pid: number) => {
 			ctx.complete(err, pid);
 		});
 	}
@@ -170,6 +157,11 @@ class Syscalls {
 		let file = ctx.task.files[fd];
 		if (!file) {
 			ctx.complete('bad FD ' + fd, null);
+			return;
+		}
+		if (file instanceof Pipe) {
+			// TODO: error on invalid off
+			file.read(ctx, len);
 			return;
 		}
 		// node uses both 'undefined' and -1 to represent
@@ -194,12 +186,27 @@ class Syscalls {
 			ctx.complete('bad FD ' + fd, null);
 			return;
 		}
-		if (fd < 3) {
+		if (file instanceof Pipe) {
 			file.write(buf);
 			ctx.complete(null, buf.length);
 			return;
 		}
 		console.log('TODO: write ' + fd);
+	}
+
+	pipe2(ctx: SyscallContext, flags: number): void {
+		let callback = function(): void {
+			let pipe = new Pipe();
+			// FIXME: this isn't POSIX semantics - we
+			// don't necessarily reuse lowest free FD.
+			let n = Object.keys(ctx.task.files).length;
+			ctx.task.files[n] = pipe;
+			ctx.task.files[n+1] = pipe;
+			ctx.complete(undefined, n, n+1);
+		};
+
+		this.kernel.makeTaskRunnable(<Task>ctx.task, callback);
+		this.kernel.schedule();
 	}
 
 	open(ctx: SyscallContext, path: string, flags: string, mode: number): void {
@@ -237,9 +244,13 @@ class Syscalls {
 			ctx.complete('bad FD ' + fd, null);
 			return;
 		}
-		// FIXME: handle pipes better
-		if (fd < 3)
+		ctx.task.files[fd] = undefined;
+
+		if (file instanceof Pipe) {
+			ctx.complete(null, 0);
+			file.unref();
 			return;
+		}
 		this.kernel.fs.close(file, function(err: any): void {
 			if (err) {
 				console.log(err);
@@ -307,7 +318,11 @@ export class Kernel {
 
 	// returns the PID.
 	system(cmd: string, cb: SystemCallback): void {
-		let parts = cmd.match(/\S+/g);
+		let parts: string[];
+		if (cmd.indexOf('|') !== -1)
+			parts = ['/usr/bin/sh', cmd];
+		else
+			parts = cmd.match(/\S+/g);
 
 		// FIXME: fill in environment
 		let env: string[] = [];
@@ -383,7 +398,7 @@ export interface Environment {
 	[name: string]: string;
 }
 
-export class Task {
+export class Task implements ITask {
 	kernel: Kernel;
 	worker: Worker;
 
@@ -412,6 +427,8 @@ export class Task {
 		filename: string, args: string[], env: string[], files: number[],
 		cb: (err: any, pid: number)=>void) {
 
+		//console.log('spawn PID ' + pid + ': ' + args.join(' '));
+
 		this.pid = pid;
 		this.parent = parent;
 		this.kernel = kernel;
@@ -425,6 +442,10 @@ export class Task {
 			this.files[0] = parent.files[files[0]];
 			this.files[1] = parent.files[files[1]];
 			this.files[2] = parent.files[files[2]];
+			for (let i = 0; i < 3; i++) {
+				if (this.files[i] instanceof Pipe)
+					this.files[i].ref();
+			}
 		} else {
 			this.files[0] = new Pipe();
 			this.files[1] = new Pipe();
@@ -491,6 +512,13 @@ export class Task {
 
 	exit(code: number): void {
 		this.exitCode = code;
+		for (let n in this.files) {
+			if (!this.files.hasOwnProperty(n))
+				continue;
+			let f = this.files[n];
+			if (f instanceof Pipe)
+				f.unref();
+		}
 	}
 
 	private nextMsgId(): number {

@@ -55,7 +55,7 @@ export class USyscalls {
 	private msgIdSeq: number = 1;
 	private port: MessagePort;
 	private outstanding: UOutstandingMap = {};
-	private signalHandlers: {[name: string]: SignalHandler} = {};
+	private signalHandlers: {[name: string]: SignalHandler[]} = {};
 
 	constructor(port: MessagePort) {
 		this.port = port;
@@ -80,6 +80,12 @@ export class USyscalls {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;
 		this.post(msgId, 'spawn', cwd, name, args, env, files);
+	}
+
+	pipe2(flags: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'pipe2', flags);
 	}
 
 	open(path: string, flags: string, mode: number, cb: SyscallCallback): void {
@@ -121,7 +127,10 @@ export class USyscalls {
 	addEventListener(type: string, handler: SignalHandler): void {
 		if (!handler)
 			return;
-		this.signalHandlers[type] = handler;
+		if (this.signalHandlers[type])
+			this.signalHandlers[type].push(handler);
+		else
+			this.signalHandlers[type] = [handler];
 	}
 
 	private resultHandler(ev: MessageEvent): void {
@@ -136,11 +145,13 @@ export class USyscalls {
 		// to a message _we_ sent.  Signals include the
 		// 'init' message with our args + environment.
 		if (response.name) {
-			let handler = this.signalHandlers[response.name];
-			if (handler)
-				handler(response);
-			else
+			let handlers = this.signalHandlers[response.name];
+			if (handlers) {
+				for (let i = 0; i < handlers.length; i++)
+					handlers[i](response);
+			} else {
 				console.log('unhandled signal ' + response.name);
+			}
 			return;
 		}
 

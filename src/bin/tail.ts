@@ -28,6 +28,7 @@ function tail(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 	let current = inputs[0];
 	inputs = inputs.slice(1);
 	let n = 0;
+	let outstanding = 0;
 	let linebuffer: string[] = [];
 	if (!current) {
 		// use setTimeout to avoid a deep stack as well as
@@ -51,13 +52,16 @@ function tail(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 		});
 	});
 
+	// FIXME: this only works for the case of a single input file
 	current.on('end', function(): void {
-		// use setTimeout to avoid a deep stack as well as
-		// cooperatively yield
+		outstanding = linebuffer.length;
 		for (var i = 0; i < linebuffer.length; i++) {
-				output.write(linebuffer[i] + "\n");
+			output.write(linebuffer[i] + "\n", () => {
+				outstanding--;
+				if (!outstanding)
+					process.exit(0);
+			});
 		}
-		process.exit(0);
 		setTimeout(tail, 0, inputs, output, code);
 	});
 }

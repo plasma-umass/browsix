@@ -23,6 +23,9 @@ namespace Terminal {
 		@property({type: Boolean})
 		editable: boolean;
 
+		@property({type: String})
+		ps1: string = '$ ';
+
 		constructor() {
 			super();
 			(<any>window).Boot(
@@ -38,12 +41,27 @@ namespace Terminal {
 				});
 		}
 
-		ready(): void {
+		attached(): void {
 			this.$.term.addEventListener('input', this.onInput.bind(this));
 		}
 
 		onInput(ev: any): void {
-			console.log(ev);
+			// FIXME: be less horrendously inefficient.
+			let txt = this.$.term.value;
+			if (txt[txt.length-1] !== '\n')
+				return;
+			let parts = txt.split('\n');
+			let cmd = parts[parts.length-2].substring(this.ps1.length);
+			if (cmd.trim() === '') {
+				this.nextPrompt();
+				return;
+			}
+			this.editable = false;
+			this.kernel.system(cmd, (code: number, stdout: string, stderr: string) => {
+				this.$.term.value += stdout;
+				this.$.term.value += stderr;
+				this.editable = true;
+			});
 		}
 
 		@observe('kernel')
@@ -61,18 +79,14 @@ namespace Terminal {
 		editableChanged(editable: boolean): void {
 			if (!editable)
 				return;
-
-			this.focusAtEnd(this.$.term);
+			this.nextPrompt();
 		}
 
-		focusAtEnd(el: any): void {
-			el.focus();
-			let range = document.createRange();
-			let sel = window.getSelection();
-			range.setStart(el.childNodes[0], el.innerHTML.length);
-			range.collapse(true);
-			sel.removeAllRanges();
-			sel.addRange(range);
+		nextPrompt(): void {
+			this.$.term.value += this.ps1;
+			let len = this.$.term.value.length;
+			this.$.term.setSelectionRange(len, len);
+			this.$.term.focus();
 		}
 	}
 

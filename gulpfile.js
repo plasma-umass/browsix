@@ -377,7 +377,7 @@ gulp.task('app:clean', function (cb) {
     del(['.tmp', 'dist'], cb);
 });
 
-gulp.task('app:build', function (cb) {
+gulp.task('app:build', ['index-fs'], function (cb) {
     return gulp.src([
         'app/elements/**/*.ts',
     ])
@@ -406,7 +406,6 @@ gulp.task('serve', ['app:build', 'app:styles', 'app:elements', 'app:images'], fu
         // https: true,
         server: {
             baseDir: ['.tmp', 'app'],
-            middleware: [ historyApiFallback() ],
             routes: {
                 '/bower_components': 'bower_components',
                 '/fs': 'fs',

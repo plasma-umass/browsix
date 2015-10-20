@@ -123,7 +123,7 @@ class Process {
 		this.draining = false;
 	}
 }
-let process = new Process(undefined, { NODE_DEBUG: 'fs' });
+let process = new Process(undefined, { /* NODE_DEBUG: 'fs' */ });
 (<any>self).process = process;
 
 if (typeof (<any>self).setTimeout === 'undefined')

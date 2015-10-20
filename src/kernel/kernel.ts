@@ -318,11 +318,7 @@ export class Kernel {
 
 	// returns the PID.
 	system(cmd: string, cb: SystemCallback): void {
-		let parts: string[];
-		if (cmd.indexOf('|') !== -1)
-			parts = ['/usr/bin/sh', cmd];
-		else
-			parts = cmd.match(/\S+/g);
+		let parts = ['/usr/bin/sh', cmd];
 
 		// FIXME: fill in environment
 		let env: string[] = [];

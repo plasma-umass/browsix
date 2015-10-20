@@ -4,15 +4,24 @@
     <template>
 	<style>
 	#term {
+	  background: #171a1b;
+	  font-size: 24px;
+	  font-family: 'Hack', 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	  color: #eeeeec;
+	  resize:  none;
 	  padding: 24px;
 	  outline: 0px solid transparent;
+	  border: 0px;
+	  -webkit-box-sizing: border-box;
+	  -moz-box-sizing: border-box;
+          box-sizing: border-box;
 	}
 	#term:focus {
 	  outline: 0px solid transparent;
 	}
 	</style>
 
-	<div class="fit" id="term" contenteditable="true">$ cat</div>
+	<textarea class="fit" id="term" disabled="[[!editable]]"></textarea>
     </template>
 </dom-module>
 

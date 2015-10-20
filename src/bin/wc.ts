@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /// <reference path="../../typings/node/node.d.ts" />
 
 'use strict';
@@ -17,7 +16,7 @@ import * as fs from 'fs';
 // a node stream object - which means that we consume it by adding 2
 // event listeners, the first for when there is data available, and
 // secondly for when we've reached EOF.
-function concat(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, code: number): void {
+function wc(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, opts: Opts, code: number): void {
 	'use strict';
 
 	if (!inputs || !inputs.length) {
@@ -28,23 +27,37 @@ function concat(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, 
 	let current = inputs[0];
 	inputs = inputs.slice(1);
 
+	let w = 0;
+	let c = 0;
+	let l = 0;
+
 	if (!current) {
 		// use setTimeout to avoid a deep stack as well as
 		// cooperatively yield
-		setTimeout(concat, 0, inputs, output, code);
+		setTimeout(wc, 0, inputs, output, opts, code);
 		return;
 	}
 
 	current.on('readable', function(): void {
 		let buf = current.read();
-		if (buf !== null)
-			output.write(buf);
+		if (buf !== null) {
+			c += buf.length;
+			l += (buf.toString().match(/\n/g) || []).length;
+			w += (buf.toString().match(/\S+/g) || []).length;
+		}
 	});
 
 	current.on('end', function(): void {
 		// use setTimeout to avoid a deep stack as well as
 		// cooperatively yield
-		setTimeout(concat, 0, inputs, output, code);
+		if (opts.outputLine)
+			output.write(l + "\t");
+		if (opts.outputWord)
+			output.write(w + "\t");
+		if (opts.outputChar)
+			output.write(c + "\t");
+		output.write("\n");
+		setTimeout(wc, 0, inputs, output, opts, code);
 	});
 }
 
@@ -68,7 +81,7 @@ function main(): void {
 	let defOpts = {outputLine: true, outputWord: true, outputChar: true};
 	if (!args.length) {
 		// no args?  just wc stdin to stdout
-		setTimeout(concat, 0, [process.stdin], process.stdout, code);
+		setTimeout(wc, 0, [process.stdin], process.stdout, defOpts, code);
 	} else {
 		// note: wc will not take "-" as stdin
 		let opts: Opts;
@@ -85,7 +98,8 @@ function main(): void {
 				case "w":
 					opts.outputWord = true;
 					break;
-				case "m":
+				// in *nix -m is for character and -c is for bytes; project description has -c as char and ommits byte count.
+				case "c":
 					opts.outputChar = true;
 					break;
 					//default:
@@ -104,7 +118,7 @@ function main(): void {
 				// if we've opened all of the files, pipe them to
 				// stdout.
 				if (++opened === args.length)
-					setTimeout(concat, 0, files, process.stdout, code);
+					setTimeout(wc, 0, files, process.stdout, opts, code);
 				return;
 			}
 			fs.open(path, 'r', function(err: any, fd: any): void {
@@ -124,7 +138,7 @@ function main(): void {
 				// if we've opened all of the files,
 				// pipe them to stdout.
 				if (++opened === args.length)
-					setTimeout(concat, 0, files, process.stdout, code);
+					setTimeout(wc, 0, files, process.stdout, opts, code);
 			});
 		});
 	}

@@ -43,7 +43,6 @@ function tail(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 		});
 
 		rl.on('line', (line: string) => {
-			let shouldClose = false;
 			n++;
 			linebuffer.push(line);
 			if (n > numlines) {

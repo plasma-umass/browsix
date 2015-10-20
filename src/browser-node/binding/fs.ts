@@ -85,6 +85,10 @@ export function open(path: string, flags: string, mode: number, req: FSReqWrap):
 	syscall.open(path, flags, mode, req.complete.bind(req));
 }
 
+export function unlink(path: string, req: FSReqWrap): void {
+	syscall.unlink(path, req.complete.bind(req));
+}
+
 export function fstat(fd: number, req: FSReqWrap): void {
 	syscall.fstat(fd, function fstatFinished(err: any, s: any) {
 		let stats = new Stats(

@@ -206,8 +206,6 @@ class Syscalls {
 		this.kernel.fs.open(path, flagsToString(flags), mode, function(err: any, fd: any): void {
 			let callback = function(): void {
 				if (err) {
-					console.log('open failed');
-					console.log(err);
 					ctx.complete(err, null);
 					return;
 				}
@@ -218,6 +216,16 @@ class Syscalls {
 				ctx.complete(undefined, n);
 			};
 
+			this.kernel.makeTaskRunnable(ctx.task, callback);
+			this.kernel.schedule();
+		}.bind(this));
+	}
+
+	unlink(ctx: SyscallContext, path: string): void {
+		this.kernel.fs.unlink(path, function(err: any): void {
+			let callback = function(): void {
+				ctx.complete(err);
+			};
 			this.kernel.makeTaskRunnable(ctx.task, callback);
 			this.kernel.schedule();
 		}.bind(this));

@@ -88,6 +88,12 @@ export class USyscalls {
 		this.post(msgId, 'open', path, flags, mode);
 	}
 
+	unlink(path: string, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'unlink', path);
+	}
+
 	close(fd: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;

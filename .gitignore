@@ -7,3 +7,5 @@
 /core.*
 /fs
 /lib-dist
+/.tmp
+/elements/**/.js

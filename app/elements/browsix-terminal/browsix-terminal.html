@@ -1,0 +1,19 @@
+<link rel="import" href="../../bower_components/polymer-ts/polymer-ts.html"> 
+
+<dom-module id="browsix-terminal">
+    <template>
+	<style>
+	#term {
+	  padding: 24px;
+	  outline: 0px solid transparent;
+	}
+	#term:focus {
+	  outline: 0px solid transparent;
+	}
+	</style>
+
+	<div class="fit" id="term" contenteditable="true">$ cat</div>
+    </template>
+</dom-module>
+
+<script type="text/javascript" src="browsix-terminal.js"></script>

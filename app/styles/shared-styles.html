@@ -1,0 +1,16 @@
+<!-- shared styles for all elements and index.html -->
+<dom-module id="shared-styles">
+  <template>
+    <style>
+      .page-title {
+        @apply(--paper-font-display2);
+      }
+
+      @media (max-width: 600px) {
+        .page-title {
+          font-size: 24px!important;
+        }
+      }
+    </style>
+  </template>
+</dom-module>

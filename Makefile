@@ -26,10 +26,14 @@ endif
 %: SCCS/s.%
 
 
-all: dist
+all: test-once
 
 dist: $(BUILD_DEPS)
 	@echo "  DIST"
+	$(GULP) 'build:dist'
+
+test-once: $(BUILD_DEPS)
+	@echo "  TEST"
 	$(GULP)
 
 serve: $(BUILD_DEPS)

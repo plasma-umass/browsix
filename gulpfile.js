@@ -338,7 +338,7 @@ gulp.task('app:copy', ['index-fs'], function () {
         .pipe($.rename('elements.vulcanized.html'))
         .pipe(gulp.dest('dist/elements'));
 
-    var fs = gulp.src(['fs/*'])
+    var fs = gulp.src(['fs/**/*'])
         .pipe(gulp.dest('dist/fs'));
 
     return merge(app, bower, elements, vulcanized, swBootstrap, swToolbox, fs)

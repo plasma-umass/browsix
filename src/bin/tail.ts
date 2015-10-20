@@ -24,38 +24,41 @@ function tail(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 		process.exit(code);
 		return;
 	}
+
 	let current = inputs[0];
 	inputs = inputs.slice(1);
 	let n = 0;
+	let linebuffer: string[] = [];
 	if (!current) {
 		// use setTimeout to avoid a deep stack as well as
 		// cooperatively yield
 		setTimeout(tail, 0, inputs, output, code);
 		return;
 	}
-	let linebuffer: string[] = [];
+
 	current.on('readable', function(): void {
 		let rl = readline.createInterface({
 			input: current,
 			output: null
 		});
+
 		rl.on('line', (line: string) => {
+			let shouldClose = false;
 			n++;
 			linebuffer.push(line);
 			if (n > numlines) {
 				linebuffer.shift();
 			}
 		});
-		rl.on('close', function(): void {
-			for (var i = 0; i < linebuffer.length; i++) {
-				output.write(linebuffer[i] + "\n");
-			}
-			process.exit(0);
-		});
 	});
+
 	current.on('end', function(): void {
 		// use setTimeout to avoid a deep stack as well as
 		// cooperatively yield
+		for (var i = 0; i < linebuffer.length; i++) {
+				output.write(linebuffer[i] + "\n");
+		}
+		process.exit(0);
 		setTimeout(tail, 0, inputs, output, code);
 	});
 }

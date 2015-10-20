@@ -160,7 +160,7 @@ function _require(moduleName: string): any {
 	case 'readline':
 		return require('./readline');
 	case 'node-pipe2':
-		return pipe2;
+		return { pipe2: pipe2 };
 	default:
 		throw new ReferenceError('unknown module ' + moduleName);
 	}

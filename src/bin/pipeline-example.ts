@@ -5,7 +5,7 @@
 import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as pipe2 from 'node-pipe2';
+import { pipe2 } from 'node-pipe2';
 
 function main(): void {
 	'use strict';

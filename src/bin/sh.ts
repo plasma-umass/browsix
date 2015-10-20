@@ -1,11 +1,12 @@
 /// <reference path="../../typings/node/node.d.ts" />
+
 'use strict';
 
 import * as fs from 'fs';
 import * as child_process from 'child_process';
 import * as path from 'path';
 import * as stream from 'stream';
-import * as pipe2 from 'node-pipe2';
+import { pipe2 } from 'node-pipe2';
 
 //
 // We split on the pipe, which works since pipe is the only operator.

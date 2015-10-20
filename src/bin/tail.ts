@@ -78,15 +78,15 @@ function main(): void {
 	// set to 1 below.
 	let code = 0;
 	let def_numlines = 10;
+	let numlines = def_numlines;
+	if (args.length && args[0] === '-n') {
+		numlines = +args[1];
+		args = args.slice(2);
+	}
 	if (!args.length) {
 		// no args?  just copy default num lines from stdin to stdout
-		setTimeout(tail, 0, [process.stdin], process.stdout, def_numlines, code);
+		setTimeout(tail, 0, [process.stdin], process.stdout, numlines, code);
 	} else {
-		let numlines = def_numlines;
-		if (args.length && args[0] === '-n') {
-			numlines = +args[1];
-			args = args.slice(2);
-		}
 		let files: NodeJS.ReadableStream[] = [];
 		let opened = 0;
 		// use map instead of a for loop so that we easily get

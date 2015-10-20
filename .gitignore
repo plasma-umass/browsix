@@ -8,4 +8,4 @@
 /fs
 /lib-dist
 /.tmp
-/elements/**/.js
+/app/elements/**/*.js

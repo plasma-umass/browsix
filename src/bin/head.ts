@@ -34,6 +34,7 @@ function head(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 	let current = inputs[0];
 	inputs = inputs.slice(1);
 	let n = 0;
+	let outstanding = 0;
 	if (!current) {
 		// use setTimeout to avoid a deep stack as well as
 		// cooperatively yield
@@ -47,12 +48,18 @@ function head(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 			output: null
 		});
 		rl.on('line', (line: string) => {
+			let shouldClose = false;
+			outstanding++;
 			n++;
 			if (n > numlines) {
 				rl.close();
-				process.exit(0);
+				shouldClose = true;
 			} else {
-				output.write(line+"\n");
+				output.write(line+"\n", () => {
+					outstanding--;
+					if (!outstanding && shouldClose)
+						process.exit(0);
+				});
 			}
 		});
 	});

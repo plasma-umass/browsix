@@ -90,7 +90,7 @@ export function unlink(path: string, req: FSReqWrap): void {
 }
 
 export function fstat(fd: number, req: FSReqWrap): void {
-	syscall.fstat(fd, function fstatFinished(err: any, s: any) {
+	syscall.fstat(fd, function fstatFinished(err: any, s: any): void {
 		let stats = new Stats(
 			s.dev,
 			s.mode,

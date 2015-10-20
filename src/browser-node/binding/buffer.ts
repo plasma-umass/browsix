@@ -15,7 +15,7 @@ function blitBuffer(src: any, dst: any, offset: number, length: number): number 
 }
 
 function utf8Slice(buf: any, start: number, end: number): any {
-	end = Math.min(buf.length, end)
+	end = Math.min(buf.length, end);
 	let res: any[] = [];
 
 	let i = start;
@@ -25,7 +25,7 @@ function utf8Slice(buf: any, start: number, end: number): any {
 		let bytesPerSequence = (firstByte > 0xEF) ? 4
 			: (firstByte > 0xDF) ? 3
 			: (firstByte > 0xBF) ? 2
-			: 1
+			: 1;
 
 		if (i + bytesPerSequence <= end) {
 			let secondByte: any, thirdByte: any, fourthByte: any, tempCodePoint: any;
@@ -90,7 +90,7 @@ function utf8Slice(buf: any, start: number, end: number): any {
 // Based on http://stackoverflow.com/a/22747272/680742, the browser with
 // the lowest limit is Chrome, with 0x10000 args.
 // We go 1 magnitude less, for safety
-var MAX_ARGUMENTS_LENGTH = 0x1000;
+const MAX_ARGUMENTS_LENGTH = 0x1000;
 
 function decodeCodePointsArray (codePoints: any): any {
 	let len = codePoints.length;
@@ -100,7 +100,7 @@ function decodeCodePointsArray (codePoints: any): any {
 
 	// Decode in chunks to avoid "call stack size exceeded".
 	let res = '';
-	let i = 0
+	let i = 0;
 	while (i < len) {
 		res += String.fromCharCode.apply(
 			String,
@@ -118,7 +118,7 @@ function utf8ToBytes(string: string, units?: number): any {
 	let bytes: any[] = [];
 
 	for (var i = 0; i < length; i++) {
-		codePoint = string.charCodeAt(i)
+		codePoint = string.charCodeAt(i);
 
 		// is surrogate component
 		if (codePoint > 0xD7FF && codePoint < 0xE000) {
@@ -160,20 +160,20 @@ function utf8ToBytes(string: string, units?: number): any {
 		// encode utf8
 		if (codePoint < 0x80) {
 			if ((units -= 1) < 0) break;
-			bytes.push(codePoint)
+			bytes.push(codePoint);
 		} else if (codePoint < 0x800) {
 			if ((units -= 2) < 0) break;
 			bytes.push(
 				codePoint >> 0x6 | 0xC0,
 				codePoint & 0x3F | 0x80
-			)
+			);
 		} else if (codePoint < 0x10000) {
 			if ((units -= 3) < 0) break;
 			bytes.push(
 				codePoint >> 0xC | 0xE0,
 				codePoint >> 0x6 & 0x3F | 0x80,
 				codePoint & 0x3F | 0x80
-			)
+			);
 		} else if (codePoint < 0x110000) {
 			if ((units -= 4) < 0) break;
 			bytes.push(
@@ -197,7 +197,7 @@ export function setupBufferJS(prototype: any, bindingObj: any): void { // (Buffe
 	prototype.__proto__ = Uint8Array.prototype;
 
 	prototype.utf8Write = function(str: string, offset: number, length: number): number {
-		return blitBuffer(utf8ToBytes(str, this.length - offset), this, offset, length)
+		return blitBuffer(utf8ToBytes(str, this.length - offset), this, offset, length);
 	};
 	prototype.utf8Slice = function(start: number, end: number): any {
 		return utf8Slice(this, start, end);

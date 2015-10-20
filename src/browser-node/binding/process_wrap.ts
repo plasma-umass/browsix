@@ -7,7 +7,7 @@ import * as uv from './uv';
 // other errors will cause us to throw?  not sure how that is handled.
 const ERROR = uv.UV_EMFILE;
 
-export interface Environment {[k: string]: string};
+export interface Environment { [k: string]: string; };
 
 export interface File {
 	type: string;      // 'pipe' | 'ignore' | 'inherit' | 'fd'
@@ -74,7 +74,7 @@ export class Process {
 
 	handleSigchild(data: SyscallResponse): void {
 		let pid = data.args[0];
-		if (pid != this.pid) {
+		if (pid !== this.pid) {
 			return;
 		}
 		let exitCode = data.args[1];

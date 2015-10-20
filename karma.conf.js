@@ -14,7 +14,7 @@ module.exports = function(config) {
 
         // list of files / patterns to load in the browser
         files: [
-            'dist/test/*.js',
+            'lib-dist/test/*.js',
             {
                 pattern: 'fs/**/*',
                 included: false,
@@ -23,7 +23,6 @@ module.exports = function(config) {
         ],
 
 	proxies: {
-	    '/service-kernel.js': '/base/fs/boot/service-kernel.js'
 	},
 
 

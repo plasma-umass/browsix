@@ -6,3 +6,4 @@
 /test/*.js
 /core.*
 /fs
+/lib-dist

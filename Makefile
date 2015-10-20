@@ -69,7 +69,7 @@ test-node: $(BUILD_DEPS)
 test: test-browser
 
 clean:
-	rm -rf dist
+	rm -rf dist lib fs
 	find . -name '*~' | xargs rm -f
 
 distclean: clean

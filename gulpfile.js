@@ -79,7 +79,7 @@ function tsTask(subdir, options) {
             .pipe(buffer())
         //  .pipe(uglify())
             .on('error', gutil.log)
-            .pipe(gulp.dest('./dist/'));
+            .pipe(gulp.dest('./lib-dist/'));
     });
 }
 
@@ -118,12 +118,18 @@ tsTask('browser-node', {buildDeps: ['copy-node']});
 tsTask('bin');
 
 // next, we need to collect the various pieces we've built, and put
-// then in a sane directory hierarchy
+// then in a sane directory hierarchy.  There is no dist step needed
+// for our binaries - they are self contained and meant to be run
+// directly from node or browser-node.
 gulp.task('build-fs', ['dist-kernel', 'dist-browser-node', 'build-bin'], function() {
-    const copyKernel = gulp.src('dist/lib/kernel/kernel.js').pipe(copy('./fs/boot/', {prefix: 3}));
-    const copyNode = gulp.src('dist/lib/browser-node/browser-node.js')
+
+    const copyKernel = gulp.src('lib-dist/lib/kernel/kernel.js')
+	  .pipe(copy('./fs/boot/', {prefix: 3}));
+
+    const copyNode = gulp.src('lib-dist/lib/browser-node/browser-node.js')
           .pipe(rename(function(path) { path.basename = 'node'; path.extname = ''; }))
           .pipe(gulp.dest('./fs/usr/bin/'));
+
     const copyBin = gulp.src('lib/bin/*.js')
           .pipe(rename(function(path) { path.extname = ''; }))
           .pipe(addShebang('#!/usr/bin/env node\n'))
@@ -168,7 +174,7 @@ gulp.task('dist-test', ['build-test'], function() {
         .pipe(source(testMain))
         .pipe(buffer())
         .on('error', gutil.log)
-        .pipe(gulp.dest('./dist/'));
+        .pipe(gulp.dest('./lib-dist/'));
 
 });
 

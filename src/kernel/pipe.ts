@@ -8,6 +8,7 @@ export class Pipe {
 	buf: string = '';
 	refcount: number = 1;
 	waiter: Function = undefined;
+	closed: boolean = false;
 
 	write(s: string): number {
 		this.buf += ''+s;
@@ -25,7 +26,7 @@ export class Pipe {
 			return this.buf;
 		}
 		let buf = this.buf;
-		if (buf.length) {
+		if (buf.length || this.closed) {
 			this.buf = buf.slice(len);
 			ctx.complete(null, buf.slice(0, len));
 			return;
@@ -44,11 +45,15 @@ export class Pipe {
 
 	unref(): void {
 		this.refcount--;
-		if (!this.refcount) {
-			if (this.waiter) {
-				this.waiter();
-				this.waiter = undefined;
-			}
-		}
+		// if we have a non-zero refcount, or noone is waiting on reads 
+		if (this.refcount)
+			return;
+
+		this.closed = true;
+		if (!this.waiter)
+			return;
+
+		this.waiter();
+		this.waiter = undefined;
 	}
 }

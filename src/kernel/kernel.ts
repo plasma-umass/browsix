@@ -12,6 +12,8 @@ import { Pipe } from './pipe';
 import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
 import { fs } from './vendor/BrowserFS/src/core/node_fs';
 
+const DEBUG = false;
+
 
 let Buffer: any;
 
@@ -476,7 +478,7 @@ export class Task {
 				if (cb)
 					cb();
 			},
-			0);
+			DEBUG ? 6000 : 0);
 	}
 
 	exit(code: number): void {

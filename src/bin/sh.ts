@@ -140,7 +140,7 @@ function main(): void {
 	// do path expansion for commands.
 	// raise error if | is not surrounded by
 	// commands.
-	let utilpath = "lib/bin/";
+	let utilpath = "/usr/bin/";
 	let parsetree: string[][] = [];
 	try {
 		parsetree = parse(tokens, utilpath);
@@ -151,6 +151,7 @@ function main(): void {
 			process.exit(1);
 		}
 	}
+
 	// check if parse tree is valid
 	if (! parsetree_is_valid(parsetree)) {
 		process.exit(1);

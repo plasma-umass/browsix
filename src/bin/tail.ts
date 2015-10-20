@@ -18,13 +18,7 @@ import * as readline from 'readline';
 // event listeners, the first for when there is data available, and
 // secondly for when we've reached EOF.
 
-// helper function taken from: http://stackoverflow.com/questions/14480345/how-to-get-the-nth-occurrence-in-a-string
-function getPosition(str: string, m: string, i: number): number {
-	'use strict';
-	return str.split(m, i).join(m).length;
-}
-
-function head(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, numlines: number, code: number): void {
+function tail(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, numlines: number, code: number): void {
 	'use strict';
 	if (!inputs || !inputs.length) {
 		process.exit(code);
@@ -36,7 +30,7 @@ function head(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 	if (!current) {
 		// use setTimeout to avoid a deep stack as well as
 		// cooperatively yield
-		setTimeout(head, 0, inputs, output, code);
+		setTimeout(tail, 0, inputs, output, code);
 		return;
 	}
 	let linebuffer: string[] = [];
@@ -62,7 +56,7 @@ function head(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 	current.on('end', function(): void {
 		// use setTimeout to avoid a deep stack as well as
 		// cooperatively yield
-		setTimeout(head, 0, inputs, output, code);
+		setTimeout(tail, 0, inputs, output, code);
 	});
 }
 
@@ -80,7 +74,7 @@ function main(): void {
 	let def_numlines = 10;
 	if (!args.length) {
 		// no args?  just copy default num lines from stdin to stdout
-		setTimeout(head, 0, [process.stdin], process.stdout, def_numlines, code);
+		setTimeout(tail, 0, [process.stdin], process.stdout, def_numlines, code);
 	} else {
 		let numlines = def_numlines;
 		if (args.length && args[0] === '-n') {
@@ -97,7 +91,7 @@ function main(): void {
 				// if we've opened all of the files, pipe them to
 				// stdout.
 				if (++opened === args.length)
-					setTimeout(head, 0, files, process.stdout, numlines, code);
+					setTimeout(tail, 0, files, process.stdout, numlines, code);
 				return;
 			}
 			fs.open(path, 'r', function(err: any, fd: any): void {
@@ -117,7 +111,7 @@ function main(): void {
 				// if we've opened all of the files,
 				// pipe them to stdout.
 				if (++opened === args.length)
-					setTimeout(head, 0, files, process.stdout, numlines, code);
+					setTimeout(tail, 0, files, process.stdout, numlines, code);
 			});
 		});
 	}

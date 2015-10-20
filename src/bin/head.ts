@@ -18,12 +18,6 @@ import * as readline from 'readline';
 // event listeners, the first for when there is data available, and
 // secondly for when we've reached EOF.
 
-// helper function taken from: http://stackoverflow.com/questions/14480345/how-to-get-the-nth-occurrence-in-a-string
-function getPosition(str: string, m: string, i: number): number {
-	'use strict';
-	return str.split(m, i).join(m).length;
-}
-
 function head(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, numlines: number, code: number): void {
 	'use strict';
 	if (!inputs || !inputs.length) {

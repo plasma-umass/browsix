@@ -7,3 +7,4 @@ require('./test-rm');
 require('./test-tail');
 require('./test-sh');
 require('./test-pipeline-example');
+require('./test-wc');

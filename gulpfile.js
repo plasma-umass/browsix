@@ -51,12 +51,12 @@ function tsTask(subdir, options) {
     var sources = ['src/'+subdir+'/*.ts', 'src/'+subdir+'/**/*.ts'].concat(otherSources);
 
     gulp.task('lint-'+subdir, function() {
-        return gulp.src(['src/'+subdir+'/*.ts'])
+        return gulp.src(['src/'+subdir+'/*.ts', 'src/'+subdir+'/*/*.ts'])
             .pipe(lint())
             .pipe(lint.report('verbose'));
     });
 
-    // lint by default, but if lint is specified as 'false' skip it.
+    // run lint by default, but if lint is specified as 'false' skip it
     if (!options.hasOwnProperty('lint') || options.lint)
         buildDeps = buildDeps.concat(['lint-'+subdir]);
 
@@ -108,10 +108,17 @@ gulp.task('copy-node', function() {
 // the kernel directly uses BrowserFS's typescript modules - we need
 // to explicitly exclude tests and the browserify main here to avoid
 // confusing tsc :\
-tsTask('kernel', {otherSources: ['!src/kernel/vendor/BrowserFS/test/**/*.ts', '!src/kernel/vendor/BrowserFS/src/browserify_main.ts']});
+tsTask('kernel', {
+    otherSources: [
+	'!src/kernel/vendor/BrowserFS/test/**/*.ts',
+	'!src/kernel/vendor/BrowserFS/src/browserify_main.ts',
+    ]
+});
 tsTask('browser-node', {buildDeps: ['copy-node']});
 tsTask('bin');
 
+// next, we need to collect the various pieces we've built, and put
+// then in a sane directory hierarchy
 gulp.task('build-fs', ['dist-kernel', 'dist-browser-node', 'build-bin'], function() {
     const copyKernel = gulp.src('dist/lib/kernel/kernel.js').pipe(copy('./fs/boot/', {prefix: 3}));
     const copyNode = gulp.src('dist/lib/browser-node/browser-node.js')
@@ -126,9 +133,14 @@ gulp.task('build-fs', ['dist-kernel', 'dist-browser-node', 'build-bin'], functio
     return merge(copyKernel, copyNode, copyBin);
 });
 
+// finally, we create an index.json file so that BrowserFS can see
+// everything in our nice hierarchy
 gulp.task('index-fs', ['build-fs'], function() {
     return run('./xhrfs-index fs').exec()
-        .pipe(rename(function(path) { path.basename = 'index'; path.extname = '.json'; }))
+        .pipe(rename(function(path) {
+	    path.basename = 'index';
+	    path.extname = '.json';
+	}))
         .pipe(gulp.dest('./fs'));
 });
 
@@ -138,6 +150,8 @@ gulp.task('build-test', ['index-fs'], function() {
         .pipe(gulp.dest('test'));
 });
 
+// we compile all our tests into a single javascript file because
+// that is how browserify likes to work :\
 gulp.task('dist-test', ['build-test'], function() {
     const testMain = './test/test-all.js';
     var b = browserify({
@@ -158,11 +172,15 @@ gulp.task('dist-test', ['build-test'], function() {
 
 });
 
+// XXX: this doesn't work due to the tight integration of the kernel
+// with BrowserFS.  Potentially this could be changed by using a
+// different BrowserFS backend (like zipfs?) that doesn't do
+// XMLHttpRequest.
 gulp.task('test-node', ['dist-test'], function() {
     return gulp.src('test/*.js').pipe(mocha());
 });
 
-
+// this starts karma & rebuild everything on change
 gulp.task('test-browser', ['dist-test'], function(done) {
     new karma.Server({
         configFile: __dirname + '/karma.conf.js',
@@ -173,7 +191,7 @@ gulp.task('test-browser', ['dist-test'], function(done) {
     gulp.watch(['src/**/*.ts', 'test/*.ts'], ['dist-test']);
 });
 
-
+// this runs karma once, exiting gulp on completion or failure
 gulp.task('default', ['dist-test'], function(done) {
     new karma.Server({
         configFile: __dirname + '/karma.conf.js',

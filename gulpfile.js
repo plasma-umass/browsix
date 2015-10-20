@@ -77,7 +77,7 @@ function tsTask(subdir, options) {
         return b.bundle()
             .pipe(source('./lib/'+subdir+'/'+subdir+'.js'))
             .pipe(buffer())
-        //          .pipe(uglify())
+        //  .pipe(uglify())
             .on('error', gutil.log)
             .pipe(gulp.dest('./dist/'));
     });
@@ -98,7 +98,7 @@ gulp.task('copy-node', function() {
         'node/lib/assert.js',
         'node/lib/fs.js',
         'node/lib/vm.js',
-		'node/lib/readline.js',
+	'node/lib/readline.js',
         'node/lib/domain.js',
         'node/lib/string_decoder.js',
         'node/lib/child_process.js',
@@ -153,7 +153,6 @@ gulp.task('dist-test', ['build-test'], function() {
     return b.bundle()
         .pipe(source(testMain))
         .pipe(buffer())
-    //          .pipe(uglify())
         .on('error', gutil.log)
         .pipe(gulp.dest('./dist/'));
 

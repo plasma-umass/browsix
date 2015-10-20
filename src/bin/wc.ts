@@ -91,19 +91,21 @@ function main(): void {
 		else {
 			opts = {outputLine: false, outputWord: false, outputChar: false};
 			while (args[0][0] === '-') {
-				switch (args[0].slice(1)) {
-				case "l":
-					opts.outputLine = true;
-					break;
-				case "w":
-					opts.outputWord = true;
-					break;
-				// in *nix -m is for character and -c is for bytes; project description has -c as char and ommits byte count.
-				case "c":
-					opts.outputChar = true;
-					break;
-					//default:
-					// could throw an error here
+				for (let i = 1; i < args[0].length; i++) {
+					switch (args[0][i]) {
+					case "l":
+						opts.outputLine = true;
+						break;
+					case "w":
+						opts.outputWord = true;
+						break;
+						// in *nix -m is for character and -c is for bytes; project description has -c as char and ommits byte count.
+					case "c":
+						opts.outputChar = true;
+						break;
+						//default:
+						// could throw an error here
+					}
 				}
 				args.shift();
 			}

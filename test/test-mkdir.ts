@@ -50,11 +50,11 @@ describe('mkdir /a', function(): void {
 			}
 		}
 	});
-/*	it('should create /a', function(done: MochaDone): void {
+	it('should create /a', function(done: MochaDone): void {
 		kernel.fs.stat('/a', function(err: any): void {
 			expect(err).to.be.null;
 			done();
 		});
 	});
-*/
+
 });

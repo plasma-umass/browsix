@@ -32,7 +32,7 @@ function head(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 	if (!current) {
 		// use setTimeout to avoid a deep stack as well as
 		// cooperatively yield
-		setTimeout(head, 0, inputs, output, code);
+		setTimeout(head, 0, inputs, output, numlines, code);
 		return;
 	}
 
@@ -61,7 +61,7 @@ function head(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 	current.on('end', function(): void {
 		// use setTimeout to avoid a deep stack as well as
 		// cooperatively yield
-		setTimeout(head, 0, inputs, output, code);
+		setTimeout(head, 0, inputs, output, numlines, code);
 	});
 }
 

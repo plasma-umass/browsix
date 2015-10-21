@@ -33,7 +33,7 @@ function tail(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 	if (!current) {
 		// use setTimeout to avoid a deep stack as well as
 		// cooperatively yield
-		setTimeout(tail, 0, inputs, output, code);
+		setTimeout(tail, 0, inputs, output, numlines, code);
 		return;
 	}
 
@@ -62,7 +62,7 @@ function tail(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 					process.exit(0);
 			});
 		}
-		setTimeout(tail, 0, inputs, output, code);
+		//setTimeout(tail, 0, inputs, output, numlines, code);
 	});
 }
 

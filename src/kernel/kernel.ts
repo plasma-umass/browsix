@@ -238,6 +238,16 @@ class Syscalls {
 		}.bind(this));
 	}
 
+	rmdir(ctx: SyscallContext, path: string): void {
+		this.kernel.fs.rmdir(path, function(err: any): void {
+			let callback = function(): void {
+				ctx.complete(err);
+			};
+			this.kernel.makeTaskRunnable(ctx.task, callback);
+			this.kernel.schedule();
+		}.bind(this));
+	}
+
 	close(ctx: SyscallContext, fd: number): void {
 		let file = ctx.task.files[fd];
 		if (!file) {

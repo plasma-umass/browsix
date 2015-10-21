@@ -93,8 +93,8 @@ export function rmdir(path: string, req: FSReqWrap): void {
 	syscall.rmdir(path, req.complete.bind(req));
 }
 
-export function mkdir(path: string, req: FSReqWrap): void {
-	syscall.mkdir(path, req.complete.bind(req));
+export function mkdir(path: string, mode: number, req: FSReqWrap): void {
+	syscall.mkdir(path, mode, req.complete.bind(req));
 }
 
 export function readdir(path: string, req: FSReqWrap): void {

@@ -256,8 +256,8 @@ class Syscalls {
 		}.bind(this));
 	}
 
-	mkdir(ctx: SyscallContext, path: string): void {
-		this.kernel.fs.mkdir(path, function(err: any): void {
+	mkdir(ctx: SyscallContext, path: string, mode: number): void {
+		this.kernel.fs.mkdir(path, mode, function(err: any): void {
 			let callback = function(): void {
 				ctx.complete(err);
 			};
@@ -362,6 +362,14 @@ export class Kernel {
 	}
 
 	exit(task: Task, code: number): void {
+		// it is possible to get multiple 'exit' messages from
+		// a node app.  As the kernel should be robust to
+		// errors in applications, handle that here (in
+		// addition to fixing in apps)
+		if (task.state === TaskState.Zombie) {
+			console.log('warning, got more than 1 exit call from ' + task.pid);
+			return;
+		}
 		task.exit(code);
 		delete this.tasks[task.pid];
 		let cb = this.systemRequests[task.pid];
@@ -422,11 +430,18 @@ export interface Environment {
 	[name: string]: string;
 }
 
+export enum TaskState {
+	Starting,
+	Running,
+	Interruptable,
+	Zombie,
+}
+
 export class Task implements ITask {
 	kernel: Kernel;
 	worker: Worker;
 
-	state: string;
+	state: TaskState;
 
 	pid: number;
 	files: {[n: number]: any; } = {};
@@ -453,6 +468,7 @@ export class Task implements ITask {
 
 		//console.log('spawn PID ' + pid + ': ' + args.join(' '));
 
+		this.state = TaskState.Starting;
 		this.pid = pid;
 		this.parent = parent;
 		this.kernel = kernel;
@@ -460,7 +476,6 @@ export class Task implements ITask {
 		this.args = args;
 		this.env = env || [];
 		this.cwd = cwd;
-		this.state = 'starting';
 
 		if (files && parent) {
 			this.files[0] = parent.files[files[0]];
@@ -483,7 +498,6 @@ export class Task implements ITask {
 
 	fileRead(err: any, data: string): void {
 		if (err) {
-			this.state = 'finished';
 			console.log('error in exec: ' + err);
 			throw err;
 		}
@@ -508,6 +522,8 @@ export class Task implements ITask {
 			this.kernel.fs.readFile(cmd, 'utf-8', this.fileRead.bind(this));
 			return;
 		}
+
+		this.state = TaskState.Running;
 
 		let blob = new Blob([data], {type: 'text/javascript'});
 
@@ -535,6 +551,7 @@ export class Task implements ITask {
 	}
 
 	exit(code: number): void {
+		this.state = TaskState.Zombie;
 		this.exitCode = code;
 		for (let n in this.files) {
 			if (!this.files.hasOwnProperty(n))

@@ -13,9 +13,9 @@ const MINS = 60 * 1000; // milliseconds
 const IS_KARMA = typeof window !== 'undefined' && typeof (<any>window).__karma__ !== 'undefined';
 const ROOT = IS_KARMA ? '/base/fs/' : '/fs/';
 
-export const name = 'test-echo';
+export const name = 'test-ls';
 
-describe('echo a b c', function(): void {
+describe('ls /boot', function(): void {
 	this.timeout(10 * MINS);
 
 	let kernel: Kernel = null;
@@ -29,12 +29,12 @@ describe('echo a b c', function(): void {
 		});
 	});
 
-	it('should run `echo a b c`', function(done: MochaDone): void {
-		kernel.system('/usr/bin/echo a b   c', echoExited);
-		function echoExited(code: number, stdout: string, stderr: string): void {
+	it('should run `ls /boot`', function(done: MochaDone): void {
+		kernel.system('/usr/bin/ls /boot', cmdExited);
+		function cmdExited(code: number, stdout: string, stderr: string): void {
 			try {
 				expect(code).to.equal(0);
-				expect(stdout).to.equal('a b c\n');
+				expect(stdout).to.equal('kernel.js\n');
 				expect(stderr).to.equal('');
 				done();
 			} catch (e) {

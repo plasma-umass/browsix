@@ -106,6 +106,12 @@ export class USyscalls {
 		this.post(msgId, 'rmdir', path);
 	}
 
+	mkdir(path: string, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'mkdir', path);
+	}
+
 	close(fd: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;

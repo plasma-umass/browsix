@@ -9,3 +9,4 @@ require('./test-sh');
 require('./test-pipeline-example');
 require('./test-wc');
 require('./test-rmdir');
+require('./test-mkdir');

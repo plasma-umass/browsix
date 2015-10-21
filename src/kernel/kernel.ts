@@ -15,7 +15,6 @@ import { fs } from './vendor/BrowserFS/src/core/node_fs';
 
 const DEBUG = false;
 
-
 let Buffer: any;
 
 require('./vendor/BrowserFS/src/backend/in_memory');
@@ -240,6 +239,16 @@ class Syscalls {
 
 	rmdir(ctx: SyscallContext, path: string): void {
 		this.kernel.fs.rmdir(path, function(err: any): void {
+			let callback = function(): void {
+				ctx.complete(err);
+			};
+			this.kernel.makeTaskRunnable(ctx.task, callback);
+			this.kernel.schedule();
+		}.bind(this));
+	}
+
+	mkdir(ctx: SyscallContext, path: string): void {
+		this.kernel.fs.mkdir(path, function(err: any): void {
 			let callback = function(): void {
 				ctx.complete(err);
 			};

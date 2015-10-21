@@ -124,6 +124,12 @@ export class USyscalls {
 		this.post(msgId, 'pwrite', fd, buf, pos);
 	}
 
+	readdir(path: string, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'readdir', path);
+	}
+
 	fstat(fd: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;

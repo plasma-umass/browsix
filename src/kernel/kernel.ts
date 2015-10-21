@@ -208,6 +208,15 @@ class Syscalls {
 		this.kernel.schedule();
 	}
 
+	readdir(ctx: SyscallContext, path: string): void {
+		this.kernel.fs.readdir(path, (err: any, ents: any) => {
+			this.kernel.makeTaskRunnable(<Task>ctx.task, () => {
+				ctx.complete(err, ents);
+			});
+			this.kernel.schedule();
+		});
+	}
+
 	open(ctx: SyscallContext, path: string, flags: string, mode: number): void {
 		this.kernel.fs.open(path, flagsToString(flags), mode, function(err: any, fd: any): void {
 			let callback = function(): void {

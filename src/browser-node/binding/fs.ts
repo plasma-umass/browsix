@@ -97,6 +97,10 @@ export function mkdir(path: string, req: FSReqWrap): void {
 	syscall.mkdir(path, req.complete.bind(req));
 }
 
+export function readdir(path: string, req: FSReqWrap): void {
+	syscall.readdir(path, req.complete.bind(req));
+}
+
 export function fstat(fd: number, req: FSReqWrap): void {
 	syscall.fstat(fd, function fstatFinished(err: any, s: any): void {
 		let stats = new Stats(

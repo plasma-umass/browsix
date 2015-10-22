@@ -142,6 +142,18 @@ export class USyscalls {
 		this.post(msgId, 'fstat', fd);
 	}
 
+	lstat(path: string, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'lstat', path);
+	}
+
+	stat(path: string, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'stat', path);
+	}
+
 	pread(fd: number, length: number, offset: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;

@@ -105,32 +105,41 @@ export function readdir(path: string, req: FSReqWrap): void {
 	syscall.readdir(path, req.complete.bind(req));
 }
 
-export function fstat(fd: number, req: FSReqWrap): void {
-	if (!fd && typeof fd !== 'number')
-		throw new Error('undefined fd');
-	syscall.fstat(fd, function fstatFinished(err: any, s: any): void {
-		if (err) {
-			req.complete(err, null);
-			return;
-		}
+function statFinished(req: FSReqWrap, err: any, s: any): void {
+	if (err) {
+		req.complete(err, null);
+		return;
+	}
 
-		let stats = new Stats(
-			s.dev,
-			s.mode,
-			s.nlink,
-			s.uid,
-			s.gid,
-			s.rdev,
-			s.blksize,
-			s.ino,
-			s.size,
-			s.blocks,
-			s.atime,
-			s.mtime,
-			s.ctime,
-			s.birthtime);
-		req.complete(null, stats);
-	});
+	// FIXME: is there a less-terrible way to do this?
+	let stats = new Stats(
+		s.dev,
+		s.mode,
+		s.nlink,
+		s.uid,
+		s.gid,
+		s.rdev,
+		s.blksize,
+		s.ino,
+		s.size,
+		s.blocks,
+		s.atime,
+		s.mtime,
+		s.ctime,
+		s.birthtime);
+	req.complete(null, stats);
+}
+
+export function fstat(fd: number, req: FSReqWrap): void {
+	syscall.fstat(fd, statFinished.bind(undefined, req));
+}
+
+export function lstat(path: string, req: FSReqWrap): void {
+	syscall.lstat(path, statFinished.bind(undefined, req));
+}
+
+export function stat(path: string, req: FSReqWrap): void {
+	syscall.stat(path, statFinished.bind(undefined, req));
 }
 
 export function read(fd: number, buffer: any, offset: number, len: number, pos: number, req: FSReqWrap): void {

@@ -280,14 +280,38 @@ class Syscalls {
 			ctx.complete('bad FD ' + fd, null);
 			return;
 		}
-		this.kernel.fs.fstat(file, (err: any, stat: any) => {
+		this.kernel.fs.fstat(file, (err: any, stats: any) => {
 			if (err) {
 				console.log(err);
 				ctx.complete(err, null);
 				return;
 			}
 			// FIXME: this seems necessary to capture Date fields
-			ctx.complete(null, JSON.parse(JSON.stringify(stat)));
+			ctx.complete(null, JSON.parse(JSON.stringify(stats)));
+		});
+	}
+
+	lstat(ctx: SyscallContext, path: string): void {
+		this.kernel.fs.lstat(file, (err: any, stats: any) => {
+			if (err) {
+				console.log(err);
+				ctx.complete(err, null);
+				return;
+			}
+			// FIXME: this seems necessary to capture Date fields
+			ctx.complete(null, JSON.parse(JSON.stringify(stats)));
+		});
+	}
+
+	stat(ctx: SyscallContext, path: string): void {
+		this.kernel.fs.stat(path, (err: any, stats: any) => {
+			if (err) {
+				console.log(err);
+				ctx.complete(err, null);
+				return;
+			}
+			// FIXME: this seems necessary to capture Date fields
+			ctx.complete(null, JSON.parse(JSON.stringify(stats)));
 		});
 	}
 }

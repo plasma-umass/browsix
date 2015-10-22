@@ -23,14 +23,31 @@ function stat(inputs: number[], output: NodeJS.WritableStream, code: number): vo
 		process.exit(code);
 		return;
 	}
-	for (let i = 0; i < inputs.length; i++) {
-		let fd = inputs[i];
-		fs.fstat(fd, function(err, stats): void {
-			output.write(stats.dev + " " + stats.ino + " " + stats.mode + " " + stats.nlink + " " + " " + stats.uid + " " +
-						stats.gid + " " + stats.rdev + " " + stats.size + " " + stats.atime + " " + stats.mtime + " " +
-						stats.ctime + " " + stats.birthtime + " " + stats.blksize + " " + stats.blocks + "\n");
-		});
+
+	let current = inputs[0];
+	inputs = inputs.slice(1);
+
+	if (!current) {
+		// use setTimeout to avoid a deep stack as well as
+		// cooperatively yield
+		setTimeout(stat, 0, inputs, output, code);
+		return;
 	}
+
+	fs.fstat(current, function(err, stats): void {
+		if (err) {
+			process.stderr.write('ERROR: ' + err, writeCompleted);
+			return;
+		}
+		let result = stats.dev + " " + stats.ino + " " + stats.mode + " " + stats.nlink + " " + " " + stats.uid + " " +
+			stats.gid + " " + stats.rdev + " " + stats.size + " " + stats.atime + " " + stats.mtime + " " +
+			stats.ctime + " " + stats.birthtime + " " + stats.blksize + " " + stats.blocks + "\n";
+		output.write(result, writeCompleted);
+
+		function writeCompleted(): void {
+			setTimeout(stat, 0, inputs, output, code);
+		}
+	});
 }
 
 function main(): void {

@@ -438,8 +438,6 @@ export class Kernel {
 	}
 
 	doSyscall(syscall: Syscall): void {
-		// TODO: record stats on how long the task was runnign for
-
 		if (syscall.name in this.syscalls) {
 			console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
@@ -653,6 +651,7 @@ export class Task implements ITask {
 	// run is called by the kernel when we are selected to run by
 	// the scheduler
 	run(): void {
+		this.account();
 		this.state = TaskState.Running;
 		if (this.pendingSignals.length) {
 			let msg = this.pendingSignals.shift();
@@ -664,6 +663,11 @@ export class Task implements ITask {
 			this.worker.postMessage(msg);
 			return;
 		}
+	}
+
+	// depending on task.state record how much time we've just
+	// spent in this state
+	account(): void {
 	}
 
 	exit(code: number): void {
@@ -688,6 +692,10 @@ export class Task implements ITask {
 			console.log('bad syscall message, dropping');
 			return;
 		}
+
+		// TODO: figure out if this is right
+		this.account();
+		this.state = TaskState.Interruptable;
 
 		// many syscalls influence not just the state
 		// maintained in this task structure, but state in the

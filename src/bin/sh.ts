@@ -46,28 +46,6 @@ function parsetree_is_valid(parsetree: string[][]): boolean {
 	return true;
 }
 
-function run_child(commandPath: string): void {
-	'use strict';
-	let pathToScript = process.argv[1];
-	let args = process.argv.slice(2);
-
-	let opts = {
-		// pass our stdin, stdout, stderr to the child
-		stdio: [0, 1, 2],
-	};
-
-	let child = child_process.spawn('node', args, opts);
-	child.on('error', (err: any) => {
-		process.stderr.write('error: ' + err, () => {
-			process.exit(1);
-		});
-	});
-	child.on('exit', (code: number) => {
-		console.log("ex: " + code);
-		process.exit(code);
-	});
-}
-
 function remove_pid(pids: number[], pid: number): number[] {
 	'use strict';
 	let index = pids.indexOf(pid, 0);
@@ -83,7 +61,7 @@ function execute_child(cmd: string[], opts: Object, pids: number[], codes: numbe
 	pids.push(child.pid);
 	//console.log("exec pid: " + child.pid);
 	child.on('error', (err: any) => {
-		process.stderr.write('error: ' + err, () => {
+		process.stderr.write('' + err + '\n', () => {
 			process.exit(1);
 		});
 	});

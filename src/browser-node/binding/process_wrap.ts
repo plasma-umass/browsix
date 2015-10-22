@@ -28,6 +28,7 @@ export interface SpawnOptions {
 }
 
 export class Process {
+	onerror: Function = undefined;
 	onexit: Function = undefined;
 	pid: number;
 
@@ -48,7 +49,8 @@ export class Process {
 
 		syscall.spawn(cwd, opts.file, opts.args, opts.envPairs, files, (err: any, pid: number) => {
 			if (err) {
-				console.log('TODO: spawn failed');
+				if (this.onexit)
+					this.onexit(-128, -1);
 				return;
 			}
 			this.pid = pid;

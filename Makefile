@@ -8,7 +8,7 @@ BROWSERFS  = src/kernel/vendor/BrowserFS/dist/browserfs.js
 BROWSERFS_DIR = src/kernel/vendor/BrowserFS
 
 NPM_DEPS   = $(BOWER) $(GULP) $(TSLINT) $(MOCHA)
-BUILD_DEPS = $(NPM_DEPS) $(BROWSERFS)
+BUILD_DEPS = $(NPM_DEPS) $(BROWSERFS) bower_components
 
 # quiet output, but allow us to look at what commands are being
 # executed by passing 'V=1' to make, without requiring temporarily
@@ -45,7 +45,7 @@ node_modules: package.json
 	npm install --silent
 	touch -c $@
 
-$(NPM_DEPS): node_modules
+$(NPM_DEPS): node_modules bower_components
 	touch -c $@
 
 bower_components: $(BOWER) bower.json

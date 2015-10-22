@@ -27,7 +27,14 @@ function tee(current: NodeJS.ReadableStream, outputs: NodeJS.WritableStream[], c
 	});
 
 	current.on('end', function(): void {
-		process.exit(code);
+		let outstanding = outputs.length;
+		for (let i = 0; i < outputs.length; i++) {
+			outputs[i].end(undefined, undefined, () => {
+				outstanding--;
+				if (!outstanding)
+					process.exit(code);
+			});
+		}
 	});
 }
 

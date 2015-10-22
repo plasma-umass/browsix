@@ -189,8 +189,16 @@ class Syscalls {
 			file.write(buf);
 			ctx.complete(null, buf.length);
 			return;
+		} else {
+			this.kernel.fs.write(file, buf, (err: any, len: number) => {
+				// we can't do ctx.complete.bind(ctx)
+				// here, because write returns a
+				// _third_ object, 'string', which
+				// looks something like the buffer
+				// after the write?
+				ctx.complete(err, len);
+			});
 		}
-		console.log('TODO: write ' + fd);
 	}
 
 	pipe2(ctx: SyscallContext, flags: number): void {

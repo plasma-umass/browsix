@@ -46,9 +46,8 @@ describe('echo hi | tee /a', function(): void {
 	});
 	*/
 
-
 	it('should run `echo hi | tee`', function(done: MochaDone): void {
-		kernel.system('echo hi | /usr/bin/tee', catExited);
+		kernel.system('echo hi | tee', catExited);
 		function catExited(code: number, stdout: string, stderr: string): void {
 			try {
 				expect(code).to.equal(0);
@@ -60,18 +59,26 @@ describe('echo hi | tee /a', function(): void {
 			}
 		}
 	});
-	/*
-	it('should run `echo hi | cat`', function(done: MochaDone): void {
-		kernel.system('/usr/bin/echo hi | /usr/bin/cat', catExited);
+
+	it('should run `echo hi | tee`', function(done: MochaDone): void {
+		kernel.system('echo hi | tee /greeting', catExited);
 		function catExited(code: number, stdout: string, stderr: string): void {
 			try {
 				expect(code).to.equal(0);
-				expect(stdout).to.equal("hi\n");
+				expect(stdout).to.equal('hi\n');
 				expect(stderr).to.equal('');
 				done();
 			} catch (e) {
 				done(e);
 			}
 		}
-	});*/
+	});
+
+	it('should read /greeting', function(done: MochaDone): void {
+		kernel.fs.readFile('/greeting', 'utf-8', function(err: any, contents: string): void {
+			expect(err).to.be.undefined;
+			expect(contents).to.equal('hi\n');
+			done();
+		});
+	});
 });

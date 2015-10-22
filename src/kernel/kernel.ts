@@ -253,14 +253,26 @@ class Syscalls {
 		this.kernel.fs.unlink(path, ctx.complete.bind(ctx));
 	}
 
-	utimes(ctx: SyscallContext, path: string, atime: Date, mtime: Date): void {
-		this.kernel.fs.utimes(path, atime, mtime, function(err: any): void {
-			let callback = function(): void {
-				ctx.complete(err);
-			};
-			this.kernel.makeTaskRunnable(ctx.task, callback);
-			this.kernel.schedule();
-		}.bind(this));
+	utimes(ctx: SyscallContext, path: string, atimets: number, mtimets: number): void {
+		let atime = new Date(atimets*1000);
+		let mtime = new Date(mtimets*1000);
+		this.kernel.fs.utimes(path, atime, mtime, ctx.complete.bind(ctx));
+	}
+
+	futimes(ctx: SyscallContext, fd: number, atimets: number, mtimets: number): void {
+		let file = ctx.task.files[fd];
+		if (!file) {
+			ctx.complete('bad FD ' + fd, null);
+			return;
+		}
+		if (file instanceof Pipe) {
+			ctx.complete('TODO: futimes on pipe?');
+			return;
+		}
+		let atime = new Date(atimets*1000);
+		let mtime = new Date(mtimets*1000);
+
+		this.kernel.fs.futimes(file, atime, mtime, ctx.complete.bind(ctx));
 	}
 
 	rmdir(ctx: SyscallContext, path: string): void {

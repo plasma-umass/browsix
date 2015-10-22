@@ -112,10 +112,16 @@ export class USyscalls {
 		this.post(msgId, 'unlink', path);
 	}
 
-	utimes(path: string, atime: Date, mtime: Date, cb: SyscallCallback): void {
+	utimes(path: string, atime: number, mtime: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;
-		this.post(msgId, 'utimes', path);
+		this.post(msgId, 'utimes', path, atime, mtime);
+	}
+
+	futimes(fd: number, atime: number, mtime: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'futimes', fd, atime, mtime);
 	}
 
 	rmdir(path: string, cb: SyscallCallback): void {

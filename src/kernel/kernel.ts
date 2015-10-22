@@ -458,7 +458,7 @@ export class Task implements ITask {
 
 	private msgIdSeq: number = 1;
 	private outstanding: OutstandingMap = {};
-	private cb: (err: any, pid: number) => void;
+	private onRunnable: (err: any, pid: number) => void;
 
 	constructor(
 		kernel: Kernel, parent: Task, pid: number, cwd: string,
@@ -493,8 +493,21 @@ export class Task implements ITask {
 			this.files[2] = new Pipe();
 		}
 
-		this.cb = cb;
+		// often, something needs to be done after this task
+		// is ready to go.  Keep track of that callback here.
+		this.onRunnable = cb;
 
+		// the JavaScript code of the worker that we're
+		// launching comes from the filesystem - we need to
+		// read-in that file (potentially from an
+		// XMLHttpRequest) and continue initialization when it
+		// is ready.
+
+		// TODO: this needs to be a sequence of:
+		//   - open
+		//   - fstat
+		//   - read
+		// So that we can check that this file is executable.
 		kernel.fs.readFile(filename, 'utf-8', this.fileRead.bind(this));
 	}
 
@@ -504,7 +517,11 @@ export class Task implements ITask {
 			throw err;
 		}
 
-		// handles shebang lines, and special-cases /usr/bin/env.
+		// Some executables (typically scripts) have a shebang
+		// line that specifies an interpreter to use on the
+		// rest of the file.  Check for that here, and adjust
+		// things accordingly.
+		//
 		// TODO: abstract this into something like a binfmt
 		// handler
 		if (data.length > 2 && data[0] === '#' && data[1] === '!') {
@@ -515,12 +532,26 @@ export class Task implements ITask {
 			data = data.slice(newlinePos+1);
 
 			let parts = shebang.match(/\S+/g);
-
 			let cmd = parts[0];
+
+			// many commands don't want to hardcode the
+			// path to the interpreter (for example - on
+			// OSX node is located at /usr/local/bin/node
+			// and on Linux it is typically at
+			// /usr/bin/node).  This type of issue is
+			// worked around by using /usr/bin/env $EXE,
+			// which consults your $PATH.  We special case
+			// that here for 2 reasons - to avoid
+			// implementing env (minor), and as a
+			// performance improvement (major).
 			if (parts.length === 2 && (parts[0] === '/usr/bin/env' || parts[0] === '/bin/env'))
 				cmd = '/usr/bin/' + parts[1];
 
 			this.args = [cmd].concat(this.args);
+
+			// OK - we've changed what our executable is
+			// at this point so we need to read in the new
+			// exe.
 			this.kernel.fs.readFile(cmd, 'utf-8', this.fileRead.bind(this));
 			return;
 		}
@@ -533,8 +564,8 @@ export class Task implements ITask {
 		this.worker.onmessage = this.syscallHandler.bind(this);
 
 		this.signal('init', [this.args, this.env], () => {
-			this.cb(null, this.pid);
-			this.cb = undefined;
+			this.onRunnable(null, this.pid);
+			this.onRunnable = undefined;
 		});
 	}
 

@@ -9,3 +9,8 @@
 /lib-dist
 /.tmp
 /app/elements/**/*.js
+*.aux
+*.bbl
+*.log
+*.blg
+/report.pdf

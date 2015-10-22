@@ -8,7 +8,7 @@ import * as constants from './constants';
 import * as vfs from './vfs';
 import { now } from './ipc';
 import { Pipe } from './pipe';
-import { SyscallContext, ITask } from './syscall-ctx';
+import { SyscallContext, SyscallResult, ITask } from './syscall-ctx';
 
 import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
 import { fs } from './vendor/BrowserFS/src/core/node_fs';
@@ -194,56 +194,35 @@ class Syscalls {
 	}
 
 	pipe2(ctx: SyscallContext, flags: number): void {
-		let callback = function(): void {
-			let pipe = new Pipe();
-			// FIXME: this isn't POSIX semantics - we
-			// don't necessarily reuse lowest free FD.
-			let n = Object.keys(ctx.task.files).length;
-			ctx.task.files[n] = pipe;
-			ctx.task.files[n+1] = pipe;
-			ctx.complete(undefined, n, n+1);
-		};
-
-		this.kernel.makeTaskRunnable(<Task>ctx.task, callback);
-		this.kernel.schedule();
+		let pipe = new Pipe();
+		// FIXME: this isn't POSIX semantics - we don't
+		// necessarily reuse lowest free FD.
+		let n = Object.keys(ctx.task.files).length;
+		ctx.task.files[n] = pipe;
+		ctx.task.files[n+1] = pipe;
+		ctx.complete(undefined, n, n+1);
 	}
 
 	readdir(ctx: SyscallContext, path: string): void {
-		this.kernel.fs.readdir(path, (err: any, ents: any) => {
-			this.kernel.makeTaskRunnable(<Task>ctx.task, () => {
-				ctx.complete(err, ents);
-			});
-			this.kernel.schedule();
-		});
+		this.kernel.fs.readdir(path, ctx.complete.bind(ctx));
 	}
 
 	open(ctx: SyscallContext, path: string, flags: string, mode: number): void {
-		this.kernel.fs.open(path, flagsToString(flags), mode, function(err: any, fd: any): void {
-			let callback = function(): void {
-				if (err) {
-					ctx.complete(err, null);
-					return;
-				}
-				// FIXME: this isn't POSIX semantics - we
-				// don't necessarily reuse lowest free FD.
-				let n = Object.keys(ctx.task.files).length;
-				ctx.task.files[n] = fd;
-				ctx.complete(undefined, n);
-			};
-
-			this.kernel.makeTaskRunnable(ctx.task, callback);
-			this.kernel.schedule();
-		}.bind(this));
+		this.kernel.fs.open(path, flagsToString(flags), mode, (err: any, fd: any) => {
+			if (err) {
+				ctx.complete(err, null);
+				return;
+			}
+			// FIXME: this isn't POSIX semantics - we
+			// don't necessarily reuse lowest free FD.
+			let n = Object.keys(ctx.task.files).length;
+			ctx.task.files[n] = fd;
+			ctx.complete(undefined, n);
+		});
 	}
 
 	unlink(ctx: SyscallContext, path: string): void {
-		this.kernel.fs.unlink(path, function(err: any): void {
-			let callback = function(): void {
-				ctx.complete(err);
-			};
-			this.kernel.makeTaskRunnable(ctx.task, callback);
-			this.kernel.schedule();
-		}.bind(this));
+		this.kernel.fs.unlink(path, ctx.complete.bind(ctx));
 	}
 
 	utimes(ctx: SyscallContext, path: string, atime: Date, mtime: Date): void {
@@ -257,23 +236,11 @@ class Syscalls {
 	}
 
 	rmdir(ctx: SyscallContext, path: string): void {
-		this.kernel.fs.rmdir(path, function(err: any): void {
-			let callback = function(): void {
-				ctx.complete(err);
-			};
-			this.kernel.makeTaskRunnable(ctx.task, callback);
-			this.kernel.schedule();
-		}.bind(this));
+		this.kernel.fs.rmdir(path, ctx.complete.bind(ctx));
 	}
 
 	mkdir(ctx: SyscallContext, path: string, mode: number): void {
-		this.kernel.fs.mkdir(path, mode, function(err: any): void {
-			let callback = function(): void {
-				ctx.complete(err);
-			};
-			this.kernel.makeTaskRunnable(ctx.task, callback);
-			this.kernel.schedule();
-		}.bind(this));
+		this.kernel.fs.mkdir(path, mode, ctx.complete.bind(ctx));
 	}
 
 	close(ctx: SyscallContext, fd: number): void {
@@ -289,14 +256,14 @@ class Syscalls {
 			file.unref();
 			return;
 		}
-		this.kernel.fs.close(file, function(err: any): void {
+		this.kernel.fs.close(file, (err: any) => {
 			if (err) {
 				console.log(err);
 				ctx.complete(err, null);
 				return;
 			}
 			ctx.complete(null, 0);
-		}.bind(this));
+		});
 	}
 
 	fstat(ctx: SyscallContext, fd: number): void {
@@ -305,7 +272,7 @@ class Syscalls {
 			ctx.complete('bad FD ' + fd, null);
 			return;
 		}
-		this.kernel.fs.fstat(file, function(err: any, stat: any): void {
+		this.kernel.fs.fstat(file, (err: any, stat: any) => {
 			if (err) {
 				console.log(err);
 				ctx.complete(err, null);
@@ -313,7 +280,7 @@ class Syscalls {
 			}
 			// FIXME: this seems necessary to capture Date fields
 			ctx.complete(null, JSON.parse(JSON.stringify(stat)));
-		}.bind(this));
+		});
 	}
 }
 
@@ -341,17 +308,10 @@ export class Kernel {
 		this.syscalls = new Syscalls(this);
 	}
 
-
-	makeTaskRunnable(task: Task, callback: ()=>void): void {
-		callback();
-		// TODO: enqueue task on a run queue
-	}
-
-	schedule(): void {
-		// pick next task to run, if possible
-
-		// record when this task started to run (we sent a
-		// response message to their syscall)
+	schedule(task?: Task): void {
+		// TODO: priority-based scheduling, paired with
+		// something in doSyscall
+		task.run();
 	}
 
 	// returns the PID.
@@ -470,6 +430,9 @@ export class Task implements ITask {
 	private outstanding: OutstandingMap = {};
 	private onRunnable: (err: any, pid: number) => void;
 
+	private pendingSignals: SyscallResult[] = [];
+	private pendingResults: SyscallResult[] = [];
+
 	constructor(
 		kernel: Kernel, parent: Task, pid: number, cwd: string,
 		filename: string, args: string[], env: string[], files: number[],
@@ -491,7 +454,7 @@ export class Task implements ITask {
 		// file descriptors.
 		if (files && parent) {
 			for (let i = 0; i < files.length; i++) {
-				if (i >= parent.files.length)
+				if (!(i in parent.files))
 					break;
 				this.files[i] = parent.files[files[i]];
 				if (this.files[i] instanceof Pipe)
@@ -566,34 +529,56 @@ export class Task implements ITask {
 			return;
 		}
 
-		this.state = TaskState.Running;
-
 		let blob = new Blob([data], {type: 'text/javascript'});
 
 		this.worker = new Worker(window.URL.createObjectURL(blob));
 		this.worker.onmessage = this.syscallHandler.bind(this);
 
-		this.signal('init', [this.args, this.env], () => {
-			this.onRunnable(null, this.pid);
-			this.onRunnable = undefined;
-		});
+		this.signal('init', [this.args, this.env]);
+
+		this.onRunnable(null, this.pid);
+		this.onRunnable = undefined;
 	}
 
-	signal(name: string, args: any[], cb?: Function): void {
+	signal(name: string, args: any[]): void {
 		let timeout = 0;
 		if (DEBUG && name === 'init' && this.exePath !== '/usr/bin/sh')
 			timeout = 6000;
 		self.setTimeout(
 			() => {
-				this.worker.postMessage({
+				this.pendingSignals.push({
 					id: -1,
 					name: name,
 					args: args,
 				});
-				if (cb)
-					cb();
+				this.kernel.schedule(this);
 			},
 			timeout);
+	}
+
+	// schedule is called from SyscallContext - queue up a syscall
+	// result to be sent back to the worker.
+	schedule(msg: SyscallResult): void {
+		this.pendingResults.push(msg);
+		self.setTimeout(() => {
+			this.kernel.schedule(this);
+		});
+	}
+
+	// run is called by the kernel when we are selected to run by
+	// the scheduler
+	run(): void {
+		this.state = TaskState.Running;
+		if (this.pendingSignals.length) {
+			let msg = this.pendingSignals.shift();
+			this.worker.postMessage(msg);
+			return;
+		}
+		if (this.pendingResults.length) {
+			let msg = this.pendingResults.shift();
+			this.worker.postMessage(msg);
+			return;
+		}
 	}
 
 	exit(code: number): void {

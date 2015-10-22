@@ -1,5 +1,12 @@
 'use strict';
 
+
+export interface SyscallResult {
+	id: number;
+	name: string;
+	args: any[];
+}
+
 export interface ITask {
 	worker: Worker;
 
@@ -12,6 +19,8 @@ export interface ITask {
 	args: string[];
 	env: string[];
 	cwd: string;
+
+	schedule(msg: SyscallResult): void;
 }
 
 export class SyscallContext {
@@ -20,7 +29,7 @@ export class SyscallContext {
 		public id:   number) {}
 
 	complete(...args: any[]): void {
-		this.task.worker.postMessage({
+		this.task.schedule({
 			id: this.id,
 			name: undefined,
 			args: args,

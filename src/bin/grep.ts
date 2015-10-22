@@ -5,12 +5,6 @@
 import * as fs from 'fs';
 import * as readline from 'readline';
 
-// This is heavily based on the design of cat.c from sbase:
-// http://git.suckless.org/sbase/tree/cat.c .  Seemingly more
-// traditional 'node' way to do things would be to read the entire
-// file contents and then dump them, but that doesn't work correctly
-// for stdin where cat can read chunks at a time (think typing 'echo'
-// and hitting enter) until it receives EOF.
 
 // Recursively read each input and write it to the specified output,
 // only moving onto the next input when EOF is reached.  Each file is
@@ -76,6 +70,8 @@ function main(): void {
 	} else {
 		let pattern = args[0];
 		args = args.slice(1);
+		if (!args.length)
+			args = ['-'];
 		let files: NodeJS.ReadableStream[] = [];
 		let opened = 0;
 		// use map instead of a for loop so that we easily get

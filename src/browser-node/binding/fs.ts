@@ -106,7 +106,14 @@ export function readdir(path: string, req: FSReqWrap): void {
 }
 
 export function fstat(fd: number, req: FSReqWrap): void {
+	if (!fd && typeof fd !== 'number')
+		throw new Error('undefined fd');
 	syscall.fstat(fd, function fstatFinished(err: any, s: any): void {
+		if (err) {
+			req.complete(err, null);
+			return;
+		}
+
 		let stats = new Stats(
 			s.dev,
 			s.mode,
@@ -122,7 +129,7 @@ export function fstat(fd: number, req: FSReqWrap): void {
 			s.mtime,
 			s.ctime,
 			s.birthtime);
-		req.complete(err, stats);
+		req.complete(null, stats);
 	});
 }
 

@@ -13,4 +13,5 @@
 *.bbl
 *.log
 *.blg
+*.dvi
 /report.pdf

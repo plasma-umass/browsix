@@ -4,6 +4,8 @@ GULP      ?= node_modules/.bin/gulp
 TSLINT    ?= node_modules/.bin/tslint
 MOCHA     ?= node_modules/.bin/mocha
 
+TEX        = pdflatex
+
 BROWSERFS  = src/kernel/vendor/BrowserFS/dist/browserfs.js
 BROWSERFS_DIR = src/kernel/vendor/BrowserFS
 
@@ -24,13 +26,23 @@ endif
 %: RCS/%
 %: s.%
 %: SCCS/s.%
-
+.SUFFIXES: .tex .pdf
 
 all: test-once
 
 dist: $(BUILD_DEPS)
 	@echo "  DIST"
 	$(GULP) 'build:dist'
+
+.tex.pdf: report.bib
+	@echo "  LATEX $@"
+	$(TEX) $<
+	bibtex $(shell echo $< | cut -d '.' -f 1).aux
+	$(TEX) $<
+	$(TEX) $<
+
+
+report: report.pdf
 
 test-once: $(BUILD_DEPS)
 	@echo "  TEST"
@@ -45,7 +57,7 @@ node_modules: package.json
 	npm install --silent
 	touch -c $@
 
-$(NPM_DEPS): node_modules bower_components
+$(NPM_DEPS): node_modules
 	touch -c $@
 
 bower_components: $(BOWER) bower.json

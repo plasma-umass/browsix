@@ -456,7 +456,6 @@ export class Task implements ITask {
 	parent: Task;
 	children: Task[];
 
-	private syscalls: Syscalls;
 	private msgIdSeq: number = 1;
 	private outstanding: OutstandingMap = {};
 	private cb: (err: any, pid: number) => void;
@@ -477,11 +476,14 @@ export class Task implements ITask {
 		this.env = env || [];
 		this.cwd = cwd;
 
+		// if a task is a child of another task and has been
+		// created by a call to spawn(2), inherit the parent's
+		// file descriptors.
 		if (files && parent) {
-			this.files[0] = parent.files[files[0]];
-			this.files[1] = parent.files[files[1]];
-			this.files[2] = parent.files[files[2]];
-			for (let i = 0; i < 3; i++) {
+			for (let i = 0; i < files.length; i++) {
+				if (i >= parent.files.length)
+					break;
+				this.files[i] = parent.files[files[i]];
 				if (this.files[i] instanceof Pipe)
 					this.files[i].ref();
 			}

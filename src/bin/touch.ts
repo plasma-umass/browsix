@@ -49,9 +49,7 @@ function main(): void {
 							process.stderr.write(msg, finished);
 						}
 						// thats it - close the sucker.
-						fs.close(fd, () => {
-							finished();
-						});
+						fs.close(fd, finished);
 					});
 				} else {
 					// file exists - just use utimes,
@@ -59,7 +57,7 @@ function main(): void {
 					fs.utimes(path, now, now, (uerr: any) => {
 						if (uerr) {
 							code = 1;
-							process.stderr.write(err + '\n', finished);
+							process.stderr.write('utimes: ' + uerr.message + '\n', finished);
 							return;
 						}
 						finished();

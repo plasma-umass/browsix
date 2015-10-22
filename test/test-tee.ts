@@ -48,7 +48,7 @@ describe('echo hi | tee /a', function(): void {
 
 
 	it('should run `echo hi | tee`', function(done: MochaDone): void {
-		kernel.system('echo hi | tee', catExited);
+		kernel.system('echo hi | /usr/bin/tee', catExited);
 		function catExited(code: number, stdout: string, stderr: string): void {
 			try {
 				expect(code).to.equal(0);

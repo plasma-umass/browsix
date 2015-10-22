@@ -78,38 +78,37 @@ function main(): void {
 	// exit code to use - if we fail to open an input file it gets
 	// set to 1 below.
 	let code = 0;
-	let defOpts = {outputLine: true, outputWord: true, outputChar: true};
+	let opts = {outputLine: true, outputWord: true, outputChar: true};
+	if (args.length && args[0][0] === '-') {
+		opts = {outputLine: false, outputWord: false, outputChar: false};
+		while (args.length && args[0][0] === '-') {
+			for (let i = 1; i < args[0].length; i++) {
+				switch (args[0][i]) {
+				case "l":
+					opts.outputLine = true;
+					break;
+				case "w":
+					opts.outputWord = true;
+					break;
+					// in *nix -m is for character and -c is for bytes; project description has -c as char and ommits byte count.
+				case "c":
+					opts.outputChar = true;
+					break;
+				default:
+					process.stderr.write(pathToScript + ': unknown flag ' + args[0], () => {
+						process.exit(1);
+					});
+					return;
+				}
+			}
+			args.shift();
+		}
+	}
+
 	if (!args.length) {
 		// no args?  just wc stdin to stdout
-		setTimeout(wc, 0, [process.stdin], process.stdout, defOpts, code);
+		setTimeout(wc, 0, [process.stdin], process.stdout, opts, code);
 	} else {
-		// note: wc will not take "-" as stdin
-		let opts: Opts;
-		if (args[0][0] !== '-') {
-			opts = defOpts;
-		}
-		else {
-			opts = {outputLine: false, outputWord: false, outputChar: false};
-			while (args[0][0] === '-') {
-				for (let i = 1; i < args[0].length; i++) {
-					switch (args[0][i]) {
-					case "l":
-						opts.outputLine = true;
-						break;
-					case "w":
-						opts.outputWord = true;
-						break;
-						// in *nix -m is for character and -c is for bytes; project description has -c as char and ommits byte count.
-					case "c":
-						opts.outputChar = true;
-						break;
-						//default:
-						// could throw an error here
-					}
-				}
-				args.shift();
-			}
-		}
 		let files: NodeJS.ReadableStream[] = [];
 		let opened = 0;
 		// use map instead of a for loop so that we easily get

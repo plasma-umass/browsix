@@ -537,6 +537,9 @@ export class Task implements ITask {
 	}
 
 	signal(name: string, args: any[], cb?: Function): void {
+		let timeout = 0;
+		if (DEBUG && name === 'init' && this.exePath !== '/usr/bin/sh')
+			timeout = 6000;
 		self.setTimeout(
 			() => {
 				this.worker.postMessage({
@@ -547,7 +550,7 @@ export class Task implements ITask {
 				if (cb)
 					cb();
 			},
-			DEBUG ? 6000 : 0);
+			timeout);
 	}
 
 	exit(code: number): void {

@@ -143,9 +143,17 @@ interface Environment {
 	[name: string]: string;
 }
 
-function pipe2(cb: (err: any, rfd: number, wfd: number) => void): void {
-	syscall.pipe2(0, cb);
-}
+let modPipe2 = {
+	pipe2: syscall.pipe2.bind(syscall, 0),
+};
+
+let modPriority = {
+	get:     syscall.getpriority.bind(syscall),
+	set:     syscall.setpriority.bind(syscall),
+	Process: 0,
+	Pgrp:    1,
+	User:    2,
+};
 
 function _require(moduleName: string): any {
 	'use strict';
@@ -160,7 +168,9 @@ function _require(moduleName: string): any {
 	case 'readline':
 		return require('./readline');
 	case 'node-pipe2':
-		return { pipe2: pipe2 };
+		return modPipe2;
+	case 'node-priority':
+		return modPriority;
 	default:
 		throw new ReferenceError('unknown module ' + moduleName);
 	}

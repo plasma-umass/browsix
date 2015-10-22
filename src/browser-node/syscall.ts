@@ -88,6 +88,18 @@ export class USyscalls {
 		this.post(msgId, 'pipe2', flags);
 	}
 
+	getpriority(which: number, who: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'getpriority', which, who);
+	}
+
+	setpriority(which: number, who: number, prio: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'setpriority', which, who, prio);
+	}
+
 	open(path: string, flags: string, mode: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;

@@ -8,7 +8,11 @@ import * as path from 'path';
 import * as priority from 'node-priority';
 
 function spawn(args: string[], opts: { stdio: number[]; }): void {
-	let child = child_process.spawn(args[0], args.slice(1), opts);
+	let cmd = args[0];
+	// FIXME: use PATH
+	if (cmd.indexOf('/') === -1)
+		cmd = '/usr/bin/' + cmd;
+	let child = child_process.spawn(cmd, args.slice(1), opts);
 	child.on('error', (err: any) => {
 		process.stderr.write('error: ' + err, () => {
 			process.exit(1);
@@ -29,7 +33,7 @@ function main(): void {
 	if (!args.length) {
 		priority.get(priority.Process, 0, (err: any, prio: number) => {
 			process.stdout.write(''+prio+'\n', () => {
-				process.exit(1);
+				process.exit(0);
 			});
 		});
 		return;

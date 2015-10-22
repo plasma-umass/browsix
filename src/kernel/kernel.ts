@@ -62,6 +62,10 @@ const O_SYNC = constants.O_SYNC || 0;
 const O_TRUNC = constants.O_TRUNC || 0;
 const O_WRONLY = constants.O_WRONLY || 0;
 
+const PRIO_MIN = -20;
+const PRIO_MAX = 20;
+
+
 // based on stringToFlags from node's lib/fs.js
 function flagsToString(flag: any): string {
 	'use strict';
@@ -209,6 +213,22 @@ class Syscalls {
 		ctx.task.files[n] = pipe;
 		ctx.task.files[n+1] = pipe;
 		ctx.complete(undefined, n, n+1);
+	}
+
+	getpriority(ctx: SyscallContext, which: number, who: number): void {
+		if (which !== 0 && who !== 0) {
+			ctx.complete('NOT_IMPLEMENTED', -1);
+			return;
+		}
+		ctx.complete(undefined, ctx.task.priority);
+	}
+
+	setpriority(ctx: SyscallContext, which: number, who: number, prio: number): void {
+		if (which !== 0 && who !== 0) {
+			ctx.complete('NOT_IMPLEMENTED', -1);
+			return;
+		}
+		ctx.complete(undefined, ctx.task.setPriority(prio));
 	}
 
 	readdir(ctx: SyscallContext, path: string): void {
@@ -458,6 +478,8 @@ export class Task implements ITask {
 	parent: Task;
 	children: Task[];
 
+	priority: number;
+
 	private msgIdSeq: number = 1;
 	private outstanding: OutstandingMap = {};
 	private onRunnable: (err: any, pid: number) => void;
@@ -480,6 +502,9 @@ export class Task implements ITask {
 		this.args = args;
 		this.env = env || [];
 		this.cwd = cwd;
+		this.priority = 0;
+		if (parent)
+			this.priority = parent.priority;
 
 		// if a task is a child of another task and has been
 		// created by a call to spawn(2), inherit the parent's
@@ -518,8 +543,10 @@ export class Task implements ITask {
 
 	fileRead(err: any, data: string): void {
 		if (err) {
-			console.log('error in exec: ' + err);
-			throw err;
+			this.onRunnable(err, undefined);
+			this.onRunnable = undefined;
+			// FIXME: what other cleanup is required here?
+			return;
 		}
 
 		// Some executables (typically scripts) have a shebang
@@ -570,6 +597,20 @@ export class Task implements ITask {
 
 		this.onRunnable(null, this.pid);
 		this.onRunnable = undefined;
+	}
+
+	// returns 0 on success, -1 on failure
+	setPriority(prio: number): number {
+		// TODO: on UNIX, only root can 'nice down' - AKA
+		// increase their priority by being less-nice.  We
+		// don't enforce that here - essentially everyone is
+		// root.
+		this.priority += prio;
+		if (this.priority < PRIO_MIN)
+			this.priority = PRIO_MIN;
+		if (this.priority >= PRIO_MAX)
+			this.priority = PRIO_MAX-1;
+		return 0;
 	}
 
 	signal(name: string, args: any[]): void {

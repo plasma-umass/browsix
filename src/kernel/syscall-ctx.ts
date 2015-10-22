@@ -19,8 +19,10 @@ export interface ITask {
 	args: string[];
 	env: string[];
 	cwd: string;
+	priority: number;
 
 	schedule(msg: SyscallResult): void;
+	setPriority(prio: number): number;
 }
 
 export class SyscallContext {

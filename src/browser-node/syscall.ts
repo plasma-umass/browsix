@@ -100,6 +100,12 @@ export class USyscalls {
 		this.post(msgId, 'unlink', path);
 	}
 
+	utimes(path: string, atime: Date, mtime: Date, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'utimes', path);
+	}
+
 	rmdir(path: string, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;

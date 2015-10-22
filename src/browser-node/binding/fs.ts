@@ -97,6 +97,10 @@ export function mkdir(path: string, mode: number, req: FSReqWrap): void {
 	syscall.mkdir(path, mode, req.complete.bind(req));
 }
 
+export function utimes(path: string, atime: Date, mtime: Date, req: FSReqWrap): void {
+	syscall.utimes(path, atime, mtime, req.complete.bind(req));
+}
+
 export function readdir(path: string, req: FSReqWrap): void {
 	syscall.readdir(path, req.complete.bind(req));
 }

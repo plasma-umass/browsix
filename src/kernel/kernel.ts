@@ -246,6 +246,16 @@ class Syscalls {
 		}.bind(this));
 	}
 
+	utimes(ctx: SyscallContext, path: string, atime: Date, mtime: Date): void {
+		this.kernel.fs.utimes(path, atime, mtime, function(err: any): void {
+			let callback = function(): void {
+				ctx.complete(err);
+			};
+			this.kernel.makeTaskRunnable(ctx.task, callback);
+			this.kernel.schedule();
+		}.bind(this));
+	}
+
 	rmdir(ctx: SyscallContext, path: string): void {
 		this.kernel.fs.rmdir(path, function(err: any): void {
 			let callback = function(): void {

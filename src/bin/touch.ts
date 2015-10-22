@@ -43,19 +43,6 @@ function touch(inputs: string[], code: number): void {
 			}
 		});
 	}
-	/*
-	current.on('readable', function(): void {
-		let buf = current.read();
-		if (buf !== null)
-			output.write(buf);
-	});
-
-	current.on('end', function(): void {
-		// use setTimeout to avoid a deep stack as well as
-		// cooperatively yield
-		setTimeout(touch, 0, inputs, output, code);
-	});
-	*/
 }
 
 function main(): void {
@@ -80,15 +67,6 @@ function main(): void {
 		// use map instead of a for loop so that we easily get
 		// the tuple of (path, i) on each iteration.
 		args.map(function(path, i): void {
-			/*
-			if (path === '-') {
-				files[i] = process.stdin;
-				// if we've opened all of the files, pipe them to
-				// stdout.
-				if (++opened === args.length)
-					setTimeout(touch, 0, files, process.stdout, code);
-				return;
-			}*/
 			fs.open(path, 'r', function(err: any, fd: any): void {
 				if (err) {
 					// if we couldn't open the

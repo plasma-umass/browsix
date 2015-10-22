@@ -16,40 +16,35 @@ import * as fs from 'fs';
 // a node stream object - which means that we consume it by adding 2
 // event listeners, the first for when there is data available, and
 // secondly for when we've reached EOF.
-function tee(input: NodeJS.ReadableStream, outputs: NodeJS.WritableStream[], code: number): void {
+function tee(inputs: NodeJS.ReadableStream, outputs: NodeJS.WritableStream[], code: number): void {
 	'use strict';
 
-	if (!input) {
+	if (!inputs) {
 		process.exit(code);
 		return;
 	}
-	if (!outputs || !outputs.length) {
-		process.exit(code);
-		return;
-	}
-
-	let current = outputs[0];
-	outputs = outputs.slice(1);
-
+	//console.log("SXz");
+	let current = inputs;
+	//inputs = inputs.slice(1);
 	if (!current) {
 		// use setTimeout to avoid a deep stack as well as
 		// cooperatively yield
-		setTimeout(tee, 0, input, outputs, code);
+		setTimeout(tee, 0, inputs, outputs, code);
 		return;
 	}
 
-	input.on('readable', function(): void {
-		let buf = input.read();
+	current.on('readable', function(): void {
+		let buf = current.read();
 		if (buf !== null)
 			for (let i = 0; i < outputs.length; i++) {
 				outputs[i].write(buf);
 			}
 	});
 
-	input.on('end', function(): void {
+	current.on('end', function(): void {
 		// use setTimeout to avoid a deep stack as well as
 		// cooperatively yield
-		setTimeout(tee, 0, input, outputs, code);
+		setTimeout(tee, 0, inputs, outputs, code);
 	});
 }
 
@@ -75,9 +70,8 @@ function main(): void {
 		// use map instead of a for loop so that we easily get
 		// the tuple of (path, i) on each iteration.
 		args.map(function(path, i): void {
-			/* tee already reads from/writes to std out
-			if (path === '-') {
-				files[i] = process.stdout;
+			/*if (path === '-') {
+				files[i] = process.stdin;
 				// if we've opened all of the files, pipe them to
 				// stdout.
 				if (++opened === args.length)
@@ -92,11 +86,11 @@ function main(): void {
 					// exit early - we need to
 					// process as many inputs as
 					// we can.
-					files[i] = null;
+					files[i+1] = null;
 					code = 1;
 					process.stderr.write(pathToScript + ': ' + err.message + '\n');
 				} else {
-					files[i] = fs.createWriteStream(path, {fd: fd});
+					files[i+1] = fs.createWriteStream(path, {fd: fd});
 				}
 				// if we've opened all of the files,
 				// pipe them to stdout.

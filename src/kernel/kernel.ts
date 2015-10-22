@@ -292,7 +292,7 @@ class Syscalls {
 	}
 
 	lstat(ctx: SyscallContext, path: string): void {
-		this.kernel.fs.lstat(file, (err: any, stats: any) => {
+		this.kernel.fs.lstat(path, (err: any, stats: any) => {
 			if (err) {
 				console.log(err);
 				ctx.complete(err, null);

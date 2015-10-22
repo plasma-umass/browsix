@@ -48,16 +48,20 @@ function wc(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, opts
 	});
 
 	current.on('end', function(): void {
-		// use setTimeout to avoid a deep stack as well as
-		// cooperatively yield
+		// buffer the output and do it in a single write.
+		let result = '';
 		if (opts.outputLine)
-			output.write(l + "\t");
+			result += l + "\t";
 		if (opts.outputWord)
-			output.write(w + "\t");
+			result += w + "\t";
 		if (opts.outputChar)
-			output.write(c + "\t");
-		output.write("\n");
-		setTimeout(wc, 0, inputs, output, opts, code);
+			result += c + "\t";
+		result += "\n";
+		// This single write lets us ensure the write
+		// completes before we move on, potentially exiting.
+		output.write(result, () => {
+			setTimeout(wc, 0, inputs, output, opts, code);
+		});
 	});
 }
 

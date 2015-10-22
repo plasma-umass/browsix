@@ -11,3 +11,5 @@ require('./test-wc');
 require('./test-rmdir');
 require('./test-mkdir');
 require('./test-ls');
+require('./test-sort');
+require('./test-tee');

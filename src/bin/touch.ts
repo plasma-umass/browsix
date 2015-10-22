@@ -4,46 +4,6 @@
 
 import * as fs from 'fs';
 
-// This is heavily based on the design of cat.c from sbase:
-// http://git.suckless.org/sbase/tree/cat.c .  Seemingly more
-// traditional 'node' way to do things would be to read the entire
-// file contents and then dump them, but that doesn't work correctly
-// for stdin where cat can read chunks at a time (think typing 'echo'
-// and hitting enter) until it receives EOF.
-
-// Recursively read each input and write it to the specified output,
-// only moving onto the next input when EOF is reached.  Each file is
-// a node stream object - which means that we consume it by adding 2
-// event listeners, the first for when there is data available, and
-// secondly for when we've reached EOF.
-function touch(inputs: string[], code: number): void {
-	'use strict';
-
-	if (!inputs || !inputs.length) {
-		process.exit(code);
-		return;
-	}
-
-	let current = inputs[0];
-	inputs = inputs.slice(1);
-
-	if (!current) {
-		// use setTimeout to avoid a deep stack as well as
-		// cooperatively yield
-		setTimeout(touch, 0, inputs, code);
-		return;
-	}
-	for (let i = 0; i < inputs.length; i++) {
-		let path = inputs[i];
-		let now: Date = new Date();
-		fs.utimes(path, now, now, function(err): void {
-			if (err) {
-				code = 1;
-				process.stderr.write(err.message + '\n');
-			}
-		});
-	}
-}
 
 function main(): void {
 	'use strict';
@@ -57,37 +17,54 @@ function main(): void {
 	// set to 1 below.
 	let code = 0;
 
+	let now: Date = new Date();
+	let opened = 0;
+
+	function finished(): void {
+		opened++;
+		if (opened === args.length)
+			process.exit(code);
+	}
+
 	if (!args.length) {
 		// no args?  no dice!
 		process.stderr.write('usage:\n touch FILE\n');
 		process.exit(1);
 	} else {
-		let files: string[] = [];
-		let opened = 0;
 		// use map instead of a for loop so that we easily get
 		// the tuple of (path, i) on each iteration.
-		args.map(function(path, i): void {
-			fs.open(path, 'r', function(err: any, fd: any): void {
+		args.map(function(path: string, i: number): void {
+			fs.stat(path, function(err: any, stats: fs.Stats): void {
 				if (err) {
-					// if we couldn't open the
+					// if we couldn't stat the
 					// specified file we should
-					// create it.
-					fs.open(path, 'w', function(err1: any, fd1: any): void {
-						if (err1) {
-							// now we're in trouble and we should try other files instead.
-							files[i] = null;
+					// create it.  Pass 'x' for
+					// the CREAT flag.
+					fs.open(path, 'wx', function(oerr:  any, fd: number): void {
+						if (oerr) {
+							// now we're in trouble and
+							// we should try other files instead.
 							code = 1;
-							process.stderr.write(pathToScript + ': ' + err.message + '\n');
+							let msg = pathToScript + ': ' + oerr + '\n';
+							process.stderr.write(msg, finished);
 						}
+						// thats it - close the sucker.
+						fs.close(fd, () => {
+							finished();
+						});
 					});
 				} else {
-					files[i] = path;
-					//fs.createReadStream(path, {fd: fd});
+					// file exists - just use utimes,
+					// no need to open it.
+					fs.utimes(path, now, now, (uerr: any) => {
+						if (uerr) {
+							code = 1;
+							process.stderr.write(err + '\n', finished);
+							return;
+						}
+						finished();
+					});
 				}
-				// if we've opened all of the files,
-				// pipe them to stdout.
-				if (++opened === args.length)
-					setTimeout(touch, 0, files, process.stdout, code);
 			});
 		});
 	}

@@ -25,10 +25,32 @@ function main(): void {
 		if (opened === args.length)
 			process.exit(code);
 	}
-
+	interface Opts {
+		force: boolean;
+		recursive: boolean;
+	}
+	let opts = {force: false, recursive: false};
+	while (args.length && args[0][0] === '-') {
+		for (let i = 1; i < args[0].length; i++) {
+			switch (args[0][i]) {
+			case "f":
+				opts.force = true;
+				break;
+			case "r":
+				opts.recursive = true;
+				break;
+			default:
+				process.stderr.write(pathToScript + ': unknown flag ' + args[0], () => {
+					process.exit(1);
+				});
+				return;
+			}
+		}
+		args.shift();
+	}
 	if (!args.length) {
 		// no args?  no bueno!
-		process.stderr.write('usage:\n rm [-f | r] FILE\n');
+		process.stderr.write('usage:\n rm [-f | -r] FILE\n');
 		process.exit(1);
 	} else {
 		// use map instead of a for loop so that we easily get
@@ -36,14 +58,17 @@ function main(): void {
 		args.map(function(path: string, i: number): void {
 			fs.stat(path, function(err: any, stats: fs.Stats): void {
 				if (err) {
-					process.stderr.write(path + " No such file or directory.");
+					if (!opts.force) {
+						code = 1;
+						process.stderr.write(path + " No such file or directory.\n");
+					}
 				} else {
 					fs.unlink(path, (oerr): void => {
 						if (oerr) {
 							code = 1;
 							process.stderr.write(err.message);
-							process.exit(code);
 						}
+						finished();
 					});
 				}
 			});

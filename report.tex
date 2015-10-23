@@ -62,7 +62,7 @@ This project has several contributions:
     userspace, and syscall abstractions in the browser, utilizing the
     Web Workers API.  We refer to this as the process model.
   \item A port of the node.js programming environment to the browser
-    on top of our process model.
+    on top of our process model.  We call this \texttt{browser-node}.
   \item A collection of traditional UNIX utilities, implemented as
     node.js applications in TypeScript.  These utilities run
     unmodified in both our browser environment and under node.js on
@@ -87,7 +87,31 @@ exposed anywhere in the node.js API.  node.js does expose named pipes
 in its net module, but we it was simpler to develop a small package to
 expose an API allowing use of \texttt{pipe(2)} from JavaScript and
 TypeScript.  A similar choice was made to develop a package to expose
-\texttt{getpriority(2)} and \texttt{setpriority(2)}.
+\texttt{getpriority(2)} and \texttt{setpriority(2)}, for use in
+\texttt{nice(1)}.
+
+% diagram: utilities running on either node.js on OS X, or on
+% browser-node on a browser
+
+To run these utilities in the browser, we developed
+\texttt{browser-node}.  This is a port of node.js to our in-browser
+process model.  \texttt{browser-node} utilizes over a dozen of
+node.js's pure-JavaScript modules directly, with almost no
+modification.  Some of these modules, like \texttt{'internal/util'}
+are self-contained - they don't depend on any other modules, or their
+transitive-dependencies are pure-JavaScript.  However, most modules
+make foreign function interface (FFI) calls into node C++ functions
+and methods.  \texttt{browser-node} provides pure-JavaScript (written
+in TypeScript, then compiled) implementations of these functions and
+methods.  Our implementations use Web Worker APIs to post messages
+representing syscalls to the kernel, invoking callbacks (back into the
+node JavaScript libraries) when the kernel responds in-kind with a
+syscall-response message.
+
+A consequence of this approach is that only async APIs are
+implemented.  No synchronous APIs that require invoking a system call,
+such as the methods ending in \emph{Sync} in \texttt{fs}, are
+available.
 
 \section{System Design}
 

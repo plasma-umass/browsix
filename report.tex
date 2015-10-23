@@ -84,10 +84,11 @@ of the API.
 This project has several contributions:
 
 \begin{itemize}
-  \item An implementation of a traditional UNIX-like kernel,
-    userspace, and syscall abstractions in the browser, utilizing the
-    Web Workers API.  We refer to this as the process model, and it
-    includes asynchronous delivery of signals like \texttt{SIGCHLD}.
+  \item An implementation of a traditional monolithic UNIX-like
+    kernel, userspace, and syscall abstractions in the browser,
+    utilizing the Web Workers API.  We refer to this as the process
+    model, and it includes asynchronous delivery of signals like
+    \texttt{SIGCHLD}.
   \item A port of the node.js programming environment to the browser
     on top of our process model, including the ability to spawn child
     processes.  We call this \texttt{browser-node}.
@@ -121,23 +122,28 @@ TypeScript.  A similar choice was made to develop a package to expose
 \texttt{getpriority(2)} and \texttt{setpriority(2)}, for use in
 \texttt{nice(1)}.
 
-% diagram: utilities running on either node.js on OS X, or on
-% browser-node on a browser
+\begin{figure}
+\centering
+\epsfig{file=img/utilities.eps, height=3in}
+\caption{Utilities implemented for Browsix were designed to run in 2
+  execution environments - node.js on a traditional OS, as well as in
+  a browser through \texttt{browser-node} and the Browsix kernel.}
+\end{figure}
 
 To run these utilities in the browser, we developed
-\texttt{browser-node}.  This is a port of node.js to our in-browser
-process model.  \texttt{browser-node} utilizes over a dozen of
-node.js's pure-JavaScript modules directly, with almost no
-modification.  Some of these modules, like \texttt{'internal/util'}
-are self-contained - they don't depend on any other modules, or their
-transitive-dependencies are pure-JavaScript.  However, most modules
-make foreign function interface (FFI) calls into node C++ functions
-and methods.  \texttt{browser-node} provides pure-JavaScript (written
-in TypeScript, then compiled) implementations of these functions and
-methods.  Our implementations use Web Worker APIs to post messages
-representing syscalls to the kernel, invoking callbacks (back into the
-node JavaScript libraries) when the kernel responds in-kind with a
-syscall-response message.
+\texttt{browser-node} and the Browsix kernel.  This is a port of
+node.js to our in-browser process model.  \texttt{browser-node}
+utilizes over a dozen of node.js's pure-JavaScript modules directly,
+with almost no modification.  Some of these modules, like
+\texttt{'internal/util'} are self-contained - they don't depend on any
+other modules, or their transitive-dependencies are pure-JavaScript.
+However, most modules make foreign function interface (FFI) calls into
+node C++ functions and methods.  \texttt{browser-node} provides
+pure-JavaScript (written in TypeScript, then compiled) implementations
+of these functions and methods.  Our implementations use Web Worker
+APIs to post messages representing syscalls to the kernel, invoking
+callbacks (back into the node JavaScript libraries) when the kernel
+responds in-kind with a syscall-response message.
 
 A consequence of this approach is that only async APIs are
 implemented.  No synchronous APIs that require invoking a system call,
@@ -224,6 +230,12 @@ file, and then by placing one or multiple
 \texttt{"<browsix-terminal>"} tags on the page.  This terminal web
 component owns a kernel instance, and invokes methods on the kernel to
 evaluate commands and pipelines.
+
+\begin{figure}
+\centering
+\epsfig{file=img/stack.eps, height=5in}
+\caption{The Browsix stack.}
+\end{figure}
 
 \section{Results}
 

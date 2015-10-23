@@ -46,7 +46,7 @@ function main(): void {
 						console.log("I never print");
 						if (oerr) {
 							console.log("ERRR");
-							fs.mkdir(path, (ooerr: any) => {
+							fs.mkdir(subpath, (ooerr: any) => {
 								// too much fail. no more try.
 								process.stderr.write(ooerr.message + '\n', finished);
 								return;

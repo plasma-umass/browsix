@@ -3,7 +3,36 @@
 'use strict';
 
 import * as fs from 'fs';
+import * as path from 'path';
 
+// NOTE: THE FOLLOWING FUNCTION WAS ADOPTED FROM https://gist.github.com/tkihira/2367067
+
+let frmdir = function(dir: string): void {
+	fs.readdir(dir, function (err, files): void {
+		console.log("dir: " + dir);
+		let filename: string;
+		for (let i = 0; i < files.length; i++) {
+			filename = path.join(dir, files[i]);
+			console.log(filename);
+			fs.stat(dir, function(oerr: any, stats: fs.Stats): void {
+				console.log(filename + " !isFile: " + !stats.isFile());
+				if (filename === "." || filename === "..") {
+					// pass these files
+					console.log(".");
+				} else if (!stats.isFile()) {
+					// rmdir recursively
+					console.log("recurse on dir: " + filename);
+					frmdir(filename);
+				} else {
+					// rm fiilename
+					console.log("removing file: " + filename);
+					fs.unlink(filename);
+				}
+			});
+		}
+		fs.rmdir(dir);
+	});
+};
 
 function main(): void {
 	'use strict';
@@ -63,13 +92,25 @@ function main(): void {
 						process.stderr.write(path + " No such file or directory.\n");
 					}
 				} else {
-					fs.unlink(path, (oerr): void => {
-						if (oerr) {
-							code = 1;
-							process.stderr.write(err.message);
+					if (stats.isFile()) {
+						fs.unlink(path, (oerr): void => {
+							if (oerr) {
+								code = 1;
+								process.stderr.write(oerr.message);
+							}
+							finished();
+						});
+					}
+					else {
+						if (opts.recursive) {
+							frmdir(path);
 						}
-						finished();
-					});
+						else if (!opts.force) {
+							code = 1;
+							process.stderr.write(path + " is a directory.\n");
+						}
+
+					}
 				}
 			});
 		});

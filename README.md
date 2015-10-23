@@ -29,3 +29,7 @@ MIT license.  A large portion of the
 [node](https://github.com/nodejs/node) standard library is used.  Node
 itself incorporates several projects, and the relevant licenses can be
 found [here](https://github.com/nodejs/node/blob/master/LICENSE).
+Functions to convert buffers to utf-8 strings and back functions are
+based off of
+[browserify](https://github.com/substack/node-browserify/blob/master/LICENSE)
+implementations, released under the smae license as node.

@@ -101,6 +101,9 @@ This project has several contributions:
     works in all modern browsers.
 \end{itemize}
 
+Combined, these contributions form the Browsix programming
+environment.
+
 
 \section{Approach}
 
@@ -224,6 +227,13 @@ evaluate commands and pipelines.
 
 \section{Results}
 
+The resulting system provides a similar-feeling environment to that of
+classic UNIX, BSD, and Plan9 systems, where commands have minimal
+options and produce plan-text output.
+
+A downside of the approach taken is that it is somewhat at odds with
+the browser's native debug faculties.
+
 \section{Discussion}
 
 \subsection{Further work}
@@ -234,7 +244,34 @@ with the kernel is not dependent on other parts of
 port other runtimes into this process model, such as the Doppio JVM,
 emscripten apps built with the emterpreter option, and GopherJS.
 
+\subsubsection{Terminal}
+
+The terminal currently works by taking a line of input, executing it
+as a shell, and displaying the results when the command finishes.
+This is a fine first step, but interactive UNIX programs (like the
+venerable \texttt{ed}) expect that their stdin is hooked up to a
+terminal and that writes to stdout appear on the terminal before
+program termination.  We don't expect that implementing this
+functionality on top of the existing project will require significant
+restructuring.
+
+\subsubsection{Pseudo-Filesystems}
+
+Linux and Plan9 before it expose a lot of functionality through the
+filesystem, including devices, information on the process tree, and
+hardware information.  This is appealing because programs that want to
+interact with devices or, for example, the process tree don't need to
+learn additional system calls, they just need to read from specific
+files and directories.  An interesting area for future work is
+providing access to browser APIs to process in Web Workers through
+pseudo-filesystems.
+
 \section{Conclusion}
+
+This paper introduced and described the Browsix programming
+environment, including the kernel, \texttt{browser-node}, a number of
+UNIX utilities implemented in TypeScript, a shell, and web-based
+Terminal UI.
 
 \bibliographystyle{abbrv}
 \bibliography{report}

@@ -30,16 +30,9 @@ describe('mkdir /a', function(): void {
 		});
 	});
 
-	it('should create /a', function(done: MochaDone): void {
-		kernel.fs.mkdir('/a', function(err: any): void {
-			expect(err).to.be.undefined;
-			done();
-		});
-	});
-
 	it('should run `mkdir /a`', function(done: MochaDone): void {
-		kernel.system('/usr/bin/mkdir /a', catExited);
-		function catExited(code: number, stdout: string, stderr: string): void {
+		kernel.system('mkdir /a', cmdExited);
+		function cmdExited(code: number, stdout: string, stderr: string): void {
 			try {
 				expect(code).to.equal(0);
 				expect(stdout).to.equal('');
@@ -50,9 +43,10 @@ describe('mkdir /a', function(): void {
 			}
 		}
 	});
-	it('should create /a', function(done: MochaDone): void {
-		kernel.fs.stat('/a', function(err: any): void {
+	it('should have /a', function(done: MochaDone): void {
+		kernel.fs.stat('/a', function(err: any, stat: fs.Stat): void {
 			expect(err).to.be.null;
+			expect(stat).not.to.be.null;
 			done();
 		});
 	});

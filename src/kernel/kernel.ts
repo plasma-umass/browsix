@@ -361,6 +361,11 @@ interface OutstandingMap {
 export class Kernel {
 	fs: any; // FIXME
 
+	nCPUs: number;
+	runQueues: Task[][];
+	outstanding: number;
+	inKernel: number;
+
 	// controls whether we should delay the initialization message
 	// sent to a worker, in order to aide debugging & stepping
 	// through Web Worker execution.
@@ -374,15 +379,65 @@ export class Kernel {
 	// keyed on PID
 	private systemRequests: OutstandingMap = {};
 
-	constructor(fs: fs) {
+	constructor(fs: fs, nCPUs: number) {
+		this.outstanding = 0;
+		this.inKernel = 0;
+		this.nCPUs = nCPUs;
 		this.fs = fs;
 		this.syscalls = new Syscalls(this);
+		this.runQueues = [];
+		// initialize all run queues to empty arrays.
+		for (let i = PRIO_MIN; i < PRIO_MAX; i++) {
+			this.runQueues[i - PRIO_MIN] = [];
+		}
 	}
 
 	schedule(task?: Task): void {
-		// TODO: priority-based scheduling, paired with
-		// something in doSyscall
-		task.run();
+		// A task's priority is between -20 and 19 - a direct
+		// correspondance to what getpriority and setpriority
+		// expect.  Add 20 here to ensure we always have a
+		// positive number.
+		let prio = task.priority + 20;
+		if (prio < 0) {
+			console.log('warning: invalid prio: ' + prio);
+			prio = 0;
+		}
+
+		// append the task to the end of the runqueue for its
+		// priority level.
+		this.runQueues[prio].push(task);
+
+		setTimeout(this.nextTask.bind(this), 1);
+	}
+
+	nextTask(): void {
+		// don't schedule anything if we don't have any
+		// virtual CPUs available
+		if (this.outstanding >= this.nCPUs) {
+			//console.log('not scheduling - out of CPUs ' + this.outstanding);
+			return;
+		}
+
+		/*
+		let nRunnable = 0;
+		for (let i = PRIO_MIN; i < PRIO_MAX; i++) {
+			if (this.runQueues[i - PRIO_MIN].length)
+				nRunnable++;
+		}
+		console.log('nRunnable: ' + nRunnable);
+		*/
+
+		for (let i = PRIO_MIN; i < PRIO_MAX; i++) {
+			let queue = this.runQueues[i - PRIO_MIN];
+			if (!queue.length)
+				continue;
+
+			let runnable = queue.shift();
+			this.outstanding++;
+			this.inKernel--;
+			runnable.run();
+			break;
+		}
 	}
 
 	// returns the PID.
@@ -445,6 +500,15 @@ export class Kernel {
 	}
 
 	doSyscall(syscall: Syscall): void {
+		setTimeout(this.nextTask.bind(this), 1);
+		this.outstanding--;
+		if (this.outstanding < 0) {
+			//console.log('underflow');
+			this.outstanding = 0;
+		} else {
+			//console.log('outstanding ' + this.outstanding);
+		}
+		this.inKernel++;
 		if (syscall.name in this.syscalls) {
 			console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
@@ -641,7 +705,15 @@ export class Task implements ITask {
 					name: name,
 					args: args,
 				});
-				this.kernel.schedule(this);
+				// FIXME: signal delivery should be
+				// integrated with the scheduler, but
+				// since we don't have something like
+				// Linux's rt_sigreturn, that won't
+				// currently work, as the outstanding
+				// count will become unbalanced.
+
+				//this.kernel.schedule(this);
+				this.run();
 			},
 			timeout);
 	}
@@ -660,14 +732,19 @@ export class Task implements ITask {
 	run(): void {
 		this.account();
 		this.state = TaskState.Running;
+
 		if (this.pendingSignals.length) {
 			let msg = this.pendingSignals.shift();
 			this.worker.postMessage(msg);
+			if (this.pendingSignals.length || this.pendingResults.length)
+				this.kernel.schedule(this);
 			return;
 		}
 		if (this.pendingResults.length) {
 			let msg = this.pendingResults.shift();
 			this.worker.postMessage(msg);
+			if (this.pendingSignals.length || this.pendingResults.length)
+				this.kernel.schedule(this);
 			return;
 		}
 	}
@@ -702,6 +779,9 @@ export class Task implements ITask {
 
 		// TODO: figure out if this is right
 		this.account();
+		if (this.state !== TaskState.Running) {
+			console.log('suspicious, unbalanced syscall');
+		}
 		this.state = TaskState.Interruptable;
 
 		// many syscalls influence not just the state
@@ -721,6 +801,12 @@ export interface BootCallback {
 // project.
 export function Boot(fsType: string, fsArgs: any[], cb: BootCallback): void {
 	'use strict';
+
+	// for now, simulate a single CPU for scheduling tests +
+	// simplicity.  this means we will attempt to only have a
+	// single web worker running at any given time.
+	let nCPUs = 1;
+
 	let bfs: any = {};
 	BrowserFS.install(bfs);
 	Buffer = bfs.Buffer;
@@ -749,7 +835,7 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback): void {
 			}
 			BrowserFS.initialize(overlaid);
 			let fs: fs = bfs.require('fs');
-			let k = new Kernel(fs);
+			let k = new Kernel(fs, nCPUs);
 			// FIXME: this is for debugging purposes
 			(<any>window).kernel = k;
 			setTimeout(cb, 0, null, k);

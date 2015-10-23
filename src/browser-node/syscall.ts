@@ -54,6 +54,8 @@ export interface SignalHandler {
 export class USyscalls {
 	private msgIdSeq: number = 1;
 	private port: MessagePort;
+	private syscallPending: boolean = false;
+	private msgQueue: any[] = [];
 	private outstanding: UOutstandingMap = {};
 	private signalHandlers: {[name: string]: SignalHandler[]} = {};
 
@@ -209,6 +211,12 @@ export class USyscalls {
 			return;
 		}
 
+		// if there are pending syscalls, execute them after
+		// the next tick
+		this.syscallPending = false;
+		if (this.msgQueue.length)
+			setTimeout(this.doPost.bind(this), 0);
+
 		// TODO: handle reject
 		this.complete(response.id, response.args);
 	}
@@ -228,11 +236,22 @@ export class USyscalls {
 	}
 
 	private post(msgId: number, name: string, ...args: any[]): void {
-		this.port.postMessage({
+		this.msgQueue.push({
 			id: msgId,
 			name: name,
 			args: args,
 		});
+		setTimeout(this.doPost.bind(this), 0);
+	}
+
+	private doPost(): void {
+		// serialize all syscalls - only 1 outstanding at a
+		// time
+		if (this.syscallPending)
+			return;
+		this.syscallPending = true;
+		let msg = this.msgQueue.shift();
+		this.port.postMessage(msg);
 	}
 }
 

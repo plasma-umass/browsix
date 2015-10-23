@@ -29,7 +29,7 @@
 
 \section{Introduction}
 
-As noted by Vilk et. al, web browsers have become a \emph{de facto}
+As noted by Vilk et al., web browsers have become a \emph{de facto}
 universal operating system and attractive platform for application
 developers\cite{vilk:2014doppio}.  Web browsers continue to expand the
 range of functionality they provide to web applications through
@@ -37,9 +37,23 @@ Javascript APIs, including primitive cooperative
 multitasking\cite{mcilroy:2015chrome47} and low-level hardware
 interaction like Bluetooth\cite{yasskin:2015webbluetooth}.  Javascript
 and its event-based programming model have become popular outside of
-web browsers - node.js being the canonical example.  Empirically, node.js
-enables the creation of high performance web servers by pairing the V8
-Javascript engine with asynchronous APIs.
+web browsers - node.js (sometimes referred to as just node) being the
+canonical example.  node.js enables the creation of high performance
+web servers by pairing fast single-threaded execution of JavaScript
+code on top of the V8 Javascript engine with asynchronous file system,
+network, process management and other APIs.  Souci and
+Lemaire\cite{souci:2014} describe node's architecture at a high level.
+
+There have been multiple attempts to bring node's APIs to the Browser.
+As part of Vilk et al.'s work on Doppio, an in-browser JVM, several
+large node APIs were ported to the browser, most notably the fs
+(filesystem) module.  The fs module is available as a Doppio
+sub-project named BrowserFS.  BrowserFS provides multiple file system
+backend implementations, such as an in-memory, XMLHttpRequest, dropbox
+and an overlay filesystem.  This project is roughly structured similar
+to the Linux VFS - all of these disparate backends are accessible
+through an API identical to what node provides.  In this project we
+use BrowserFS to provide a shared filesystem to all of our processes.
 
 This project has several contributions:
 
@@ -60,10 +74,20 @@ This project has several contributions:
 \end{itemize}
 
 
-Souci and Lemaire\cite{souci:2014} describe node's architecture at a
-high level.
-
 \section{Approach}
+
+In order to enable utilities to be tested and debugged independently
+of our kernel and process model implementation, all utilities were
+implemented as standard node.js applications depending only on the
+node.js standard library, with two small exceptions.  The shell needs
+the ability to create UNIX pipes using the \texttt{pipe(2)} syscall.
+node.js uses pipes internally to communicate between threads, as well
+as with a certain class of child processes, but this syscall is not
+exposed anywhere in the node.js API.  node.js does expose named pipes
+in its net module, but we it was simpler to develop a small package to
+expose an API allowing use of \texttt{pipe(2)} from JavaScript and
+TypeScript.  A similar choice was made to develop a package to expose
+\texttt{getpriority(2)} and \texttt{setpriority(2)}.
 
 \section{System Design}
 

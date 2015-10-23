@@ -39,11 +39,13 @@ cooperative multitasking\cite{mcilroy:2015chrome47} and low-level
 hardware interaction like Bluetooth\cite{yasskin:2015webbluetooth}.
 Despite all of this, the document object model (DOM) and event-based
 programming model provided by the browser are both a foreign and
-resource contstrained system compared to what developers are used to.
-JavaScript execution competes with in-browser work like layout and
-painting for CPU time on the single event loop of the browser, and the
-asynchronous message-passing nature of Web Workers combined with the
-restrictions for what can run in them make them tedius to work with.
+resource contstrained system compared to what the majority of
+developers are used to.  Traditional JavaScript execution competes
+with in-browser work like layout and painting for CPU time in the
+single event loop of the browser.  This is partially addressed by Web
+Workers, but the asynchronous nature of communication with Web Workers
+combined with the restrictions for what can run in them make them
+tedius to work with.
 
 Javascript and its event-based programming model have become popular
 outside of web browsers - node.js (sometimes referred to as just node)
@@ -60,19 +62,35 @@ large node APIs were ported to the browser, most notably the fs
 (filesystem) module.  The fs module is available as a Doppio
 sub-project named BrowserFS.  BrowserFS provides multiple file system
 backend implementations, such as an in-memory, XMLHttpRequest, dropbox
-and an overlay filesystem.  This project is roughly structured similar
-to the Linux VFS - all of these disparate backends are accessible
-through an API identical to what node provides.  In this project we
-use BrowserFS to provide a shared filesystem to all of our processes.
+and an overlay filesystem.  This project is roughly structured like
+the Linux VFS - all of these disparate backends are accessible through
+a unified API that implements the interface specified by the node
+\texttt{fs} module.  In this project we use BrowserFS to provide a
+shared filesystem to all of our processes.
+
+In addition to Doppio and BrowserFS, there are tools designed to let
+developers program against node APIs and use node's synchronous
+\texttt{require('\$module')} module system.  These tools provide a
+compilation-like step where JavaScript source programs are parsed,
+transitive dependencies resolved, and all of the required code are
+bundled into a single JavaScript file.  As part of this, tools provide
+implementations of node modules, such as the buffer and http modules.
+Examples of this approach are Browserify, WebPack and rollup.js.
+These projects typically restrict the APIs they provide to those that
+can be cleanly implemented on top of browser APIs.  For example,
+Browserify provides a http module, but only implements the client side
+of the API.
 
 This project has several contributions:
 
 \begin{itemize}
   \item An implementation of a traditional UNIX-like kernel,
     userspace, and syscall abstractions in the browser, utilizing the
-    Web Workers API.  We refer to this as the process model.
+    Web Workers API.  We refer to this as the process model, and it
+    includes asynchronous delivery of signals like \texttt{SIGCHLD}.
   \item A port of the node.js programming environment to the browser
-    on top of our process model.  We call this \texttt{browser-node}.
+    on top of our process model, including the ability to spawn child
+    processes.  We call this \texttt{browser-node}.
   \item A collection of traditional UNIX utilities, implemented as
     node.js applications in TypeScript.  These utilities run
     unmodified in both our browser environment and under node.js on
@@ -127,7 +145,9 @@ available.
 
 The system was designed as 5 major components: a kernel,
 \texttt{browser-node}, a shell, UNIX utilities, and a Web Terminal for
-the shell.
+the shell.  This approach has led to a system that is straightforward
+to extend, and is easy to compare to traditional UNIX programming
+environments in terms of behavior.
 
 \subsection{Kernel}
 
@@ -139,13 +159,44 @@ provides a single filesystem root, there maybe several instantiated
 filesystems, combined either through the use of an overlay filesystem
 or through filesystem mountpoints.
 
-A key feature of the kernel is a simple protocol for communication
-between the kernel and running processes.
+The kernel communicates with process running in Web Workers (referred
+to as userspace processes) over a MessagePort provided by the browser.
+This has several consequences.  First, messages sent to and from Web
+Workers are copied, resulting in a shared-nothing architecture.  This
+combined with the way workers are isolated and scheduled means that
+the syscall roundtrip path is orders of magnitude more expensive than
+on modern operating systems like Linux. There is a mechanism to
+transfer ownership of certain types of objects (notably ArrayBuffers),
+but this is an optimization that is not used in this project.  Second,
+because communication with the worker is based on message passing and
+JavaScript has no control over message buffer sizes or the
+schedulability of the worker, there is no way to enforce that
+processes do not continue to execute while waiting for the results of
+a syscall from the kernel without cooperation.  This is a major point
+- worker processes are essentially cooperatively scheduled with
+respect to the kernel.
+
+There is a small `syscall` layer (module) that lives in the userspace
+process.  It is useful to think of that as conceptually part of the
+kernel - it is the ABI that the kernel provides to processes;
+processes do not need to know anything about message passing, they
+simply invoke system calls, providing a callback to receive the result
+as the final argument.  The syscall layer also provides a way to
+register for delivery of signals, such as \texttt{SIGCHLD}.
+
+\subsubsection{Task Scheduler}
+
+As Web Workers cannot be explicitly preempted by the kernel, the
+kernel requires cooperation with processes to ensure fairness.  This
+is perhaps not as daunting as it seems - all 17 of our utilities do
+not need to know how to cooperate, just the single
+\texttt{browser-node} interpreter does.
 
 \subsection{\texttt{browser-node}}
 
 As discussed in the Approach section, browser-node provides an
 execution environment for unmodified node.js programs in the browser.
+The JavaScript-facing API of node is itself written in JavaScript.
 
 \subsection{Shell}
 

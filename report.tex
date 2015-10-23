@@ -116,7 +116,7 @@ the ability to create UNIX pipes using the \texttt{pipe(2)} syscall.
 node.js uses pipes internally to communicate between threads, as well
 as with a certain class of child processes, but this syscall is not
 exposed anywhere in the node.js API.  node.js does expose named pipes
-in its net module, but we it was simpler to develop a small package to
+in its net module, but it was simpler to develop a small package to
 expose an API allowing use of \texttt{pipe(2)} from JavaScript and
 TypeScript.  A similar choice was made to develop a package to expose
 \texttt{getpriority(2)} and \texttt{setpriority(2)}, for use in
@@ -238,6 +238,32 @@ execution environment for unmodified node.js programs in the browser.
 The JavaScript-facing API of node is itself written in JavaScript.
 
 \subsection{Shell}
+
+Taking inspiration from *nix systems, the shell was implemented as a
+utility (see next section).  Among the advantages of doing so is that
+the shell can be launched like any other utility (including being lauched
+by other shell instances).  The shell is composed of six main components:
+\begin{itemize}
+\item \emph{Tokenize} the input statement. This turned out to be quite
+  simple. Unlike more sophisticated shells that include the `>' and `<'
+  redirect operators, the only operator in our shell is pipe. This allowed
+  us to simply split the input statement into a series of commands separated
+  by pipe characters.
+\item \emph{Parse} the token sequence into a sequence of commands.
+  Included in this step was simple path-expansion (limited to expanding paths
+  to utilities) and syntax checking (verifying that each pipe was surrounded
+  by commands).
+\item \emph{Setup pipes}, a total of n-1 pipes joining n commands. Each pipe consists
+  of two file descriptors-- one to a read-only buffer and the other to a
+  write-only buffer.  Piping one command to another simply required replacing stdin with
+  the read file descriptor of the pipe preceding the command and replacing stdout with the
+  write file descriptor of the pipe following the command.  The first command uses the
+  process's stdin and the last command uses the process's stdout.
+\item \emph{Spawn and execute children}, which required the use of the spawn system call
+  as described above in the subsection on Fork and Spawn.
+\item \emph{Collect exit codes and exit}, returning a 0 exit code only when all child
+  processes returned a 0 exit code.
+\end{itemize}
 
 \subsection{Utilities}
 

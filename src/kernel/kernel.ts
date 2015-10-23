@@ -13,7 +13,9 @@ import { SyscallContext, SyscallResult, ITask } from './syscall-ctx';
 import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
 import { fs } from './vendor/BrowserFS/src/core/node_fs';
 
-const DEBUG = false;
+// controls the default of whether to delay the initialization message
+// to a Worker to aid in debugging.
+let DEBUG = false;
 
 let Buffer: any;
 
@@ -359,6 +361,11 @@ interface OutstandingMap {
 export class Kernel {
 	fs: any; // FIXME
 
+	// controls whether we should delay the initialization message
+	// sent to a worker, in order to aide debugging & stepping
+	// through Web Worker execution.
+	debug: boolean = DEBUG;
+
 	private tasks: {[pid: number]: Task} = {};
 	private taskIdSeq: number = 0;
 
@@ -625,7 +632,7 @@ export class Task implements ITask {
 
 	signal(name: string, args: any[]): void {
 		let timeout = 0;
-		if (DEBUG && name === 'init' && this.exePath !== '/usr/bin/sh')
+		if (this.kernel.debug && name === 'init' && this.exePath !== '/usr/bin/sh')
 			timeout = 6000;
 		self.setTimeout(
 			() => {

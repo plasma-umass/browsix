@@ -31,18 +31,28 @@
 
 As noted by Vilk et al., web browsers have become a \emph{de facto}
 universal operating system and attractive platform for application
-developers\cite{vilk:2014doppio}.  Web browsers continue to expand the
-range of functionality they provide to web applications through
-Javascript APIs, including primitive cooperative
-multitasking\cite{mcilroy:2015chrome47} and low-level hardware
-interaction like Bluetooth\cite{yasskin:2015webbluetooth}.  Javascript
-and its event-based programming model have become popular outside of
-web browsers - node.js (sometimes referred to as just node) being the
-canonical example.  node.js enables the creation of high performance
-web servers by pairing fast single-threaded execution of JavaScript
-code on top of the V8 Javascript engine with asynchronous file system,
-network, process management and other APIs.  Souci and
-Lemaire\cite{souci:2014} describe node's architecture at a high level.
+developers\cite{vilk:2014doppio}.  Browsers expose a rich range of
+services to programs, such as child-process and network IO, and are
+continuing to expand the range of functionality they provide to web
+applications through additonal Javascript APIs, including primitive
+cooperative multitasking\cite{mcilroy:2015chrome47} and low-level
+hardware interaction like Bluetooth\cite{yasskin:2015webbluetooth}.
+Despite all of this, the document object model (DOM) and event-based
+programming model provided by the browser are both a foreign and
+resource contstrained system compared to what developers are used to.
+JavaScript execution competes with in-browser work like layout and
+painting for CPU time on the single event loop of the browser, and the
+asynchronous message-passing nature of Web Workers combined with the
+restrictions for what can run in them make them tedius to work with.
+
+Javascript and its event-based programming model have become popular
+outside of web browsers - node.js (sometimes referred to as just node)
+is the canonical example.  node.js enables the creation of high
+performance web servers by pairing fast single-threaded execution of
+JavaScript code by the V8 Javascript engine with asynchronous APIs for
+resources like the file system, network, and process management.
+Souci and Lemaire\cite{souci:2014} provide a good overview of node's
+architecture.
 
 There have been multiple attempts to bring node's APIs to the Browser.
 As part of Vilk et al.'s work on Doppio, an in-browser JVM, several
@@ -114,6 +124,20 @@ such as the methods ending in \emph{Sync} in \texttt{fs}, are
 available.
 
 \section{System Design}
+
+The system was designed as 5 major components: a kernel,
+\texttt{browser-node}, a shell, UNIX utilities, and a Web Terminal for the
+shell.
+
+\subsection{Kernel}
+
+\subsection{\texttt{browser-node}}
+
+\subsection{Shell}
+
+\subsection{Utilities}
+
+\subsection{Web Terminal}
 
 \section{Results}
 

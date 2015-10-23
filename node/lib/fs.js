@@ -249,7 +249,7 @@ fs.readFile = function(path, options, callback_) {
 
   binding.open(pathModule._makeLong(path),
                stringToFlags(flag),
-               0o666,
+               /* 0o666 */ 438,
                req);
 };
 
@@ -394,7 +394,7 @@ fs.readFileSync = function(path, options) {
   assertEncoding(encoding);
 
   var flag = options.flag || 'r';
-  var fd = fs.openSync(path, flag, 0o666);
+  var fd = fs.openSync(path, flag, /* 0o666 */ 438);
 
   var st;
   var size;
@@ -530,7 +530,7 @@ function modeNum(m, def) {
 
 fs.open = function(path, flags, mode, callback_) {
   var callback = makeCallback(arguments[arguments.length - 1]);
-  mode = modeNum(mode, 0o666);
+  mode = modeNum(mode, /* 0o666 */ 438);
 
   if (!nullCheck(path, callback)) return;
 
@@ -544,7 +544,7 @@ fs.open = function(path, flags, mode, callback_) {
 };
 
 fs.openSync = function(path, flags, mode) {
-  mode = modeNum(mode, 0o666);
+  mode = modeNum(mode, /* 0o666 */ 438);
   nullCheck(path);
   return binding.open(pathModule._makeLong(path), stringToFlags(flags), mode);
 };
@@ -790,14 +790,14 @@ fs.mkdir = function(path, mode, callback) {
   var req = new FSReqWrap();
   req.oncomplete = callback;
   binding.mkdir(pathModule._makeLong(path),
-                modeNum(mode, 0o777),
+                modeNum(mode, /* 0o777 */ 511),
                 req);
 };
 
 fs.mkdirSync = function(path, mode) {
   nullCheck(path);
   return binding.mkdir(pathModule._makeLong(path),
-                       modeNum(mode, 0o777));
+                       modeNum(mode, /* 0o777 */ 511));
 };
 
 fs.readdir = function(path, callback) {
@@ -1124,9 +1124,9 @@ fs.writeFile = function(path, data, options, callback_) {
   var callback = maybeCallback(arguments[arguments.length - 1]);
 
   if (!options || typeof options === 'function') {
-    options = { encoding: 'utf8', mode: 0o666, flag: 'w' };
+    options = { encoding: 'utf8', mode: /* 0o666 */ 438, flag: 'w' };
   } else if (typeof options === 'string') {
-    options = { encoding: options, mode: 0o666, flag: 'w' };
+    options = { encoding: options, mode: /* 0o666 */ 438, flag: 'w' };
   } else if (typeof options !== 'object') {
     throwOptionsError(options);
   }
@@ -1148,9 +1148,9 @@ fs.writeFile = function(path, data, options, callback_) {
 
 fs.writeFileSync = function(path, data, options) {
   if (!options) {
-    options = { encoding: 'utf8', mode: 0o666, flag: 'w' };
+    options = { encoding: 'utf8', mode: /* 0o666 */ 438, flag: 'w' };
   } else if (typeof options === 'string') {
-    options = { encoding: options, mode: 0o666, flag: 'w' };
+    options = { encoding: options, mode: /* 0o666 */ 438, flag: 'w' };
   } else if (typeof options !== 'object') {
     throwOptionsError(options);
   }
@@ -1183,9 +1183,9 @@ fs.appendFile = function(path, data, options, callback_) {
   var callback = maybeCallback(arguments[arguments.length - 1]);
 
   if (!options || typeof options === 'function') {
-    options = { encoding: 'utf8', mode: 0o666, flag: 'a' };
+    options = { encoding: 'utf8', mode: /* 0o666 */ 438, flag: 'a' };
   } else if (typeof options === 'string') {
-    options = { encoding: options, mode: 0o666, flag: 'a' };
+    options = { encoding: options, mode: /* 0o666 */ 438, flag: 'a' };
   } else if (typeof options !== 'object') {
     throwOptionsError(options);
   }
@@ -1197,9 +1197,9 @@ fs.appendFile = function(path, data, options, callback_) {
 
 fs.appendFileSync = function(path, data, options) {
   if (!options) {
-    options = { encoding: 'utf8', mode: 0o666, flag: 'a' };
+    options = { encoding: 'utf8', mode: /* 0o666 */ 438, flag: 'a' };
   } else if (typeof options === 'string') {
-    options = { encoding: options, mode: 0o666, flag: 'a' };
+    options = { encoding: options, mode: /* 0o666 */ 438, flag: 'a' };
   } else if (typeof options !== 'object') {
     throwOptionsError(options);
   }
@@ -1641,7 +1641,7 @@ function ReadStream(path, options) {
   this.path = path;
   this.fd = options.fd === undefined ? null : options.fd;
   this.flags = options.flags === undefined ? 'r' : options.flags;
-  this.mode = options.mode === undefined ? 0o666 : options.mode;
+  this.mode = options.mode === undefined ? /* 0o666 */ 438 : options.mode;
 
   this.start = options.start;
   this.end = options.end;
@@ -1809,7 +1809,7 @@ function WriteStream(path, options) {
   this.path = path;
   this.fd = options.fd === undefined ? null : options.fd;
   this.flags = options.flags === undefined ? 'w' : options.flags;
-  this.mode = options.mode === undefined ? 0o666 : options.mode;
+  this.mode = options.mode === undefined ? /* 0o666 */ 438 : options.mode;
 
   this.start = options.start;
   this.pos = undefined;

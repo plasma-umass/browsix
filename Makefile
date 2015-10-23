@@ -85,7 +85,7 @@ test-node: $(BUILD_DEPS)
 test: test-browser
 
 clean:
-	rm -rf dist lib fs
+	rm -rf dist lib fs report.{pdf,aux,bbl,blg,log}
 	find . -name '*~' | xargs rm -f
 
 distclean: clean

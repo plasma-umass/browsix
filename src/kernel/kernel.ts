@@ -17,6 +17,16 @@ import { fs } from './vendor/BrowserFS/src/core/node_fs';
 // to a Worker to aid in debugging.
 let DEBUG = false;
 
+// the scheduler's nextTask function is delayed 1 millisecond into the
+// future.  This is because we essentially have cooperative
+// multitasking.  To give multiple processes the chance of calling
+// back into the kernel & queuing up results (so that the kernel has
+// multiple tasks to choose from when making a scheduling decision)
+// this appears necessary.  Note that especially in Chrome there is a
+// ton of overhead on child process spawning - this performance defect
+// isn't noticable.
+let SCHEDULING_DELAY = 1;
+
 let Buffer: any;
 
 require('./vendor/BrowserFS/src/backend/in_memory');
@@ -407,7 +417,7 @@ export class Kernel {
 		// priority level.
 		this.runQueues[prio].push(task);
 
-		setTimeout(this.nextTask.bind(this), 1);
+		setTimeout(this.nextTask.bind(this), SCHEDULING_DELAY);
 	}
 
 	nextTask(): void {
@@ -500,7 +510,7 @@ export class Kernel {
 	}
 
 	doSyscall(syscall: Syscall): void {
-		setTimeout(this.nextTask.bind(this), 1);
+		setTimeout(this.nextTask.bind(this), SCHEDULING_DELAY);
 		this.outstanding--;
 		if (this.outstanding < 0) {
 			//console.log('underflow');

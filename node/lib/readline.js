@@ -9,11 +9,9 @@
 var kHistorySize = 30;
 
 var util = require('./util');
-var internalUtil = require('./internal/util');
 var inherits = util.inherits;
 var Buffer = require('./buffer').Buffer;
 var EventEmitter = require('./events');
-
 
 exports.createInterface = function(input, output, completer, terminal) {
   var rl;
@@ -49,7 +47,9 @@ function Interface(input, output, completer, terminal) {
   }
   historySize = historySize || kHistorySize;
 
-  if (completer && typeof completer !== 'function') {
+  completer = completer || function() { return []; };
+
+  if (typeof completer !== 'function') {
     throw new TypeError('Argument \'completer\' must be a function');
   }
 
@@ -72,11 +72,9 @@ function Interface(input, output, completer, terminal) {
   this.historySize = historySize;
 
   // Check arity, 2 - for async, 1 for sync
-  if (typeof completer === 'function') {
-    this.completer = completer.length === 2 ? completer : function(v, cb) {
-      cb(null, completer(v));
-    };
-  }
+  this.completer = completer.length === 2 ? completer : function(v, callback) {
+    callback(null, completer(v));
+  };
 
   this.setPrompt('> ');
 
@@ -346,6 +344,9 @@ Interface.prototype._normalWrite = function(b) {
 };
 
 Interface.prototype._insertString = function(c) {
+  //BUG: Problem when adding tabs with following content.
+  //     Perhaps the bug is in _refreshLine(). Not sure.
+  //     A hack would be to insert spaces instead of literal '\t'.
   if (this.cursor < this.line.length) {
     var beg = this.line.slice(0, this.cursor);
     var end = this.line.slice(this.cursor, this.line.length);
@@ -390,10 +391,7 @@ Interface.prototype._tabComplete = function() {
         var width = completions.reduce(function(a, b) {
           return a.length > b.length ? a : b;
         }).length + 2;  // 2 space padding
-        var maxColumns = Math.floor(self.columns / width);
-        if (!maxColumns || maxColumns === Infinity) {
-          maxColumns = 1;
-        }
+        var maxColumns = Math.floor(self.columns / width) || 1;
         var group = [], c;
         for (var i = 0, compLen = completions.length; i < compLen; i++) {
           c = completions[i];
@@ -686,7 +684,7 @@ Interface.prototype._ttyWrite = function(s, key) {
 
     switch (key.name) {
       case 'c':
-        if (this.listenerCount('SIGINT') > 0) {
+        if (EventEmitter.listenerCount(this, 'SIGINT') > 0) {
           this.emit('SIGINT');
         } else {
           // This readline instance is finished
@@ -749,7 +747,7 @@ Interface.prototype._ttyWrite = function(s, key) {
 
       case 'z':
         if (process.platform == 'win32') break;
-        if (this.listenerCount('SIGTSTP') > 0) {
+        if (EventEmitter.listenerCount(this, 'SIGTSTP') > 0) {
           this.emit('SIGTSTP');
         } else {
           process.once('SIGCONT', (function(self) {
@@ -841,6 +839,10 @@ Interface.prototype._ttyWrite = function(s, key) {
         this._deleteRight();
         break;
 
+      case 'tab': // tab completion
+        this._tabComplete();
+        break;
+
       case 'left':
         this._moveCursor(-1);
         break;
@@ -865,14 +867,6 @@ Interface.prototype._ttyWrite = function(s, key) {
         this._historyNext();
         break;
 
-      case 'tab':
-        // If tab completion enabled, do that...
-        if (typeof this.completer === 'function') {
-          this._tabComplete();
-          break;
-        }
-        // falls through
-
       default:
         if (s instanceof Buffer)
           s = s.toString('utf-8');
@@ -894,37 +888,20 @@ Interface.prototype._ttyWrite = function(s, key) {
 exports.Interface = Interface;
 
 
+
 /**
  * accepts a readable Stream instance and makes it emit "keypress" events
  */
 
-var KEYPRESS_DECODER = Symbol('keypress-decoder');
-var ESCAPE_DECODER = Symbol('escape-decoder');
-
 function emitKeypressEvents(stream) {
-  if (stream[KEYPRESS_DECODER]) return;
+  if (stream._keypressDecoder) return;
   var StringDecoder = require('./string_decoder').StringDecoder; // lazy load
-  stream[KEYPRESS_DECODER] = new StringDecoder('utf8');
-
-  stream[ESCAPE_DECODER] = emitKeys(stream);
-  stream[ESCAPE_DECODER].next();
+  stream._keypressDecoder = new StringDecoder('utf8');
 
   function onData(b) {
-    if (stream.listenerCount('keypress') > 0) {
-      var r = stream[KEYPRESS_DECODER].write(b);
-      if (r) {
-        for (var i = 0; i < r.length; i++) {
-          try {
-            stream[ESCAPE_DECODER].next(r[i]);
-          } catch (err) {
-            // if the generator throws (it could happen in the `keypress`
-            // event), we need to restart it.
-            stream[ESCAPE_DECODER] = emitKeys(stream);
-            stream[ESCAPE_DECODER].next();
-            throw err;
-          }
-        }
-      }
+    if (EventEmitter.listenerCount(stream, 'keypress') > 0) {
+      var r = stream._keypressDecoder.write(b);
+      if (r) emitKeys(stream, r);
     } else {
       // Nobody's watching anyway
       stream.removeListener('data', onData);
@@ -939,7 +916,7 @@ function emitKeypressEvents(stream) {
     }
   }
 
-  if (stream.listenerCount('keypress') > 0) {
+  if (EventEmitter.listenerCount(stream, 'keypress') > 0) {
     stream.on('data', onData);
   } else {
     stream.on('newListener', onNewListener);
@@ -977,130 +954,102 @@ exports.emitKeypressEvents = emitKeypressEvents;
 
 // Regexes used for ansi escape code splitting
 var metaKeyCodeReAnywhere = /(?:\x1b)([a-zA-Z0-9])/;
+var metaKeyCodeRe = new RegExp('^' + metaKeyCodeReAnywhere.source + '$');
 var functionKeyCodeReAnywhere = new RegExp('(?:\x1b+)(O|N|\\[|\\[\\[)(?:' + [
   '(\\d+)(?:;(\\d+))?([~^$])',
   '(?:M([@ #!a`])(.)(.))', // mouse
   '(?:1;)?(\\d+)?([a-zA-Z])'
 ].join('|') + ')');
+var functionKeyCodeRe = new RegExp('^' + functionKeyCodeReAnywhere.source);
+var escapeCodeReAnywhere = new RegExp([
+  functionKeyCodeReAnywhere.source, metaKeyCodeReAnywhere.source, /\x1b./.source
+].join('|'));
 
-
-function* emitKeys(stream) {
-  while (true) {
-    var ch = yield;
-    var s = ch;
-    var escaped = false;
-    var key = {
-      sequence: null,
-      name: undefined,
-      ctrl: false,
-      meta: false,
-      shift: false
-    };
-
-    if (ch === '\x1b') {
-      escaped = true;
-      s += (ch = yield);
-
-      if (ch === '\x1b') {
-        s += (ch = yield);
-      }
+function emitKeys(stream, s) {
+  if (s instanceof Buffer) {
+    if (s[0] > 127 && s[1] === undefined) {
+      s[0] -= 128;
+      s = '\x1b' + s.toString(stream.encoding || 'utf-8');
+    } else {
+      s = s.toString(stream.encoding || 'utf-8');
     }
+  }
 
-    if (escaped && (ch === 'O' || ch === '[')) {
+  var buffer = [];
+  var match;
+  while (match = escapeCodeReAnywhere.exec(s)) {
+    buffer = buffer.concat(s.slice(0, match.index).split(''));
+    buffer.push(match[0]);
+    s = s.slice(match.index + match[0].length);
+  }
+  buffer = buffer.concat(s.split(''));
+
+  buffer.forEach(function(s) {
+    var ch,
+        key = {
+          sequence: s,
+          name: undefined,
+          ctrl: false,
+          meta: false,
+          shift: false
+        },
+        parts;
+
+    if (s === '\r') {
+      // carriage return
+      key.name = 'return';
+
+    } else if (s === '\n') {
+      // enter, should have been called linefeed
+      key.name = 'enter';
+
+    } else if (s === '\t') {
+      // tab
+      key.name = 'tab';
+
+    } else if (s === '\b' || s === '\x7f' ||
+               s === '\x1b\x7f' || s === '\x1b\b') {
+      // backspace or ctrl+h
+      key.name = 'backspace';
+      key.meta = (s.charAt(0) === '\x1b');
+
+    } else if (s === '\x1b' || s === '\x1b\x1b') {
+      // escape key
+      key.name = 'escape';
+      key.meta = (s.length === 2);
+
+    } else if (s === ' ' || s === '\x1b ') {
+      key.name = 'space';
+      key.meta = (s.length === 2);
+
+    } else if (s.length === 1 && s <= '\x1a') {
+      // ctrl+letter
+      key.name = String.fromCharCode(s.charCodeAt(0) + 'a'.charCodeAt(0) - 1);
+      key.ctrl = true;
+
+    } else if (s.length === 1 && s >= 'a' && s <= 'z') {
+      // lowercase letter
+      key.name = s;
+
+    } else if (s.length === 1 && s >= 'A' && s <= 'Z') {
+      // shift+letter
+      key.name = s.toLowerCase();
+      key.shift = true;
+
+    } else if (parts = metaKeyCodeRe.exec(s)) {
+      // meta+character key
+      key.name = parts[1].toLowerCase();
+      key.meta = true;
+      key.shift = /^[A-Z]$/.test(parts[1]);
+
+    } else if (parts = functionKeyCodeRe.exec(s)) {
       // ansi escape sequence
-      var code = ch;
-      var modifier = 0;
 
-      if (ch === 'O') {
-        // ESC O letter
-        // ESC O modifier letter
-        s += (ch = yield);
-
-        if (ch >= '0' && ch <= '9') {
-          modifier = (ch >> 0) - 1;
-          s += (ch = yield);
-        }
-
-        code += ch;
-
-      } else if (ch === '[') {
-        // ESC [ letter
-        // ESC [ modifier letter
-        // ESC [ [ modifier letter
-        // ESC [ [ num char
-        s += (ch = yield);
-
-        if (ch === '[') {
-          // \x1b[[A
-          //      ^--- escape codes might have a second bracket
-          code += ch;
-          s += (ch = yield);
-        }
-
-        /*
-         * Here and later we try to buffer just enough data to get
-         * a complete ascii sequence.
-         *
-         * We have basically two classes of ascii characters to process:
-         *
-         *
-         * 1. `\x1b[24;5~` should be parsed as { code: '[24~', modifier: 5 }
-         *
-         * This particular example is featuring Ctrl+F12 in xterm.
-         *
-         *  - `;5` part is optional, e.g. it could be `\x1b[24~`
-         *  - first part can contain one or two digits
-         *
-         * So the generic regexp is like /^\d\d?(;\d)?[~^$]$/
-         *
-         *
-         * 2. `\x1b[1;5H` should be parsed as { code: '[H', modifier: 5 }
-         *
-         * This particular example is featuring Ctrl+Home in xterm.
-         *
-         *  - `1;5` part is optional, e.g. it could be `\x1b[H`
-         *  - `1;` part is optional, e.g. it could be `\x1b[5H`
-         *
-         * So the generic regexp is like /^((\d;)?\d)?[A-Za-z]$/
-         *
-         */
-        var cmdStart = s.length - 1;
-
-        // skip one or two leading digits
-        if (ch >= '0' && ch <= '9') {
-          s += (ch = yield);
-
-          if (ch >= '0' && ch <= '9') {
-            s += (ch = yield);
-          }
-        }
-
-        // skip modifier
-        if (ch === ';') {
-          s += (ch = yield);
-
-          if (ch >= '0' && ch <= '9') {
-            s += (ch = yield);
-          }
-        }
-
-        /*
-         * We buffered enough data, now trying to extract code
-         * and modifier from it
-         */
-        var cmd = s.slice(cmdStart);
-        var match;
-
-        if ((match = cmd.match(/^(\d\d?)(;(\d))?([~^$])$/))) {
-          code += match[1] + match[4];
-          modifier = (match[3] || 1) - 1;
-        } else if ((match = cmd.match(/^((\d;)?(\d))?([A-Za-z])$/))) {
-          code += match[4];
-          modifier = (match[3] || 1) - 1;
-        } else {
-          code += cmd;
-        }
-      }
+      // reassemble the key code leaving out leading \x1b's,
+      // the modifier key bitflag and any meaningless "1;" sequence
+      var code = (parts[1] || '') + (parts[2] || '') +
+                 (parts[4] || '') + (parts[9] || ''),
+          modifier = (parts[3] || parts[8] || 1) - 1;
 
       // Parse the key modifier
       key.ctrl = !!(modifier & 4);
@@ -1203,58 +1152,23 @@ function* emitKeys(stream) {
         /* misc. */
         case '[Z': key.name = 'tab'; key.shift = true; break;
         default: key.name = 'undefined'; break;
+
       }
-
-    } else if (ch === '\r') {
-      // carriage return
-      key.name = 'return';
-
-    } else if (ch === '\n') {
-      // enter, should have been called linefeed
-      key.name = 'enter';
-
-    } else if (ch === '\t') {
-      // tab
-      key.name = 'tab';
-
-    } else if (ch === '\b' || ch === '\x7f') {
-      // backspace or ctrl+h
-      key.name = 'backspace';
-      key.meta = escaped;
-
-    } else if (ch === '\x1b') {
-      // escape key
-      key.name = 'escape';
-      key.meta = escaped;
-
-    } else if (ch === ' ') {
-      key.name = 'space';
-      key.meta = escaped;
-
-    } else if (!escaped && ch <= '\x1a') {
-      // ctrl+letter
-      key.name = String.fromCharCode(ch.charCodeAt(0) + 'a'.charCodeAt(0) - 1);
-      key.ctrl = true;
-
-    } else if (/^[0-9A-Za-z]$/.test(ch)) {
-      // letter, number, shift+letter
-      key.name = ch.toLowerCase();
-      key.shift = /^[A-Z]$/.test(ch);
-      key.meta = escaped;
     }
 
-    key.sequence = s;
-
-    if (key.name !== undefined) {
-      /* Named character or sequence */
-      stream.emit('keypress', escaped ? undefined : s, key);
-    } else if (s.length === 1) {
-      /* Single unnamed character, e.g. "." */
-      stream.emit('keypress', s);
-    } else {
-      /* Unrecognized or broken escape sequence, don't emit anything */
+    // Don't emit a key if no name was found
+    if (key.name === undefined) {
+      key = undefined;
     }
-  }
+
+    if (s.length === 1) {
+      ch = s;
+    }
+
+    if (key || ch) {
+      stream.emit('keypress', ch, key);
+    }
+  });
 }
 
 
@@ -1430,9 +1344,8 @@ function codePointAt(str, index) {
   }
   return code;
 }
-exports.codePointAt = internalUtil.deprecate(codePointAt,
-    'readline.codePointAt is deprecated. ' +
-    'Use String.prototype.codePointAt instead.');
+exports.codePointAt = util.deprecate(codePointAt,
+    'codePointAt() is deprecated. Use String.prototype.codePointAt');
 
 
 /**

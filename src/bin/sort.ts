@@ -17,22 +17,24 @@ import * as readline from 'readline';
 // a node stream object - which means that we consume it by adding 2
 // event listeners, the first for when there is data available, and
 // secondly for when we've reached EOF.
-function sort(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, code: number): void {
+function sort(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, code: number, lines: string[]): void {
 	'use strict';
 
 	if (!inputs || !inputs.length) {
-		process.exit(code);
+		lines.sort();
+		output.write(lines.join('\n') + '\n', () => {
+			process.exit(code);
+		});
 		return;
 	}
 
 	let current = inputs[0];
 	inputs = inputs.slice(1);
-	let linebuffer: string[] = [];
 
 	if (!current) {
 		// use setTimeout to avoid a deep stack as well as
 		// cooperatively yield
-		setTimeout(sort, 0, inputs, output, code);
+		setTimeout(sort, 0, inputs, output, code, lines);
 		return;
 	}
 
@@ -43,18 +45,12 @@ function sort(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, co
 		});
 
 		rl.on('line', (line: string) => {
-			linebuffer.push(line);
+			lines.push(line);
 		});
 	});
 
 	current.on('end', function(): void {
-		// use setTimeout to avoid a deep stack as well as
-		// cooperatively yield
-		linebuffer.sort();
-		for (var i = 0; i < linebuffer.length; i++) {
-			output.write(linebuffer[i] + "\n");
-		}
-		setTimeout(sort, 0, inputs, output, code);
+		setTimeout(sort, 0, inputs, output, code, lines);
 	});
 }
 
@@ -69,10 +65,11 @@ function main(): void {
 	// exit code to use - if we fail to open an input file it gets
 	// set to 1 below.
 	let code = 0;
+	let lines: string[] = [];
 
 	if (!args.length) {
 		// no args?  just sort stdin and write to stdout
-		setTimeout(sort, 0, [process.stdin], process.stdout, code);
+		setTimeout(sort, 0, [process.stdin], process.stdout, code, lines);
 	} else {
 		let files: NodeJS.ReadableStream[] = [];
 		let opened = 0;
@@ -84,7 +81,7 @@ function main(): void {
 				// if we've opened all of the files, pipe them to
 				// stdout.
 				if (++opened === args.length)
-					setTimeout(sort, 0, files, process.stdout, code);
+					setTimeout(sort, 0, files, process.stdout, code, lines);
 				return;
 			}
 			fs.open(path, 'r', function(err: any, fd: any): void {
@@ -104,7 +101,7 @@ function main(): void {
 				// if we've opened all of the files,
 				// pipe them to stdout.
 				if (++opened === args.length)
-					setTimeout(sort, 0, files, process.stdout, code);
+					setTimeout(sort, 0, files, process.stdout, code, lines);
 			});
 		});
 	}

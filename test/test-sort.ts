@@ -50,7 +50,7 @@ describe('sort /a /b', function(): void {
 		function catExited(code: number, stdout: string, stderr: string): void {
 			try {
 				expect(code).to.equal(0);
-				expect(stdout).to.equal('x\ny\nz\na\nb\nc\n');
+				expect(stdout).to.equal(['a', 'b', 'c', 'x', 'y', 'z'].join('\n') + '\n');
 				expect(stderr).to.equal('');
 				done();
 			} catch (e) {

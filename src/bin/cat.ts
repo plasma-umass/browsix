@@ -67,7 +67,7 @@ function main(): void {
 		let opened = 0;
 		// use map instead of a for loop so that we easily get
 		// the tuple of (path, i) on each iteration.
-		args.map(function(path, i): void {
+		args.map(function(path: string, i: number): void {
 			if (path === '-') {
 				files[i] = process.stdin;
 				// if we've opened all of the files, pipe them to

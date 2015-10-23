@@ -44,7 +44,7 @@ describe('mkdir /a', function(): void {
 		}
 	});
 	it('should have /a', function(done: MochaDone): void {
-		kernel.fs.stat('/a', function(err: any, stat: fs.Stat): void {
+		kernel.fs.stat('/a', function(err: any, stat: any): void {
 			expect(err).to.be.null;
 			expect(stat).not.to.be.null;
 			done();

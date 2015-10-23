@@ -94,7 +94,7 @@ class Process {
 		return null;
 	}
 
-	// this is from acorn
+	// this is from acorn - https://github.com/marijnh/acorn
 	nextTick(fun: any, ...args: any[]): void {
 		this.queue.push([fun, args]);
 		if (!this.draining) {
@@ -102,7 +102,7 @@ class Process {
 		}
 	}
 
-	// this is from acorn
+	// this is from acorn - https://github.com/marijnh/acorn
 	private drainQueue(): void {
 		if (this.draining) {
 			return;

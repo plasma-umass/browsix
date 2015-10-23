@@ -35,7 +35,30 @@ developers\cite{vilk:2014doppio}.  Web browsers continue to expand the
 range of functionality they provide to web applications through
 Javascript APIs, including primitive cooperative
 multitasking\cite{mcilroy:2015chrome47} and low-level hardware
-interaction like Bluetooth\cite{yasskin:2015webbluetooth}.
+interaction like Bluetooth\cite{yasskin:2015webbluetooth}.  Javascript
+and its event-based programming model have become popular outside of
+web browsers - node.js being the canonical example.  Empirically, node.js
+enables the creation of high performance web servers by pairing the V8
+Javascript engine with asynchronous APIs.
+
+This project has several contributions:
+
+\begin{itemize}
+  \item An implementation of a traditional UNIX-like kernel,
+    userspace, and syscall abstractions in the browser, utilizing the
+    Web Workers API.  We refer to this as the process model.
+  \item A port of the node.js programming environment to the browser
+    on top of our process model.
+  \item A collection of traditional UNIX utilities, implemented as
+    node.js applications in TypeScript.  These utilities run
+    unmodified in both our browser environment and under node.js on
+    Mac OS X and Linux.
+  \item A bash-like shell that enables the composition of utilities
+    into pipelines (sometimes called filters).
+  \item A web-based UI for interacting with this shell that works in
+    all modern browsers.
+\end{itemize}
+
 
 Souci and Lemaire\cite{souci:2014} describe node's architecture at a
 high level.

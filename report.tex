@@ -131,19 +131,33 @@ TypeScript.  A similar choice was made to develop a package to expose
 \end{figure}
 
 To run these utilities in the browser, we developed
-\texttt{browser-node} and the Browsix kernel.  This is a port of
-node.js to our in-browser process model.  \texttt{browser-node}
-utilizes over a dozen of node.js's pure-JavaScript modules directly,
-with almost no modification.  Some of these modules, like
-\texttt{'internal/util'} are self-contained - they don't depend on any
-other modules, or their transitive-dependencies are pure-JavaScript.
-However, most modules make foreign function interface (FFI) calls into
-node C++ functions and methods.  \texttt{browser-node} provides
-pure-JavaScript (written in TypeScript, then compiled) implementations
-of these functions and methods.  Our implementations use Web Worker
-APIs to post messages representing syscalls to the kernel, invoking
-callbacks (back into the node JavaScript libraries) when the kernel
-responds in-kind with a syscall-response message.
+\texttt{browser-node} and the Browsix kernel.  \texttt{browser-node}
+is a port of node.js to our in-browser process model.
+\texttt{browser-node} utilizes over a dozen of node.js's
+pure-JavaScript modules directly.  The only modifications to most of
+the node stdlib were to remove the use of let and const (as Safari
+does not support them), and to rewrite their require statements to be
+local.  The one exception was the \texttt{internal/child\_process}
+module.  This was hand-modified to remove dependencies on node's
+networking libraries.
+
+Some of the modules in the node stdlib, like \texttt{'internal/util'}
+are self-contained - it doesn't depend on any other modules, or the
+transitive set of dependencies only includes other pure-JavaScript
+modules in the stdlib.  However, many important modules make foreign
+function interface (FFI) calls into C++ functions and methods that are
+part of the node runtime.  This set of C++ functions and methods are
+collectively reffered to as the bindings.  \texttt{browser-node}
+provides pure-JavaScript (written in TypeScript, then compiled to
+JavaScript) implementations of these functions and methods.  There are
+2 major types of bindings that had to be provided - those that exist
+for performance reasons, and those that glue JavaScript to the
+underlying operating system and libraries.  There are some bindings,
+like those used by the \texttt{buffer} module, that are written in C++
+for performance reasons, especially to avoid generating garbage.
+Other bindings, like that for the \texttt{fs} module, perform syscalls
+to the Browsix kernel, and invoke callbacks (back into the node
+JavaScript libraries) after receiving responses.
 
 A consequence of this approach is that only async APIs are
 implemented.  No synchronous APIs that require invoking a system call,

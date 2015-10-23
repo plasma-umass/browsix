@@ -207,6 +207,22 @@ simply invoke system calls, providing a callback to receive the result
 as the final argument.  The syscall layer also provides a way to
 register for delivery of signals, such as \texttt{SIGCHLD}.
 
+\subsubsection{Fork and Spawn}
+
+The traditional method of launching a child process on UNIX is to
+invoke \texttt{fork(2)}, perform some bookkeeping work in the child
+(like closing unused FDs), and then calling \texttt{execve(2)} to
+transfer control to a new executable.  This approach is untenable in
+the browser because of the use of \texttt{fork} -- the kernel doesn't
+have control over the memory layout or stack of WebWorkers.
+
+Instead, we implement a new system call we call \texttt{spawn}.  Spawn
+is very similar to the node.js \texttt{child\_process.spawn} function.
+It allows a process to specify an executable to run, the arguments to
+pass to that executable, along with control over resources inherited
+by the new Task.  Resouces include file descriptors, the current
+working directory, and the environment.
+
 \subsubsection{Task Scheduler}
 
 As Web Workers cannot be explicitly preempted by the kernel, the
@@ -255,12 +271,39 @@ evaluate commands and pipelines.
 
 The resulting system provides a similar-feeling environment to that of
 classic UNIX, BSD, and Plan9 systems, where commands have minimal
-options and produce plan-text output.
+options and produce plain-text output.
 
 \section{Discussion}
 
-A downside of the approach taken is that it is somewhat at odds with
-the browser's native debug faculties.
+A downside of the approach taken is that it doesn't fit the typical
+use case the Chrome and Firefox developer tools were designed around.
+The BrowserFS file system pulls down all of our utilities using
+XMLHttpRequests upon boot, and stores the context as binary Buffers.
+When the Browsix kernel receives a \texttt{spawn} system call, it
+requests the file from the filesystem, and then must convert the text
+JavaScript contents back into a UTF-8 string for execution in a Web
+Worker.  This process results in a Blob URL that is unique each time a
+new Web Worker is started.
+
+With regular scripts included with \texttt{<script>} tags and in
+workers using \texttt{importScripts}, you can browse the script source
+in the browser's debugger and insert a breakpoint that will be
+triggered the next time the given line is executed, even across page
+reloads.  A result of using Blob URLs is that the browser is unable to
+associate the text being executed in a Web Worker with the original
+web request, and breakpoints do not persist across Web Worker
+start/stop cycles.  Additionally, our Web Workers run very quickly,
+typically in well under 100 milliseconds, making it very hard to
+manually hit the 'pause' button in the debugger.  Chrome used to have
+a mechanism to pause a Web Worker upon startup, but that has been
+removed in current versions of Chrome.
+
+To deal with this, kernel instances have a debug attribute.  If this
+evaluates to true, the kernel delays sending the init message to a
+worker.  The init message contains a processes arguments and
+environment.  With this, developers have enough time to manually tell
+the browser to pause execution in the Worker (which will happen when
+it receives the init message).
 
 \subsection{Further work}
 

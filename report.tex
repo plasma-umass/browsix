@@ -226,10 +226,16 @@ working directory, and the environment.
 \subsubsection{Task Scheduler}
 
 As Web Workers cannot be explicitly preempted by the kernel, the
-kernel requires cooperation with processes to ensure fairness.  This
-is perhaps not as daunting as it seems - all 17 of our utilities do
-not need to know how to cooperate, just the single
-\texttt{browser-node} interpreter does.
+kernel requires cooperation with processes to ensure fairness.  In
+this case the process is \texttt{browser-node}, not the
+dozen-and-a-half utility programs.  Priority is made additionally
+difficult by the single-threaded + event-based nature of the browser
+environment.  The Browsix kernel implements a fairly primitive
+scheduling algorithm, where each of the 40 standard priority levels
+have their own queue.  Each queue is in turn checked for tasks, and
+the first runnable task (where system call results are queued up) is
+chosen.  This can in theory result in starvation of lower-priority
+tasks, but in practice has not been an issue.
 
 \subsection{\texttt{browser-node}}
 
@@ -299,6 +305,35 @@ The resulting system provides a similar-feeling environment to that of
 classic UNIX, BSD, and Plan9 systems, where commands have minimal
 options and produce plain-text output.
 
+\subsection{Scheduler}
+
+In order to ensure that higher-priority tasks are given preference
+over other tasks, it was necessary to insert a small, 1 ms delay
+between when a system call request comes in and when its result is
+sent back to the client.  Without this, priority isn't preserved in
+the face of internal kernel callbacks scheduled with
+\texttt{setInterval}.
+
+The scheduler was able to be tested by use of a pair of programs
+written in TypeScript using node.js APIs.  The first program (named
+cpu-intensive-program) simulates a CPU intensive program that does a
+mix of useful work and system calls.  It first adjusts its priority
+with a call to \texttt{setpriority(2)}, and then performs a chain of
+SHA1 digest computations.  The priority and number of loop iterations
+are given as command line parameters.  The second program, called
+priority-test, spawns 2 children, each of which is an instance of the
+the first program that differ only in their priority.  It then waits
+for both to complete and if the lower priority (more nice) task
+completes first priority-test reports an error and exits with a
+non-zero code, otherwise it exits normally.
+
+Because we implement the node \texttt{child\_process} API,
+implementing this test of priority scheduling that runs both on the
+desktop and in the browser was trivial.  A caveat was that in order to
+have the test work reliably on the desktop, it was necessary to
+simulate a single-processor environment.  Details for how to do this
+can be found as comments in the source of the priority-test program.
+
 \section{Discussion}
 
 A downside of the approach taken is that it doesn't fit the typical
@@ -360,6 +395,17 @@ learn additional system calls, they just need to read from specific
 files and directories.  An interesting area for future work is
 providing access to browser APIs to process in Web Workers through
 pseudo-filesystems.
+
+\subsubsection{Scheduler}
+
+Additional integration with processes that run in workers, like
+\texttt{browser-node} and Doppio would result in better scheduling
+decisions.  Doppio yields the main event loop for reasons of
+interactivity using a set of heuristics, it would be preferrable for
+browser-node to do something similar.  It would also be useful to have
+a signal-like approach where the kernel could inform a task that it
+should yield.  Ideally, however, the browser should expose the ability
+to change the OS-level priority of Web Workers.
 
 \section{Conclusion}
 

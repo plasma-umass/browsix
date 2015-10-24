@@ -39,15 +39,13 @@ function main(): void {
 		return;
 	}
 
-	if (args.length < 3 || args[0] !== '-n') {
-		let usage = 'usage: ' + path.basename(pathToScript) + ' -n val CMD [ARGS...]\n';
-		process.stderr.write(usage, (err: any) => {
-			process.exit(1);
-		});
-		return;
+	let val: number = 10;
+
+	if (args.length > 2 && args[0] === '-n') {
+		val = parseInt(args[1], 10);
+		args = args.slice(2);
 	}
 
-	let val = parseInt(args[1], 10);
 	if (isNaN(val)) {
 		let usage = 'usage: ' + path.basename(pathToScript) + ' -n val CMD [ARGS...]\n';
 		process.stderr.write(usage, (err: any) => {
@@ -77,7 +75,7 @@ function main(): void {
 				return;
 			}
 
-			spawn(args.slice(2), opts);
+			spawn(args, opts);
 		});
 	});
 }

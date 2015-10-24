@@ -26,12 +26,16 @@ If you have questions, comments, suggestions or concerns, please contact bobbypo
 
 RUNNING & TESTING
 -----------------
-One of the advantages of the Browsix design is that running and testing is quite simple. Using a combination of make, npm, and bower, package installation is handled automatically e.g., browserfs is pulled in through npm.  The exceptions to this are the following pre-reqs, which must be installed prior to building Browsix:
-Node.js (see https://nodejs.org/en/)
-a C compiler (e.g., https://gcc.gnu.org/)
-gnu make (see https://www.gnu.org/software/make/)
 
-To run the web terminal, type `$ make serve` on the command line while in the project directory.  To run the the tests type `make test` instead. If a browser doesn’t automatically pop up on running make test, open a browser and type localhost:9876 in the address bar.  That’s it! Tests have been run and pass using Node4 under:
+Browsix supports single-click builds by depending on a combination of GNU Make and [npm](https://www.npmjs.com/), and has the following simple prerequisites:
+
+- [node.js](https://nodejs.org/en/)) - tested under version 4.1
+- A C and C++ compiler (for node extensions)
+- GNU Make
+
+On Mac OS X, the compiler and GNU Make are provided by Apple's Xcode developer tools, and node is best installed through [Homebrew](http://brew.sh/).
+
+To run the web terminal, type `$ make serve` on the command line while in the project directory.  To run the the tests execute `$ make test-browser`.  The initial run may take several minutes as dependencies are installed, but subsequent runs will be quicker.  To run the tests after starting `make test-browser`, open a browser and type http://localhost:9876 in the address bar.  That’s it! Tests have been run and pass using Node 4 under:
 - Safari 9.0.1 (Mac)
 - Firefox 41.0.2 (Linux)
 - Chrome 47.0.2526 (Linux)

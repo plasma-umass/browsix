@@ -48,6 +48,8 @@ test-once: $(BUILD_DEPS)
 	@echo "  TEST"
 	$(GULP)
 
+shell: serve
+
 serve: $(BUILD_DEPS)
 	@echo "  SERVE"
 	$(GULP) serve
@@ -91,4 +93,4 @@ clean:
 distclean: clean
 	rm -rf node_modules bower_components
 
-.PHONY: all clean distclean test test-browser test-node
+.PHONY: all clean distclean test test-browser test-node report test-once shell serve

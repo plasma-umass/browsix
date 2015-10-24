@@ -35,7 +35,15 @@ Browsix supports single-click builds by depending on a combination of GNU Make a
 
 On Mac OS X, the compiler and GNU Make are provided by Apple's Xcode developer tools, and node is best installed through [Homebrew](http://brew.sh/).
 
-To run the web terminal, type `$ make serve` on the command line while in the project directory.  To run the the tests execute `$ make test-browser`.  The initial run may take several minutes as dependencies are installed, but subsequent runs will be quicker.  To run the tests after starting `make test-browser`, open a browser and type http://localhost:9876 in the address bar.  That’s it! Tests have been run and pass using Node 4 under:
+To run the web terminal, run:
+
+    $ make serve
+
+And your browser should automatically open to http://localhost:5000
+
+![shell](img/shell.png)
+
+Similarly, to run the the tests execute `$ make test-browser`.  The initial run may take several minutes as dependencies are installed, but subsequent runs will be quicker.  To run the tests after starting `make test-browser`, open a browser and type http://localhost:9876 in the address bar.  That’s it! Tests have been run and pass using Node 4 under:
 - Safari 9.0.1 (Mac)
 - Firefox 41.0.2 (Linux)
 - Chrome 47.0.2526 (Linux)

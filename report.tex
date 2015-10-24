@@ -308,11 +308,14 @@ options and produce plain-text output.
 \subsection{Scheduler}
 
 In order to ensure that higher-priority tasks are given preference
-over other tasks, it was necessary to insert a small, 1 ms delay
-between when a system call request comes in and when its result is
-sent back to the client.  Without this, priority isn't preserved in
-the face of internal kernel callbacks scheduled with
-\texttt{setInterval}.
+over other tasks, it was necessary to insert a small delay between
+when a system call request comes in and when its result is sent back
+to the client (currently 2 milliseconds).  Without this, priority
+isn't preserved in the face of internal kernel callbacks scheduled
+with \texttt{setInterval}, and even with this delay the scheduler test
+sometimes fails in Chrome (but not Firefox).  This could potentially
+be due to the more complicated scheduling algorithm chrome implements
+in an attempt to improve responsiveness.
 
 The scheduler was able to be tested by use of a pair of programs
 written in TypeScript using node.js APIs.  The first program (named

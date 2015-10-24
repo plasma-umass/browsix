@@ -11,7 +11,7 @@ README
 ------
 
 Browsix is a UNIX-like processing model and kernel designed to run in modern web browsers.
-The purpose of this Readme is to provide detailed instructions for running and testing Browsix, as well as a few hints for those wishing to read and edit the code. For information about the Browsix system design, see the [report]](report.pdf).  The report can be rebuilt using:
+The purpose of this Readme is to provide detailed instructions for running and testing Browsix, as well as a few hints for those wishing to read and edit the code. For information about the Browsix system design, see the [report](report.pdf).  The report can be rebuilt using:
 
     $ make report
 
@@ -40,7 +40,7 @@ To run the web terminal, type `$ make serve` on the command line while in the pr
 
 CODE
 ----
-The typescript src files for kernel, browser-node, and utilities in [./src/kernel](src/kernel), ./src/broswer-node, and ./src/bin, respectively. Complied JavaScript code can be found in the same place, but replacing ./src with./lib. These can be run using “node cmd”. Versions of the utilities can be run directly from the (native) command line using the files found in ./fs/usr/bin. Various tests can be found in ./test. Both the syscalls and bindings can be found in ./src/browser-node directory in syscall.ts and the binding subdir.
+The typescript src files for kernel, browser-node, and utilities in [./src/kernel](src/kernel), [./src/broswer-node](src/browser-node), and [./src/bin](src/bin), respectively.  After running `make` (either the test, serve, or bin targets) compiled commands are available in [./fs/usr/bin](fs/usr/bin). These can be invoked directly - they have a shebang line that specifies node as the interpreter. Tests can be found in [./test](test). Both the syscalls and bindings can be found in [./src/browser-node](src/browser-node) directory in [syscall.ts](src/browser-node/syscall.ts) and the [binding](src/browser-node/binding) subdir.
 
 To enter into interactive debugging, open ./src/kernel/kernel.ts, and change the following line from:
 let DEBUG = false;

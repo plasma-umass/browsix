@@ -223,6 +223,12 @@ pass to that executable, along with control over resources inherited
 by the new Task.  Resouces include file descriptors, the current
 working directory, and the environment.
 
+\begin{figure}
+\centering
+\epsfig{file=img/stack.eps, height=4.5in}
+\caption{The Browsix stack.}
+\end{figure}
+
 \subsubsection{Task Scheduler}
 
 As Web Workers cannot be explicitly preempted by the kernel, the
@@ -292,12 +298,6 @@ file, and then by placing one or multiple
 \texttt{"<browsix-terminal>"} tags on the page.  This terminal web
 component owns a kernel instance, and invokes methods on the kernel to
 evaluate commands and pipelines.
-
-\begin{figure}
-\centering
-\epsfig{file=img/stack.eps, height=4.5in}
-\caption{The Browsix stack.}
-\end{figure}
 
 \section{Results}
 

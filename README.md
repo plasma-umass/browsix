@@ -42,11 +42,15 @@ CODE
 ----
 The typescript src files for kernel, browser-node, and utilities in [./src/kernel](src/kernel), [./src/broswer-node](src/browser-node), and [./src/bin](src/bin), respectively.  After running `make` (either the test, serve, or bin targets) compiled commands are available in [./fs/usr/bin](fs/usr/bin). These can be invoked directly - they have a shebang line that specifies node as the interpreter. Tests can be found in [./test](test). Both the syscalls and bindings can be found in [./src/browser-node](src/browser-node) directory in [syscall.ts](src/browser-node/syscall.ts) and the [binding](src/browser-node/binding) subdir.
 
-To enter into interactive debugging, open ./src/kernel/kernel.ts, and change the following line from:
-let DEBUG = false;
+To enter into interactive debugging, open [./src/kernel/kernel.ts](src/kernel/kernel.ts), and change the following line from:
+
+    let DEBUG = false;
+
 to:
-let DEBUG = true;
-Run the tests and use chrome’s debugging tools.
+
+    let DEBUG = true;
+
+This will delay execution of code in child process Web Workers, allowing you to breakpoint the worker.  See section 5 in the [report](report.pdf) for more information.  Run the tests and use chrome’s debugging tools.
 
 Open Source
 -----------

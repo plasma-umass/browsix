@@ -29,9 +29,9 @@ describe('sched test', function(): void {
 		});
 	});
 
-	// run this test 10 times
+	// run this test 2 times
 	let count: number[] = [];
-	for (let i = 0; i < 10; i++)
+	for (let i = 0; i < 2; i++)
 		count.push(i);
 
 	// use map instead of a loop so that the loop body is in its

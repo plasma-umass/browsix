@@ -17,15 +17,15 @@ import { fs } from './vendor/BrowserFS/src/core/node_fs';
 // to a Worker to aid in debugging.
 let DEBUG = false;
 
-// the scheduler's nextTask function is delayed 1 millisecond into the
-// future.  This is because we essentially have cooperative
+// the scheduler's nextTask function must be scheduled with a non-zero
+// timeout.  This is because we essentially have cooperative
 // multitasking.  To give multiple processes the chance of calling
 // back into the kernel & queuing up results (so that the kernel has
 // multiple tasks to choose from when making a scheduling decision)
 // this appears necessary.  Note that especially in Chrome there is a
 // ton of overhead on child process spawning - this performance defect
 // isn't noticable.
-let SCHEDULING_DELAY = 1;
+let SCHEDULING_DELAY = 2;
 
 let Buffer: any;
 

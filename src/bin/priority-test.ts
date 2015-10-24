@@ -9,7 +9,7 @@ import * as path from 'path';
 /*
 
 Offline all but CPU 0 (remove space in line below):
-# for x in /sys/devices/system/cpu/cpu* /online; do   echo 0 >"$x"; done
+# for x in /sys/devices/system/cpu/cpu* /online; do echo 0 >"$x"; done
 
 On linux, with only one CPU online, we expect to see something like
 this:

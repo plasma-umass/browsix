@@ -53,7 +53,7 @@ function head(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 	current.on('readable', function(): void {
 		let rl = readline.createInterface({
 			input: current,
-			output: null
+			output: null,
 		});
 		rl.on('line', (line: string) => {
 			n++;
@@ -62,7 +62,7 @@ function head(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 				next();
 			} else {
 				outstanding++;
-				output.write(line+"\n", finished);
+				output.write(line +'\n', finished);
 			}
 		});
 	});
@@ -81,26 +81,35 @@ function main(): void {
 	// exit code to use - if we fail to open an input file it gets
 	// set to 1 below.
 	let code = 0;
-	let def_numlines = 10;
-	let numlines = def_numlines;
+	let defaultLimit = 10;
+	let limit = defaultLimit;
+
 	if (args.length && args[0] === '-n') {
-		numlines = +args[1];
+		limit = +args[1];
 		args = args.slice(2);
 	}
 	if (!args.length)
 		args = ['-'];
 
 	let files: NodeJS.ReadableStream[] = [];
-	let opened = 0;
+	let nOpened = 0;
+
+	function opened(): void {
+		nOpened++;
+		if (nOpened === args.length)
+			setTimeout(head, 0, files, process.stdout, limit, code);
+	}
+
 	// use map instead of a for loop so that we easily get the
 	// tuple of (path, i) on each iteration.
 	args.map(function(path, i): void {
+		// '-' represents stdin, which is already open.
+		// Special-case it.
 		if (path === '-') {
 			files[i] = process.stdin;
 			// if we've opened all of the files, pipe them
 			// to stdout.
-			if (++opened === args.length)
-				setTimeout(head, 0, files, process.stdout, numlines, code);
+			opened();
 			return;
 		}
 		fs.open(path, 'r', function(err: any, fd: any): void {
@@ -111,14 +120,12 @@ function main(): void {
 				// as many inputs as we can.
 				files[i] = null;
 				code = 1;
-				process.stderr.write(pathToScript + ': ' + err.message + '\n');
-			} else {
-				files[i] = fs.createReadStream(path, {fd: fd});
+				let msg = pathToScript + ': ' + err.message + '\n';
+				process.stderr.write(msg, opened);
+				return;
 			}
-			// if we've opened all of the files, pipe them
-			// to stdout.
-			if (++opened === args.length)
-				setTimeout(head, 0, files, process.stdout, numlines, code);
+			files[i] = fs.createReadStream(path, {fd: fd});
+			opened();
 		});
 	});
 }

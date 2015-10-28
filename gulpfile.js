@@ -42,7 +42,7 @@ function tsPipeline(src, dst) {
     return function() {
         var build = gulp.src(src)
             .pipe(ts(project()));
-        return merge(build.js, build.dts).pipe(gulp.dest(dst));
+        return build.js.pipe(gulp.dest(dst));
     }
 }
 

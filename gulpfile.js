@@ -129,14 +129,14 @@ tsTask('bin');
 // directly from node or browser-node.
 gulp.task('build-fs', ['dist-kernel', 'dist-browser-node', 'build-bin'], function() {
 
-    const copyKernel = gulp.src('lib-dist/lib/kernel/kernel.js')
+    var copyKernel = gulp.src('lib-dist/lib/kernel/kernel.js')
           .pipe(copy('./fs/boot/', {prefix: 3}));
 
-    const copyNode = gulp.src('lib-dist/lib/browser-node/browser-node.js')
+    var copyNode = gulp.src('lib-dist/lib/browser-node/browser-node.js')
           .pipe(rename(function(path) { path.basename = 'node'; path.extname = ''; }))
           .pipe(gulp.dest('./fs/usr/bin/'));
 
-    const copyBin = gulp.src('lib/bin/*.js')
+    var copyBin = gulp.src('lib/bin/*.js')
           .pipe(rename(function(path) { path.extname = ''; }))
           .pipe(addShebang('#!/usr/bin/env node\n'))
           .pipe(chmod(755))
@@ -165,7 +165,7 @@ gulp.task('build-test', ['index-fs'], function() {
 // we compile all our tests into a single javascript file because
 // that is how browserify likes to work :\
 gulp.task('dist-test', ['build-test'], function() {
-    const testMain = './test/test-all.js';
+    var testMain = './test/test-all.js';
     var b = browserify({
         entries: [testMain],
         builtins: false,

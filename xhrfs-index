@@ -83,9 +83,9 @@ function walkDir(base, curr, onComplete) {
 }
 
 function main() {
-    const pathToNode = process.argv[0];
-    const pathToScript = process.argv[1];
-    const args = process.argv.slice(2);
+    var pathToNode = process.argv[0];
+    var pathToScript = process.argv[1];
+    var args = process.argv.slice(2);
 
     var root = process.cwd();
     if (args.length > 0)

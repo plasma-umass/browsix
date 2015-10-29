@@ -562,6 +562,7 @@ export class Task implements ITask {
 	exitCode: number;
 
 	exePath: string;
+	exeFd: any;
 	args: string[];
 	env: string[];
 	cwd: string;
@@ -590,6 +591,7 @@ export class Task implements ITask {
 		this.parent = parent;
 		this.kernel = kernel;
 		this.exePath = filename;
+		this.exeFd = null;
 		this.args = args;
 		this.env = env || [];
 		this.cwd = cwd;
@@ -624,15 +626,30 @@ export class Task implements ITask {
 		// XMLHttpRequest) and continue initialization when it
 		// is ready.
 
-		// TODO: this needs to be a sequence of:
-		//   - open
-		//   - fstat
-		//   - read
-		// So that we can check that this file is executable.
-		kernel.fs.readFile(filename, 'utf-8', this.fileRead.bind(this));
+		kernel.fs.open(filename, 'r', this.fileOpened.bind(this));
 	}
 
-	fileRead(err: any, data: string): void {
+	fileOpened(err: any, fd: any): void {
+		if (err) {
+			this.onRunnable(err, undefined);
+			this.onRunnable = undefined;
+			// FIXME: what other cleanup is required here?
+			return;
+		}
+		this.exeFd = fd;
+		this.kernel.fs.fstat(fd, (serr: any, stats: any) => {
+			if (serr) {
+				this.onRunnable(serr, undefined);
+				this.onRunnable = undefined;
+				// FIXME: what other cleanup is required here?
+				return;
+			}
+			let buf = new Buffer(stats.size);
+			this.kernel.fs.read(fd, buf, 0, stats.size, 0, this.fileRead.bind(this));
+		});
+	}
+
+	fileRead(err: any, bytesRead: number, buf: Buffer): void {
 		if (err) {
 			this.onRunnable(err, undefined);
 			this.onRunnable = undefined;
@@ -647,12 +664,12 @@ export class Task implements ITask {
 		//
 		// TODO: abstract this into something like a binfmt
 		// handler
-		if (data.length > 2 && data[0] === '#' && data[1] === '!') {
-			let newlinePos = data.indexOf('\n');
+		if (bytesRead > 2 && buf[0] === '#'.charCodeAt(0) && buf[1] === '!'.charCodeAt(0)) {
+			let newlinePos = buf.indexOf('\n');
 			if (newlinePos < 0)
-				throw new Error('shebang with no newline: ' + data);
-			let shebang = data.slice(2, newlinePos);
-			data = data.slice(newlinePos+1);
+				throw new Error('shebang with no newline: ' + buf);
+			let shebang = buf.slice(2, newlinePos).toString();
+			buf = buf.slice(newlinePos+1);
 
 			let parts = shebang.match(/\S+/g);
 			let cmd = parts[0];
@@ -675,11 +692,11 @@ export class Task implements ITask {
 			// OK - we've changed what our executable is
 			// at this point so we need to read in the new
 			// exe.
-			this.kernel.fs.readFile(cmd, 'utf-8', this.fileRead.bind(this));
+			this.kernel.fs.open(cmd, 'r', this.fileOpened.bind(this));
 			return;
 		}
 
-		let blob = new Blob([data], {type: 'text/javascript'});
+		let blob = new Blob([buf.toString()], {type: 'text/javascript'});
 
 		this.worker = new Worker(window.URL.createObjectURL(blob));
 		this.worker.onmessage = this.syscallHandler.bind(this);

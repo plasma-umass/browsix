@@ -353,6 +353,7 @@ interface NodeBuffer {
     length: number;
     equals(otherBuffer: Buffer): boolean;
     compare(otherBuffer: Buffer): number;
+    indexOf(value: string|NodeBuffer|number, byteOffset?: number): number;
     copy(targetBuffer: Buffer, targetStart?: number, sourceStart?: number, sourceEnd?: number): number;
     slice(start?: number, end?: number): Buffer;
     writeUIntLE(value: number, offset: number, byteLength: number, noAssert?: boolean): number;

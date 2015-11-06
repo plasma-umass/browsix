@@ -5,7 +5,6 @@
 
 import * as chai from 'chai';
 import { Boot, Kernel } from '../lib/kernel/kernel';
-import * as fs from 'fs';
 
 const expect = chai.expect;
 
@@ -68,7 +67,7 @@ describe('touch /a', function(): void {
 	});
 
 	it('should have new timestamps', function(done: MochaDone): void {
-		kernel.fs.stat('/a', function(err: any, stats: fs.Stats): void {
+		kernel.fs.stat('/a', function(err: any, stats: any): void {
 			expect(err).to.be.null;
 			let now = new Date();
 			expect(stats.atime === now);

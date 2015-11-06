@@ -41,7 +41,7 @@ To run the web terminal, run:
 
 And your browser should automatically open to http://localhost:5000
 
-![shell](img/shell.png)
+![shell](img/shell.png =731x)
 
 Similarly, to run the the tests execute `$ make test-browser`.  The initial run may take several minutes as dependencies are installed, but subsequent runs will be quicker.  To run the tests after starting `make test-browser`, open a browser and type http://localhost:9876 in the address bar.  That’s it! Tests have been run and pass using Node 4 under:
 - Safari 9.0.1 (Mac)

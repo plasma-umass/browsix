@@ -25,7 +25,7 @@ let DEBUG = false;
 // this appears necessary.  Note that especially in Chrome there is a
 // ton of overhead on child process spawning - this performance defect
 // isn't noticable.
-let SCHEDULING_DELAY = 2;
+let SCHEDULING_DELAY = 0;
 
 let Buffer: any;
 
@@ -42,9 +42,46 @@ require('./vendor/BrowserFS/src/backend/async_mirror');
 // from + for John's BrowserFS
 // TODO: don't copy paste code :\
 if (typeof setImmediate === 'undefined') {
-	global.setImmediate = function(fn: () => void): any {
-		return setTimeout(fn, 0);
+	let g: any = global;
+
+	let timeouts: [Function, any[]][] = [];
+	const messageName = "zero-timeout-message";
+	let canUsePostMessage = () => {
+		if (typeof g.importScripts !== 'undefined' || !g.postMessage)
+			return false;
+
+		let isAsync = true;
+		let oldOnMessage = g.onmessage;
+		g.onmessage = function(): void { isAsync = false; };
+		g.postMessage('', '*');
+		g.onmessage = oldOnMessage;
+		return isAsync;
 	};
+	if (canUsePostMessage()) {
+		g.setImmediate = (fn: () => void, ...args: any[]) => {
+			timeouts.push([fn, args]);
+			g.postMessage(messageName, "*");
+		};
+		let handleMessage = (event: MessageEvent) => {
+			if (event.source === self && event.data === messageName) {
+				if (event.stopPropagation)
+					event.stopPropagation();
+				else
+					event.cancelBubble = true;
+			}
+
+			if (timeouts.length > 0) {
+				let [fn, args] = timeouts.shift();
+				return fn.apply(this, args);
+			}
+		};
+		g.addEventListener('message', handleMessage, true);
+		console.log('using postMessage for setImmediate');
+	} else {
+		g.setImmediate = (fn: () => void, ...args: any[]) => {
+			return setTimeout.apply(this, [fn, 0].concat(args));
+		};
+	}
 }
 
 // the following boilerplate allows us to use WebWorkers both in the
@@ -417,7 +454,7 @@ export class Kernel {
 		// priority level.
 		this.runQueues[prio].push(task);
 
-		setTimeout(this.nextTask.bind(this), SCHEDULING_DELAY);
+		setImmediate(this.nextTask.bind(this));
 	}
 
 	nextTask(): void {
@@ -486,11 +523,11 @@ export class Kernel {
 		// execute before completing our callback.
 		// Practically, without this our unit tests sometimes
 		// hang :(
-		setTimeout(() => {
+		setImmediate(() => {
 			task.worker.terminate();
 			if (task.parent)
 				task.parent.signal('child', [task.pid, code, 0]);
-			setTimeout(workerTerminated);
+			setImmediate(workerTerminated);
 		});
 		function workerTerminated(): void {
 			if (cb)
@@ -510,7 +547,7 @@ export class Kernel {
 	}
 
 	doSyscall(syscall: Syscall): void {
-		setTimeout(this.nextTask.bind(this), SCHEDULING_DELAY);
+		setImmediate(this.nextTask.bind(this));
 		this.outstanding--;
 		if (this.outstanding < 0) {
 			//console.log('underflow');
@@ -664,7 +701,7 @@ export class Task implements ITask {
 		//
 		// TODO: abstract this into something like a binfmt
 		// handler
-		if (bytesRead > 2 && buf[0] === '#'.charCodeAt(0) && buf[1] === '!'.charCodeAt(0)) {
+		if (bytesRead > 2 && buf.readUInt8(0) === 0x23 /*'#'*/ && buf.readUInt8(1) === 0x21 /*'!'*/) {
 			let newlinePos = buf.indexOf('\n');
 			if (newlinePos < 0)
 				throw new Error('shebang with no newline: ' + buf);
@@ -725,7 +762,7 @@ export class Task implements ITask {
 		let timeout = 0;
 		if (this.kernel.debug && name === 'init' && this.exePath !== '/usr/bin/sh')
 			timeout = 6000;
-		self.setTimeout(
+		self.setImmediate(
 			() => {
 				this.pendingSignals.push({
 					id: -1,
@@ -741,15 +778,14 @@ export class Task implements ITask {
 
 				//this.kernel.schedule(this);
 				this.run();
-			},
-			timeout);
+			});
 	}
 
 	// schedule is called from SyscallContext - queue up a syscall
 	// result to be sent back to the worker.
 	schedule(msg: SyscallResult): void {
 		this.pendingResults.push(msg);
-		self.setTimeout(() => {
+		self.setImmediate(() => {
 			this.kernel.schedule(this);
 		});
 	}
@@ -839,7 +875,7 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback): void {
 	Buffer = bfs.Buffer;
 	let rootConstructor = BrowserFS.FileSystem[fsType];
 	if (!rootConstructor) {
-		setTimeout(cb, 0, 'unknown FileSystem type: ' + fsType);
+		setImmediate(cb, 'unknown FileSystem type: ' + fsType);
 		return;
 	}
 	let asyncRoot = new (Function.prototype.bind.apply(rootConstructor, [null].concat(fsArgs)));
@@ -865,7 +901,7 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback): void {
 			let k = new Kernel(fs, nCPUs);
 			// FIXME: this is for debugging purposes
 			(<any>window).kernel = k;
-			setTimeout(cb, 0, null, k);
+			setImmediate(cb, null, k);
 		});
 	});
 }

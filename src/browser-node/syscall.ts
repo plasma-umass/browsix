@@ -283,7 +283,8 @@ export class USyscalls {
 			return;
 		this.syscallPending = true;
 		let msg = this.msgQueue.shift();
-		this.port.postMessage(msg);
+		if (msg)
+			this.port.postMessage(msg);
 	}
 }
 

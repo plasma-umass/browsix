@@ -18,8 +18,6 @@ export const name = 'test-tee';
 describe('echo hi | tee /a', function(): void {
 	this.timeout(10 * MINS);
 
-	//const A_CONTENTS = 'contents of a';
-	//const B_CONTENTS = 'wish you were here';
 	let kernel: Kernel = null;
 
 	it('should boot', function(done: MochaDone): void {
@@ -30,21 +28,6 @@ describe('echo hi | tee /a', function(): void {
 			done();
 		});
 	});
-	/*
-	it('should create /a', function(done: MochaDone): void {
-		kernel.fs.writeFile('/a', A_CONTENTS, function(err: any): void {
-			expect(err).to.be.undefined;
-			done();
-		});
-	});
-
-	it('should create /b', function(done: MochaDone): void {
-		kernel.fs.writeFile('/b', B_CONTENTS, function(err: any): void {
-			expect(err).to.be.undefined;
-			done();
-		});
-	});
-	*/
 
 	it('should run `echo hi | tee`', function(done: MochaDone): void {
 		kernel.system('echo hi | tee', catExited);

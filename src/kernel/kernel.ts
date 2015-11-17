@@ -7,9 +7,9 @@
 import * as constants from './constants';
 import * as vfs from './vfs';
 import { now } from './ipc';
-import { Pipe } from './pipe';
-import { IFile } from './file';
-import { SyscallContext, SyscallResult, ITask } from './syscall-ctx';
+import { Pipe, PipeFile, isPipe } from './pipe';
+import { RegularFile } from './file';
+import { SystemCallback, SyscallContext, SyscallResult, Syscall, IKernel, ITask, IFile } from './types';
 
 import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
 import { fs } from './vendor/BrowserFS/src/core/node_fs';
@@ -169,34 +169,6 @@ export enum SOCK {
 	DGRAM = 2,
 }
 
-enum SyscallError {
-	EIO,
-}
-
-export class Syscall {
-	constructor(
-		public ctx:  SyscallContext,
-		public name: string,
-		public args: any[]) {}
-
-	private static requiredOnData: string[] = ['id', 'name', 'args'];
-
-	static From(task: Task, ev: MessageEvent): Syscall {
-		if (!ev.data)
-			return;
-		for (let i = 0; i < Syscall.requiredOnData.length; i++) {
-			if (!ev.data.hasOwnProperty(Syscall.requiredOnData[i]))
-				return;
-		}
-		let ctx = new SyscallContext(task, ev.data.id);
-		return new Syscall(ctx, ev.data.name, ev.data.args);
-	}
-
-	callArgs(): any[] {
-		return [this.ctx].concat(this.args);
-	}
-}
-
 // Logically, perhaps, these should all be methods on Kernel.  They're
 // here for encapsulation.
 class Syscalls {
@@ -269,14 +241,14 @@ class Syscalls {
 		if (off === -1)
 			off = null;
 		let buf = new Buffer(len);
-		this.kernel.fs.read(file, buf, 0, len, off, function(err: any, lenRead: number): void {
+		file.read(buf, 0, len, off, (err: any, lenRead: number) => {
 			if (err) {
 				console.log(err);
 				ctx.complete(err, null);
 				return;
 			}
 			ctx.complete(null, buf.toString('utf-8', 0, lenRead));
-		}.bind(this));
+		});
 	}
 
 	// XXX: should accept string or Buffer, and offset
@@ -286,20 +258,14 @@ class Syscalls {
 			ctx.complete('bad FD ' + fd, null);
 			return;
 		}
-		if (file instanceof Pipe) {
-			file.write(buf);
-			ctx.complete(null, buf.length);
-			return;
-		} else {
-			this.kernel.fs.write(file, buf, (err: any, len: number) => {
-				// we can't do ctx.complete.bind(ctx)
-				// here, because write returns a
-				// _third_ object, 'string', which
-				// looks something like the buffer
-				// after the write?
-				ctx.complete(err, len);
-			});
-		}
+
+		file.write(buf, (err: any, len: number) => {
+			// we can't do ctx.complete.bind(ctx) here,
+			// because write returns a _third_ object,
+			// 'string', which looks something like the
+			// buffer after the write?
+			ctx.complete(err, len);
+		});
 	}
 
 	pipe2(ctx: SyscallContext, flags: number): void {
@@ -307,8 +273,8 @@ class Syscalls {
 		// FIXME: this isn't POSIX semantics - we don't
 		// necessarily reuse lowest free FD.
 		let n = Object.keys(ctx.task.files).length;
-		ctx.task.files[n] = pipe;
-		ctx.task.files[n+1] = pipe;
+		ctx.task.files[n] = new PipeFile(pipe);
+		ctx.task.files[n+1] = new PipeFile(pipe);
 		ctx.complete(undefined, n, n+1);
 	}
 
@@ -341,7 +307,7 @@ class Syscalls {
 			// FIXME: this isn't POSIX semantics - we
 			// don't necessarily reuse lowest free FD.
 			let n = Object.keys(ctx.task.files).length;
-			ctx.task.files[n] = fd;
+			ctx.task.files[n] = new RegularFile(this.kernel, fd);
 			ctx.complete(undefined, n);
 		});
 	}
@@ -393,14 +359,8 @@ class Syscalls {
 			file.unref();
 			return;
 		}
-		this.kernel.fs.close(file, (err: any) => {
-			if (err) {
-				console.log(err);
-				ctx.complete(err, null);
-				return;
-			}
-			ctx.complete(null, 0);
-		});
+		file.unref();
+		ctx.complete(null, 0);
 	}
 
 	fstat(ctx: SyscallContext, fd: number): void {
@@ -409,7 +369,7 @@ class Syscalls {
 			ctx.complete('bad FD ' + fd, null);
 			return;
 		}
-		this.kernel.fs.fstat(file, (err: any, stats: any) => {
+		file.stat((err: any, stats: any) => {
 			if (err) {
 				console.log(err);
 				ctx.complete(err, null);
@@ -445,19 +405,15 @@ class Syscalls {
 	}
 }
 
-export interface SystemCallback {
-	(code: number, stdout: string, stderr: string): void;
-}
-
 interface OutstandingMap {
 	[i: number]: SystemCallback;
 }
 
-export class Kernel {
+export class Kernel implements IKernel {
 	fs: any; // FIXME
 
 	nCPUs: number;
-	runQueues: Task[][];
+	runQueues: ITask[][];
 	outstanding: number;
 	inKernel: number;
 
@@ -487,7 +443,7 @@ export class Kernel {
 		}
 	}
 
-	schedule(task?: Task): void {
+	schedule(task: ITask): void {
 		// A task's priority is between -20 and 19 - a direct
 		// correspondance to what getpriority and setpriority
 		// expect.  Add 20 here to ensure we always have a
@@ -578,8 +534,14 @@ export class Kernel {
 			setImmediate(workerTerminated);
 		});
 		function workerTerminated(): void {
-			if (cb)
-				cb(task.exitCode, task.files[1].read(), task.files[2].read());
+			if (!cb)
+				return;
+
+			let stdout = task.files[1];
+			let stderr = task.files[2];
+			if (isPipe(stdout) && isPipe(stderr)) {
+				cb(task.exitCode, stdout.readSync(), stderr.readSync());
+			}
 		}
 	}
 
@@ -623,6 +585,7 @@ export class Kernel {
 			console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
+			debugger;
 			console.log('unknown syscall ' + syscall.name);
 		}
 	}
@@ -651,13 +614,13 @@ export enum TaskState {
 }
 
 export class Task implements ITask {
-	kernel: Kernel;
+	kernel: IKernel;
 	worker: Worker;
 
 	state: TaskState;
 
 	pid: number;
-	files: {[n: number]: any; } = {};
+	files: {[n: number]: IFile; } = {};
 
 	exitCode: number;
 
@@ -707,13 +670,12 @@ export class Task implements ITask {
 				if (!(i in parent.files))
 					break;
 				this.files[i] = parent.files[files[i]];
-				if (this.files[i] instanceof Pipe)
-					this.files[i].ref();
+				this.files[i].ref();
 			}
 		} else {
-			this.files[0] = new Pipe();
-			this.files[1] = new Pipe();
-			this.files[2] = new Pipe();
+			this.files[0] = new PipeFile();
+			this.files[1] = new PipeFile();
+			this.files[2] = new PipeFile();
 		}
 
 		// often, something needs to be done after this task
@@ -886,9 +848,8 @@ export class Task implements ITask {
 		for (let n in this.files) {
 			if (!this.files.hasOwnProperty(n))
 				continue;
-			let f = this.files[n];
-			if (f instanceof Pipe)
-				f.unref();
+			if (this.files[n])
+				this.files[n].unref();
 		}
 	}
 
@@ -899,6 +860,7 @@ export class Task implements ITask {
 	private syscallHandler(ev: MessageEvent): void {
 		let syscall = Syscall.From(this, ev);
 		if (!syscall) {
+			debugger;
 			console.log('bad syscall message, dropping');
 			return;
 		}

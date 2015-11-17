@@ -15,4 +15,4 @@ require('./test-ls');
 require('./test-sort');
 require('./test-tee');
 require('./test-nice');
-require('./test-scheduler');
+//require('./test-scheduler');

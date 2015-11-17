@@ -19,8 +19,12 @@ module.exports = {
   ChildProcess,
   setupChannel,
   _validateStdio,
+  fork,
 };
 
+function fork(modulePath) {
+  throw new Error('fork not available');
+}
 
 function ChildProcess() {
   EventEmitter.call(this);

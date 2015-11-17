@@ -93,6 +93,7 @@ gulp.task('copy-node', function() {
     return gulp.src([
         'node/lib/internal/util.js',
         'node-modified/lib/internal/child_process.js',
+        'node/lib/_linklist.js',
         'node/lib/_stream_*.js',
         'node/lib/events.js',
         'node/lib/constants.js',
@@ -106,8 +107,13 @@ gulp.task('copy-node', function() {
         'node/lib/vm.js',
         'node/lib/readline.js',
         'node/lib/domain.js',
+        'node/lib/timers.js',
         'node/lib/string_decoder.js',
         'node/lib/child_process.js',
+        'node/lib/dns.js',
+        'node/lib/dgram.js',
+        'node/lib/cluster.js',
+        'node/lib/net.js',
     ]).pipe(copy('./lib/browser-node/', {prefix: 2}));
 });
 

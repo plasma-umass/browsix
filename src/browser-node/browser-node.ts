@@ -18,6 +18,11 @@ import * as bindingPipeWrap from './binding/pipe_wrap';
 import * as bindingTTYWrap from './binding/tty_wrap';
 import * as bindingSpawnSync from './binding/spawn_sync';
 import * as bindingUtil from './binding/util';
+import * as bindingTimerWrap from './binding/timer_wrap';
+import * as bindingCaresWrap from './binding/cares_wrap';
+import * as bindingTCPWrap from './binding/tcp_wrap';
+import * as bindingStreamWrap from './binding/stream_wrap';
+import * as bindingUDPWrap from './binding/udp_wrap';
 
 class Process {
 	argv: string[];
@@ -83,7 +88,17 @@ class Process {
 			return bindingPipeWrap;
 		case 'tty_wrap':
 			return bindingTTYWrap;
+		case 'timer_wrap':
+			return bindingTimerWrap;
+		case 'cares_wrap':
+			return bindingCaresWrap;
+		case 'tcp_wrap':
+			return bindingTCPWrap;
+		case 'udp_wrap':
+			return bindingUDPWrap;
 		case 'spawn_sync':
+			return bindingSpawnSync;
+		case 'stream_wrap':
 			return bindingSpawnSync;
 		case 'util':
 			return bindingUtil;
@@ -163,6 +178,8 @@ function _require(moduleName: string): any {
 		return fs;
 	case 'child_process':
 		return require('./child_process');
+	case 'net':
+		return require('./net');
 	case 'path':
 		return require('./path');
 	case 'readline':
@@ -201,11 +218,11 @@ function init(data: SyscallResponse): void {
 
 			(<any>self).process = process;
 			(<any>self).require = _require;
-			try {
-				(<any>self).eval(contents);
-			} catch (e) {
-				console.log(e);
-			}
+			//try {
+			(<any>self).eval(contents);
+			//} catch (e) {
+			//	console.log(e);
+			//}
 		});
 	});
 }

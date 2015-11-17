@@ -3,6 +3,20 @@
 import { now } from './ipc';
 
 
+export enum AF {
+	UNSPEC = 0,
+	LOCAL = 1,
+	UNIX = 1,
+	FILE = 1,
+	INET = 2,
+	INET6 = 10,
+};
+
+export enum SOCK {
+	STREAM = 1,
+	DGRAM = 2,
+}
+
 export interface Stat {
 	dev: number;
 	mode: number;
@@ -70,6 +84,24 @@ export class USyscalls {
 			console.log('received callback for exit(), should clean up');
 		};
 		this.post(msgId, 'exit', code);
+	}
+
+	socket(domain: AF, type: SOCK, protocol: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'socket', domain, type, protocol);
+	}
+
+	bind(fd: number, addr: string, port: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'bind', fd, addr, port);
+	}
+
+	listen(fd: number, backlog: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'listen', fd, backlog);
 	}
 
 	getcwd(cb: SyscallCallback): void {

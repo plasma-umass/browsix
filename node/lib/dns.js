@@ -66,7 +66,7 @@ function makeAsync(callback) {
       args[0] = callback;
       for (var i = 1, a = 0; a < arguments.length; ++i, ++a)
         args[i] = arguments[a];
-      process.nextTick.apply(null, args);
+      process.nextTick.apply(process, args);
     }
   };
 }

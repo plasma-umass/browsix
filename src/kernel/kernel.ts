@@ -8,6 +8,7 @@ import * as constants from './constants';
 import * as vfs from './vfs';
 import { now } from './ipc';
 import { Pipe } from './pipe';
+import { IFile } from './file';
 import { SyscallContext, SyscallResult, ITask } from './syscall-ctx';
 
 import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';

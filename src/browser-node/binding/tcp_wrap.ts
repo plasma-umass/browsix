@@ -67,8 +67,6 @@ export class TCP extends StreamWrap {
 	}
 
 	private _accept(): void {
-		console.log('this.onconnection: ');
-		console.log(this.onconnection);
 		syscall.accept(this.fd, (err: any, fd?: number, addr?: string) => {
 			// FIXME: ClientHandle??  is this a new TCP?
 			if (!err)

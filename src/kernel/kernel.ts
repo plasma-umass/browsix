@@ -8,6 +8,7 @@ import * as constants from './constants';
 import * as vfs from './vfs';
 import { now } from './ipc';
 import { Pipe, PipeFile, isPipe } from './pipe';
+import { SocketFile, isSocket } from './socket';
 import { RegularFile } from './file';
 import { SystemCallback, SyscallContext, SyscallResult, Syscall, IKernel, ITask, IFile } from './types';
 
@@ -188,7 +189,7 @@ class Syscalls {
 	}
 
 	socket(ctx: SyscallContext, domain: AF, type: SOCK, protocol: number): void {
-		let file = this.kernel.socket(<Task>ctx.task, domain, type, protocol);
+		let file = new SocketFile(ctx.task);
 		if (!file)
 			return ctx.complete('ERROR');
 
@@ -203,10 +204,12 @@ class Syscalls {
 			ctx.complete('bad FD ' + fd, null);
 			return;
 		}
-		if (!(file instanceof Pipe) || !(<Pipe>file).isSocket)
-			return ctx.complete('EBADF');
+		if (isSocket(file)) {
+			ctx.complete(this.kernel.bind(file, addr, port));
+			return;
+		}
 
-		ctx.complete(this.kernel.bind(<Pipe>file, addr, port));
+		return ctx.complete('ENOTSOCKET');
 	}
 
 	listen(ctx: SyscallContext, fd: number, backlog: number): void {
@@ -215,8 +218,35 @@ class Syscalls {
 			ctx.complete('bad FD ' + fd, null);
 			return;
 		}
-		//if (file instanceof Pipe) {
-		debugger;
+		if (isSocket(file)) {
+			file.listen((err: any) => {
+				ctx.complete(err);
+			});
+			return;
+		}
+
+		return ctx.complete('ENOTSOCKET');
+	}
+
+	accept(ctx: SyscallContext, fd: number, addr: string, port: number): void {
+		let file = ctx.task.files[fd];
+		if (!file) {
+			ctx.complete('bad FD ' + fd, null);
+			return;
+		}
+		if (isSocket(file)) {
+			file.accept((err: any, s?: SocketFile, remoteAddr?: string) => {
+				if (err)
+					return ctx.complete(err);
+
+				let n = Object.keys(ctx.task.files).length;
+				ctx.task.files[n] = s;
+				ctx.complete(undefined, n, remoteAddr);
+			});
+			return;
+		}
+
+		return ctx.complete('ENOTSOCKET');
 	}
 
 	spawn(ctx: SyscallContext, cwd: string, name: string, args: string[], env: string[], files: number[]): void {
@@ -422,6 +452,10 @@ export class Kernel implements IKernel {
 	// through Web Worker execution.
 	debug: boolean = DEBUG;
 
+	// TODO: this should be per-protocol, i.e. separate for TCP
+	// and UDP
+	private ports: {[port: number]: SocketFile} = {};
+
 	private tasks: {[pid: number]: Task} = {};
 	private taskIdSeq: number = 0;
 
@@ -567,8 +601,11 @@ export class Kernel implements IKernel {
 		return f;
 	}
 
-	bind(p: Pipe, addr: string, port: number): any {
-		return 'bind not implemented';
+	bind(s: SocketFile, addr: string, port: number): any {
+		if (port in this.ports)
+			return 'port ' + port + ' already bound';
+		this.ports[port] = s;
+		return;
 	}
 
 	doSyscall(syscall: Syscall): void {
@@ -585,7 +622,6 @@ export class Kernel implements IKernel {
 			console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
-			debugger;
 			console.log('unknown syscall ' + syscall.name);
 		}
 	}
@@ -860,7 +896,6 @@ export class Task implements ITask {
 	private syscallHandler(ev: MessageEvent): void {
 		let syscall = Syscall.From(this, ev);
 		if (!syscall) {
-			debugger;
 			console.log('bad syscall message, dropping');
 			return;
 		}

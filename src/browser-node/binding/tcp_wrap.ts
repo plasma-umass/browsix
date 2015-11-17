@@ -9,6 +9,7 @@ export class TCP extends StreamWrap {
 	bound: boolean = false;
 	listenPending: boolean = false;
 	backlog: number = 511;
+	onconnection: Function;
 
 	constructor() {
 		super();
@@ -28,7 +29,12 @@ export class TCP extends StreamWrap {
 
 			// node's tcp_wrap calls into uv__tcp_bind, which
 			syscall.bind(fd, ipAddr, port, (bindErr?: any) => {
-				console.log('bind finished: ' + bindErr);
+				if (bindErr) {
+					console.log('bind failed: ' + bindErr);
+					debugger;
+					return;
+				}
+
 				this.bound = true;
 				if (this.listenPending)
 					this._listen();
@@ -48,10 +54,28 @@ export class TCP extends StreamWrap {
 		return 0;
 	}
 
-	private _listen(): number {
+	private _listen(): void {
 		syscall.listen(this.fd, this.backlog, (err?: any) => {
-			console.log('listening');
+			if (err) {
+				console.log('listen failed: ' + err);
+				debugger;
+				return;
+			}
+			this._accept();
 		});
-		return 0;
+		return;
+	}
+
+	private _accept(): void {
+		console.log('this.onconnection: ');
+		console.log(this.onconnection);
+		syscall.accept(this.fd, (err: any, fd?: number, addr?: string) => {
+			// FIXME: ClientHandle??  is this a new TCP?
+			if (!err)
+				this.onconnection(fd);
+			else
+				console.log('accept failed');
+			setImmediate(this._accept.bind(this));
+		});
 	}
 }

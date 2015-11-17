@@ -104,6 +104,12 @@ export class USyscalls {
 		this.post(msgId, 'listen', fd, backlog);
 	}
 
+	accept(fd: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'accept', fd);
+	}
+
 	getcwd(cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;

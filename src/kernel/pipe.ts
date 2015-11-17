@@ -9,6 +9,7 @@ export class Pipe {
 	refcount: number = 1;
 	waiter: Function = undefined;
 	closed: boolean = false;
+	isSocket: boolean = false;
 
 	write(s: string): number {
 		this.buf += ''+s;
@@ -45,7 +46,7 @@ export class Pipe {
 
 	unref(): void {
 		this.refcount--;
-		// if we have a non-zero refcount, or noone is waiting on reads 
+		// if we have a non-zero refcount, or noone is waiting on reads
 		if (this.refcount)
 			return;
 

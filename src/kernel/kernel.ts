@@ -153,6 +153,21 @@ function flagsToString(flag: any): string {
 	throw new Error('Unknown file open flag: ' + flag);
 }
 
+
+export enum AF {
+	UNSPEC = 0,
+	LOCAL = 1,
+	UNIX = 1,
+	FILE = 1,
+	INET = 2,
+	INET6 = 10,
+};
+
+export enum SOCK {
+	STREAM = 1,
+	DGRAM = 2,
+}
+
 enum SyscallError {
 	EIO,
 }
@@ -197,6 +212,38 @@ class Syscalls {
 		if (!code)
 			code = 0;
 		this.kernel.exit(<Task>ctx.task, code);
+	}
+
+	socket(ctx: SyscallContext, domain: AF, type: SOCK, protocol: number): void {
+		let file = this.kernel.socket(<Task>ctx.task, domain, type, protocol);
+		if (!file)
+			return ctx.complete('ERROR');
+
+		let n = Object.keys(ctx.task.files).length;
+		ctx.task.files[n] = file;
+		ctx.complete(undefined, n);
+	}
+
+	bind(ctx: SyscallContext, fd: number, addr: string, port: number): void {
+		let file = ctx.task.files[fd];
+		if (!file) {
+			ctx.complete('bad FD ' + fd, null);
+			return;
+		}
+		if (!(file instanceof Pipe) || !(<Pipe>file).isSocket)
+			return ctx.complete('EBADF');
+
+		ctx.complete(this.kernel.bind(<Pipe>file, addr, port));
+	}
+
+	listen(ctx: SyscallContext, fd: number, backlog: number): void {
+		let file = ctx.task.files[fd];
+		if (!file) {
+			ctx.complete('bad FD ' + fd, null);
+			return;
+		}
+		//if (file instanceof Pipe) {
+		debugger;
 	}
 
 	spawn(ctx: SyscallContext, cwd: string, name: string, args: string[], env: string[], files: number[]): void {
@@ -544,6 +591,21 @@ export class Kernel {
 		// TODO: this should deliver a signal and then wait a
 		// short amount of time before killing the worker
 		this.exit(task, -666);
+	}
+
+	// FIXME: remove any
+	socket(task: Task, domain: AF, type: SOCK, protocol: number): any {
+		if (domain !== AF.INET && type !== SOCK.STREAM) {
+			console.log('unsupported socket type');
+			return null;
+		}
+		let f = new Pipe();
+		f.isSocket = true;
+		return f;
+	}
+
+	bind(p: Pipe, addr: string, port: number): any {
+		return 'bind not implemented';
 	}
 
 	doSyscall(syscall: Syscall): void {

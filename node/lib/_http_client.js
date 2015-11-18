@@ -157,9 +157,6 @@ exports.ClientRequest = ClientRequest;
 ClientRequest.prototype.aborted = undefined;
 
 ClientRequest.prototype._finish = function() {
-  DTRACE_HTTP_CLIENT_REQUEST(this, this.connection);
-  LTTNG_HTTP_CLIENT_REQUEST(this, this.connection);
-  COUNTER_HTTP_CLIENT_REQUEST();
   OutgoingMessage.prototype._finish.call(this);
 };
 
@@ -403,10 +400,6 @@ function parserOnIncomingClient(res, shouldKeepAlive) {
     req.shouldKeepAlive = false;
   }
 
-
-  DTRACE_HTTP_CLIENT_RESPONSE(socket, req);
-  LTTNG_HTTP_CLIENT_RESPONSE(socket, req);
-  COUNTER_HTTP_CLIENT_RESPONSE();
   req.res = res;
   res.req = req;
 

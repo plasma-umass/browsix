@@ -30,7 +30,9 @@ function main(): void {
 		});
 		client.on('data', (data: any) => {
 			console.log('GOT: ' + data.toString().trim());
-			client.end();
+			clientFinished = true;
+			if (serverFinished)
+				return process.exit(0);
 		});
 		client.on('end', () => {
 			console.log('disconnected from server');

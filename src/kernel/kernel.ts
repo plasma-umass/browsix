@@ -10,7 +10,7 @@ import { now } from './ipc';
 import { Pipe, PipeFile, isPipe } from './pipe';
 import { SocketFile, isSocket } from './socket';
 import { RegularFile } from './file';
-import { SystemCallback, SyscallContext, SyscallResult, Syscall, IKernel, ITask, IFile } from './types';
+import { SystemCallback, SyscallContext, SyscallResult, Syscall, ConnectCallback, IKernel, ITask, IFile } from './types';
 
 import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
 import { fs } from './vendor/BrowserFS/src/core/node_fs';
@@ -189,12 +189,11 @@ class Syscalls {
 	}
 
 	socket(ctx: SyscallContext, domain: AF, type: SOCK, protocol: number): void {
-		let file = new SocketFile(ctx.task);
-		if (!file)
-			return ctx.complete('ERROR');
+		if (domain !== AF.INET && type !== SOCK.STREAM)
+			return ctx.complete('unsupported socket type');
 
-		let n = Object.keys(ctx.task.files).length;
-		ctx.task.files[n] = file;
+		let f = new SocketFile(ctx.task);
+		let n = ctx.task.addFile(f);
 		ctx.complete(undefined, n);
 	}
 
@@ -239,8 +238,7 @@ class Syscalls {
 				if (err)
 					return ctx.complete(err);
 
-				let n = Object.keys(ctx.task.files).length;
-				ctx.task.files[n] = s;
+				let n = ctx.task.addFile(s);
 				ctx.complete(undefined, n, remoteAddr, remotePort);
 			});
 			return;
@@ -256,13 +254,8 @@ class Syscalls {
 			return;
 		}
 		if (isSocket(file)) {
-			file.connect(addr, port, (err: any, s?: SocketFile, remoteAddr?: string, remotePort?: number) => {
-				if (err)
-					return ctx.complete(err);
-
-				let n = Object.keys(ctx.task.files).length;
-				ctx.task.files[n] = s;
-				ctx.complete(undefined, n, remoteAddr);
+			file.connect(addr, port, (err: any) => {
+				ctx.complete(err);
 			});
 			return;
 		}
@@ -323,10 +316,9 @@ class Syscalls {
 		let pipe = new Pipe();
 		// FIXME: this isn't POSIX semantics - we don't
 		// necessarily reuse lowest free FD.
-		let n = Object.keys(ctx.task.files).length;
-		ctx.task.files[n] = new PipeFile(pipe);
-		ctx.task.files[n+1] = new PipeFile(pipe);
-		ctx.complete(undefined, n, n+1);
+		let n1 = ctx.task.addFile(new PipeFile(pipe));
+		let n2 = ctx.task.addFile(new PipeFile(pipe));
+		ctx.complete(undefined, n1, n2);
 	}
 
 	getpriority(ctx: SyscallContext, which: number, who: number): void {
@@ -357,8 +349,7 @@ class Syscalls {
 			}
 			// FIXME: this isn't POSIX semantics - we
 			// don't necessarily reuse lowest free FD.
-			let n = Object.keys(ctx.task.files).length;
-			ctx.task.files[n] = new RegularFile(this.kernel, fd);
+			let n = ctx.task.addFile(new RegularFile(this.kernel, fd));
 			ctx.complete(undefined, n);
 		});
 	}
@@ -521,7 +512,7 @@ export class Kernel implements IKernel {
 		// virtual CPUs available
 		if (this.outstanding >= this.nCPUs) {
 			//console.log('not scheduling - out of CPUs ' + this.outstanding);
-			return;
+			//return;
 		}
 
 		/*
@@ -611,21 +602,26 @@ export class Kernel implements IKernel {
 		this.exit(task, -666);
 	}
 
-	// FIXME: remove any
-	socket(task: Task, domain: AF, type: SOCK, protocol: number): any {
-		if (domain !== AF.INET && type !== SOCK.STREAM) {
-			console.log('unsupported socket type');
-			return null;
-		}
-		let f = new Pipe();
-		f.isSocket = true;
-		return f;
-	}
-
 	bind(s: SocketFile, addr: string, port: number): any {
 		if (port in this.ports)
 			return 'port ' + port + ' already bound';
 		this.ports[port] = s;
+		return;
+	}
+
+	connect(f: IFile, addr: string, port: number, cb: ConnectCallback): void {
+		if (addr !== 'localhost' && addr !== '127.0.0.1')
+			return cb('TODO: only localhost connections for now');
+
+		if (!(port in this.ports))
+			return cb('unknown port');
+
+		let listener = this.ports[port];
+		if (!listener.isListening)
+			return cb('remote not listening');
+
+		let local = <SocketFile>(<any>f);
+		listener.doAccept(local, addr, port, cb);
 		return;
 	}
 
@@ -746,6 +742,12 @@ export class Task implements ITask {
 		// is ready.
 
 		kernel.fs.open(filename, 'r', this.fileOpened.bind(this));
+	}
+
+	addFile(f: IFile): number {
+		let n = Object.keys(this.files).length;
+		this.files[n] = f;
+		return n;
 	}
 
 	fileOpened(err: any, fd: any): void {
@@ -883,7 +885,6 @@ export class Task implements ITask {
 			this.worker.postMessage(msg);
 			if (this.pendingSignals.length || this.pendingResults.length)
 				this.kernel.schedule(this);
-			return;
 		}
 		if (this.pendingResults.length) {
 			let msg = this.pendingResults.shift();
@@ -924,7 +925,7 @@ export class Task implements ITask {
 		// TODO: figure out if this is right
 		this.account();
 		if (this.state !== TaskState.Running) {
-			console.log('suspicious, unbalanced syscall');
+			//console.log('suspicious, unbalanced syscall');
 		}
 		this.state = TaskState.Interruptable;
 

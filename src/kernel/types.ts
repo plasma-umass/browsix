@@ -12,6 +12,9 @@ export interface SyscallResult {
 	args: any[];
 }
 
+export interface ConnectCallback {
+	(err: any): void;
+}
 
 export interface IKernel {
 	fs: any; // FIXME
@@ -22,6 +25,7 @@ export interface IKernel {
 	schedule(task: ITask): void;
 	system(cmd: string, cb: SystemCallback): void;
 	doSyscall(syscall: Syscall): void;
+	connect(s: IFile, addr: string, port: number, cb: ConnectCallback): void;
 }
 
 export interface ITask {
@@ -39,6 +43,7 @@ export interface ITask {
 	cwd: string;
 	priority: number;
 
+	addFile(f: IFile): number;
 	schedule(msg: SyscallResult): void;
 	setPriority(prio: number): number;
 	run(): void;

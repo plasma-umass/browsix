@@ -14,7 +14,7 @@ export class ShutdownWrap {
 }
 
 export class WriteWrap {
-	constructor() {
-		(<any>console).trace('TODO: someone wants a write_wrap');
-	}
+	handle: any;
+	oncomplete: Function;
+	async: boolean;
 }

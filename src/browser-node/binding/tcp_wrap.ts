@@ -1,7 +1,8 @@
 'use strict';
 
+import * as uv from './uv';
 import { syscall, AF, SOCK } from '../syscall';
-import { StreamWrap } from './stream_wrap';
+import { StreamWrap, WriteWrap } from './stream_wrap';
 
 export class Req {
 	localAddress: string;
@@ -24,11 +25,13 @@ export class TCPConnectWrap {
 
 export class TCP extends StreamWrap {
 
-	fd: number;
-	bound: boolean = false;
-	listenPending: boolean = false;
-	backlog: number = 511;
-	onconnection: Function;
+	fd:            number;
+	owner:         any;
+	bound:         boolean   = false;
+	listenPending: boolean   = false;
+	backlog:       number    = 511;
+	onconnection:  Function;
+	onread:        Function;
 
 	constructor(fd: number = -1, bound: boolean = false) {
 		super();
@@ -37,6 +40,7 @@ export class TCP extends StreamWrap {
 	}
 
 	close(cb: () => void): void {
+		//setTimeout(this.onread.bind(this), 0, uv.UV_EOF, null);
 		syscall.close(this.fd, () => {
 			this.fd = -1;
 			cb();
@@ -59,14 +63,14 @@ export class TCP extends StreamWrap {
 				req.address = addr;
 				req.port = port;
 
-				console.log('CLIENT CONNECTED: ' + connErr);
 				if (connErr) {
 					conn.oncomplete(-1, this, req, false, false);
 					return;
 				}
 
-				let handle = new TCP(fd, true);
-				conn.oncomplete(0, handle, req, true, true);
+				this.fd = fd;
+				this.bound = true;
+				conn.oncomplete(0, this, req, true, true);
 			});
 		});
 	}
@@ -109,6 +113,29 @@ export class TCP extends StreamWrap {
 		return 0;
 	}
 
+	writeUtf8String(req: WriteWrap, data: string): void {
+		syscall.pwrite(this.fd, data, 0, (err: any) => {
+			let status = err ? -1 : 0;
+			req.oncomplete(status, this, req, err);
+		});
+	}
+
+	readStart(): void {
+		this._read();
+	}
+
+	private _read(): void {
+		syscall.pread(this.fd, 1024, 0, (err: any, data: string) => {
+			//let b = new Buffer(data.length);
+			//b.write(data);
+			let n = data && data.length ? data.length : uv.UV_EOF;
+			if (this.onread)
+				this.onread(n, data);
+			if (this.fd !== -1)
+				setTimeout(this._read.bind(this), 0);
+		});
+	}
+
 	private _listen(): void {
 		syscall.listen(this.fd, this.backlog, (err?: any) => {
 			if (err) {
@@ -128,7 +155,7 @@ export class TCP extends StreamWrap {
 				this.onconnection(err);
 			else
 				this.onconnection(undefined, new TCP(fd, true));
-			setImmediate(this._accept.bind(this));
+			setTimeout(this._accept.bind(this), 0);
 		});
 	}
 }

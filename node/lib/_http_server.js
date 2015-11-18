@@ -97,9 +97,6 @@ function ServerResponse(req) {
 util.inherits(ServerResponse, OutgoingMessage);
 
 ServerResponse.prototype._finish = function() {
-  DTRACE_HTTP_SERVER_RESPONSE(this.connection);
-  LTTNG_HTTP_SERVER_RESPONSE(this.connection);
-  COUNTER_HTTP_SERVER_RESPONSE();
   OutgoingMessage.prototype._finish.call(this);
 };
 
@@ -470,9 +467,6 @@ function connectionListener(socket) {
     res._onPendingData = updateOutgoingData;
 
     res.shouldKeepAlive = shouldKeepAlive;
-    DTRACE_HTTP_SERVER_REQUEST(req, socket);
-    LTTNG_HTTP_SERVER_REQUEST(req, socket);
-    COUNTER_HTTP_SERVER_REQUEST();
 
     if (socket._httpMessage) {
       // There are already pending outgoing res, append.

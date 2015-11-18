@@ -96,9 +96,9 @@ class Process {
 			return bindingTCPWrap;
 		case 'udp_wrap':
 			return bindingUDPWrap;
-		case 'spawn_sync':
-			return bindingSpawnSync;
 		case 'stream_wrap':
+			return bindingStreamWrap;
+		case 'spawn_sync':
 			return bindingSpawnSync;
 		case 'util':
 			return bindingUtil;

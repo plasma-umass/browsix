@@ -9,7 +9,6 @@ export class Pipe {
 	refcount: number = 1; // maybe more accurately a reader count
 	waiter: Function = undefined;
 	closed: boolean = false;
-	isSocket: boolean = false;
 
 	write(s: string): number {
 		this.buf += ''+s;
@@ -99,5 +98,4 @@ export class PipeFile implements IFile {
 	unref(): void {
 		this.pipe.unref();
 	}
-
 }

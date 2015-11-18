@@ -3,6 +3,25 @@
 import { syscall, AF, SOCK } from '../syscall';
 import { StreamWrap } from './stream_wrap';
 
+export class Req {
+	localAddress: string;
+	localPort:    number;
+
+	address:      string;
+	port:         number;
+}
+
+export class TCPConnectWrap {
+	oncomplete: (status: number, handle: TCP, req: Req, readable: boolean, writable: boolean)=>void = undefined;
+	address: string = '';
+	port: number = -1;
+	fd: number;
+
+	constructor(fd: number = -1) {
+		this.fd = fd;
+	}
+}
+
 export class TCP extends StreamWrap {
 
 	fd: number;
@@ -11,9 +30,45 @@ export class TCP extends StreamWrap {
 	backlog: number = 511;
 	onconnection: Function;
 
-	constructor() {
+	constructor(fd: number = -1, bound: boolean = false) {
 		super();
-		this.fd = -1;
+		this.fd = fd;
+		this.bound = bound;
+	}
+
+	close(cb: () => void): void {
+		syscall.close(this.fd, () => {
+			this.fd = -1;
+			cb();
+		});
+	}
+
+	connect(conn: TCPConnectWrap, addr: string, port: number): void {
+		syscall.socket(AF.INET, SOCK.STREAM, 0, (err: any, fd: number) => {
+			// FIXME: call req.oncomplete
+			if (err) {
+				console.log('socket open failed');
+				debugger;
+				return;
+			}
+
+			syscall.connect(fd, addr, port, (connErr: any, localAddr: string, localPort: number) => {
+				let req = new Req();
+				req.localAddress = localAddr;
+				req.localPort = localPort;
+				req.address = addr;
+				req.port = port;
+
+				console.log('CLIENT CONNECTED: ' + connErr);
+				if (connErr) {
+					conn.oncomplete(-1, this, req, false, false);
+					return;
+				}
+
+				let handle = new TCP(fd, true);
+				conn.oncomplete(0, handle, req, true, true);
+			});
+		});
 	}
 
 	// FIXME: node provides this as a synchronous API, UGH.
@@ -67,12 +122,12 @@ export class TCP extends StreamWrap {
 	}
 
 	private _accept(): void {
-		syscall.accept(this.fd, (err: any, fd?: number, addr?: string) => {
+		syscall.accept(this.fd, (err: any, fd?: number, addr?: string, port?: number) => {
 			// FIXME: ClientHandle??  is this a new TCP?
-			if (!err)
-				this.onconnection(fd);
+			if (err)
+				this.onconnection(err);
 			else
-				console.log('accept failed');
+				this.onconnection(undefined, new TCP(fd, true));
 			setImmediate(this._accept.bind(this));
 		});
 	}

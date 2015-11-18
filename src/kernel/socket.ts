@@ -5,8 +5,8 @@
 import { SyscallContext, IFile, ITask } from './types';
 import { Pipe, PipeFile } from './pipe';
 
-export interface AcceptCallback {
-	(err: any, s?: SocketFile, remoteAddr?: string): void;
+export interface ConnectCallback {
+	(err: any, s?: SocketFile, remoteAddr?: string, remotePort?: number): void;
 }
 
 export function isSocket(f: IFile): f is SocketFile {
@@ -14,11 +14,11 @@ export function isSocket(f: IFile): f is SocketFile {
 }
 
 export class SocketFile extends PipeFile implements IFile {
-	task: ITask;
-	isListening: boolean = false;
+	task:          ITask;
+	isListening:   boolean = false;
 
-	incomingQueue: any[] = [];
-	acceptQueue: AcceptCallback[] = [];
+	incomingQueue: ConnectCallback[] = [];
+	acceptQueue:   ConnectCallback[] = [];
 
 	constructor(task: ITask) {
 		super();
@@ -34,8 +34,13 @@ export class SocketFile extends PipeFile implements IFile {
 		cb(undefined);
 	}
 
-	accept(cb: AcceptCallback): void {
+	accept(cb: ConnectCallback): void {
 		// FIXME: implement
 		this.acceptQueue.push(cb);
+	}
+
+	connect(addr: string, port: number, cb: ConnectCallback): void {
+		console.log('TODO: connect to ' + addr + ':' + port);
+		return cb('NIMPL');
 	}
 }

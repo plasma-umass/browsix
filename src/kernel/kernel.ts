@@ -235,7 +235,28 @@ class Syscalls {
 			return;
 		}
 		if (isSocket(file)) {
-			file.accept((err: any, s?: SocketFile, remoteAddr?: string) => {
+			file.accept((err: any, s?: SocketFile, remoteAddr?: string, remotePort?: number) => {
+				if (err)
+					return ctx.complete(err);
+
+				let n = Object.keys(ctx.task.files).length;
+				ctx.task.files[n] = s;
+				ctx.complete(undefined, n, remoteAddr, remotePort);
+			});
+			return;
+		}
+
+		return ctx.complete('ENOTSOCKET');
+	}
+
+	connect(ctx: SyscallContext, fd: number, addr: string, port: number): void {
+		let file = ctx.task.files[fd];
+		if (!file) {
+			ctx.complete('bad FD ' + fd, null);
+			return;
+		}
+		if (isSocket(file)) {
+			file.connect(addr, port, (err: any, s?: SocketFile, remoteAddr?: string, remotePort?: number) => {
 				if (err)
 					return ctx.complete(err);
 

@@ -86,6 +86,12 @@ export class USyscalls {
 		this.post(msgId, 'exit', code);
 	}
 
+	kill(pid: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'kill', pid);
+	}
+
 	socket(domain: AF, type: SOCK, protocol: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;
@@ -108,6 +114,12 @@ export class USyscalls {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;
 		this.post(msgId, 'accept', fd);
+	}
+
+	connect(fd: number, addr: string, port: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'connect', fd, addr, port);
 	}
 
 	getcwd(cb: SyscallCallback): void {

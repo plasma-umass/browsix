@@ -9,6 +9,7 @@ function main(): void {
 
 		console.log("Connection from " + socket.remoteAddress);
 		socket.end("Hello World\n");
+		setTimeout(process.exit, 0);
 	});
 
 	// Fire up the server bound to port 7000 on localhost

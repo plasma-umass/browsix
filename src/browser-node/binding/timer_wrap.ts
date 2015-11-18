@@ -14,15 +14,18 @@ if (typeof performance !== 'undefined') {
 
 export class Timer {
 
+	when: any;
+
 	static now(): number {
 		return nowFn();
 	}
 
 	constructor() {
-		(<any>console).trace('TODO: someone wants a tty');
 	}
 
-	start(): number {
+	start(msecs: number): number {
+		//setTimeout(msecs);
+		//debugger;
 		(<any>console).trace('TODO: someone wants a start');
 		return 0;
 	}
@@ -34,4 +37,6 @@ export class Timer {
 		(<any>console).trace('TODO: someone wants a close');
 
 	}
+	ref(): void {}
+	unref(): void {}
 }

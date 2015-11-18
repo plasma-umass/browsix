@@ -190,6 +190,15 @@ function utf8ToBytes(string: string, units?: number): any {
 	return bytes;
 }
 
+function asciiSlice(buf: any, start: number, end: number): any {
+	let ret = '';
+	end = Math.min(buf.length, end);
+
+	for (let i = start; i < end; i++) {
+		ret += String.fromCharCode(buf[i] & 0x7F);
+	}
+	return ret;
+}
 
 export function setupBufferJS(prototype: any, bindingObj: any): void { // (Buffer.prototype, bindingObj);
 	bindingObj.flags = [0];
@@ -201,6 +210,9 @@ export function setupBufferJS(prototype: any, bindingObj: any): void { // (Buffe
 	};
 	prototype.utf8Slice = function(start: number, end: number): any {
 		return utf8Slice(this, start, end);
+	};
+	prototype.asciiSlice = function(start: number, end: number): any {
+		return asciiSlice(this, start, end);
 	};
 	prototype.copy = function copy (target: any, targetStart: number, start: number, end: number): number {
 		if (!start) start = 0;

@@ -1,8 +1,5 @@
 'use strict';
 
-import { now } from './ipc';
-
-
 export enum AF {
 	UNSPEC = 0,
 	LOCAL = 1,

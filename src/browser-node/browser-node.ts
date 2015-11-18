@@ -23,6 +23,7 @@ import * as bindingCaresWrap from './binding/cares_wrap';
 import * as bindingTCPWrap from './binding/tcp_wrap';
 import * as bindingStreamWrap from './binding/stream_wrap';
 import * as bindingUDPWrap from './binding/udp_wrap';
+import * as bindingHTTPParser from './binding/http_parser';
 
 class Process {
 	argv: string[];
@@ -76,6 +77,8 @@ class Process {
 			return bindingUV;
 		case 'fs':
 			return bindingFs;
+		case 'http_parser':
+			return bindingHTTPParser;
 		case 'fs_event_wrap':
 			return bindingFsEventWrap;
 		case 'constants':
@@ -180,6 +183,8 @@ function _require(moduleName: string): any {
 		return require('./child_process');
 	case 'net':
 		return require('./net');
+	case 'http':
+		return require('./http');
 	case 'path':
 		return require('./path');
 	case 'readline':

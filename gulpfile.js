@@ -92,6 +92,8 @@ function tsTask(subdir, options) {
 gulp.task('copy-node', function() {
     return gulp.src([
         'node/lib/internal/util.js',
+        'node/lib/internal/freelist.js',
+        'node-modified/lib/binding/http_parser.js',
         'node-modified/lib/internal/child_process.js',
         'node/lib/_linklist.js',
         'node/lib/_stream_*.js',
@@ -114,6 +116,16 @@ gulp.task('copy-node', function() {
         'node/lib/dgram.js',
         'node/lib/cluster.js',
         'node/lib/net.js',
+        'node/lib/querystring.js',
+        'node/lib/punycode.js',
+        'node/lib/url.js',
+        'node/lib/_http_agent.js',
+        'node/lib/_http_common.js',
+        'node/lib/_http_incoming.js',
+        'node/lib/_http_outgoing.js',
+        'node/lib/_http_client.js',
+        'node/lib/_http_server.js',
+        'node/lib/http.js',
     ]).pipe(copy('./lib/browser-node/', {prefix: 2}));
 });
 

@@ -32,11 +32,19 @@ export class TCP extends StreamWrap {
 	backlog:       number    = 511;
 	onconnection:  Function;
 	onread:        Function;
+	addr:          string;
+	port:          number;
 
 	constructor(fd: number = -1, bound: boolean = false) {
 		super();
 		this.fd = fd;
 		this.bound = bound;
+	}
+
+	getpeername(out: any): void {
+		out.address = this.addr;
+		out.port = this.port;
+		out.family = 'tcp';
 	}
 
 	close(cb: () => void): void {
@@ -73,6 +81,12 @@ export class TCP extends StreamWrap {
 				conn.oncomplete(0, this, req, true, true);
 			});
 		});
+	}
+
+	bind6(ipAddr: string, port: number): number {
+		if (ipAddr === '::')
+			return this.bind('localhost', port);
+		throw new Error('TODO: implement bind6');
 	}
 
 	// FIXME: node provides this as a synchronous API, UGH.
@@ -151,10 +165,14 @@ export class TCP extends StreamWrap {
 	private _accept(): void {
 		syscall.accept(this.fd, (err: any, fd?: number, addr?: string, port?: number) => {
 			// FIXME: ClientHandle??  is this a new TCP?
-			if (err)
+			if (err) {
 				this.onconnection(err);
-			else
-				this.onconnection(undefined, new TCP(fd, true));
+			} else {
+				let handle = new TCP(fd, true);
+				handle.addr = addr;
+				handle.port = port;
+				this.onconnection(undefined, handle);
+			}
 			setTimeout(this._accept.bind(this), 0);
 		});
 	}

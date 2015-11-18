@@ -11,7 +11,7 @@ function main(): void {
 
 	let server = spawn('usr/bin/hello-socket', [], { stdio: [0, 1, 2] });
 	server.on('error', (err: any) => {
-		process.stderr.write('error: ' + err, () => {
+		process.stderr.write('error: ' + err + '\n', () => {
 			serverFinished = true;
 			if (clientFinished)
 				return process.exit(0);
@@ -26,16 +26,10 @@ function main(): void {
 	setTimeout(client, 1000);
 	function client(): void {
 		let client = connect(<any>{port: 7000}, () => {
-			console.log('connected to server!');
+			process.stdout.write('connected to server!\n');
 		});
 		client.on('data', (data: any) => {
-			console.log('GOT: ' + data.toString().trim());
-			clientFinished = true;
-			if (serverFinished)
-				return process.exit(0);
-		});
-		client.on('end', () => {
-			console.log('disconnected from server');
+			process.stdout.write('client got: ' + data.toString().trim() + '\n');
 			clientFinished = true;
 			if (serverFinished)
 				return process.exit(0);

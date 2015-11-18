@@ -563,6 +563,7 @@ export class Kernel implements IKernel {
 			console.log('warning, got more than 1 exit call from ' + task.pid);
 			return;
 		}
+		task.worker.onmessage = undefined;
 		task.exit(code);
 		delete this.tasks[task.pid];
 		let cb = this.systemRequests[task.pid];

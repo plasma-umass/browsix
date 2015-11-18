@@ -7,16 +7,16 @@ import { createServer, Socket } from 'net';
 function main(): void {
 	let server = createServer((socket: Socket) => {
 
-		console.log("Connection from " + socket.remoteAddress);
+		process.stdout.write('Connection from ' + socket.remoteAddress + '\n');
 		socket.end("Hello World\n");
 		setTimeout(process.exit, 0);
 	});
 
 	// Fire up the server bound to port 7000 on localhost
-	server.listen(7000, "localhost");
+	server.listen(7000, 'localhost');
 
 	// Put a friendly message on the terminal
-	console.log("TCP server listening on port 7000 at localhost.");
+	process.stdout.write('TCP server listening on port 7000 at localhost.\n');
 }
 
 main();

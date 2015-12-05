@@ -10,7 +10,7 @@ function main(): void {
 	let serverFinished = false;
 	let clientFinished = false;
 
-	let server = spawn('usr/bin/hello', [], { stdio: [0, 1, 2] });
+	let server = spawn('usr/bin/go-hello', [], { stdio: [0, 1, 2] });
 	server.on('error', (err: any) => {
 		process.stderr.write('error: ' + err + '\n', () => {
 			serverFinished = true;
@@ -24,11 +24,11 @@ function main(): void {
 			return process.exit(0);
 	});
 
-	setTimeout(client, 1000);
+	setTimeout(client, 5000);
 	function client(): void {
 		let options = {
 			host: 'localhost',
-			port: 8000,
+			port: 8080,
 			path: '/',
 		};
 

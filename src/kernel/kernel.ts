@@ -227,7 +227,7 @@ class Syscalls {
 		return ctx.complete('ENOTSOCKET');
 	}
 
-	accept(ctx: SyscallContext, fd: number, addr: string, port: number): void {
+	accept(ctx: SyscallContext, fd: number): void {
 		let file = ctx.task.files[fd];
 		if (!file) {
 			ctx.complete('bad FD ' + fd, null);

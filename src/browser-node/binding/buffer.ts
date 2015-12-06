@@ -14,7 +14,7 @@ function blitBuffer(src: any, dst: any, offset: number, length: number): number 
 	return i;
 }
 
-function utf8Slice(buf: any, start: number, end: number): any {
+export function utf8Slice(buf: any, start: number, end: number): any {
 	end = Math.min(buf.length, end);
 	let res: any[] = [];
 

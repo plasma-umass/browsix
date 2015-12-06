@@ -64,6 +64,7 @@
     "async": "^1.4.2",
     "browserfs": "^0.4.1",
     "dropbox": "^0.10.3",
+    "node-binary-marshal": "^0.1.2",
     "node-pipe2": "^0.2.0",
     "node-priority": "^0.1.5",
     "ts-stream": "^0.7.0"

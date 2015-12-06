@@ -140,12 +140,13 @@ tsTask('kernel', {
 });
 tsTask('browser-node', {buildDeps: ['copy-node']});
 tsTask('bin');
+tsTask('syscall-api');
 
 // next, we need to collect the various pieces we've built, and put
 // then in a sane directory hierarchy.  There is no dist step needed
 // for our binaries - they are self contained and meant to be run
 // directly from node or browser-node.
-gulp.task('build-fs', ['dist-kernel', 'dist-browser-node', 'build-bin'], function() {
+gulp.task('build-fs', ['dist-kernel', 'dist-browser-node', 'build-bin', 'dist-syscall-api'], function() {
 
     var copyKernel = gulp.src('lib-dist/lib/kernel/kernel.js')
           .pipe(copy('./fs/boot/', {prefix: 3}));

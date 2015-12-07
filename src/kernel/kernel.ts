@@ -10,7 +10,7 @@ import { now } from './ipc';
 import { Pipe, PipeFile, isPipe } from './pipe';
 import { SocketFile, isSocket } from './socket';
 import { RegularFile } from './file';
-import { SystemCallback, SyscallContext, SyscallResult, Syscall, ConnectCallback, IKernel, ITask, IFile } from './types';
+import { ExitCallback, OutputCallback, SyscallContext, SyscallResult, Syscall, ConnectCallback, IKernel, ITask, IFile } from './types';
 
 import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
 import { fs } from './vendor/BrowserFS/src/core/node_fs';
@@ -447,10 +447,6 @@ class Syscalls {
 	}
 }
 
-interface OutstandingMap {
-	[i: number]: SystemCallback;
-}
-
 export class Kernel implements IKernel {
 	fs: any; // FIXME
 
@@ -472,9 +468,6 @@ export class Kernel implements IKernel {
 	private taskIdSeq: number = 0;
 
 	private syscalls: Syscalls;
-
-	// keyed on PID
-	private systemRequests: OutstandingMap = {};
 
 	constructor(fs: fs, nCPUs: number) {
 		this.outstanding = 0;
@@ -538,7 +531,7 @@ export class Kernel implements IKernel {
 	}
 
 	// returns the PID.
-	system(cmd: string, cb: SystemCallback): void {
+	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void {
 		let parts = ['/usr/bin/sh', cmd];
 
 		// FIXME: fill in environment
@@ -547,10 +540,13 @@ export class Kernel implements IKernel {
 			if (err) {
 				// FIXME: maybe some better sort of
 				// error code
-				cb(-666, '', '');
+				onExit(-1, -666);
 				return;
 			}
-			this.systemRequests[pid] = cb;
+			let t = this.tasks[pid];
+			t.onExit = onExit;
+			t.onStdout = onStdout;
+			t.onStderr = onStderr;
 		});
 	}
 
@@ -566,8 +562,6 @@ export class Kernel implements IKernel {
 		task.worker.onmessage = undefined;
 		task.exit(code);
 		delete this.tasks[task.pid];
-		let cb = this.systemRequests[task.pid];
-		delete this.systemRequests[task.pid];
 
 		// run this in the next tick to allow any work queued
 		// up in the process of task.worker.terminate() to
@@ -581,14 +575,17 @@ export class Kernel implements IKernel {
 			setImmediate(workerTerminated);
 		});
 		function workerTerminated(): void {
-			if (!cb)
+			if (!task.onExit)
 				return;
 
 			let stdout = task.files[1];
 			let stderr = task.files[2];
-			if (isPipe(stdout) && isPipe(stderr)) {
-				cb(task.exitCode, stdout.readSync(), stderr.readSync());
-			}
+			if (isPipe(stdout) && task.onStdout)
+				task.onStdout(task.pid, stdout.readSync());
+
+			if (isPipe(stderr) && task.onStderr)
+				task.onStdout(task.pid, stderr.readSync());
+			task.onExit(task.pid, task.exitCode);
 		}
 	}
 
@@ -687,10 +684,13 @@ export class Task implements ITask {
 	parent: Task;
 	children: Task[];
 
+	onExit: ExitCallback;
+	onStdout: OutputCallback;
+	onStderr: OutputCallback;
+
 	priority: number;
 
 	private msgIdSeq: number = 1;
-	private outstanding: OutstandingMap = {};
 	private onRunnable: (err: any, pid: number) => void;
 
 	private pendingSignals: SyscallResult[] = [];

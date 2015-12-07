@@ -2,8 +2,12 @@
 
 'use strict';
 
-export interface SystemCallback {
-	(code: number, stdout: string, stderr: string): void;
+export interface ExitCallback {
+	(pid: number, code: number): void;
+}
+
+export interface OutputCallback {
+	(pid: number, output: string): void;
 }
 
 export interface SyscallResult {
@@ -23,7 +27,7 @@ export interface IKernel {
 	debug: boolean;
 
 	schedule(task: ITask): void;
-	system(cmd: string, cb: SystemCallback): void;
+	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void;
 	doSyscall(syscall: Syscall): void;
 	connect(s: IFile, addr: string, port: number, cb: ConnectCallback): void;
 }

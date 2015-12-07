@@ -21,10 +21,8 @@ function sys_read(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): 
 			for (let i = 0; i < data.length; i++)
 				$readArray[i] = data.charCodeAt(i);
 		}
-		debugger;
 		cb([data.length, 0, err ? -1 : 0]);
 	};
-	debugger;
 	syscall.pread.apply(syscall, [arg0, arg2, 0, done]);
 }
 

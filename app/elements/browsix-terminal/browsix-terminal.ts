@@ -1,13 +1,17 @@
 /// <reference path="../../../bower_components/polymer-ts/polymer-ts.d.ts"/>
 
-interface SystemCallback {
-    (code: number, stdout: string, stderr: string): void;
+interface ExitCallback {
+	(pid: number, code: number): void;
+}
+
+interface OutputCallback {
+	(pid: number, output: string): void;
 }
 
 interface Kernel {
-    fs: any;
-    system(cmd: string, cb: SystemCallback): void;
-    kill(pid: number): void;
+	fs: any;
+	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void;
+	kill(pid: number): void;
 }
 
 namespace Terminal {
@@ -51,17 +55,34 @@ namespace Terminal {
 			if (txt[txt.length-1] !== '\n')
 				return;
 			let parts = txt.split('\n');
-			let cmd = parts[parts.length-2].substring(this.ps1.length);
-			if (cmd.trim() === '') {
+			let cmd = parts[parts.length-2].substring(this.ps1.length).trim();
+			if (cmd === '') {
 				this.nextPrompt();
 				return;
 			}
 			this.editable = false;
-			this.kernel.system(cmd, (code: number, stdout: string, stderr: string) => {
-				this.$.term.value += stdout;
-				this.$.term.value += stderr;
+			let bg = cmd[cmd.length - 1] === '&';
+			if (bg) {
+				cmd = cmd.slice(0, -1).trim();
+				setTimeout(() => { this.editable = true; }, 0);
+			}
+
+			let completed = (pid: number, code: number) => {
 				this.editable = true;
-			});
+			}
+			let onInput = (pid: number, out: string) => {
+				let newlinePos = this.$.term.value.lastIndexOf('\n');
+				let lastLine = this.$.term.value.substr(newlinePos+1);
+				if (lastLine[0] === '$') {
+					if (out.length && out[out.length-1] !== '\n')
+						out += '\n';
+					this.$.term.value = this.$.term.value.substr(0, newlinePos+1) + out + lastLine;
+				} else {
+					this.$.term.value += out;
+				}
+
+			};
+			this.kernel.system(cmd, completed, onInput, onInput);
 		}
 
 		@observe('kernel')

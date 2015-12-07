@@ -105,6 +105,7 @@ export class SocketFile implements IFile {
 			this.outgoing.write(buf);
 		else
 			this.outgoing.writeBuffer((<Buffer>buf));
+		cb = arguments[arguments.length-1];
 		cb(undefined, buf.length);
 	}
 

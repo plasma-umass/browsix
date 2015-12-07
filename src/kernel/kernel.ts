@@ -550,12 +550,13 @@ export class Kernel implements IKernel {
 	// returns the PID.
 	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void {
 		let parts: string[];
-		if (cmd.indexOf('|') > -1 || cmd.indexOf(' ') > -1)
+		if (cmd.indexOf('|') > -1) {
 			parts = ['/usr/bin/sh', cmd];
-		else if (cmd[0] === '/')
-			parts = [cmd];
-		else
-			parts = ['/usr/bin/'+cmd];
+		} else {
+			parts = cmd.split(' ');
+		}
+		if (parts[0][0] !== '/')
+			parts[0] = '/usr/bin/'+parts[0];
 
 		// FIXME: fill in environment
 		let env: string[] = [];

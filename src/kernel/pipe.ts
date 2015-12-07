@@ -30,13 +30,19 @@ export class Pipe {
 	read(buf: Buffer, pos: number, len: number, off: number, cb: (err: any, len?: number) => void): void {
 		if (this.buf.length || this.closed) {
 			let n = this.buf.copy(buf, off, pos, pos+len);
-			this.buf = this.buf.slice(pos + n);
+			if (this.buf.length === pos + n)
+				this.buf = new Buffer(0);
+			else
+				this.buf = this.buf.slice(pos + n);
 			return cb(undefined, n);
 		}
 		// at this point, we're waiting on more data or an EOF.
 		this.waiter = () => {
 			let n = this.buf.copy(buf, off, pos, pos+len);
-			this.buf = this.buf.slice(pos + n);
+			if (this.buf.length === pos + n)
+				this.buf = new Buffer(0);
+			else
+				this.buf = this.buf.slice(pos + n);
 			return cb(undefined, n);
 		};
 	}

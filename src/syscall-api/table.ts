@@ -14,6 +14,18 @@ function sys_ni_syscall(cb: Function, trap: number): void {
 	setTimeout(cb, 0, [-1, 0, -ENOSYS]);
 }
 
+function sys_getcwd(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
+	let $getcwdArray = arg0;
+	let $getcwdLen = arg1;
+	let done = function(p: string): void {
+		debugger;
+		for (let i = 0; i < p.length; i++)
+			$getcwdArray[i] = p.charCodeAt(i);
+		cb([p.length, 0, 0]);
+	};
+	syscall.getcwd.apply(syscall, [done]);
+}
+
 function sys_read(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
 	let $readArray = arg1;
 	let $readLen = arg2;
@@ -40,13 +52,15 @@ function sys_stat(cb: Function, trap: number, arg0: any, arg1: any): void {
 		console.log('TODO: stat response');
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
-	let s = utf8Slice(arg0, 0, arg0.length);
-	syscall.fstat.apply(syscall, [s, done]);
+	let len = arg0.length;
+	if (len && arg0[arg0.length-1] === 0)
+		len--;
+	let s = utf8Slice(arg0, 0, len);
+	syscall.stat.apply(syscall, [s, done]);
 }
 
 function sys_fstat(cb: Function, trap: number, arg0: any, arg1: any): void {
 	let $fstatArray = arg1;
-	debugger;
 	let done = function(err: any, stat: any): void {
 		console.log('TODO: fstat response');
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
@@ -210,7 +224,7 @@ export var syscallTbl = [
 	sys_ni_syscall, // 76 truncate
 	sys_ni_syscall, // 77 ftruncate
 	sys_ni_syscall, // 78 getdents
-	sys_ni_syscall, // 79 getcwd
+	sys_getcwd,     // 79 getcwd
 	sys_ni_syscall, // 80 chdir
 	sys_ni_syscall, // 81 fchdir
 	sys_ni_syscall, // 82 rename

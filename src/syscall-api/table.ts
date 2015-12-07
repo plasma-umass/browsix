@@ -13,11 +13,33 @@ function sys_ni_syscall(cb: Function, trap: number): void {
 	setTimeout(cb, 0, [-1, 0, -ENOSYS]);
 }
 
+function sys_read(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
+	let $readArray = arg1;
+	let $readLen = arg2;
+	let done = function(err: any, data: string): void {
+		if (!err) {
+			for (let i = 0; i < data.length; i++)
+				$readArray[i] = data.charCodeAt(i);
+		}
+		debugger;
+		cb([data.length, 0, err ? -1 : 0]);
+	};
+	debugger;
+	syscall.pread.apply(syscall, [arg0, arg2, 0, done]);
+}
+
 function sys_write(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
 	let done = function(err: any, len: number): void {
 		cb([len, 0, err ? -1 : 0]);
 	};
 	syscall.pwrite.apply(syscall, [arg0, utf8Slice(arg1, 0, arg2), 0, done]);
+}
+
+function sys_close(cb: Function, trap: number, arg0: any): void {
+	let done = function(err: any): void {
+		cb([err ? -1 : 0, 0, err ? -1 : 0]);
+	};
+	syscall.close.apply(syscall, [arg0, done]);
 }
 
 function sys_exit_group(cb: Function, trap: number, arg0: any): void {
@@ -73,10 +95,10 @@ function sys_setsockopt(cb: Function, trap: number): void {
 }
 
 export var syscallTbl = [
-	sys_ni_syscall, // 0 read
+	sys_read,       // 0 read
 	sys_write,      // 1 write
 	sys_ni_syscall, // 2 open
-	sys_ni_syscall, // 3 close
+	sys_close,      // 3 close
 	sys_ni_syscall, // 4 stat
 	sys_ni_syscall, // 5 fstat
 	sys_ni_syscall, // 6 lstat

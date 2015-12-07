@@ -72,6 +72,10 @@ $(BROWSERFS): $(BROWSERFS_DIR) .gitmodules Makefile
 	git submodule update --init
 	touch $@
 
+syscall-api: $(BUILD_DEPS)
+	@echo "  SYSCALL"
+	node_modules/.bin/gulp dist-syscall-api
+
 bin: $(BUILD_DEPS)
 	@echo "  BIN"
 	node_modules/.bin/gulp index-fs

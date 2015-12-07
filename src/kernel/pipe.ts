@@ -4,39 +4,49 @@
 
 import { SyscallContext, IFile } from './types';
 
+declare var Buffer: any;
+
 export class Pipe {
-	buf: string = '';
+	buf: Buffer = new Buffer(0);
 	refcount: number = 1; // maybe more accurately a reader count
 	waiter: Function = undefined;
 	closed: boolean = false;
 
 	write(s: string): number {
-		this.buf += ''+s;
+		let b = new Buffer(s);
+		return this.writeBuffer(b);
+	}
+
+	writeBuffer(b: Buffer): number {
+		console.log('writeB: ');
+		console.log(b);
+		this.buf = Buffer.concat([this.buf, b]);
 		if (this.waiter) {
 			let waiter = this.waiter;
 			this.waiter = undefined;
 			setTimeout(waiter, 0);
 		}
-		return s.length;
+		return b.length;
 	}
 
 	read(buf: Buffer, pos: number, len: number, off: number, cb: (err: any, len?: number) => void): void {
 		if (this.buf.length || this.closed) {
-			//this.buf.copy(buf, pos, off, off+len)
-			let n = buf.write(this.buf.slice(pos), off, len);
+			let n = this.buf.copy(buf, off, pos, pos+len);
 			this.buf = this.buf.slice(pos + n);
 			return cb(undefined, n);
 		}
 		// at this point, we're waiting on more data or an EOF.
 		this.waiter = () => {
-			let n = buf.write(this.buf.slice(pos), off, len);
+			let n = this.buf.copy(buf, off, pos, pos+len);
 			this.buf = this.buf.slice(pos + n);
 			return cb(undefined, n);
 		};
 	}
 
 	readSync(): string {
-		return this.buf;
+		let s = this.buf.toString('utf-8');
+		console.log('readSync: ' + s);
+		return s;
 	}
 
 	ref(): void {
@@ -75,7 +85,7 @@ export class PipeFile implements IFile {
 		if (typeof buf === 'string')
 			this.pipe.write(buf);
 		else
-			throw new Error('TODO: Pipe.write unimplemented for Buffer');
+			this.pipe.writeBuffer((<Buffer>buf));
 		cb(undefined, buf.length);
 	}
 

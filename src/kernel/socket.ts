@@ -104,7 +104,7 @@ export class SocketFile implements IFile {
 		if (typeof buf === 'string')
 			this.outgoing.write(buf);
 		else
-			throw new Error('TODO: Pipe.write unimplemented for Buffer');
+			this.outgoing.writeBuffer((<Buffer>buf));
 		cb(undefined, buf.length);
 	}
 

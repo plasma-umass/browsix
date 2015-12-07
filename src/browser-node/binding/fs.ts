@@ -149,18 +149,14 @@ export function stat(path: string, req: FSReqWrap): void {
 export function read(fd: number, buffer: any, offset: number, len: number, pos: number, req: FSReqWrap): void {
 	if (typeof pos === 'undefined')
 		pos = -1;
-	syscall.pread(fd, len, pos, function readFinished(err: any, data: string): void {
+	syscall.pread(fd, len, pos, function readFinished(err: any, lenRead: number, data: Uint8Array): void {
 		if (err) {
 			req.complete(err, null);
 			return;
 		}
-		buffer.write(data, 0, data.length, 'utf-8');
-		try {
-			req.complete(null, data.length);
-		} catch (e) {
-			console.log('blerg');
-			console.log(e);
-		}
+		for (let i = 0; i < lenRead; i++)
+			buffer.writeUInt8(data[i], offset+i);
+		req.complete(null, lenRead);
 	});
 }
 

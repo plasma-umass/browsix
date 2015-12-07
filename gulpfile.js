@@ -76,6 +76,8 @@ function tsTask(subdir, options) {
                 // don't do anything when seeing use of 'process' - we
                 // handle this ourselves.
                 'process': function() { return "" },
+                'Buffer': function() { return "" },
+                'buffer': function() { return "" },
             },
         });
         b.exclude('webworker-threads');

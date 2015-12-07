@@ -4,6 +4,8 @@ import * as uv from './uv';
 import { syscall, AF, SOCK } from '../syscall';
 import { StreamWrap, WriteWrap } from './stream_wrap';
 
+declare var Buffer: any;
+
 export class Req {
 	localAddress: string;
 	localPort:    number;
@@ -148,12 +150,12 @@ export class TCP extends StreamWrap {
 	private _read(): void {
 		if (this.fd < 0)
 			return;
-		syscall.pread(this.fd, 1024, 0, (err: any, data: string) => {
-			//let b = new Buffer(data.length);
-			//b.write(data);
-			let n = data && data.length ? data.length : uv.UV_EOF;
-			if (this.onread)
-				this.onread(n, data);
+		syscall.pread(this.fd, 1024, 0, (err: any, dataLen: number, data: Uint8Array) => {
+			let n = dataLen ? dataLen : uv.UV_EOF;
+			if (this.onread) {
+				let b = new Buffer(data);
+				this.onread(n, b);
+			}
 			if (this.fd !== -1)
 				setTimeout(this._read.bind(this), 0);
 		});

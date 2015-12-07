@@ -17,12 +17,12 @@ function sys_ni_syscall(cb: Function, trap: number): void {
 function sys_read(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
 	let $readArray = arg1;
 	let $readLen = arg2;
-	let done = function(err: any, data: string): void {
+	let done = function(err: any, dataLen: number, data: Uint8Array): void {
 		if (!err) {
-			for (let i = 0; i < data.length; i++)
-				$readArray[i] = data.charCodeAt(i);
+			for (let i = 0; i < dataLen; i++)
+				$readArray[i] = data[i];
 		}
-		cb([data.length, 0, err ? -1 : 0]);
+		cb([dataLen, 0, err ? -1 : 0]);
 	};
 	syscall.pread.apply(syscall, [arg0, arg2, 0, done]);
 }
@@ -31,7 +31,7 @@ function sys_write(cb: Function, trap: number, arg0: any, arg1: any, arg2: any):
 	let done = function(err: any, len: number): void {
 		cb([len, 0, err ? -1 : 0]);
 	};
-	syscall.pwrite.apply(syscall, [arg0, utf8Slice(arg1, 0, arg2), 0, done]);
+	syscall.pwrite.apply(syscall, [arg0, new Uint8Array(arg1, 0, arg2), 0, done]);
 }
 
 function sys_fstat(cb: Function, trap: number, arg0: any, arg1: any): void {

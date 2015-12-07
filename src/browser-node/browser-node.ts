@@ -148,6 +148,10 @@ if (typeof (<any>self).setTimeout === 'undefined')
 	(<any>self).setTimeout = superSadSetTimeout;
 
 import * as fs from './fs';
+import * as buffer from './buffer';
+
+(<any>self).Buffer = buffer.Buffer;
+
 
 declare var thread: any;
 // node-WebWorker-threads doesn't support setTimeout becuase I think

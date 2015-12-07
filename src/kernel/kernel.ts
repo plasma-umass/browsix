@@ -293,17 +293,21 @@ class Syscalls {
 				ctx.complete(err, null);
 				return;
 			}
-			ctx.complete(null, buf.toString('utf-8', 0, lenRead));
+			// buf.toString('utf-8', 0, lenRead)
+			ctx.complete(null, lenRead, new Uint8Array(buf.data.buff.buffer, 0, lenRead));
 		});
 	}
 
 	// XXX: should accept string or Buffer, and offset
-	pwrite(ctx: SyscallContext, fd: number, buf: string|Buffer): void {
+	pwrite(ctx: SyscallContext, fd: number, buf: string|Uint8Array): void {
 		let file = ctx.task.files[fd];
 		if (!file) {
 			ctx.complete('bad FD ' + fd, null);
 			return;
 		}
+
+		if (!(buf instanceof Buffer) && (buf instanceof Uint8Array))
+			buf = new Buffer((<Uint8Array>buf).buffer);
 
 		file.write(buf, (err: any, len: number) => {
 			// we can't do ctx.complete.bind(ctx) here,
@@ -959,6 +963,7 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback): void {
 	let bfs: any = {};
 	BrowserFS.install(bfs);
 	Buffer = bfs.Buffer;
+	(<any>window).Buffer = Buffer;
 	let rootConstructor = BrowserFS.FileSystem[fsType];
 	if (!rootConstructor) {
 		setImmediate(cb, 'unknown FileSystem type: ' + fsType);

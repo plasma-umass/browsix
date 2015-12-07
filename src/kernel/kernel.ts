@@ -116,6 +116,7 @@ const O_WRONLY = constants.O_WRONLY || 0;
 const PRIO_MIN = -20;
 const PRIO_MAX = 20;
 
+const O_CLOEXEC = 0x80000;
 
 // based on stringToFlags from node's lib/fs.js
 function flagsToString(flag: any): string {
@@ -124,6 +125,7 @@ function flagsToString(flag: any): string {
 	if (typeof flag !== 'number') {
 		return flag;
 	}
+	flag &= ~O_CLOEXEC;
 
 	switch (flag) {
 	case O_RDONLY:
@@ -342,6 +344,7 @@ class Syscalls {
 	}
 
 	open(ctx: SyscallContext, path: string, flags: string, mode: number): void {
+		// FIXME: support CLOEXEC
 		this.kernel.fs.open(path, flagsToString(flags), mode, (err: any, fd: any) => {
 			if (err) {
 				ctx.complete(err, null);

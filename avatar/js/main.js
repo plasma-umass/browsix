@@ -7,5 +7,16 @@ function get_identicon (text) {
 	if (!OK) {
 		text = "a";
 	}
-    $("#show_identicon")[0].src='https://initials.herokuapp.com/' + text;
+
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', 'http://localhost:8080/' + text, true);
+	xhr.responseType = 'blob';
+
+	xhr.onload = function(e) {
+		if (this.status == 200) {
+			var blob = new Blob([this.response], {type: 'image/png'});
+			$("#show_identicon")[0].src = window.URL.createObjectURL(blob);
+		}
+	};
+	xhr.send();
 }

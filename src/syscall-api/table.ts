@@ -5,6 +5,7 @@ import { syscall } from '../browser-node/syscall';
 import { utf8Slice } from '../browser-node/binding/buffer';
 
 const ENOSYS = 38;
+const AT_FDCWD = -0x64;
 
 // not implemented
 function sys_ni_syscall(cb: Function, trap: number): void {
@@ -31,6 +32,32 @@ function sys_write(cb: Function, trap: number, arg0: any, arg1: any, arg2: any):
 		cb([len, 0, err ? -1 : 0]);
 	};
 	syscall.pwrite.apply(syscall, [arg0, utf8Slice(arg1, 0, arg2), 0, done]);
+}
+
+function sys_fstat(cb: Function, trap: number, arg0: any, arg1: any): void {
+	let $fstatArray = arg1;
+	let done = function(err: any, stat: any): void {
+		debugger;
+		cb([err ? -1 : 0, 0, err ? -1 : 0]);
+	};
+	syscall.fstat.apply(syscall, [arg0, done]);
+}
+
+function sys_openat(cb: Function, trap: number, arg0: any, arg1: any, arg2: any, arg3: any): void {
+	if ((arg0|0) !== AT_FDCWD) {
+		debugger;
+		setTimeout(cb, 0, [-1, 0, -1]);
+		return;
+	}
+	let done = function(err: any, fd: number): void {
+		if (err)
+			console.log('error: ' + err);
+		cb([fd, 0, err ? -1 : 0]);
+	};
+	let len = arg1.length;
+	if (len && arg1[arg1.length-1] === 0)
+		len--;
+	syscall.open.apply(syscall, [utf8Slice(arg1, 0, len), arg2, arg3, done]);
 }
 
 function sys_close(cb: Function, trap: number, arg0: any): void {
@@ -98,7 +125,7 @@ export var syscallTbl = [
 	sys_ni_syscall, // 2 open
 	sys_close,      // 3 close
 	sys_ni_syscall, // 4 stat
-	sys_ni_syscall, // 5 fstat
+	sys_fstat,      // 5 fstat
 	sys_ni_syscall, // 6 lstat
 	sys_ni_syscall, // 7 poll
 	sys_ni_syscall, // 8 lseek
@@ -350,7 +377,7 @@ export var syscallTbl = [
 	sys_ni_syscall, // 254 inotify_add_watch
 	sys_ni_syscall, // 255 inotify_rm_watch
 	sys_ni_syscall, // 256 migrate_pages
-	sys_ni_syscall, // 257 openat
+	sys_openat,     // 257 openat
 	sys_ni_syscall, // 258 mkdirat
 	sys_ni_syscall, // 259 mknodat
 	sys_ni_syscall, // 260 fchownat

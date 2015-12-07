@@ -24,7 +24,7 @@ function sys_read(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): 
 		}
 		cb([dataLen, 0, err ? -1 : 0]);
 	};
-	syscall.pread.apply(syscall, [arg0, arg2, 0, done]);
+	syscall.pread.apply(syscall, [arg0, arg2, -1, done]);
 }
 
 function sys_write(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {

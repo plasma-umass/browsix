@@ -86,6 +86,8 @@ export class PipeFile implements IFile {
 			this.pipe.write(buf);
 		else
 			this.pipe.writeBuffer((<Buffer>buf));
+
+		cb = arguments[arguments.length-1];
 		cb(undefined, buf.length);
 	}
 

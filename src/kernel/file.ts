@@ -18,7 +18,8 @@ export class RegularFile implements IFile {
 	}
 
 	write(buf: string|Buffer, cb: (err: any, len?: number) => void): void {
-		this.kernel.fs.write(this.fd, buf, cb);
+		let args = Array.prototype.slice.apply(arguments);
+		this.kernel.fs.write.apply(this.kernel.fs, (<any[]>[this.fd]).concat(args));
 	}
 
 	read(buf: Buffer, pos: number, len: number, off: number, cb: (err: any, len?: number) => void): void {

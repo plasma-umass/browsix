@@ -306,8 +306,18 @@ class Syscalls {
 			return;
 		}
 
-		if (!(buf instanceof Buffer) && (buf instanceof Uint8Array))
+		if (!(buf instanceof Buffer) && (buf instanceof Uint8Array)) {
 			buf = new Buffer((<Uint8Array>buf).buffer);
+			file.write(buf, 0, buf.length, (err: any, len: number) => {
+				// we can't do ctx.complete.bind(ctx) here,
+				// because write returns a _third_ object,
+				// 'string', which looks something like the
+				// buffer after the write?
+				ctx.complete(err, len);
+			});
+
+			return;
+		}
 
 		file.write(buf, (err: any, len: number) => {
 			// we can't do ctx.complete.bind(ctx) here,

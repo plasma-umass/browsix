@@ -34,10 +34,21 @@ function sys_write(cb: Function, trap: number, arg0: any, arg1: any, arg2: any):
 	syscall.pwrite.apply(syscall, [arg0, new Uint8Array(arg1, 0, arg2), 0, done]);
 }
 
-function sys_fstat(cb: Function, trap: number, arg0: any, arg1: any): void {
+function sys_stat(cb: Function, trap: number, arg0: any, arg1: any): void {
 	let $fstatArray = arg1;
 	let done = function(err: any, stat: any): void {
-		debugger;
+		console.log('TODO: stat response');
+		cb([err ? -1 : 0, 0, err ? -1 : 0]);
+	};
+	let s = utf8Slice(arg0, 0, arg0.length);
+	syscall.fstat.apply(syscall, [s, done]);
+}
+
+function sys_fstat(cb: Function, trap: number, arg0: any, arg1: any): void {
+	let $fstatArray = arg1;
+	debugger;
+	let done = function(err: any, stat: any): void {
+		console.log('TODO: fstat response');
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
 	syscall.fstat.apply(syscall, [arg0, done]);
@@ -124,7 +135,7 @@ export var syscallTbl = [
 	sys_write,      // 1 write
 	sys_ni_syscall, // 2 open
 	sys_close,      // 3 close
-	sys_ni_syscall, // 4 stat
+	sys_stat,       // 4 stat
 	sys_fstat,      // 5 fstat
 	sys_ni_syscall, // 6 lstat
 	sys_ni_syscall, // 7 poll

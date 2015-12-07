@@ -18,8 +18,6 @@ export class Pipe {
 	}
 
 	writeBuffer(b: Buffer): number {
-		console.log('writeB: ');
-		console.log(b);
 		this.buf = Buffer.concat([this.buf, b]);
 		if (this.waiter) {
 			let waiter = this.waiter;
@@ -45,7 +43,6 @@ export class Pipe {
 
 	readSync(): string {
 		let s = this.buf.toString('utf-8');
-		console.log('readSync: ' + s);
 		return s;
 	}
 

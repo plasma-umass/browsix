@@ -46,8 +46,16 @@ describe('sort /a /b', function(): void {
 	});
 
 	it('should run `sort /a /b`', function(done: MochaDone): void {
-		kernel.system('/usr/bin/sort /a /b', catExited);
-		function catExited(code: number, stdout: string, stderr: string): void {
+		let stdout: string = '';
+		let stderr: string = '';
+		kernel.system('/usr/bin/sort /a /b', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
 			try {
 				expect(code).to.equal(0);
 				expect(stdout).to.equal(['a', 'b', 'c', 'x', 'y', 'z'].join('\n') + '\n');

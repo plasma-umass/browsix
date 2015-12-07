@@ -38,8 +38,16 @@ describe('tail /a', function(): void {
 	});
 
 	it('should run `tail /a`', function(done: MochaDone): void {
-		kernel.system('/usr/bin/tail /a', tailExited);
-		function tailExited(code: number, stdout: string, stderr: string): void {
+		let stdout: string = '';
+		let stderr: string = '';
+		kernel.system('/usr/bin/tail /a', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
 			try {
 				expect(code).to.equal(0);
 				expect(stdout).to.equal('line 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\n');

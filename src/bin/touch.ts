@@ -28,8 +28,9 @@ function main(): void {
 
 	if (!args.length) {
 		// no args?  no dice!
-		process.stderr.write('usage:\n touch FILE\n');
-		process.exit(1);
+		process.stderr.write('usage:\n touch FILE\n', () => {
+			process.exit(1);
+		});
 	} else {
 		// use map instead of a for loop so that we easily get
 		// the tuple of (path, i) on each iteration.

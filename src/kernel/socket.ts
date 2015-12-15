@@ -113,7 +113,7 @@ export class SocketFile implements IFile {
 		this.incoming.read(buf, pos, len, off, cb);
 	}
 
-	readSync(): string {
+	readSync(): [string, Uint8Array] {
 		return this.incoming.readSync();
 	}
 

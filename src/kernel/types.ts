@@ -7,7 +7,7 @@ export interface ExitCallback {
 }
 
 export interface OutputCallback {
-	(pid: number, output: string): void;
+	(pid: number, output: [string, Uint8Array]): void;
 }
 
 export interface SyscallResult {

@@ -5,7 +5,7 @@ interface ExitCallback {
 }
 
 interface OutputCallback {
-	(pid: number, output: string): void;
+	(pid: number, output: [string, Uint8Array]): void;
 }
 
 interface Kernel {
@@ -70,15 +70,16 @@ namespace Terminal {
 			let completed = (pid: number, code: number) => {
 				this.editable = true;
 			}
-			let onInput = (pid: number, out: string) => {
+			let onInput = (pid: number, out: [string, Uint8Array]) => {
 				let newlinePos = this.$.term.value.lastIndexOf('\n');
 				let lastLine = this.$.term.value.substr(newlinePos+1);
 				if (lastLine[0] === '$') {
-					if (out.length && out[out.length-1] !== '\n')
-						out += '\n';
-					this.$.term.value = this.$.term.value.substr(0, newlinePos+1) + out + lastLine;
+					let sout = out[0];
+					if (sout.length && sout[sout.length-1] !== '\n')
+						sout += '\n';
+					this.$.term.value = this.$.term.value.substr(0, newlinePos+1) + sout + lastLine;
 				} else {
-					this.$.term.value += out;
+					this.$.term.value += out[0];
 				}
 
 			};

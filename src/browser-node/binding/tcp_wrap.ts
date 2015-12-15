@@ -151,13 +151,14 @@ export class TCP extends StreamWrap {
 		if (this.fd < 0)
 			return;
 		syscall.pread(this.fd, 1024, 0, (err: any, dataLen: number, data: Uint8Array) => {
+			if (this.fd === -1)
+				return;
 			let n = dataLen ? dataLen : uv.UV_EOF;
 			if (this.onread) {
 				let b = new Buffer(data);
 				this.onread(n, b);
 			}
-			if (this.fd !== -1)
-				setTimeout(this._read.bind(this), 0);
+			setTimeout(this._read.bind(this), 0);
 		});
 	}
 

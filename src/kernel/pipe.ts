@@ -47,9 +47,8 @@ export class Pipe {
 		};
 	}
 
-	readSync(): string {
-		let s = this.buf.toString('utf-8');
-		return s;
+	readSync(): [string, Uint8Array] {
+		return [this.buf.toString('utf-8'), new Uint8Array((<any>this.buf).data.buff.buffer)];
 	}
 
 	ref(): void {
@@ -102,7 +101,7 @@ export class PipeFile implements IFile {
 		throw new Error('TODO: PipeFile.stat not implemented');
 	}
 
-	readSync(): string {
+	readSync(): [string, Uint8Array] {
 		return this.pipe.readSync();
 	}
 

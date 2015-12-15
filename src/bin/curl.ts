@@ -38,9 +38,9 @@ function main(): void {
 		let str = '';
 
 		response.on('data', (chunk: string) => {
-			str += chunk;
-			process.stdout.write('http client got: ' + chunk + '\n');
-			setTimeout(process.exit, 0);
+			process.stdout.write(chunk, () => {
+				setTimeout(process.exit, 0);
+			});
 		});
 
 		//response.on('end', () => {

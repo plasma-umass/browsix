@@ -608,7 +608,7 @@ export class Kernel implements IKernel {
 				task.onStdout(task.pid, stdout.readSync());
 
 			if (isPipe(stderr) && task.onStderr)
-				task.onStderr(task.pid, stderr.readSync());
+				task.onStdout(task.pid, stderr.readSync());
 			task.onExit(task.pid, task.exitCode);
 		}
 	}
@@ -966,42 +966,6 @@ export class Task implements ITask {
 export interface BootCallback {
 	(err: any, kernel: Kernel): void;
 }
-
-
-let origXhrOpen = (<any>window).XMLHttpRequest.prototype.open;
-function xhrOpenHook(method: string, path: string, flag: boolean): void {
-	if (method === 'GET' && (path.indexOf('localhost') > -1 || path.indexOf('127.0.0.1') > -1)) {
-		this.$hooked = true;
-		this.$path = path;
-		return;
-	}
-
-	return origXhrOpen.apply(this, arguments);
-}
-
-let origXhrSend = (<any>window).XMLHttpRequest.prototype.send;
-function xhrSendHook(): void {
-	if (!this.$hooked)
-		return origXhrSend.apply(this, arguments);
-
-	let self = this;
-	let stdout: Uint8Array = null;
-	let stderr: string = '';
-	(<any>window).kernel.system('curl ' + this.$path, onExit, onStdout, onStderr);
-	function onStdout(pid: number, out: [string, Uint8Array]): void {
-		stdout = out[1];
-	}
-	function onStderr(pid: number, out: [string, Uint8Array]): void {
-		stderr += out[0];
-	}
-	function onExit(pid: number, code: number): void {
-		//self.status = code === 0 ? 200 : -1;
-		//self.response = stdout;
-		self.onload(code === 0 ? null : 'err: ' + stderr, stdout);
-	}
-}
-(<any>window).XMLHttpRequest.prototype.open = xhrOpenHook;
-(<any>window).XMLHttpRequest.prototype.send = xhrSendHook;
 
 // FIXME/TODO: this doesn't match the signature specified in the
 // project.

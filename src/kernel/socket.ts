@@ -24,6 +24,10 @@ export class SocketFile implements IFile {
 	task:          ITask;
 	isListening:   boolean    = false;
 	parent:        SocketFile = undefined;
+	refCount:      number     = 1;
+
+	port:          number;
+	addr:          string;
 
 	outgoing:      Pipe = undefined;
 	incoming:      Pipe = undefined;
@@ -118,6 +122,7 @@ export class SocketFile implements IFile {
 	}
 
 	ref(): void {
+		this.refCount++;
 		if (this.outgoing)
 			this.outgoing.ref();
 		if (this.incoming)
@@ -129,5 +134,10 @@ export class SocketFile implements IFile {
 			this.outgoing.unref();
 		if (this.incoming)
 			this.incoming.unref();
+		this.refCount--;
+		if (!this.refCount) {
+			if (this.port && this.addr)
+				this.task.kernel.unbind(this, this.addr, this.port);
+		}
 	}
 }

@@ -624,11 +624,22 @@ export class Kernel implements IKernel {
 		this.exit(task, -666);
 	}
 
+	unbind(s: IFile, addr: string, port: number): any {
+		if (!(port in this.ports))
+			return;
+		if (s !== this.ports[port]) {
+			console.log('unbind for wrong port?');
+			return;
+		}
+		delete this.ports[port];
+	}
+
 	bind(s: SocketFile, addr: string, port: number): any {
 		if (port in this.ports)
 			return 'port ' + port + ' already bound';
 		this.ports[port] = s;
-		return;
+		s.port = port;
+		s.addr = addr;
 	}
 
 	connect(f: IFile, addr: string, port: number, cb: ConnectCallback): void {

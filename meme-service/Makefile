@@ -1,4 +1,4 @@
-MAIN = image
+MAIN = meme-service
 
 all: $(MAIN).js
 

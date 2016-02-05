@@ -6,128 +6,110 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
 	"image"
-	"image/draw"
-	_ "image/jpeg"
-	"image/png"
 	"io/ioutil"
 	"log"
-	"math"
-	"os"
+	"net/http"
+	"path"
 
 	"github.com/golang/freetype/truetype"
-	"github.com/nfnt/resize"
-	"golang.org/x/image/font"
-	"golang.org/x/image/math/fixed"
 )
 
 var (
+	addr     = flag.String("addr", "127.0.0.1:8080", "address to listen on")
 	dpi      = flag.Float64("dpi", 144, "screen resolution in Dots Per Inch")
 	fontfile = flag.String("fontfile", "./font/leaguegothic-regular-webfont.ttf", "filename of the ttf font")
 	size     = flag.Float64("size", 36, "font size in points")
-	spacing  = flag.Float64("spacing", 1.5, "line spacing (e.g. 2 means double spaced)")
+	imgDir   = flag.String("bgdir", "./img", "directory where background images live")
 )
 
-const bgImgSrc = "./img/Futurama-Zoidberg.jpg"
+var imageSuffixes = []string{
+	".jpg",
+	".png",
+}
 
-const top = "Can't think of a demo?"
-const bottom = "Why not Zoidberg?"
+func isImage(p string) bool {
+	ext := path.Ext(p)
+	for _, suffix := range imageSuffixes {
+		if ext == suffix {
+			return true
+		}
+	}
+	return false
+}
 
-const imgW, imgH = 640, 480
+func name(p string) string {
+	p = path.Base(p)
+	ext := path.Ext(p)
+	return p[:len(p)-len(ext)]
+}
+
+func readImages(dir string) (map[string][]byte, error) {
+	images := map[string][]byte{}
+
+	dents, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return nil, fmt.Errorf("ReadDir(%s): %s", dir, err)
+	}
+
+	for _, dent := range dents {
+		n := dent.Name()
+		if dent.IsDir() || !isImage(n) {
+			continue
+		}
+		b, err := ioutil.ReadFile(path.Join(dir, n))
+		if err != nil {
+			log.Printf("Readfile(%s): %s", n, err)
+			// if one image can't be read, its not the end
+			// of the world
+			continue
+		}
+
+		// test decoding, but don't keep the result.  We will
+		// decode per-request to minimize memory usage.
+		_, _, err = image.Decode(bytes.NewReader(b))
+		if err != nil {
+			log.Printf("Decode(%s): %s", n, err)
+			continue
+		}
+
+		images[name(n)] = b
+	}
+
+	if len(images) == 0 {
+		return nil, fmt.Errorf("no images found in %s", dir)
+	}
+
+	return images, nil
+}
 
 func main() {
 	flag.Parse()
 
-	// read-in images
+	images, err := readImages(*imgDir)
+	if err != nil {
+		log.Fatalf("readImages: %s", err)
+	}
 
-	// read-in font
-
-	// start http server
-
-	// Read the font data.
 	fontBytes, err := ioutil.ReadFile(*fontfile)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	f, err := truetype.Parse(fontBytes)
+	font, err := truetype.Parse(fontBytes)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	bgImgBytes, err := ioutil.ReadFile(bgImgSrc)
+	http.Handle("/api/meme/v1/", http.StripPrefix("/api/meme/v1/", NewHandler(images, font)))
+
+	// start http server
+	err = http.ListenAndServe(*addr, nil)
 	if err != nil {
-		log.Println(err)
-		return
+		log.Printf("ListenAndServe:", err)
 	}
-
-	bgImg, _, err := image.Decode(bytes.NewReader(bgImgBytes))
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	// resize to match our output dimensions
-	bgImg = resize.Resize(imgW, imgH, bgImg, resize.Lanczos3)
-
-	fg := image.Black
-	rgba := image.NewRGBA(image.Rect(0, 0, imgW, imgH))
-	draw.Draw(rgba, rgba.Bounds(), bgImg, image.ZP, draw.Src)
-
-	h := font.HintingFull
-	d := &font.Drawer{
-		Dst: rgba,
-		Src: fg,
-		Face: truetype.NewFace(f, &truetype.Options{
-			Size:    *size,
-			DPI:     *dpi,
-			Hinting: h,
-		}),
-	}
-	y := 10 + int(math.Ceil(*size**dpi/72))
-	dy := int(math.Ceil(*size * *spacing * *dpi / 72))
-	d.Dot = fixed.Point26_6{
-		X: (fixed.I(imgW) - d.MeasureString(top)) / 2,
-		Y: fixed.I(y),
-	}
-	d.DrawString(top)
-	y += dy
-
-	y = imgH - 15
-	d.Dot = fixed.Point26_6{
-		X: (fixed.I(imgW) - d.MeasureString(bottom)) / 2,
-		Y: fixed.I(y),
-	}
-	d.DrawString(bottom)
-
-	//for _, s := range text {
-	//	d.Dot = fixed.P(10, y)
-	//	d.DrawString(s)
-	//	y += dy
-	//}
-
-	// Save that RGBA image to disk.
-	outFile, err := os.Create("out.png")
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-	defer outFile.Close()
-	b := bufio.NewWriter(outFile)
-	err = png.Encode(b, rgba)
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-	err = b.Flush()
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-	fmt.Println("Wrote out.png OK.")
-	os.Exit(0)
 }

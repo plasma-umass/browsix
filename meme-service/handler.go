@@ -30,8 +30,6 @@ func NewHandler(images map[string][]byte, font *truetype.Font) *Handler {
 const imgW, imgH = 640, 480
 
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	log.Print("path: ", req.URL.Path)
-
 	bgName := strings.Split(req.URL.Path, "/")[0]
 
 	q := req.URL.Query()
@@ -49,9 +47,12 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	log.Print("%s: \"%s\", \"%s\"", req.URL.Path, top, bottom)
+
 	bgImg, _, err := image.Decode(bytes.NewReader(bgBytes))
 	if err != nil {
 		log.Println(err)
+		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	// resize to match our output dimensions
@@ -90,6 +91,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	err = png.Encode(&b, rgba)
 	if err != nil {
 		log.Printf("png.Encode: %s", err)
+		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 

@@ -150,10 +150,10 @@ export class TCP extends StreamWrap {
 	private _read(): void {
 		if (this.fd < 0)
 			return;
-		syscall.pread(this.fd, 1024, 0, (err: any, dataLen: number, data: Uint8Array) => {
+		syscall.pread(this.fd, 262144, 0, (err: any, dataLen: number, data: Uint8Array) => {
 			let n = dataLen ? dataLen : uv.UV_EOF;
 			if (this.onread) {
-				let b = new Buffer(data);
+				let b: Buffer = data ? new Buffer(data): null;
 				this.onread(n, b);
 			}
 			if (this.fd !== -1)

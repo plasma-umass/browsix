@@ -47,6 +47,7 @@ func name(p string) string {
 	return p[:len(p)-len(ext)]
 }
 
+/*
 func readImages(dir string) (map[string][]byte, error) {
 	images := map[string][]byte{}
 
@@ -85,6 +86,30 @@ func readImages(dir string) (map[string][]byte, error) {
 
 	return images, nil
 }
+*/
+
+func readImages(dir string) (map[string][]byte, error) {
+	// FIXME: implement getdents
+	n := "/zoidberg.jpg"
+
+	images := map[string][]byte{}
+
+	b, err := ioutil.ReadFile(path.Join(dir, n))
+	if err != nil {
+		return nil, fmt.Errorf("Readfile(%s): %s", n, err)
+	}
+
+	// test decoding, but don't keep the result.  We will
+	// decode per-request to minimize memory usage.
+	_, _, err = image.Decode(bytes.NewReader(b))
+	if err != nil {
+		return nil, fmt.Errorf("Decode(%s): %s", n, err)
+	}
+
+	images[name(n)] = b
+
+	return images, nil
+}
 
 func main() {
 	flag.Parse()
@@ -106,7 +131,12 @@ func main() {
 	}
 
 	http.Handle("/api/meme/v1/", http.StripPrefix("/api/meme/v1/", NewHandler(images, font)))
+	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, "404 unknown url: %s\n", req.URL)
+	})
 
+	log.Printf("ready and listening on %s", *addr)
 	// start http server
 	err = http.ListenAndServe(*addr, nil)
 	if err != nil {

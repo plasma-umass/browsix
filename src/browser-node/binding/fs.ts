@@ -161,8 +161,8 @@ export function read(fd: number, buffer: any, offset: number, len: number, pos: 
 }
 
 export function writeBuffer(fd: number, buffer: any, offset: number, len: number, pos: number, req: FSReqWrap): void {
-	let str = buffer.toString('utf-8', offset, offset+len);
-	syscall.pwrite(fd, str, pos, req.complete.bind(req));
+	//let str = buffer.toString('utf-8', offset, offset+len);
+	syscall.pwrite(fd, buffer.slice(offset, offset+len), pos, req.complete.bind(req));
 }
 
 // FIXME: be efficient

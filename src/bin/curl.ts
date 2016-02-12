@@ -20,8 +20,9 @@ function main(): void {
 
 	let url = args[0];
 	let port = 80;
-	let [host, path] = url.split('://')[1].split('/');
-	path = '/' + path;
+	let parts = url.split('://')[1].split('/');
+	let host = parts[0];
+	let path = '/' + parts.slice(1).join('/');
 	if (host.indexOf(':') > -1) {
 		let sPort = '';
 		[host, sPort] = host.split(':');
@@ -35,17 +36,18 @@ function main(): void {
 	};
 
 	function callback(response: http.IncomingMessage): void {
-		let str = '';
+		let chunks: Buffer[] = [];
 
 		response.on('data', (chunk: string) => {
-			str += chunk;
-			process.stdout.write('http client got: ' + chunk + '\n');
-			setTimeout(process.exit, 0);
+			chunks.push(new Buffer(chunk));
 		});
 
-		//response.on('end', () => {
-		//	process.stdout.write('http client got: ' + str + '\n');
-		//});
+		response.on('end', () => {
+			let all = Buffer.concat(chunks);
+			process.stdout.write(all, () => {
+				setTimeout(process.exit, 0);
+			});
+		});
 	}
 
 	http.request(options, callback).end();

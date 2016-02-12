@@ -47,7 +47,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	log.Print("%s: \"%s\", \"%s\"", req.URL.Path, top, bottom)
+	log.Printf("%s: \"%s\", \"%s\"", req.URL.Path, top, bottom)
 
 	bgImg, _, err := image.Decode(bytes.NewReader(bgBytes))
 	if err != nil {

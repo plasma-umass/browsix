@@ -18,7 +18,7 @@
   "homepage": "https://github.com/plasma-umass/project-1-brash-browser-shell-bobby-and-craig#readme",
   "devDependencies": {
     "bower": "^1.5.3",
-    "browser-sync": "^2.9.6",
+    "browser-sync": "^2.11.1",
     "browserify": "^11.2.0",
     "chai": "^3.3.0",
     "connect-history-api-fallback": "^1.1.0",
@@ -52,6 +52,7 @@
     "karma-mocha": "^0.2.0",
     "merge2": "^0.3.6",
     "mocha": "^2.3.3",
+    "proxy-middleware": "^0.15.0",
     "run-sequence": "^1.1.4",
     "through2": "^2.0.0",
     "tsd": "^0.6.4",

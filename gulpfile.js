@@ -18,6 +18,8 @@ var uglify = require('gulp-uglify');
 var karma = require('karma');
 var run = require('gulp-run');
 var chmod = require('gulp-chmod');
+var proxy = require('proxy-middleware');
+var url = require('url');
 
 var $ = require('gulp-load-plugins')();
 var del = require('del');
@@ -233,25 +235,6 @@ gulp.task('default', ['dist-test'], function(done) {
     }, done).start();
 });
 
-gulp.task('serve', ['dist-kernel', 'dist-browser-node', 'build-bin'], function() {
-    browserSync({
-        port: 5000,
-        notify: false,
-        logPrefix: 'browsix',
-        snippetOptions: {
-            rule: {
-                match: '<span id="browser-sync-binding"></span>',
-                fn: function(snippet) { return snippet; },
-            },
-        },
-        server: { baseDir: ['.'] },
-    });
-
-    gulp.watch(['index.html'], reload);
-    gulp.watch(['src/**/*.ts', 'test/*.js'], ['dist-kernel', 'dist-browser-node', 'build-bin', reload]);
-});
-
-
 // from this point on is the config for the Terminal web app, written
 // using Polymer.
 
@@ -409,6 +392,9 @@ gulp.task('app:build', ['index-fs'], function (cb) {
 
 // Watch files for changes & reload
 gulp.task('serve', ['app:build', 'app:styles', 'app:elements', 'app:images'], function () {
+    var proxyOptions = url.parse('http://localhost:8080/api');
+    proxyOptions.route = '/api';
+
     browserSync({
         port: 5000,
         notify: false,
@@ -430,7 +416,8 @@ gulp.task('serve', ['app:build', 'app:styles', 'app:elements', 'app:images'], fu
             routes: {
                 '/bower_components': 'bower_components',
                 '/fs': 'fs',
-            }
+            },
+            middleware: [proxy(proxyOptions)],
         }
     });
 

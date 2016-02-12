@@ -9,7 +9,7 @@ import * as vfs from './vfs';
 import { now } from './ipc';
 import { Pipe, PipeFile, isPipe } from './pipe';
 import { SocketFile, isSocket } from './socket';
-import { RegularFile } from './file';
+import { DirFile, RegularFile } from './file';
 import { ExitCallback, OutputCallback, SyscallContext, SyscallResult, Syscall, ConnectCallback, IKernel, ITask, IFile } from './types';
 
 import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
@@ -354,19 +354,26 @@ class Syscalls {
 	}
 
 	readdir(ctx: SyscallContext, path: string): void {
+		debugger;
 		this.kernel.fs.readdir(path, ctx.complete.bind(ctx));
 	}
 
 	open(ctx: SyscallContext, path: string, flags: string, mode: number): void {
 		// FIXME: support CLOEXEC
 		this.kernel.fs.open(path, flagsToString(flags), mode, (err: any, fd: any) => {
-			if (err) {
+			let f: IFile;
+			if (err && err.code === 'EISDIR') {
+				// TODO: update BrowserFS to open() dirs
+				f = new DirFile(this.kernel, path);
+			} else if (!err) {
+				f = new RegularFile(this.kernel, fd);
+			} else {
 				ctx.complete(err, null);
 				return;
 			}
 			// FIXME: this isn't POSIX semantics - we
 			// don't necessarily reuse lowest free FD.
-			let n = ctx.task.addFile(new RegularFile(this.kernel, fd));
+			let n = ctx.task.addFile(f);
 			ctx.complete(undefined, n);
 		});
 	}

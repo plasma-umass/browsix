@@ -48,8 +48,8 @@ export class Pipe {
 	}
 
 	readSync(): string {
-		let s = this.buf.toString('utf-8');
-		return s;
+		let s = this.buf; //.toString('utf-8');
+		return <any>s;
 	}
 
 	ref(): void {
@@ -100,6 +100,10 @@ export class PipeFile implements IFile {
 
 	stat(cb: (err: any, stats: any) => void): void {
 		throw new Error('TODO: PipeFile.stat not implemented');
+	}
+
+	readdir(cb: (err: any, files: string[]) => void): void {
+		setTimeout(cb, 0, 'cant readdir on normal file');
 	}
 
 	readSync(): string {

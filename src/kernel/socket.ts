@@ -43,6 +43,10 @@ export class SocketFile implements IFile {
 		throw new Error('TODO: SocketFile.stat not implemented');
 	}
 
+	readdir(cb: (err: any, files: string[]) => void): void {
+		setTimeout(cb, 0, 'cant readdir on normal file');
+	}
+
 	listen(cb: (err: any) => void): void {
 		this.isListening = true;
 		cb(undefined);

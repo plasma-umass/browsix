@@ -12,6 +12,8 @@ import { SocketFile, isSocket } from './socket';
 import { DirFile, RegularFile } from './file';
 import { ExitCallback, OutputCallback, SyscallContext, SyscallResult, Syscall, ConnectCallback, IKernel, ITask, IFile } from './types';
 
+import { HTTPParser } from './http_parser';
+
 import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
 import { fs } from './vendor/BrowserFS/src/core/node_fs';
 
@@ -579,6 +581,71 @@ export class Kernel implements IKernel {
 			t.onStdout = onStdout;
 			t.onStderr = onStderr;
 		});
+	}
+
+	socketReady(type: string, port: number, cb: any): void {
+
+	}
+
+	httpRequest(url: string, cb: any): void {
+		let port = 80;
+		let parts = url.split('://')[1].split('/');
+		let host = parts[0];
+		let path = '/' + parts.slice(1).join('/');
+		if (host.indexOf(':') > -1) {
+			let sPort = '';
+			[host, sPort] = host.split(':');
+			port = parseInt(sPort, 10);
+		}
+
+		let req = 'GET ' + url + ' HTTP/1.1\r\n';
+		req += 'Host: localhost:' + port + '\r\n';
+		req += 'User-Agent: Browsix/1.0\r\n';
+		req += 'Accept: */*\r\n\r\n';
+
+		let resp: any[] = [];
+		let f = new SocketFile(null);
+
+		let p = new HTTPParser(HTTPParser.RESPONSE);
+		p.isUserCall = true;
+		p[HTTPParser.kOnHeadersComplete] = (info: any) => {
+			console.log('headers complete');
+			// who cares
+			//console.log("done");
+			//console.log(info)
+		};
+
+		p[HTTPParser.kOnBody] = (chunk: any) => {
+			resp.push(chunk);
+		};
+		p[HTTPParser.kOnMessageComplete] = () => {
+			// close()
+			// call callback
+			console.log('msg complete');
+		};
+
+		let buf = new Buffer(64*1024);
+		function onRead(err: any, len?: number): void {
+			console.log('READ: ' + err);
+			p.execute(buf);
+			buf = new Buffer(64*1024);
+			f.read(buf, 0, 64*1024, 0, onRead);
+		}
+
+		this.connect(f, host, port, (err: any) => {
+			console.log('connected to ' + port);
+			f.read(buf, 0, 64*1024, 0, onRead);
+
+			f.write(req, (ierr: any, len?: number) => {
+				if (ierr)
+					console.log('err: ' + ierr);
+			});
+			(<any>window).F = f;
+		});
+
+		// read+
+		// close
+		// call callback
 	}
 
 	exit(task: Task, code: number): void {

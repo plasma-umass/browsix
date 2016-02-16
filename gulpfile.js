@@ -93,6 +93,12 @@ function tsTask(subdir, options) {
     });
 }
 
+gulp.task('copy-node-kernel', function() {
+    return gulp.src([
+        'node-modified/lib/binding/http_parser.js',
+    ]).pipe(copy('./lib/kernel/', {prefix: 3}));
+});
+
 gulp.task('copy-node', function() {
     return gulp.src([
         'node/lib/internal/util.js',
@@ -140,7 +146,8 @@ tsTask('kernel', {
     otherSources: [
         '!src/kernel/vendor/BrowserFS/test/**/*.ts',
         '!src/kernel/vendor/BrowserFS/src/browserify_main.ts',
-    ]
+    ],
+    buildDeps: ['copy-node-kernel'],
 });
 tsTask('browser-node', {buildDeps: ['copy-node']});
 tsTask('bin');

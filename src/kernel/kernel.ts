@@ -1,3 +1,7 @@
+// Copyright 2016 The Browsix Authors. All rights reserved.
+// Use of this source code is governed by the ISC
+// license that can be found in the LICENSE file.
+
 /// <reference path="../../typings/node/node.d.ts" />
 /// <reference path="../../typings/async/async.d.ts" />
 /// <reference path="../../typings/dropboxjs/dropboxjs.d.ts" />
@@ -5,7 +9,6 @@
 'use strict';
 
 import * as constants from './constants';
-import * as vfs from './vfs';
 import { now } from './ipc';
 import { Pipe, PipeFile, isPipe } from './pipe';
 import { SocketFile, isSocket } from './socket';
@@ -615,19 +618,29 @@ export class Kernel implements IKernel {
 			//console.log(info)
 		};
 
-		p[HTTPParser.kOnBody] = (chunk: any) => {
-			resp.push(chunk);
+		p[HTTPParser.kOnBody] = (chunk: any, off: number, len: number) => {
+			resp.push(chunk.slice(off, off+len));
 		};
 		p[HTTPParser.kOnMessageComplete] = () => {
-			// close()
-			// call callback
-			console.log('msg complete');
+			console.log('TODO: close file object & socket');
+
+			let response = Buffer.concat(resp);
+			let ctx: any = {
+				status: 200,
+				response: new Uint8Array(response.data.buff.buffer, 0, response.length),
+			};
+
+			cb.apply(ctx, []);
 		};
 
 		let buf = new Buffer(64*1024);
 		function onRead(err: any, len?: number): void {
-			console.log('READ: ' + err);
-			p.execute(buf);
+			if (err) {
+				// TODO: proper logging
+				console.log('http read error: ' + err);
+				return;
+			}
+			p.execute(buf.slice(0, len));
 			buf = new Buffer(64*1024);
 			f.read(buf, 0, 64*1024, 0, onRead);
 		}

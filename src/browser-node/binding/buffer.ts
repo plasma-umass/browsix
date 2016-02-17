@@ -117,7 +117,7 @@ function utf8ToBytes(string: string, units?: number): any {
 	let leadSurrogate: any = null;
 	let bytes: any[] = [];
 
-	for (var i = 0; i < length; i++) {
+	for (let i = 0; i < length; i++) {
 		codePoint = string.charCodeAt(i);
 
 		// is surrogate component

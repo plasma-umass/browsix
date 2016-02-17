@@ -55,7 +55,7 @@ function tail(inputs: NodeJS.ReadableStream[], output: NodeJS.WritableStream, nu
 	// FIXME: this only works for the case of a single input file
 	current.on('end', function(): void {
 		outstanding = linebuffer.length;
-		for (var i = 0; i < linebuffer.length; i++) {
+		for (let i = 0; i < linebuffer.length; i++) {
 			output.write(linebuffer[i] + "\n", () => {
 				outstanding--;
 				if (!outstanding)

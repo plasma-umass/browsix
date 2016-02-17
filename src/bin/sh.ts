@@ -10,7 +10,7 @@ import { pipe2 } from 'node-pipe2';
 
 //
 // We split on the pipe, which works since pipe is the only operator.
-// 
+//
 function tokenize(statement: string, delim: string): string[] {
 	'use strict';
 	// strips whitespace in between commands
@@ -22,7 +22,7 @@ function parse(tokens: string[], utildir: string): string[][] {
 	// each command is a list, starting with the utility,
 	// followed by flags and arguments
 	let commands: string[][] = [];
-	for (var i = 0; i < tokens.length; i++) {
+	for (let i = 0; i < tokens.length; i++) {
 		let token = tokens[i];
 		// if pipe isn't between commands, throw error
 		if (! (/\S/.test(token))) {
@@ -83,7 +83,7 @@ function execute_child(cmd: string[], opts: Object, pids: number[], codes: numbe
 function exit_process(codes: number[]): void {
 	'use strict';
 	let code = 0;
-	for (var i = 0; i < codes.length; i++) {
+	for (let i = 0; i < codes.length; i++) {
 		if (codes[i] !== 0) {
 			code = codes[i];
 		}
@@ -94,7 +94,7 @@ function exit_process(codes: number[]): void {
 function main(): void {
 	'use strict';
 	///
-	// Note: assumes the statement to be executed is a _string_ in argv[2] 
+	// Note: assumes the statement to be executed is a _string_ in argv[2]
 	///
 	// get statement
 	let argv = process.argv;

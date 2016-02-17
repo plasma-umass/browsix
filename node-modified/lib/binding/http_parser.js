@@ -151,7 +151,7 @@ HTTPParser.prototype.consumeLine = function () {
   var end = this.end,
       chunk = this.chunk;
   for (var i = this.offset; i < end; i++) {
-    if (chunk[i] === 0x0a) { // \n
+    if (chunk.readUInt8(i) === 0x0a) { // \n
       var line = this.line + chunk.toString('ascii', this.offset, i);
       if (line.charAt(line.length - 1) === '\r') {
         line = line.substr(0, line.length - 1);
@@ -264,7 +264,8 @@ HTTPParser.prototype.HEADER = function () {
           this.isChunked = headers[i + 1].toLowerCase() === 'chunked';
           break;
         case 'content-length':
-          this.body_bytes = +headers[i + 1];
+              this.body_bytes = +headers[i + 1];
+	      console.log('body bytes: ' + this.body_bytes);
           break;
         case 'connection':
           this.connection += headers[i + 1].toLowerCase();

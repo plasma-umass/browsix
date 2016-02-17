@@ -3,8 +3,6 @@
 // license that can be found in the LICENSE file.
 
 /// <reference path="../../typings/node/node.d.ts" />
-/// <reference path="../../typings/async/async.d.ts" />
-/// <reference path="../../typings/dropboxjs/dropboxjs.d.ts" />
 
 'use strict';
 
@@ -36,12 +34,11 @@ let SCHEDULING_DELAY = 0;
 
 let Buffer: any;
 
+// we only import the backends we use, for now.
 require('./vendor/BrowserFS/src/backend/in_memory');
 require('./vendor/BrowserFS/src/backend/XmlHttpRequest');
 require('./vendor/BrowserFS/src/backend/overlay');
 require('./vendor/BrowserFS/src/backend/async_mirror');
-//require('./vendor/BrowserFS/src/backend/html5fs');
-//require('./vendor/BrowserFS/src/backend/dropbox');
 //require('./vendor/BrowserFS/src/backend/localStorage');
 //require('./vendor/BrowserFS/src/backend/mountable_file_system');
 //require('./vendor/BrowserFS/src/backend/zipfs');

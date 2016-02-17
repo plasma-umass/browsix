@@ -1,6 +1,5 @@
 /// <reference path="../../typings/node/node.d.ts" />
 /// <reference path="../../typings/promise.d.ts" />
-/// <reference path="../../node_modules/ts-stream/ts-stream.d.ts" />
 
 'use strict';
 

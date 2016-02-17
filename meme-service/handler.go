@@ -19,11 +19,11 @@ import (
 
 type Handler struct {
 	// these are read only, safe for access from multiple goroutines
-	images map[string][]byte
+	images map[string]image.Image
 	font   *truetype.Font
 }
 
-func NewHandler(images map[string][]byte, font *truetype.Font) *Handler {
+func NewHandler(images map[string]image.Image, font *truetype.Font) *Handler {
 	return &Handler{images, font}
 }
 
@@ -41,7 +41,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		bottom = "Why not Zoidberg?"
 	}
 
-	bgBytes, ok := h.images[bgName]
+	bgImg, ok := h.images[bgName]
 	if !ok {
 		rw.WriteHeader(http.StatusBadRequest)
 		return
@@ -49,12 +49,6 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	log.Printf("%s: \"%s\", \"%s\"", req.URL.Path, top, bottom)
 
-	bgImg, _, err := image.Decode(bytes.NewReader(bgBytes))
-	if err != nil {
-		log.Println(err)
-		rw.WriteHeader(http.StatusBadRequest)
-		return
-	}
 	// resize to match our output dimensions
 	bgImg = resize.Resize(imgW, imgH, bgImg, resize.Lanczos3)
 
@@ -88,7 +82,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	d.DrawString(bottom)
 
 	b := bytes.Buffer{}
-	err = png.Encode(&b, rgba)
+	err := png.Encode(&b, rgba)
 	if err != nil {
 		log.Printf("png.Encode: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)

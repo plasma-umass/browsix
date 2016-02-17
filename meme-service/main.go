@@ -88,25 +88,24 @@ func readImages(dir string) (map[string][]byte, error) {
 }
 */
 
-func readImages(dir string) (map[string][]byte, error) {
+func readImages(dir string) (map[string]image.Image, error) {
 	// FIXME: implement getdents
 	n := "/zoidberg.jpg"
 
-	images := map[string][]byte{}
+	images := map[string]image.Image{}
 
 	b, err := ioutil.ReadFile(path.Join(dir, n))
 	if err != nil {
 		return nil, fmt.Errorf("Readfile(%s): %s", n, err)
 	}
 
-	// test decoding, but don't keep the result.  We will
-	// decode per-request to minimize memory usage.
-	_, _, err = image.Decode(bytes.NewReader(b))
+	// decode ahead of time, as it is expensive.
+	img, _, err := image.Decode(bytes.NewReader(b))
 	if err != nil {
 		return nil, fmt.Errorf("Decode(%s): %s", n, err)
 	}
 
-	images[name(n)] = b
+	images[name(n)] = img
 
 	return images, nil
 }

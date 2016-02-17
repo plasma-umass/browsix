@@ -1,0 +1,41 @@
+#!/usr/bin/env node
+/// <reference path="../../typings/node/node.d.ts" />
+'use strict';
+var child_process_1 = require('child_process');
+var http = require('http');
+function main() {
+    var serverFinished = false;
+    var clientFinished = false;
+    var server = child_process_1.spawn('./hello-world-http', [], { stdio: [0, 1, 2] });
+    server.on('error', function (err) {
+        process.stderr.write('error: ' + err + '\n', function () {
+            serverFinished = true;
+            if (clientFinished)
+                return process.exit(0);
+        });
+    });
+    server.on('exit', function () {
+        serverFinished = true;
+        if (clientFinished)
+            return process.exit(0);
+    });
+    setTimeout(client, 5000);
+    function client() {
+        var options = {
+            host: 'localhost',
+            port: 8080,
+            path: '/',
+        };
+        function callback(response) {
+            var str = '';
+            response.on('data', function (chunk) {
+                str += chunk;
+                process.stdout.write('http client got: ' + chunk + '\n');
+                setTimeout(process.exit, 0);
+            });
+        }
+        http.request(options, callback).end();
+    }
+}
+main();
+

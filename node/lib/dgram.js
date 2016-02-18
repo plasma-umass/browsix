@@ -180,22 +180,23 @@ Socket.prototype.bind = function(port /*, address, callback*/) {
     if (self._reuseAddr)
       flags |= constants.UV_UDP_REUSEADDR;
 
-    if (cluster.isWorker && !exclusive) {
-      function onHandle(err, handle) {
-        if (err) {
-          var ex = exceptionWithHostPort(err, 'bind', ip, port);
-          self.emit('error', ex);
-          self._bindState = BIND_STATE_UNBOUND;
-          return;
-        }
-
-        if (!self._handle)
-          // handle has been closed in the mean time.
-          return handle.close();
-
-        replaceHandle(self, handle);
-        startListening(self);
+    function onHandle(err, handle) {
+      if (err) {
+        var ex = exceptionWithHostPort(err, 'bind', ip, port);
+        self.emit('error', ex);
+        self._bindState = BIND_STATE_UNBOUND;
+        return;
       }
+
+      if (!self._handle)
+        // handle has been closed in the mean time.
+        return handle.close();
+
+      replaceHandle(self, handle);
+      startListening(self);
+    }
+
+    if (cluster.isWorker && !exclusive) {
       cluster._getServer(self, {
         address: ip,
         port: port,

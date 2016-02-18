@@ -8,7 +8,6 @@ var rename = require('gulp-rename');
 var merge = require('merge2');
 var ts = require('gulp-typescript');
 var lint = require('gulp-tslint');
-var runSequence = require('run-sequence');
 var mocha = require('gulp-mocha');
 var browserSync = require('browser-sync');
 var reload = browserSync.reload;
@@ -308,7 +307,7 @@ gulp.task('app:styles', function () {
     return styleTask('styles', ['**/*.css']);
 });
 
-gulp.task('app:elements', function () {
+gulp.task('app:elements', ['app:build', 'app:copy', 'app:styles'], function () {
     return styleTask('elements', ['**/*.css']);
 });
 
@@ -363,14 +362,14 @@ gulp.task('app:fonts', function () {
 });
 
 // Scan your HTML for assets & optimize them
-gulp.task('app:html', function () {
+gulp.task('app:html', ['app:elements'], function () {
     return optimizeHtmlTask(
         ['app/**/*.html', '!app/{elements,test}/**/*.html'],
         'dist');
 });
 
 // Vulcanize granular configuration
-gulp.task('app:vulcanize', function () {
+gulp.task('app:vulcanize', ['app:images', 'app:fonts', 'app:html'], function () {
     var DEST_DIR = 'dist/elements';
     return gulp.src('dist/elements/elements.vulcanized.html')
         .pipe($.vulcanize({
@@ -404,7 +403,7 @@ gulp.task('serve', ['app:build', 'app:styles', 'app:elements', 'app:images'], fu
     browserSync({
         port: 5000,
         notify: false,
-        logPrefix: 'project1',
+        logPrefix: 'browsix',
         snippetOptions: {
             rule: {
                 match: '<span id="browser-sync-binding"></span>',
@@ -439,7 +438,7 @@ gulp.task('serve:dist', ['build:dist'], function () {
     browserSync({
         port: 5001,
         notify: false,
-        logPrefix: 'project1',
+        logPrefix: 'browsix',
         snippetOptions: {
             rule: {
                 match: '<span id="browser-sync-binding"></span>',
@@ -458,12 +457,4 @@ gulp.task('serve:dist', ['build:dist'], function () {
 });
 
 // Build production files, the default task
-gulp.task('build:dist', ['app:clean'], function (cb) {
-    runSequence(
-        'app:build',
-        ['app:copy', 'app:styles'],
-        'app:elements',
-        ['app:images', 'app:fonts', 'app:html'],
-        'app:vulcanize',
-        cb);
-});
+gulp.task('build:dist', ['app:vulcanize']);

@@ -103,7 +103,7 @@ This project is licensed under the MIT license, but also incorporates
 code from other sources.
 
 Browsix uses [BrowserFS](https://github.com/jvilk/BrowserFS) for its
-filesystem, which is [primarily MIT licensed](LICENSE.browserfs)
+filesystem, which is [primarily MIT licensed](LICENSE.browserfs).
 
 browser-node's [`nextTick`](src/browser-node/browser-node.ts#L114)
 implementation comes from the

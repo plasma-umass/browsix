@@ -309,7 +309,12 @@ class Syscalls {
 		}
 
 		if (!(buf instanceof Buffer) && (buf instanceof Uint8Array)) {
-			buf = new Buffer((<Uint8Array>buf).buffer);
+			let ubuf = <Uint8Array>buf;
+			// we need to slice the buffer, because our
+			// Uint8Array may be offset inside of the
+			// parent ArrayBuffer.
+			let abuf = ubuf.buffer.slice(ubuf.byteOffset, ubuf.byteOffset + ubuf.byteLength);
+			buf = new Buffer(abuf);
 			file.write(buf, 0, buf.length, (err: any, len: number) => {
 				// we can't do ctx.complete.bind(ctx) here,
 				// because write returns a _third_ object,
@@ -356,7 +361,6 @@ class Syscalls {
 	}
 
 	readdir(ctx: SyscallContext, path: string): void {
-		debugger;
 		this.kernel.fs.readdir(path, ctx.complete.bind(ctx));
 	}
 
@@ -562,7 +566,7 @@ export class Kernel implements IKernel {
 		if (cmd.indexOf('|') > -1) {
 			parts = ['/usr/bin/sh', cmd];
 		} else {
-			parts = cmd.split(' ');
+			parts = cmd.split(' ').filter((s) => s !== '');
 		}
 		if (parts[0][0] !== '/')
 			parts[0] = '/usr/bin/'+parts[0];
@@ -689,10 +693,10 @@ export class Kernel implements IKernel {
 			let stdout = task.files[1];
 			let stderr = task.files[2];
 			if (isPipe(stdout) && task.onStdout)
-				task.onStdout(task.pid, stdout.readSync());
+				task.onStdout(task.pid, stdout.readSync().toString('utf-8'));
 
 			if (isPipe(stderr) && task.onStderr)
-				task.onStdout(task.pid, stderr.readSync());
+				task.onStdout(task.pid, stderr.readSync().toString('utf-8'));
 			task.onExit(task.pid, task.exitCode);
 		}
 	}

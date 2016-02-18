@@ -38,8 +38,16 @@ describe('rmdir /a', function(): void {
 	});
 
 	it('should run `rmdir /a`', function(done: MochaDone): void {
-		kernel.system('/usr/bin/rmdir /a', catExited);
-		function catExited(code: number, stdout: string, stderr: string): void {
+		let stdout = '';
+		let stderr = '';
+		kernel.system('/usr/bin/rmdir /a', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
 			try {
 				expect(code).to.equal(0);
 				expect(stdout).to.equal('');

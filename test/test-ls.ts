@@ -30,8 +30,16 @@ describe('ls /boot', function(): void {
 	});
 
 	it('should run `ls /boot`', function(done: MochaDone): void {
-		kernel.system('/usr/bin/ls /boot', cmdExited);
-		function cmdExited(code: number, stdout: string, stderr: string): void {
+		let stdout = '';
+		let stderr = '';
+		kernel.system('/usr/bin/ls /boot', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
 			try {
 				expect(code).to.equal(0);
 				expect(stdout).to.equal('kernel.js\n');

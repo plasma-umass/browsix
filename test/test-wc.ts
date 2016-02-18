@@ -38,8 +38,16 @@ describe('wc /a', function(): void {
 	});
 
 	it('should run `wc /a`', function(done: MochaDone): void {
-		kernel.system('/usr/bin/wc /a', catExited);
-		function catExited(code: number, stdout: string, stderr: string): void {
+		let stdout = '';
+		let stderr = '';
+		kernel.system('/usr/bin/wc /a', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
 			try {
 				expect(code).to.equal(0);
 				expect(stdout).to.equal('11\t22\t79\t\n');

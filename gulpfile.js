@@ -30,6 +30,14 @@ var historyApiFallback = require('connect-history-api-fallback');
 var addShebang = require('./gulp-plugins/add-shebang');
 
 
+// don't do anything when seeing use of several node builtins -- we
+// handle this ourselves.
+var globalVars = {
+    'process': function() { return "" },
+    'Buffer': function() { return "" },
+    'buffer': function() { return "" },
+}
+
 // each user of our tsconfig.json setup needs a different instance of
 // the 'ts project', as gulp-typescript seems to use it as a dumping
 // ground for mutable state.
@@ -74,13 +82,7 @@ function tsTask(subdir, options) {
         var b = browserify({
             entries: ['./lib/'+subdir+'/'+subdir+'.js'],
             builtins: false,
-            insertGlobalVars: {
-                // don't do anything when seeing use of 'process' - we
-                // handle this ourselves.
-                'process': function() { return "" },
-                'Buffer': function() { return "" },
-                'buffer': function() { return "" },
-            },
+            insertGlobalVars: globalVars,
         });
         b.exclude('webworker-threads');
 
@@ -199,10 +201,7 @@ gulp.task('dist-test', ['build-test'], function() {
     var b = browserify({
         entries: [testMain],
         builtins: false,
-        insertGlobalVars: {
-            // don't do shit when seeing use of 'process'
-            'process': function() { return "" },
-        },
+        insertGlobalVars: globalVars,
     });
     b.exclude('webworker-threads');
 
@@ -468,7 +467,3 @@ gulp.task('build:dist', ['app:clean'], function (cb) {
         'app:vulcanize',
         cb);
 });
-
-// Load tasks for web-component-tester
-// Adds tasks for `gulp test:local` and `gulp test:remote`
-require('web-component-tester').gulp.init(gulp);

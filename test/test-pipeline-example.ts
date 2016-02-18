@@ -30,8 +30,16 @@ describe('echo a b c', function(): void {
 	});
 
 	it('should run `echo a b c`', function(done: MochaDone): void {
-		kernel.system('/usr/bin/pipeline-example', echoExited);
-		function echoExited(code: number, stdout: string, stderr: string): void {
+		let stdout = '';
+		let stderr = '';
+		kernel.system('/usr/bin/pipeline-example', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
 			try {
 				expect(code).to.equal(0);
 				expect(stdout).to.equal('hello world\n');

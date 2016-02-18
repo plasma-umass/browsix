@@ -45,9 +45,17 @@ describe('sh "/usr/bin/cat /a /b | /usr/bin/head"', function(): void {
 		});
 	});
 
-	it('should run `sh cat /a /b | head`', function(done: MochaDone): void {
-		kernel.system('cat /a /b | cat', cmdExited);
-		function cmdExited(code: number, stdout: string, stderr: string): void {
+	it('should run `sh cat /a /b | cat`', function(done: MochaDone): void {
+		let stdout = '';
+		let stderr = '';
+		kernel.system('/usr/bin/cat /a /b | cat', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
 			try {
 				expect(code).to.equal(0);
 				expect(stdout).to.equal(A_CONTENTS + B_CONTENTS);

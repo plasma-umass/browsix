@@ -125,7 +125,7 @@ export class SocketFile implements IFile {
 		this.incoming.read(buf, pos, len, off, cb);
 	}
 
-	readSync(): string {
+	readSync(): Buffer {
 		return this.incoming.readSync();
 	}
 

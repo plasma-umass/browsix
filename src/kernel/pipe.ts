@@ -51,9 +51,8 @@ export class Pipe {
 		};
 	}
 
-	readSync(): string {
-		let s = this.buf; //.toString('utf-8');
-		return <any>s;
+	readSync(): Buffer {
+		return this.buf; //.toString('utf-8');
 	}
 
 	ref(): void {
@@ -110,7 +109,7 @@ export class PipeFile implements IFile {
 		setTimeout(cb, 0, 'cant readdir on normal file');
 	}
 
-	readSync(): string {
+	readSync(): Buffer {
 		return this.pipe.readSync();
 	}
 

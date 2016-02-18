@@ -30,8 +30,16 @@ describe('echo hi | tee /a', function(): void {
 	});
 
 	it('should run `echo hi | tee`', function(done: MochaDone): void {
-		kernel.system('echo hi | tee', catExited);
-		function catExited(code: number, stdout: string, stderr: string): void {
+		let stdout: string = '';
+		let stderr: string = '';
+		kernel.system('echo hi | tee', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
 			try {
 				expect(code).to.equal(0);
 				expect(stdout).to.equal('hi\n');
@@ -44,8 +52,16 @@ describe('echo hi | tee /a', function(): void {
 	});
 
 	it('should run `echo hi | tee`', function(done: MochaDone): void {
-		kernel.system('echo hi | tee /greeting', catExited);
-		function catExited(code: number, stdout: string, stderr: string): void {
+		let stdout: string = '';
+		let stderr: string = '';
+		kernel.system('echo hi | tee /greeting', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
 			try {
 				expect(code).to.equal(0);
 				expect(stdout).to.equal('hi\n');

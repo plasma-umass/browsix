@@ -46,8 +46,8 @@ describe('cat /a /b', function(): void {
 	});
 
 	it('should run `cat /a /b`', function(done: MochaDone): void {
-		let stdout: string = '';
-		let stderr: string = '';
+		let stdout = '';
+		let stderr = '';
 		kernel.system('/usr/bin/cat /a /b', onExit, onStdout, onStderr);
 		function onStdout(pid: number, out: string): void {
 			stdout += out;

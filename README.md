@@ -1,80 +1,121 @@
-```
- __   __    ___             ___  ____  _   _
-|__\ |__\  /   \  \   ^  / |___   ||    \ /
-|__/ |  \  \___/   \/  \/   ___| _||_  _/ \_
-```
+Browsix - A Unix-like Operating System for the Browser
+======================================================
 
-Release version 1.0.0 (Archimedes)
-October 23rd, 2015
+Modern web applications are multi-process by nature - the client and
+some of the application logic lives in the browser, and some of it
+lives in the cloud, often implemented as
+[microservices](https://en.wikipedia.org/wiki/Microservices).  Browsix
+lets you rethink the boundary between code executing in the browser
+vs. server-side, while taking advantage of the multi-core nature of
+modern computing devices.
 
-README
-------
+With Browsix you compose the in-brower part of your web applications
+out of processes.  Processes behave as you would expect coming from
+[Unix](https://en.wikipedia.org/wiki/Unix): they run in parallel with
+the main browser thread, can communicate over pipes, sockets, or the
+filesystem, and can create subprocesses.  This process model is
+implemented on top of existing browser APIs, like [web
+workers](https://en.wikipedia.org/wiki/Web_worker), so it works in all
+modern browsers.
 
-Browsix is a UNIX-like processing model and kernel designed to run in modern web browsers.
-The purpose of this Readme is to provide detailed instructions for running and testing Browsix, as well as a few hints for those wishing to read and edit the code. For information about the Browsix system design, see the [report](report.pdf).  The report can be rebuilt using:
+With Browsix, you can run a large class of existing
+[*node.js*](https://nodejs.org/) and [*Go*](https://golang.org/)
+utilities and services in the browser without code changes and without
+having to allocate server-side resources -- Browsix applications can
+be served statically or by
+[CDN](https://en.wikipedia.org/wiki/Content_delivery_network).
 
-    $ make report
+### The Browsix Shell
 
-WEBSITE
--------
-https://github.com/plasma-umass/project-1-brash-browser-shell-bobby-and-craig
-
-
-CONTACT
--------
-If you have questions, comments, suggestions or concerns, please contact bobbypowers@gmail.com or q7h0u6h7@gmail.com
-
-RUNNING & TESTING
------------------
-
-Browsix supports single-click builds by depending on a combination of GNU Make and [npm](https://www.npmjs.com/), and has the following simple prerequisites:
-
-- [node.js](https://nodejs.org/en/)) - tested under version 4.1
-- A C and C++ compiler (for node extensions)
-- GNU Make
-
-On Mac OS X, the compiler and GNU Make are provided by Apple's Xcode developer tools, and node is best installed through [Homebrew](http://brew.sh/).
-
-To run the web terminal, run:
-
-    $ make serve
-
-And your browser should automatically open to http://localhost:5000
+As a proof-of-concept, we've implemented a POSIX-like shell on top of
+Browsix, along with an implementation of a number of standard Unix
+utilities (`cat`, `tee`, `echo`, `sha1sum`, and friends).  The
+utilities are all standard node programs that will run directly under
+node, or in the browser under Browsix.  Individual commands are
+executed in their own workers, and piping works as expected:
 
 ![shell](img/shell.png =731x)
 
-Similarly, to run the the tests execute `$ make test-browser`.  The initial run may take several minutes as dependencies are installed, but subsequent runs will be quicker.  To run the tests after starting `make test-browser`, open a browser and type http://localhost:9876 in the address bar.  That’s it! Tests have been run and pass using Node 4 under:
-- Safari 9.0.1 (Mac)
-- Firefox 41.0.2 (Linux)
-- Chrome 47.0.2526 (Linux)
-- Chrome 46.0.2490 (Windows 10)
-- Edge 12.10240.0 (Windows 10)
+Try it out here: [live demo!](https://unix.bpowers.net/)
 
-CODE
-----
-The typescript src files for kernel, browser-node, and utilities in [./src/kernel](src/kernel), [./src/broswer-node](src/browser-node), and [./src/bin](src/bin), respectively.  After running `make` (either the test, serve, or bin targets) compiled commands are available in [./fs/usr/bin](fs/usr/bin). These can be invoked directly - they have a shebang line that specifies node as the interpreter. Tests can be found in [./test](test). Both the syscalls and bindings can be found in [./src/browser-node](src/browser-node) directory in [syscall.ts](src/browser-node/syscall.ts) and the [binding](src/browser-node/binding) subdir.
+### Details
 
-To enter into interactive debugging, open [./src/kernel/kernel.ts](src/kernel/kernel.ts), and change the following line from:
+Browsix currently supports running node.js and Go programs.  It
+supports Go with a modified GopherJS compiler.
 
-    let DEBUG = false;
 
-to:
+Using Browsix
+-------------
 
-    let DEBUG = true;
+There are two parts to Browsix: build-tooling and runtime support.
 
-This will delay execution of code in child process Web Workers, allowing you to breakpoint the worker.  See section 5 in the [report](report.pdf) for more information.  Run the tests and use chrome’s debugging tools.
+Get browsix through npm:
+
+```
+    $ npm install --save browsix
+```
+
+
+Building & Testing
+------------------
+
+Browsix has four simple dependencies: `git`, `node.js` 4.3 or above
+(0.12 might work, but 0.10 won't), `npm` (usually installed along with
+node), and `make`, and builds on OSX and Linux systems.  Once you have
+those dependencies:
+
+```
+    $ git clone https://github.com/plasma-umass/browsix
+    $ cd browsix
+    $ make test-once serve
+```
+
+This will pull the dependencies, build the runtime and all the
+utilities, run a number of tests in either Firefox or Chrome, and then
+launch a copy of the shell served locally.
+
+
+Contributing
+------------
+
+You're interested in contributing?  That's great!
+
+The process is similar to other open-source projects hosted on github:
+
+* Fork the repository
+* Make some changes
+* Commit your changes with a descriptive commit message
+* Open a pull request
+
+
+Contact
+-------
+
+If you have questions or problems, please [open an
+issue](https://github.com/plasma-umass/browsix/issues) on this
+repository (plasma-umass/browsix).
+
 
 Open Source
 -----------
 
-This projets incorporates code from several sources.  node's nextTick
-functionality is provided by code from the
-[acorn](https://github.com/marijnh/acorn) project, released under the
-MIT license.  A large portion of the
-[node](https://github.com/nodejs/node) standard library is used.  Node
-itself incorporates several projects, and the relevant licenses can be
-found [here](https://github.com/nodejs/node/blob/master/LICENSE).
-Functions to convert buffers to utf-8 strings and back functions are
-based off of
+This project is licensed under the MIT license, but also incorporates
+code from other sources.
+
+Browsix uses [BrowserFS](https://github.com/jvilk/BrowserFS) for its
+filesystem, which is [primarily MIT licensed](LICENSE.browserfs)
+
+browser-node's [`nextTick`](src/browser-node/browser-node.ts#L114)
+implementation comes from the
+[acorn](https://github.com/marijnh/acorn) project, released under [the
+MIT license](LICENSE.acorn).
+
+A large portion of browser-node is the
+[node](https://github.com/nodejs/node) standard library, which is [MIT
+licensed](LICENSE.node).
+
+Functions to convert buffers to utf-8 strings and back are derivative
+of
 [browserify](https://github.com/substack/node-browserify/blob/master/LICENSE)
-implementations, released under the same license as node. Provided without guarantee, so don’t use this to launch missiles or perform delicate surgery (seriously).
+implementations (ported to TypeScript), [MIT
+licensed](LICENSE.browserify) as well.

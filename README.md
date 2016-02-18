@@ -34,7 +34,7 @@ utilities are all standard node programs that will run directly under
 node, or in the browser under Browsix.  Individual commands are
 executed in their own workers, and piping works as expected:
 
-![shell](doc/img/shell.png | width=731)
+![shell](doc/img/shell.png)
 
 Try it out here: [live demo!](https://unix.bpowers.net/)
 

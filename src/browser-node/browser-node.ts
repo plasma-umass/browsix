@@ -207,6 +207,13 @@ function init(data: SyscallResponse): void {
 
 	let args = data.args[0];
 	let environ = data.args[1];
+	let debug = data.args[2];
+
+	// if the kernel wants us to, trap into the debugger to enable
+	// us to step through what is going on.
+	if (debug)
+		debugger;
+
 	process.argv = args;
 	process.env = environ;
 	process.stdin = new fs.createReadStream('<stdin>', {fd: 0});

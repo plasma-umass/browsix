@@ -22,14 +22,13 @@ import { fs } from './vendor/BrowserFS/src/core/node_fs';
 // to a Worker to aid in debugging.
 let DEBUG = false;
 
-// the scheduler's nextTask function must be scheduled with a non-zero
-// timeout.  This is because we essentially have cooperative
-// multitasking.  To give multiple processes the chance of calling
-// back into the kernel & queuing up results (so that the kernel has
-// multiple tasks to choose from when making a scheduling decision)
-// this appears necessary.  Note that especially in Chrome there is a
-// ton of overhead on child process spawning - this performance defect
-// isn't noticable.
+// For niceness to work, the scheduler's nextTask function must be
+// scheduled with a non-zero timeout (SCHEDULING_DELAY > 0).  This is
+// because we essentially have cooperative multitasking.  To give
+// multiple processes the chance of calling back into the kernel &
+// queuing up results (so that the kernel has multiple tasks to choose
+// from when making a scheduling decision) this appears necessary.
+// This has a performance impact, so is disabled by default.
 let SCHEDULING_DELAY = 0;
 
 let Buffer: any;
@@ -946,7 +945,7 @@ export class Task implements ITask {
 		this.worker = new Worker(window.URL.createObjectURL(blob));
 		this.worker.onmessage = this.syscallHandler.bind(this);
 
-		this.signal('init', [this.args, this.env]);
+		this.signal('init', [this.args, this.env, this.kernel.debug]);
 
 		this.onRunnable(null, this.pid);
 		this.onRunnable = undefined;
@@ -967,9 +966,6 @@ export class Task implements ITask {
 	}
 
 	signal(name: string, args: any[]): void {
-		let timeout = 0;
-		if (this.kernel.debug && name === 'init' && this.exePath !== '/usr/bin/sh')
-			timeout = 6000;
 		self.setImmediate(
 			() => {
 				this.pendingSignals.push({

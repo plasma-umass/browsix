@@ -9,7 +9,7 @@ lets you rethink the boundary between code executing in the browser
 vs. server-side, while taking advantage of the multi-core nature of
 modern computing devices.
 
-With Browsix you compose the in-brower part of your web applications
+With Browsix, you compose the in-brower part of your web applications
 out of processes.  Processes behave as you would expect coming from
 [Unix](https://en.wikipedia.org/wiki/Unix): they run in parallel with
 the main browser thread, can communicate over pipes, sockets, or the

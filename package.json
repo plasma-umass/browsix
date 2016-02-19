@@ -10,7 +10,6 @@
   "repository": {
     "url": "https://github.com/plasma-umass/browsix.git"
   },
-  "author": "The Browsix Authors, see AUTHORS file",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/plasma-umass/browsix/issues"

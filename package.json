@@ -1,16 +1,17 @@
 {
   "name": "browsix",
   "version": "0.1.0",
-  "description": "a kernel for the web",
-  "main": "browsix.js",
+  "description": "in-browser, multi-process operating system",
+  "main": "lib/kernel/kernel.js",
   "scripts": {
-    "test": "gulp test"
+    "prepublish": "node_modules/.bin/gulp build:dist",
+    "test": "node_modules/.bin/gulp test-once"
   },
   "repository": {
     "url": "https://github.com/plasma-umass/browsix.git"
   },
   "author": "The Browsix Authors, see AUTHORS file",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/plasma-umass/browsix/issues"
   },

@@ -4,12 +4,13 @@ Browsix - A Unix-like Operating System for the Browser
 Modern web applications are multi-process by nature - the client and
 some of the application logic lives in the browser, and some of it
 lives in the cloud, often implemented as
-[microservices](https://en.wikipedia.org/wiki/Microservices).  Browsix
-lets you rethink the boundary between code executing in the browser
-vs. server-side, while taking advantage of the multi-core nature of
-modern computing devices.
+[microservices](https://en.wikipedia.org/wiki/Microservices).
 
-With Browsix, you compose the in-brower part of your web applications
+Browsix lets you rethink the boundary between code executing in the
+browser vs. server-side, while taking advantage of the multi-core
+nature of modern computing devices.
+
+With Browsix, you compose the in-browser part of your web applications
 out of processes.  Processes behave as you would expect coming from
 [Unix](https://en.wikipedia.org/wiki/Unix): they run in parallel with
 the main browser thread, can communicate over pipes, sockets, or the
@@ -18,7 +19,7 @@ implemented on top of existing browser APIs, like [web
 workers](https://en.wikipedia.org/wiki/Web_worker), so it works in all
 modern browsers.
 
-With Browsix, you can run a large class of existing
+Using Browsix, you can run a large class of existing
 [*node.js*](https://nodejs.org/) and [*Go*](https://golang.org/)
 utilities and services in the browser without code changes and without
 having to allocate server-side resources -- Browsix applications can
@@ -27,7 +28,7 @@ be served statically or by
 
 ### The Browsix Shell
 
-As a proof-of-concept, we've implemented a POSIX-like shell on top of
+As a proof of concept, we've implemented a POSIX-like shell on top of
 Browsix, along with an implementation of a number of standard Unix
 utilities (`cat`, `tee`, `echo`, `sha1sum`, and friends).  The
 utilities are all standard node programs that will run directly under

@@ -192,6 +192,8 @@ function _require(moduleName: string): any {
 		return require('./path');
 	case 'readline':
 		return require('./readline');
+	case 'util':
+		return require('./util');
 	case 'node-pipe2':
 		return modPipe2;
 	case 'node-priority':

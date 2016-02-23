@@ -24,6 +24,26 @@ import * as bindingStreamWrap from './binding/stream_wrap';
 import * as bindingUDPWrap from './binding/udp_wrap';
 import * as bindingHTTPParser from './binding/http_parser';
 
+let _bindings: {[n: string]: any} = {
+	'buffer':        bindingBuffer,
+	'uv':            bindingUV,
+	'fs':            bindingFs,
+	'http_parser':   bindingHTTPParser,
+	'fs_event_wrap': bindingFsEventWrap,
+	'constants':     bindingConstants,
+	'contextify':    bindingContextify,
+	'process_wrap':  bindingProcessWrap,
+	'pipe_wrap':     bindingPipeWrap,
+	'tty_wrap':      bindingTTYWrap,
+	'timer_wrap':    bindingTimerWrap,
+	'cares_wrap':    bindingCaresWrap,
+	'tcp_wrap':      bindingTCPWrap,
+	'udp_wrap':      bindingUDPWrap,
+	'stream_wrap':   bindingStreamWrap,
+	'spawn_sync':    bindingSpawnSync,
+	'util':          bindingUtil,
+};
+
 class Process {
 	argv: string[];
 	env: Environment;
@@ -69,46 +89,13 @@ class Process {
 	}
 
 	binding(name: string): any {
-		switch (name) {
-		case 'buffer':
-			return bindingBuffer;
-		case 'uv':
-			return bindingUV;
-		case 'fs':
-			return bindingFs;
-		case 'http_parser':
-			return bindingHTTPParser;
-		case 'fs_event_wrap':
-			return bindingFsEventWrap;
-		case 'constants':
-			return bindingConstants;
-		case 'contextify':
-			return bindingContextify;
-		case 'process_wrap':
-			return bindingProcessWrap;
-		case 'pipe_wrap':
-			return bindingPipeWrap;
-		case 'tty_wrap':
-			return bindingTTYWrap;
-		case 'timer_wrap':
-			return bindingTimerWrap;
-		case 'cares_wrap':
-			return bindingCaresWrap;
-		case 'tcp_wrap':
-			return bindingTCPWrap;
-		case 'udp_wrap':
-			return bindingUDPWrap;
-		case 'stream_wrap':
-			return bindingStreamWrap;
-		case 'spawn_sync':
-			return bindingSpawnSync;
-		case 'util':
-			return bindingUtil;
-		default:
+		if (!(name in _bindings)) {
 			console.log('TODO: unimplemented binding ' + name);
 			(<any>console).trace('TODO: unimplemented binding ' + name);
+			return null;
 		}
-		return null;
+
+		return _bindings[name];
 	}
 
 	// this is from acorn - https://github.com/marijnh/acorn

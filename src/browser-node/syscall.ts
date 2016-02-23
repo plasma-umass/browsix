@@ -31,6 +31,73 @@ export interface Stat {
 	birthtime: Date;
 }
 
+// from BrowserFS.  Copied to avoid this module pulling in any dependencies
+export enum ErrorCode {
+	EPERM, ENOENT, EIO, EBADF, EACCES, EBUSY, EEXIST, ENOTDIR, EISDIR, EINVAL,
+	EFBIG, ENOSPC, EROFS, ENOTEMPTY, ENOTSUP
+}
+
+// from BrowserFS.  Copied to avoid this module pulling in any dependencies
+let fsErrors: {[n: string]: string} = {
+	EPERM: 'Operation not permitted.',
+	ENOENT: 'No such file or directory.',
+	EIO: 'Input/output error.',
+	EBADF: 'Bad file descriptor.',
+	EACCES: 'Permission denied.',
+	EBUSY: 'Resource busy or locked.',
+	EEXIST: 'File exists.',
+	ENOTDIR: 'File is not a directory.',
+	EISDIR: 'File is a directory.',
+	EINVAL: 'Invalid argument.',
+	EFBIG: 'File is too big.',
+	ENOSPC: 'No space left on disk.',
+	EROFS: 'Cannot modify a read-only file system.',
+	ENOTEMPTY: 'Directory is not empty.',
+	ENOTSUP: 'Operation is not supported.',
+};
+
+// from BrowserFS.  Copied to avoid this module pulling in any dependencies
+export class ApiError {
+	type:    ErrorCode;
+	message: string;
+	code:    string;
+
+	/**
+	 * Represents a BrowserFS error. Passed back to applications after a failed
+	 * call to the BrowserFS API.
+	 *
+	 * Error codes mirror those returned by regular Unix file operations, which is
+	 * what Node returns.
+	 * @constructor ApiError
+	 * @param type The type of the error.
+	 * @param [message] A descriptive error message.
+	 */
+	constructor(type: ErrorCode, message?: string) {
+		this.type = type;
+		this.code = ErrorCode[type];
+		if (message != null) {
+			this.message = message;
+		} else {
+			this.message = fsErrors[type];
+		}
+	}
+
+	public toString(): string {
+		return this.code +  ": " + fsErrors[this.code] + " " + this.message;
+	}
+}
+
+function convertApiErrors(e: any): any {
+	if (!e)
+		return e;
+
+	// if it looks like an ApiError, and smells like an ApiError...
+	if (!e.hasOwnProperty('type') || !e.hasOwnProperty('message') || !e.hasOwnProperty('code'))
+		return e;
+
+	return new ApiError(e.type, e.message);
+}
+
 export class SyscallResponse {
 	constructor(
 		public id: number,
@@ -46,7 +113,8 @@ export class SyscallResponse {
 			if (!ev.data.hasOwnProperty(SyscallResponse.requiredOnData[i]))
 				return;
 		}
-		return new SyscallResponse(ev.data.id, ev.data.name, ev.data.args);
+		let args: any[] = ev.data.args.map(convertApiErrors);
+		return new SyscallResponse(ev.data.id, ev.data.name, args);
 	}
 }
 

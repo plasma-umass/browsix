@@ -15,9 +15,9 @@ function log(fmt: string, ...args: any[]): void {
 	let msg = prog + ': ' + format.apply(undefined, [fmt].concat(args)) + '\n';
 
 	if (cb)
-		process.stderr.write(err, cb);
+		process.stderr.write(msg, cb);
 	else
-		process.stderr.write(err);
+		process.stderr.write(msg);
 }
 
 function parseArgs(args: string[], handlers: {[n: string]: Function}): [string[], boolean] {
@@ -41,13 +41,12 @@ function parseArgs(args: string[], handlers: {[n: string]: Function}): [string[]
 	function usage(): void {
 		errs++;
 		let prog = process.argv[1].split('/').slice(-1);
-		let flags = Object.keys(handlers).sort().join('');
-		if (flags)
-			flags = format(' [-%s]', flags);
-		let msg = format('usage: %s%s ARGS\n', prog, flags);
+		let flags = Object.keys(handlers).concat(['h']).sort().join('');
+		let msg = format('usage: %s [-%s] ARGS\n', prog, flags);
 		process.stderr.write(msg, done);
 	}
 
+	outer:
 	for (let i = 0; i < args.length; i++) {
 		let argList = args[i].slice(1);
 		if (argList.length && argList[0] === '-') {
@@ -56,10 +55,14 @@ function parseArgs(args: string[], handlers: {[n: string]: Function}): [string[]
 		}
 		for (let j = 0; j < argList.length; j++) {
 			let arg = argList[j];
-			if (handlers[arg])
+			if (handlers[arg]) {
 				handlers[arg]();
-			else
+			} else if (arg === 'h') {
+				ok = false;
+				break outer;
+			} else {
 				error('invalid option "%s"', arg);
+			}
 		}
 	}
 
@@ -109,7 +112,7 @@ function main(): void {
 		process.stdout.write(files.join('\n') + '\n', 'utf-8', (werr: any) => {
 			if (werr) {
 				code = -1;
-				log('write: %s', werr.message, done);
+				log('write: %s', werr, done);
 				return;
 			}
 			done();

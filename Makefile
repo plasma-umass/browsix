@@ -56,7 +56,7 @@ serve: $(BUILD_DEPS)
 
 node_modules: package.json
 	@echo "  NPM"
-	npm install --silent
+	npm install
 	touch -c $@
 
 $(NPM_DEPS): node_modules

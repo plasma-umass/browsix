@@ -940,7 +940,9 @@ export class Task implements ITask {
 			return;
 		}
 
-		let blob = new Blob([buf.toString()], {type: 'text/javascript'});
+		let jsBytes = new Uint8Array(buf.data.buff.buffer);
+		let blob = new Blob([jsBytes], {type: 'text/javascript'});
+		jsBytes = undefined;
 
 		this.worker = new Worker(window.URL.createObjectURL(blob));
 		this.worker.onmessage = this.syscallHandler.bind(this);

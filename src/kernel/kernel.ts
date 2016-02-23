@@ -17,6 +17,7 @@ import { HTTPParser } from './http_parser';
 
 import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
 import { fs } from './vendor/BrowserFS/src/core/node_fs';
+import { Rusha } from './hash';
 
 // controls the default of whether to delay the initialization message
 // to a Worker to aid in debugging.
@@ -496,6 +497,8 @@ export class Kernel implements IKernel {
 	private tasks: {[pid: number]: Task} = {};
 	private taskIdSeq: number = 0;
 
+	private cachedBlobURLs: {[hash: string]: string} = {};
+
 	private syscalls: Syscalls;
 
 	constructor(fs: fs, nCPUs: number) {
@@ -527,6 +530,19 @@ export class Kernel implements IKernel {
 		this.runQueues[prio].push(task);
 
 		setImmediate(this.nextTask.bind(this));
+	}
+
+	getBlobURL(buf: Buffer): string {
+		let rusha: any = new (<any>Rusha)();
+		let digest: string = rusha.digestFromBuffer(buf);
+
+		if (!(digest in this.cachedBlobURLs)) {
+			let jsBytes = new Uint8Array((<any>buf).data.buff.buffer);
+			let blob = new Blob([jsBytes], {type: 'text/javascript'});
+			this.cachedBlobURLs[digest] = window.URL.createObjectURL(blob);
+		}
+
+		return this.cachedBlobURLs[digest];
 	}
 
 	nextTask(): void {
@@ -756,7 +772,7 @@ export class Kernel implements IKernel {
 		}
 		this.inKernel++;
 		if (syscall.name in this.syscalls) {
-			console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
+			//console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
 			console.log('unknown syscall ' + syscall.name);
@@ -940,11 +956,9 @@ export class Task implements ITask {
 			return;
 		}
 
-		let jsBytes = new Uint8Array(buf.data.buff.buffer);
-		let blob = new Blob([jsBytes], {type: 'text/javascript'});
-		jsBytes = undefined;
+		let url = this.kernel.getBlobURL(buf);
 
-		this.worker = new Worker(window.URL.createObjectURL(blob));
+		this.worker = new Worker(url);
 		this.worker.onmessage = this.syscallHandler.bind(this);
 
 		this.signal('init', [this.args, this.env, this.kernel.debug]);

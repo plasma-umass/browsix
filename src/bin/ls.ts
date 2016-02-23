@@ -29,6 +29,20 @@ function parseArgs(args: string[], handlers: ArgHandlers): [string[], boolean] {
 	let positionalArgs: string[] = [];
 	let ok = true;
 
+	let errs = 0;
+	function done(): void {
+		errs--;
+		if (!errs)
+			process.exit(1);
+	}
+	function error(...args: any[]): void {
+		errs++;
+		ok = false;
+		// apply the arguments we've been given to log, and
+		// append our own callback.
+		log.apply(this, args.concat([done]));
+	}
+
 	for (let i = 0; i < args.length; i++) {
 		if (args[i].substring(0, 1) !== '-') {
 			positionalArgs.push(args[i]);
@@ -38,8 +52,7 @@ function parseArgs(args: string[], handlers: ArgHandlers): [string[], boolean] {
 		// all args are a single-character long
 		let argList = args[i].slice(1);
 		if (argList.length && argList[0] === '-') {
-			log('unknown option "%s"', args[i]);
-			ok = false;
+			error('unknown option "%s"', args[i]);
 			continue;
 		}
 		for (let j = 0; j < argList.length; j++) {
@@ -48,8 +61,7 @@ function parseArgs(args: string[], handlers: ArgHandlers): [string[], boolean] {
 			if (handler) {
 				handler();
 			} else {
-				log('invalid option "%s"', arg);
-				ok = false;
+				error('invalid option "%s"', arg);
 			}
 		}
 	}
@@ -62,14 +74,17 @@ function main(): void {
 
 	let pathToScript = process.argv[1];
 
-	let trailingNewline: boolean = true;
+	let all: boolean = false;
 
 	let [args, ok] = parseArgs(
 		process.argv.slice(2),
 		{
-			'n': (): any => trailingNewline = false,
+			'l': (): any => {},
+			'a': (): any => all = true,
 		}
 	);
+	if (!ok)
+		return;
 
 	if (!args.length)
 		args = ['.'];
@@ -94,6 +109,8 @@ function main(): void {
 			log(err.message, done);
 			return;
 		}
+		if (!all)
+			files = files.filter((f: string) => f.length && f[0] !== '.');
 		process.stdout.write(files.join('\n') + '\n', 'utf-8', (werr: any) => {
 			if (werr) {
 				code = -1;

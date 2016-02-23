@@ -75,8 +75,8 @@ function main(): void {
 	let all: boolean = false;
 
 	let [args, ok] = parseArgs(
-		process.argv.slice(2),
-		{
+		process.argv.slice(2), {
+			'1': (): any => {}, // nop, but make sure it doesn't error out
 			'l': (): any => {}, // nop, but make sure it doesn't error out
 			'a': (): any => all = true,
 		}

@@ -30,8 +30,6 @@ export interface IKernel {
 	nCPUs: number;
 	debug: boolean;
 
-	getBlobURL(buf: Buffer): string;
-
 	schedule(task: ITask): void;
 	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void;
 	doSyscall(syscall: Syscall): void;

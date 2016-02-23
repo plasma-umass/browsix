@@ -60,10 +60,16 @@ Get browsix through npm:
 Building & Testing
 ------------------
 
-Browsix has four simple dependencies: `git`, `node.js` 4.3 or above
-(0.12 might work, but 0.10 won't), `npm` (usually installed along with
-node), and `make`, and builds on OSX and Linux systems.  Once you have
-those dependencies:
+Browsix requires **nodejs 4.3.0** or later, which is more recent than
+the version packaged in Ubuntu Wiley.  To get a recent version of
+node, follow the instructions on the [node.js
+website](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions).
+If you don't know whether you should choose node 4.x or 5.x, choose
+4.x (it is the long-term support branch).
+
+Browsix has three other dependencies: `git`, `npm` (usually installed
+along with node), and `make`, and builds on OSX and Linux systems.
+Once you have those dependencies:
 
 ```
     $ git clone https://github.com/plasma-umass/browsix

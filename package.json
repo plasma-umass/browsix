@@ -63,5 +63,8 @@
     "node-binary-marshal": "^0.1.2",
     "node-pipe2": "^0.2.0",
     "node-priority": "^0.1.5"
+  },
+  "engines" : {
+    "node" : ">=4.3.0"
   }
 }

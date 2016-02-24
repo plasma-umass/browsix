@@ -19,6 +19,7 @@ var run = require('gulp-run');
 var chmod = require('gulp-chmod');
 var proxy = require('proxy-middleware');
 var url = require('url');
+var extend = require('util')._extend;
 
 var $ = require('gulp-load-plugins')();
 var del = require('del');
@@ -61,6 +62,7 @@ function tsPipeline(src, dst) {
 // - dist  w/ browserify
 function tsTask(subdir, options) {
     options = options || {};
+    var noGlobal = options.noGlobal;
     var buildDeps = options.buildDeps || [];
     var otherSources = options.otherSources || [];
     var sources = ['src/'+subdir+'/*.ts', 'src/'+subdir+'/**/*.ts'].concat(otherSources);
@@ -77,11 +79,15 @@ function tsTask(subdir, options) {
 
     gulp.task('build-'+subdir, buildDeps, tsPipeline(sources, 'lib/'+subdir));
 
+    var globals = extend({}, globalVars);
+    if (noGlobal)
+        globals['global'] = function() { return ""; };
+
     gulp.task('dist-'+subdir, ['build-'+subdir], function() {
         var b = browserify({
             entries: ['./lib/'+subdir+'/'+subdir+'.js'],
             builtins: false,
-            insertGlobalVars: globalVars,
+            insertGlobalVars: globals,
         });
         b.exclude('webworker-threads');
 
@@ -152,7 +158,7 @@ tsTask('kernel', {
 });
 tsTask('browser-node', {buildDeps: ['copy-node']});
 tsTask('bin');
-tsTask('syscall-api', {buildDeps: ['build-browser-node']});
+tsTask('syscall-api', {buildDeps: ['build-browser-node'], noGlobal: true});
 
 // next, we need to collect the various pieces we've built, and put
 // then in a sane directory hierarchy.  There is no dist step needed

@@ -54,7 +54,7 @@ serve: $(BUILD_DEPS)
 	@echo "  SERVE"
 	$(GULP) serve
 
-node_modules: $(BROWSERFS) $(BOWER) package.json
+node_modules: $(BROWSERFS) bower_components package.json
 	@echo "  NPM"
 	npm install
 	touch -c $@

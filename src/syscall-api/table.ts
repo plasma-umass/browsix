@@ -1,6 +1,6 @@
 'use strict';
 
-import { Marshal, socket } from 'node-binary-marshal';
+import { Marshal, socket, stat } from 'node-binary-marshal';
 import { syscall } from '../browser-node/syscall';
 import { utf8Slice } from '../browser-node/binding/buffer';
 
@@ -48,8 +48,9 @@ function sys_write(cb: Function, trap: number, arg0: any, arg1: any, arg2: any):
 
 function sys_stat(cb: Function, trap: number, arg0: any, arg1: any): void {
 	let $fstatArray = arg1;
-	let done = function(err: any, stat: any): void {
-		console.log('TODO: stat response');
+	let done = function(err: any, stats: any): void {
+		let view = new DataView($fstatArray.buffer, $fstatArray.byteOffset);
+		Marshal(view, 0, stats, stat.StatDef);
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
 	let len = arg0.length;
@@ -61,8 +62,9 @@ function sys_stat(cb: Function, trap: number, arg0: any, arg1: any): void {
 
 function sys_fstat(cb: Function, trap: number, arg0: any, arg1: any): void {
 	let $fstatArray = arg1;
-	let done = function(err: any, stat: any): void {
-		console.log('TODO: fstat response');
+	let done = function(err: any, stats: any): void {
+		let view = new DataView($fstatArray.buffer, $fstatArray.byteOffset);
+		Marshal(view, 0, stats, stat.StatDef);
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
 	syscall.fstat.apply(syscall, [arg0, done]);
@@ -121,7 +123,8 @@ function sys_listen(cb: Function, trap: number, arg0: any, arg1: any): void {
 function sys_getsockname(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
 	console.log('TODO: getsockname');
 
-	Marshal(arg1, {family: 2, port: 8080, addr: '127.0.0.1'}, socket.SockAddrInDef);
+	let view = new DataView(arg1.buffer, arg1.byteOffset);
+	Marshal(arg1, 0, {family: 2, port: 8080, addr: '127.0.0.1'}, socket.SockAddrInDef);
 	arg2.$set(socket.SockAddrInDef.length);
 	setTimeout(cb, 0, [0, 0, 0]);
 }
@@ -132,7 +135,9 @@ function sys_accept4(cb: Function, trap: number, arg0: any, arg1: any, arg2: any
 	let args = [arg0, function(err: any, fd: number, remoteAddr: string, remotePort: number): void {
 		if (remoteAddr === 'localhost')
 			remoteAddr = '127.0.0.1';
-		Marshal($acceptArray, {family: 2, port: remotePort, addr: remoteAddr}, socket.SockAddrInDef);
+
+		let view = new DataView($acceptArray.buffer, $acceptArray.byteOffset);
+		Marshal(view, 0, {family: 2, port: remotePort, addr: remoteAddr}, socket.SockAddrInDef);
 		$acceptLen.$set(socket.SockAddrInDef.length);
 		cb([err ? -1 : fd, 0, err ? -1 : 0]);
 	}];

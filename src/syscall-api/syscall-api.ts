@@ -36,7 +36,6 @@ class Process {
 	}
 }
 let process = new Process(null, { /* NODE_DEBUG: 'fs' */ });
-(<any>self).process = process;
 
 syscall.addEventListener('init', init.bind(this));
 function init(data: SyscallResponse): void {
@@ -58,10 +57,14 @@ declare var global: any;
 declare var exports: any;
 if (typeof window !== "undefined") { /* web page */
 	(<any>window).$syscall = exports;
+	(<any>window).process = process;
 } else if (typeof self !== "undefined") { /* web worker */
 	(<any>self).$syscall = exports;
+	(<any>self).process = process;
 } else if (typeof global !== "undefined") { /* Node.js */
 	(<any>global).$syscall = exports;
+	//(<any>global).process = process;
 } else { /* others (e.g. Nashorn) */
 	(<any>this).$syscall = exports;
+	(<any>this).process = process;
 }

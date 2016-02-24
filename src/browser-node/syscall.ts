@@ -371,4 +371,18 @@ export class USyscalls {
 	}
 }
 
-export var syscall = new USyscalls(<any>self);
+declare var global: any;
+export function getGlobal(): any {
+	// logic from gopherjs
+	if (typeof window !== "undefined") { /* web page */
+		return <any>window;
+	} else if (typeof self !== "undefined") { /* web worker */
+		return <any>self;
+	} else if (typeof global !== "undefined") { /* Node.js */
+		return <any>global;
+	} else { /* others (e.g. Nashorn) */
+		return <any>this;
+	}
+}
+
+export var syscall = new USyscalls(getGlobal());

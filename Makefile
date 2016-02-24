@@ -10,7 +10,7 @@ BROWSERFS  = src/kernel/vendor/BrowserFS/dist/browserfs.js
 BROWSERFS_DIR = src/kernel/vendor/BrowserFS
 
 NPM_DEPS   = $(BOWER) $(GULP) $(TSLINT) $(MOCHA)
-BUILD_DEPS = $(NPM_DEPS) $(BROWSERFS) bower_components
+BUILD_DEPS = $(NPM_DEPS) bower_components
 
 # quiet output, but allow us to look at what commands are being
 # executed by passing 'V=1' to make, without requiring temporarily
@@ -54,7 +54,7 @@ serve: $(BUILD_DEPS)
 	@echo "  SERVE"
 	$(GULP) serve
 
-node_modules: package.json
+node_modules: $(BROWSERFS) package.json
 	@echo "  NPM"
 	npm install
 	touch -c $@

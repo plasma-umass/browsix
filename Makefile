@@ -9,7 +9,7 @@ TEX        = pdflatex
 BROWSERFS  = src/kernel/vendor/BrowserFS/dist/browserfs.js
 BROWSERFS_DIR = src/kernel/vendor/BrowserFS
 
-NPM_DEPS   = $(BOWER) $(GULP) $(TSLINT) $(MOCHA)
+NPM_DEPS   = $(GULP) $(TSLINT) $(MOCHA)
 BUILD_DEPS = $(NPM_DEPS) bower_components
 
 # quiet output, but allow us to look at what commands are being
@@ -54,9 +54,14 @@ serve: $(BUILD_DEPS)
 	@echo "  SERVE"
 	$(GULP) serve
 
-node_modules: $(BROWSERFS) package.json
+node_modules: $(BROWSERFS) $(BOWER) package.json
 	@echo "  NPM"
 	npm install
+	touch -c $@
+
+$(BOWER):
+	@echo "  NPM bower"
+	npm install bower
 	touch -c $@
 
 $(NPM_DEPS): node_modules

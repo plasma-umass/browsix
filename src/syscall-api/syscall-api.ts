@@ -18,24 +18,48 @@ interface Environment {
 	[name: string]: string;
 }
 
-class Process {
+// one-shot event emitter.  Used to let parts of the GopherJS runtime
+// block until we get an 'init' message from the Browsix kernel
+// containing the argv vector and our environment.
+class OnceEmitter {
+	listeners: {[n: string]: Function[]};
+
+	constructor() {
+		this.listeners = {};
+	}
+
+	once(event: string, cb: Function): void {
+		let cbs = this.listeners[event];
+		if (!cbs)
+			cbs = [cb];
+		else
+			cbs.push(cb);
+		this.listeners[event] = cbs;
+	}
+
+	emit(event: string, ...args: any[]): void {
+		let cbs = this.listeners[event];
+		this.listeners[event] = [];
+		if (!cbs)
+			return;
+		for (let i = 0; i < cbs.length; i++) {
+			cbs[i].apply(null, args);
+		}
+	}
+}
+
+class Process extends OnceEmitter {
 	argv: string[];
 	env: Environment;
-	waiter: Function;
 
 	constructor(argv: string[], environ: Environment) {
+		super();
 		this.argv = argv;
 		this.env = environ;
 	}
-
-	waitArgv(cb: Function): void {
-		if (this.argv === null)
-			this.waiter = cb;
-		else
-			setTimeout(cb, 0, this.argv);
-	}
 }
-let process = new Process(null, { /* NODE_DEBUG: 'fs' */ });
+/* { NODE_DEBUG: 'fs' } */
+let process = new Process(null, null);
 
 syscall.addEventListener('init', init.bind(this));
 function init(data: SyscallResponse): void {
@@ -46,11 +70,7 @@ function init(data: SyscallResponse): void {
 	args = [args[0]].concat(args);
 	process.argv = args;
 	process.env = environ;
-	if (process.waiter) {
-		let w = process.waiter;
-		process.waiter = undefined;
-		setTimeout(() => { w(process.argv); }, 0);
-	}
+	setTimeout(() => { process.emit('ready'); }, 0);
 }
 
 declare var global: any;

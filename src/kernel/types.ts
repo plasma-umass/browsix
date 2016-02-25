@@ -37,6 +37,10 @@ export interface IKernel {
 	unbind(s: IFile, addr: string, port: number): any;
 }
 
+export interface Environment {
+	[name: string]: string;
+}
+
 export interface ITask {
 	kernel: IKernel;
 	worker: Worker;
@@ -48,7 +52,7 @@ export interface ITask {
 
 	exePath: string;
 	args: string[];
-	env: string[];
+	env: Environment;
 	cwd: string;
 	priority: number;
 

@@ -18,10 +18,16 @@ function sys_getcwd(cb: Function, trap: number, arg0: any, arg1: any, arg2: any)
 	let $getcwdArray = arg0;
 	let $getcwdLen = arg1;
 	let done = function(p: string): void {
-		debugger;
 		for (let i = 0; i < p.length; i++)
 			$getcwdArray[i] = p.charCodeAt(i);
-		cb([p.length, 0, 0]);
+		let nullPos = p.length;
+		if (nullPos >= $getcwdArray.byteLength)
+			nullPos = $getcwdArray.byteLength;
+		// XXX: Go expects the kernel to return a null
+		// terminated string, hence the null write and +1
+		// below.
+		$getcwdArray[nullPos] = 0;
+		cb([p.length+1, 0, 0]);
 	};
 	syscall.getcwd.apply(syscall, [done]);
 }

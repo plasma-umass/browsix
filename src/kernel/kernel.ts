@@ -11,7 +11,8 @@ import { now } from './ipc';
 import { Pipe, PipeFile, isPipe } from './pipe';
 import { SocketFile, isSocket } from './socket';
 import { DirFile, RegularFile } from './file';
-import { ExitCallback, OutputCallback, SyscallContext, SyscallResult, Syscall, ConnectCallback, IKernel, ITask, IFile } from './types';
+import { ExitCallback, OutputCallback, SyscallContext, SyscallResult,
+	Syscall, ConnectCallback, IKernel, ITask, IFile, Environment } from './types';
 
 import { HTTPParser } from './http_parser';
 
@@ -570,8 +571,8 @@ export class Kernel implements IKernel {
 		if (parts[0][0] !== '/')
 			parts[0] = '/usr/bin/'+parts[0];
 
-		// FIXME: fill in environment
-		let env: string[] = [];
+		// FIXME: figure out else we want in the default environment
+		let env: string[] = ['PWD=/'];
 		this.spawn(null, '/', parts[0], parts, env, null, (err: any, pid: number) => {
 			if (err) {
 				// FIXME: maybe some better sort of
@@ -775,10 +776,6 @@ export class Kernel implements IKernel {
 	}
 }
 
-export interface Environment {
-	[name: string]: string;
-}
-
 export enum TaskState {
 	Starting,
 	Running,
@@ -800,7 +797,7 @@ export class Task implements ITask {
 	exePath: string;
 	exeFd: any;
 	args: string[];
-	env: string[];
+	env: Environment;
 	cwd: string;
 
 	parent: Task;
@@ -832,11 +829,22 @@ export class Task implements ITask {
 		this.exePath = filename;
 		this.exeFd = null;
 		this.args = args;
-		this.env = env || [];
 		this.cwd = cwd;
 		this.priority = 0;
 		if (parent)
 			this.priority = parent.priority;
+
+		env = env || [];
+		this.env = {};
+		for (let i = 0; i < env.length; i++) {
+			let s = env[i];
+			let eq = s.search('=');
+			if (eq < 0)
+				continue;
+			let k = s.substring(0, eq);
+			let v = s.substring(eq+1);
+			this.env[k] = v;
+		}
 
 		// if a task is a child of another task and has been
 		// created by a call to spawn(2), inherit the parent's

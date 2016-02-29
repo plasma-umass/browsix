@@ -1,6 +1,6 @@
 'use strict';
 
-import { Marshal, socket, stat } from 'node-binary-marshal';
+import { Marshal, socket, fs } from 'node-binary-marshal';
 import { syscall } from '../browser-node/syscall';
 import { utf8Slice } from '../browser-node/binding/buffer';
 
@@ -32,6 +32,17 @@ function sys_getcwd(cb: Function, trap: number, arg0: any, arg1: any, arg2: any)
 	syscall.getcwd.apply(syscall, [done]);
 }
 
+function sys_getdents64(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
+	let $fd = arg0;
+	let $buf = arg1;
+	let $len = arg2;
+	let done = function(err: any, buf: Uint8Array): void {
+		$buf.set(buf);
+		cb([err ? -1 : buf.byteLength, 0, err ? -1 : 0]);
+	};
+	syscall.getdents.apply(syscall, [$fd, $len, done]);
+}
+
 function sys_read(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
 	let $readArray = arg1;
 	let $readLen = arg2;
@@ -56,7 +67,7 @@ function sys_stat(cb: Function, trap: number, arg0: any, arg1: any): void {
 	let $fstatArray = arg1;
 	let done = function(err: any, stats: any): void {
 		let view = new DataView($fstatArray.buffer, $fstatArray.byteOffset);
-		Marshal(view, 0, stats, stat.StatDef);
+		Marshal(view, 0, stats, fs.StatDef);
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
 	let len = arg0.length;
@@ -66,11 +77,25 @@ function sys_stat(cb: Function, trap: number, arg0: any, arg1: any): void {
 	syscall.stat.apply(syscall, [s, done]);
 }
 
+function sys_lstat(cb: Function, trap: number, arg0: any, arg1: any): void {
+	let $fstatArray = arg1;
+	let done = function(err: any, stats: any): void {
+		let view = new DataView($fstatArray.buffer, $fstatArray.byteOffset);
+		Marshal(view, 0, stats, fs.StatDef);
+		cb([err ? -1 : 0, 0, err ? -1 : 0]);
+	};
+	let len = arg0.length;
+	if (len && arg0[arg0.length-1] === 0)
+		len--;
+	let s = utf8Slice(arg0, 0, len);
+	syscall.lstat.apply(syscall, [s, done]);
+}
+
 function sys_fstat(cb: Function, trap: number, arg0: any, arg1: any): void {
 	let $fstatArray = arg1;
 	let done = function(err: any, stats: any): void {
 		let view = new DataView($fstatArray.buffer, $fstatArray.byteOffset);
-		Marshal(view, 0, stats, stat.StatDef);
+		Marshal(view, 0, stats, fs.StatDef);
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
 	syscall.fstat.apply(syscall, [arg0, done]);
@@ -162,7 +187,7 @@ export var syscallTbl = [
 	sys_close,      // 3 close
 	sys_stat,       // 4 stat
 	sys_fstat,      // 5 fstat
-	sys_ni_syscall, // 6 lstat
+	sys_lstat,      // 6 lstat
 	sys_ni_syscall, // 7 poll
 	sys_ni_syscall, // 8 lseek
 	sys_ni_syscall, // 9 mmap
@@ -373,7 +398,7 @@ export var syscallTbl = [
 	sys_ni_syscall, // 214 epoll_ctl_old
 	sys_ni_syscall, // 215 epoll_wait_old
 	sys_ni_syscall, // 216 remap_file_pages
-	sys_ni_syscall, // 217 getdents64
+	sys_getdents64, // 217 getdents64
 	sys_ni_syscall, // 218 set_tid_address
 	sys_ni_syscall, // 219 restart_syscall
 	sys_ni_syscall, // 220 semtimedop

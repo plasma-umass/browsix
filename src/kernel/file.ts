@@ -7,7 +7,7 @@
 'use strict';
 
 import { SyscallContext, IKernel, IFile } from './types';
-
+import { Marshal, fs } from 'node-binary-marshal';
 
 export class RegularFile implements IFile {
 	kernel:   IKernel;
@@ -55,12 +55,14 @@ export class RegularFile implements IFile {
 export class DirFile implements IFile {
 	kernel:   IKernel;
 	path:     string;
+	off:      number;
 
 	refCount: number;
 
 	constructor(kernel: IKernel, path: string) {
 		this.kernel = kernel;
 		this.path = path;
+		this.off = 0;
 		this.refCount = 1;
 	}
 
@@ -78,6 +80,37 @@ export class DirFile implements IFile {
 
 	readdir(cb: (err: any, files: string[]) => void): void {
 		this.kernel.fs.readdir(this.path, cb);
+	}
+
+	getdents(length: number, cb: (err: any, buf: Uint8Array) => void): void {
+		this.readdir((err: any, files: string[]) => {
+			if (err) {
+				cb('readdir: ' + err, null);
+				return;
+			}
+			files = files.slice(this.off);
+
+			let dents = files.map((n) => new fs.Dirent(-1, fs.DT.UNKNOWN, n));
+			let buf = new Uint8Array(length);
+			let view = new DataView(buf.buffer);
+			let voff = 0;
+
+			for (let i = 0; i < dents.length; i++) {
+				let dent = dents[i];
+				if (voff + dent.reclen > length)
+					break;
+				let [len, err] = Marshal(view, voff, dent, fs.DirentDef);
+				if (err) {
+					cb('dirent marshal: ' + err, null);
+					return;
+				}
+				voff += len;
+				this.off++;
+				console.log('marshalled ' + dent.name);
+			}
+
+			cb(null, buf.slice(0, voff));
+		});
 	}
 
 	ref(): void {

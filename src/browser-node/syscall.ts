@@ -289,6 +289,12 @@ export class USyscalls {
 		this.post(msgId, 'stat', path);
 	}
 
+	getdents(fd: number, length: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'getdents', fd, length);
+	}
+
 	pread(fd: number, length: number, offset: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;

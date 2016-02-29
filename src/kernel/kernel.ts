@@ -192,6 +192,19 @@ class Syscalls {
 		this.kernel.exit(<Task>ctx.task, code);
 	}
 
+	getdents(ctx: SyscallContext, fd: number, length: number): void {
+		let file = ctx.task.files[fd];
+		if (!file) {
+			ctx.complete('bad FD ' + fd, null);
+			return;
+		}
+		if (!(file instanceof DirFile)) {
+			ctx.complete('getdents on non-directory ' + fd, null);
+		}
+		let dir = <DirFile>file;
+		dir.getdents(length, ctx.complete.bind(ctx));
+	}
+
 	socket(ctx: SyscallContext, domain: AF, type: SOCK, protocol: number): void {
 		if (domain !== AF.INET && type !== SOCK.STREAM)
 			return ctx.complete('unsupported socket type');
@@ -757,7 +770,7 @@ export class Kernel implements IKernel {
 		}
 		this.inKernel++;
 		if (syscall.name in this.syscalls) {
-			//console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
+			console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
 			console.log('unknown syscall ' + syscall.name);

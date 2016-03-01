@@ -57,6 +57,10 @@ class Process extends OnceEmitter {
 		this.argv = argv;
 		this.env = environ;
 	}
+
+	exit(code = 0): void {
+		syscall.exit(code);
+	}
 }
 /* { NODE_DEBUG: 'fs' } */
 let process = new Process(null, null);

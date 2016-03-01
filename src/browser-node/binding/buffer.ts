@@ -110,7 +110,7 @@ function decodeCodePointsArray (codePoints: any): any {
 	return res;
 }
 
-function utf8ToBytes(string: string, units?: number): any {
+export function utf8ToBytes(string: string, units?: number): any {
 	units = units || Infinity;
 	let codePoint: any;
 	let length = string.length;

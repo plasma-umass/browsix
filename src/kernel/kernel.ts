@@ -105,6 +105,7 @@ else
 	var Worker = <WorkerStatic>(<any>window).Worker;
 /* tslint:enable */
 
+const ENOTTY = 25;
 
 const O_APPEND = constants.O_APPEND || 0;
 const O_CREAT = constants.O_CREAT || 0;
@@ -488,6 +489,22 @@ class Syscalls {
 			ctx.complete(null, JSON.parse(JSON.stringify(stats)));
 		});
 	}
+
+	readlink(ctx: SyscallContext, path: string): void {
+		this.kernel.fs.readlink(path, (err: any, linkString: any) => {
+			if (err) {
+				console.log(err);
+				ctx.complete(err, null);
+				return;
+			}
+			// FIXME: this seems necessary to capture Date fields
+			ctx.complete(null, linkString);
+		});
+	}
+
+	ioctl(ctx: SyscallContext, fd: number, request: number, length: number): void {
+		ctx.complete(ENOTTY, null);
+	}
 }
 
 export class Kernel implements IKernel {
@@ -585,7 +602,7 @@ export class Kernel implements IKernel {
 			parts[0] = '/usr/bin/'+parts[0];
 
 		// FIXME: figure out else we want in the default environment
-		let env: string[] = ['PWD=/'];
+		let env: string[] = ['PWD=/', 'GOPATH=/'];
 		this.spawn(null, '/', parts[0], parts, env, null, (err: any, pid: number) => {
 			if (err) {
 				// FIXME: maybe some better sort of

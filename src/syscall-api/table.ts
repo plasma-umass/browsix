@@ -2,7 +2,7 @@
 
 import { Marshal, socket, fs } from 'node-binary-marshal';
 import { syscall } from '../browser-node/syscall';
-import { utf8Slice } from '../browser-node/binding/buffer';
+import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
 
 const ENOSYS = 38;
 const AT_FDCWD = -0x64;
@@ -32,12 +32,25 @@ function sys_getcwd(cb: Function, trap: number, arg0: any, arg1: any, arg2: any)
 	syscall.getcwd.apply(syscall, [done]);
 }
 
+function sys_ioctl(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
+	let $fd = arg0;
+	let $request = arg1;
+	let $argp = arg2;
+	let done = function(err: any, buf: Uint8Array): void {
+		if (!err && $argp.byteLength !== undefined)
+			$argp.set(buf);
+		cb([err ? err : buf.byteLength, 0, err ? -1 : 0]);
+	};
+	syscall.ioctl.apply(syscall, [$fd, $request, $argp.byteLength, done]);
+}
+
 function sys_getdents64(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
 	let $fd = arg0;
 	let $buf = arg1;
 	let $len = arg2;
 	let done = function(err: any, buf: Uint8Array): void {
-		$buf.set(buf);
+		if (!err)
+			$buf.set(buf);
 		cb([err ? -1 : buf.byteLength, 0, err ? -1 : 0]);
 	};
 	syscall.getdents.apply(syscall, [$fd, $len, done]);
@@ -101,7 +114,34 @@ function sys_fstat(cb: Function, trap: number, arg0: any, arg1: any): void {
 	syscall.fstat.apply(syscall, [arg0, done]);
 }
 
+function sys_readlinkat(cb: Function, trap: number, arg0: any, arg1: any, arg2: any, arg3: any): void {
+	let $fd = arg0|0;
+	let $path = arg1;
+	let $buf = arg2;
+	let $buflen = arg3;
+
+	// TODO: we only support AT_FDCWD
+	if ((arg0|0) !== AT_FDCWD) {
+		debugger;
+		setTimeout(cb, 0, [-1, 0, -1]);
+		return;
+	}
+	let done = function(err: any, linkString: string): void {
+		let bytes: number[] = [];
+		if (!err) {
+			let bytes = utf8ToBytes(linkString);
+			$buf.set(bytes);
+		}
+		cb([err ? -1 : bytes.length, 0, err ? -1 : 0]);
+	};
+	let len = $path.length;
+	if (len && arg1[$path.length-1] === 0)
+		len--;
+	syscall.readlink.apply(syscall, [utf8Slice($path, 0, len), done]);
+}
+
 function sys_openat(cb: Function, trap: number, arg0: any, arg1: any, arg2: any, arg3: any): void {
+	// TODO: we only support AT_FDCWD
 	if ((arg0|0) !== AT_FDCWD) {
 		debugger;
 		setTimeout(cb, 0, [-1, 0, -1]);
@@ -197,7 +237,7 @@ export var syscallTbl = [
 	sys_ni_syscall, // 13 rt_sigaction
 	sys_ni_syscall, // 14 rt_sigprocmask
 	sys_ni_syscall, // 15 rt_sigreturn
-	sys_ni_syscall, // 16 ioctl
+	sys_ioctl,      // 16 ioctl
 	sys_ni_syscall, // 17 pread64
 	sys_ni_syscall, // 18 pwrite64
 	sys_ni_syscall, // 19 readv
@@ -448,7 +488,7 @@ export var syscallTbl = [
 	sys_ni_syscall, // 264 renameat
 	sys_ni_syscall, // 265 linkat
 	sys_ni_syscall, // 266 symlinkat
-	sys_ni_syscall, // 267 readlinkat
+	sys_readlinkat, // 267 readlinkat
 	sys_ni_syscall, // 268 fchmodat
 	sys_ni_syscall, // 269 faccessat
 	sys_ni_syscall, // 270 pselect6

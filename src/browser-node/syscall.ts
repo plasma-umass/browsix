@@ -289,6 +289,18 @@ export class USyscalls {
 		this.post(msgId, 'stat', path);
 	}
 
+	ioctl(fd: number, request: number, length: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'ioctl', fd, request, length);
+	}
+
+	readlink(path: string, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'readlink', path);
+	}
+
 	getdents(fd: number, length: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;

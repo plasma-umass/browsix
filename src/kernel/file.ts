@@ -106,7 +106,6 @@ export class DirFile implements IFile {
 				}
 				voff += len;
 				this.off++;
-				console.log('marshalled ' + dent.name);
 			}
 
 			cb(null, buf.slice(0, voff));

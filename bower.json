@@ -1,6 +1,5 @@
 {
-  "name": "project-1",
-  "private": true,
+  "name": "browsix",
   "dependencies": {
     "iron-elements": "PolymerElements/iron-elements#^1.0.4",
     "neon-elements": "PolymerElements/neon-elements#^1.0.0",

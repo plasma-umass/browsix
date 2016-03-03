@@ -14,6 +14,13 @@ function sys_ni_syscall(cb: Function, trap: number): void {
 	setTimeout(cb, 0, [-1, 0, -ENOSYS]);
 }
 
+function sys_getpid(cb: Function, trap: number): void {
+	let done = function(err: any, pid: number): void {
+		cb([pid, 0, 0]);
+	};
+	syscall.getpid.apply(syscall, [done]);
+}
+
 function sys_getcwd(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
 	let $getcwdArray = arg0;
 	let $getcwdLen = arg1;
@@ -260,7 +267,7 @@ export var syscallTbl = [
 	sys_ni_syscall, // 36 getitimer
 	sys_ni_syscall, // 37 alarm
 	sys_ni_syscall, // 38 setitimer
-	sys_ni_syscall, // 39 getpid
+	sys_getpid,     // 39 getpid
 	sys_ni_syscall, // 40 sendfile
 	sys_socket,     // 41 socket
 	sys_ni_syscall, // 42 connect

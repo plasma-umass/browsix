@@ -193,6 +193,11 @@ class Syscalls {
 		this.kernel.exit(<Task>ctx.task, code);
 	}
 
+
+	getpid(ctx: SyscallContext): void {
+		ctx.complete(null, ctx.task.pid);
+	}
+
 	getdents(ctx: SyscallContext, fd: number, length: number): void {
 		let file = ctx.task.files[fd];
 		if (!file) {
@@ -787,7 +792,7 @@ export class Kernel implements IKernel {
 		}
 		this.inKernel++;
 		if (syscall.name in this.syscalls) {
-			console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
+			//console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
 			console.log('unknown syscall ' + syscall.name);

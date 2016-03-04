@@ -88,6 +88,10 @@ if (typeof setImmediate === 'undefined') {
 	}
 }
 
+function join(a: string, b: string): string {
+	return a + '/' + b;
+}
+
 // the following boilerplate allows us to use WebWorkers both in the
 // browser and under node, and give the typescript compiler full
 // information on the Worker type.  We have to disable tslint for this
@@ -379,17 +383,18 @@ class Syscalls {
 		ctx.complete(undefined, ctx.task.setPriority(prio));
 	}
 
-	readdir(ctx: SyscallContext, path: string): void {
-		this.kernel.fs.readdir(path, ctx.complete.bind(ctx));
+	readdir(ctx: SyscallContext, p: string): void {
+		this.kernel.fs.readdir(join(ctx.task.cwd, p), ctx.complete.bind(ctx));
 	}
 
-	open(ctx: SyscallContext, path: string, flags: string, mode: number): void {
+	open(ctx: SyscallContext, p: string, flags: string, mode: number): void {
+		p = join(ctx.task.cwd, p);
 		// FIXME: support CLOEXEC
-		this.kernel.fs.open(path, flagsToString(flags), mode, (err: any, fd: any) => {
+		this.kernel.fs.open(p, flagsToString(flags), mode, (err: any, fd: any) => {
 			let f: IFile;
 			if (err && err.code === 'EISDIR') {
 				// TODO: update BrowserFS to open() dirs
-				f = new DirFile(this.kernel, path);
+				f = new DirFile(this.kernel, p);
 			} else if (!err) {
 				f = new RegularFile(this.kernel, fd);
 			} else {
@@ -403,14 +408,14 @@ class Syscalls {
 		});
 	}
 
-	unlink(ctx: SyscallContext, path: string): void {
-		this.kernel.fs.unlink(path, ctx.complete.bind(ctx));
+	unlink(ctx: SyscallContext, p: string): void {
+		this.kernel.fs.unlink(join(ctx.task.cwd, p), ctx.complete.bind(ctx));
 	}
 
-	utimes(ctx: SyscallContext, path: string, atimets: number, mtimets: number): void {
+	utimes(ctx: SyscallContext, p: string, atimets: number, mtimets: number): void {
 		let atime = new Date(atimets*1000);
 		let mtime = new Date(mtimets*1000);
-		this.kernel.fs.utimes(path, atime, mtime, ctx.complete.bind(ctx));
+		this.kernel.fs.utimes(join(ctx.task.cwd, p), atime, mtime, ctx.complete.bind(ctx));
 	}
 
 	futimes(ctx: SyscallContext, fd: number, atimets: number, mtimets: number): void {
@@ -429,12 +434,12 @@ class Syscalls {
 		this.kernel.fs.futimes(file, atime, mtime, ctx.complete.bind(ctx));
 	}
 
-	rmdir(ctx: SyscallContext, path: string): void {
-		this.kernel.fs.rmdir(path, ctx.complete.bind(ctx));
+	rmdir(ctx: SyscallContext, p: string): void {
+		this.kernel.fs.rmdir(join(ctx.task.cwd, p), ctx.complete.bind(ctx));
 	}
 
-	mkdir(ctx: SyscallContext, path: string, mode: number): void {
-		this.kernel.fs.mkdir(path, mode, ctx.complete.bind(ctx));
+	mkdir(ctx: SyscallContext, p: string, mode: number): void {
+		this.kernel.fs.mkdir(join(ctx.task.cwd, p), mode, ctx.complete.bind(ctx));
 	}
 
 	close(ctx: SyscallContext, fd: number): void {
@@ -471,8 +476,8 @@ class Syscalls {
 		});
 	}
 
-	lstat(ctx: SyscallContext, path: string): void {
-		this.kernel.fs.lstat(path, (err: any, stats: any) => {
+	lstat(ctx: SyscallContext, p: string): void {
+		this.kernel.fs.lstat(join(ctx.task.cwd, p), (err: any, stats: any) => {
 			if (err) {
 				console.log(err);
 				ctx.complete(err, null);
@@ -483,8 +488,8 @@ class Syscalls {
 		});
 	}
 
-	stat(ctx: SyscallContext, path: string): void {
-		this.kernel.fs.stat(path, (err: any, stats: any) => {
+	stat(ctx: SyscallContext, p: string): void {
+		this.kernel.fs.stat(join(ctx.task.cwd, p), (err: any, stats: any) => {
 			if (err) {
 				console.log(err);
 				ctx.complete(err, null);
@@ -495,8 +500,8 @@ class Syscalls {
 		});
 	}
 
-	readlink(ctx: SyscallContext, path: string): void {
-		this.kernel.fs.readlink(path, (err: any, linkString: any) => {
+	readlink(ctx: SyscallContext, p: string): void {
+		this.kernel.fs.readlink(join(ctx.task.cwd, p), (err: any, linkString: any) => {
 			if (err) {
 				console.log(err);
 				ctx.complete(err, null);
@@ -833,7 +838,7 @@ export class Task implements ITask {
 	exeFd: any;
 	args: string[];
 	env: Environment;
-	cwd: string;
+	cwd: string; // must be absolute path
 
 	parent: Task;
 	children: Task[];

@@ -29,37 +29,47 @@ function main(): void {
 		fs.mkdir(path, (err: any) => {
 			console.log('making path');
 			if (err && pflag) {
-				// TODO: this is where we should check
-				// if path has multiple components,
-				// and if it does, attempt to create
-				// each component.  For now just error
-				// out.
-				//process.stderr.write(err.message + '\n', finished);
-				//return;
 				let subdirs = path.split('/');
-				console.log(subdirs);
 				let subpath = '';
-				for (let j = 0; j < subdirs.length; j++) {
-					subpath += subdirs[j] + '/';
-					fs.stat(subpath, function(oerr: any, stats: fs.Stats): void {
-						// this never runs
-						console.log("I never print");
+				function mkdir_make_path (index: number): void {
+					fs.mkdir(subpath, (oerr: any) => {
 						if (oerr) {
-							console.log("ERRR");
-							fs.mkdir(subpath, (ooerr: any) => {
-								// too much fail. no more try.
-								process.stderr.write(ooerr.message + '\n', finished);
-								return;
-							});
+							//unable to make directory.
+							console.log(oerr);
+						}
+						else {
+							if (index===subdirs.length) {
+								finished();
+							} else {
+							subpath += subdirs[index] + '/';
+							mkdir_make_path(index+1);
+						}}
+					});
+				}
+				function mkdir_path_exists (index: number): void {
+					console.log('mkdir_make_path ' + subpath + ' ' + index);
+					subpath += subdirs[index] + '/';
+					fs.stat(subpath, function (oerr: any, stats: fs.Stats): void{
+						if (oerr) {
+							//check if error is 'path does not exist'
+							mkdir_make_path(index+1);
+						}
+						else {
+							//path still exists.
+							mkdir_path_exists(index+1);
 						}
 					});
 				}
+				mkdir_path_exists(0);
 			} else if (err) {
 				code = 1;
 				process.stderr.write(err.message + '\n', finished);
 				return;
 			}
-			finished();
+			else {
+				//mkdir without pflag finished successfully.
+				finished();
+			}
 		});
 	});
 }

@@ -82,6 +82,13 @@ utilities, run a number of tests in either Firefox or Chrome, and then
 launch a copy of the shell served locally.
 
 
+Documentation
+-------------
+
+For a high-level overview of the system design and architecture,
+please see [this document](doc/report.pdf).
+
+
 Contributing
 ------------
 

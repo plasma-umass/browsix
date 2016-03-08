@@ -612,7 +612,15 @@ export class Kernel implements IKernel {
 			parts[0] = '/usr/bin/'+parts[0];
 
 		// FIXME: figure out else we want in the default environment
-		let env: string[] = ['PWD=/', 'GOPATH=/'];
+		let env: string[] = [
+			'PWD=/',
+			'GOPATH=/',
+			'USER=browsix',
+			'PATH=/usr/bin',
+			'LANG=en_US.UTF-8',
+			'LC_ALL=en_US.UTF-8',
+			'HOME=/',
+		];
 		this.spawn(null, '/', parts[0], parts, env, null, (err: any, pid: number) => {
 			if (err) {
 				// FIXME: maybe some better sort of

@@ -1,6 +1,6 @@
 'use strict';
 
-import { syscall, SyscallCallback, SyscallResponse } from '../browser-node/syscall';
+import { syscall, USyscalls, SyscallCallback, SyscallResponse } from '../browser-node/syscall';
 import { syscallTbl } from './table';
 
 export interface SyscallCallback {
@@ -13,6 +13,7 @@ export function Syscall(cb: Function, trap: number): void {
 
 export var Syscall6 = Syscall;
 
+export var internal = syscall;
 
 interface Environment {
 	[name: string]: string;

@@ -136,7 +136,6 @@ function main (): void {
 	// the tuple of (path, i) on each iteration.
 	args.map(function(path: string, i: number): void {
 		fs.mkdir(path, (err: any) => {
-			console.log('making path');
 			if (err && pflag) {
 				pmkdir(path);
 			}

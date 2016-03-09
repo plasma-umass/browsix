@@ -86,50 +86,50 @@ function main (): void {
 	let code = 0;
 	let completed = 0;
 
-	function finished (): void {
+	function finished(): void {
 		completed++;
 		if (completed === args.length) {
 			process.exit(code);
 		}
 	}
 
-	function pmkdir (path: string): void {
+	function pmkdir(path: string): void {
 
 		let subdirs = path.split('/');
 		let subpath = '';
 
-		function mkdir_make_path (index: number): void {
+		function makePath(index: number): void {
 			fs.mkdir(subpath, (oerr: any) => {
 				if (oerr) {
-					//unable to make directory
-					console.log(oerr);
-				}
-				else {
-					if (index===subdirs.length) {
+					// unable to make directory --
+					// pass finished to log to
+					// ensure we eventually exit.
+					log('fs.mkdir: %s', oerr, finished);
+				} else {
+					if (index === subdirs.length) {
 						finished();
 					} else {
 						subpath += subdirs[index] + '/';
-						mkdir_make_path(index+1);
+						makePath(index+1);
 					}
 				}
 			});
 		}
 
-		function mkdir_path_exists (index: number): void {
+		function checkExists(index: number): void {
 			subpath += subdirs[index] + '/';
 			fs.stat(subpath, function (oerr: any, stats: fs.Stats): void{
 				if (oerr) {
 					if (oerr.code==="ENOENT")
-						mkdir_make_path(index+1);
-				}
-				else {
+						makePath(index+1);
+				} else {
 					//path still exists.
-					mkdir_path_exists(index+1);
+					checkExists(index+1);
 				}
 			});
 		}
 
-		mkdir_path_exists(0);
+		checkExists(0);
 	}
 
 	// use map instead of a for loop so that we easily get

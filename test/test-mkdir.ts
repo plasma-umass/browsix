@@ -59,4 +59,48 @@ describe('mkdir /a', function(): void {
 		});
 	});
 
+	it('should run `mkdir -p /b/c/d e  f/g/h`', function(done: MochaDone): void {
+		let stdout = '';
+		let stderr = '';
+		kernel.system('mkdir -p /b/c/d e  f/g/h', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
+			try {
+				expect(code).to.equal(0);
+				expect(stdout).to.equal('');
+				expect(stderr).to.equal('');
+				done();
+			} catch (e) {
+				done(e);
+			}
+		}
+	});
+	it('should have /b/c/d', function(done: MochaDone): void {
+		kernel.fs.stat('/b/c/d', function(err: any, stat: any): void {
+			expect(err).to.be.null;
+			expect(stat).not.to.be.null;
+			done();
+		});
+	});
+	it('should have a', function(done: MochaDone): void {
+		kernel.fs.stat('/a', function(err: any, stat: any): void {
+			expect(err).to.be.null;
+			expect(stat).not.to.be.null;
+			done();
+		});
+	});
+	it('should have f/g/h', function(done: MochaDone): void {
+		kernel.fs.stat('/f/g/h', function(err: any, stat: any): void {
+			expect(err).to.be.null;
+			expect(stat).not.to.be.null;
+			done();
+		});
+	});
+
+
 });

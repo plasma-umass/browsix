@@ -7,57 +7,7 @@ import {format} from 'util';
 let maxArgs = 1000;
 let delimiter = /[\n*\s*]/;
 let verbose = false;
-
-//function parseArgs(args: string[], handlers: {[n: string]: Function}): [string[], boolean] {
-//	let ok = true;
-//	let positionalArgs: string[] = args.filter((arg) => arg.substring(0, 1) !== '-');
-//	args = args.filter((arg) => arg.substring(0, 1) === '-');
-//
-//	let errs = 0;
-//	function done(): void {
-//		errs--;
-//		if (!errs)
-//			process.exit(1);
-//	}
-//	function error(...args: any[]): void {
-//		errs++;
-//		ok = false;
-//		// apply the arguments we've been given to log, and
-//		// append our own callback.
-//		//log.apply(this, args.concat([done]));
-//	}
-//	function usage(): void {
-//		errs++;
-//		let prog = process.argv[1].split('/').slice(-1);
-//		let flags = Object.keys(handlers).concat(['h']).sort().join('');
-//		let msg = format('usage: %s [-%s] ARGS\n', prog, flags);
-//		process.stderr.write(msg, done);
-//	}
-//
-//	outer:
-//		for (let i = 0; i < args.length; i++) {
-//		let argList = args[i].slice(1);
-//		if (argList.length && argList[0] === '-') {
-//			error('unknown option "%s"', args[i]);
-//			continue;
-//		}
-//		for (let j = 0; j < argList.length; j++) {
-//			let arg = argList[j];
-//			if (handlers[arg]) {
-//				handlers[arg]();
-//			} else if (arg === 'h') {
-//				ok = false;
-//				break outer;
-//			} else {
-//				error('invalid option "%s"', arg);
-//			}
-//		}
-//	}
-//
-//	if (!ok) usage();
-//
-//	return [positionalArgs, ok];
-//}
+let command = '';
 
 function getData(): void {
 	process.stdin.on('data', (chunk: Buffer) => {
@@ -66,8 +16,6 @@ function getData(): void {
 }
 
 function pass(data: string[]): void {
-
-	let command = parseArgs().join(" ");
 
 	let opts = {
 		encoding: 'utf8',
@@ -98,7 +46,7 @@ function pass(data: string[]): void {
 	}
 }
 
-function parseArgs(): string[] {
+function parseArgs(): void {
 
 	let errors = 0;
 
@@ -108,8 +56,7 @@ function parseArgs(): string[] {
 
 	while (argv[i][0] === "-") {
 
-		groupParse:
-			for (let j = 1; j<argv[i].length; j++) {
+		for (let j = 1; j<argv[i].length; j++) {
 			let arg = argv[i][j];
 			switch (arg) {
 				case 'n':
@@ -132,6 +79,7 @@ function parseArgs(): string[] {
 		i++;
 
 	}
-	return argv.splice(i);
+	command = argv.splice(i).join(" ");
 }
+parseArgs();
 getData();

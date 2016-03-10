@@ -80,25 +80,25 @@ function main (): void {
 
 	let length: number = args.length;
 
+	if (!length) {
+		let prog = process.argv[1].split('/').slice(-1);
+		process.stderr.write(prog + ': ' + 'missing file operand\n');
+		process.exit(-1);
+	}
+
 	let code = 0;
 	let completed = 0;
 
 	function finished(): void {
 		completed++;
-		if (completed === length - 1) {
+		if (completed === length) {
 			process.exit(code);
 		}
 	}
 
-	if (length < 2) {
+	if (length === 1) {
 		code = -1;
-
-		if (!length)
-			log('missing file operand', finished);
-		else
-			log('missing destination file operand after ‘%s’', args, finished);
-
-		return;
+		log('missing destination file operand after ‘%s’', args, finished);
 	}
 
 	function copy(src: string, dest: string): void {

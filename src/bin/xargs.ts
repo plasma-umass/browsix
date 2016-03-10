@@ -181,8 +181,7 @@ function parseArgs(): void {
 
 	}
 	if (err === 0) {
-		if (i < argv.length-1) {
-			console.log("set command");
+		if (i < argv.length) {
 			command = argv.splice(i).join(" ");
 		}
 	} else {

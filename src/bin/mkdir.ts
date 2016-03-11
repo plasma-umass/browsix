@@ -20,7 +20,7 @@ function log(fmt: string, ...args: any[]): void {
 		process.stderr.write(msg);
 }
 
-function parseArgs(args: string[], handlers: {[n: string]: Function}): [string[], boolean] {
+function parseArgs(args: string[], handlers: {[n: string]: Function}, argsRequired = false): [string[], boolean] {
 	let ok = true;
 	let positionalArgs: string[] = args.filter((arg) => arg.substring(0, 1) !== '-');
 	args = args.filter((arg) => arg.substring(0, 1) === '-');
@@ -66,7 +66,7 @@ function parseArgs(args: string[], handlers: {[n: string]: Function}): [string[]
 		}
 	}
 
-	if (!ok) usage();
+	if (!ok || (argsRequired && positionalArgs.length === 0)) usage();
 
 	return [positionalArgs, ok];
 }
@@ -78,9 +78,11 @@ function main (): void {
 	let pflag = false;
 
 	let [args, ok] = parseArgs(
-		process.argv.slice(2), {
+		process.argv.slice(2),
+		{
 			'p': (): any => pflag = true,
-		}
+		},
+		true
 	);
 
 	let code = 0;

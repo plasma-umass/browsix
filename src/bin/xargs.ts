@@ -7,9 +7,8 @@
 /**
  * TODO:
  * 1. Proper help()
- * 2. Find a better solution for the -t flag
- * 3. "xargs: " before the error statement
- * 4. Finish implementation of '-a' if required
+ * 2. "xargs: " before the error statement
+ * 3. Finish implementation of '-a' if required
  */
 
 'use strict';
@@ -21,20 +20,22 @@ import {format} from 'util';
 /**
  * Initialisation of default values
  */
-let maxArgs = 1000;         // argument limit
-let maxChars = 4096;        // character limit
-let command = 'echo';       // default COMMAND to run
+let maxArgs = 10000;            // Argument limit
+let maxChars = 4096;            // Character limit
+let command = '/usr/bin/echo';  // COMMAND to run
+let comArgs = '';               // Arguments for COMMAND
+let out = '';                   // Output
 
 /**
  * Option defaults
  */
-let delimiter = /[\n*\s*]/; // regExp used as a delimiter
-let eflag = false;          // eof string is set
-let eofStr = '';            // the eof END string
-let rflag = false;          // no-run-if-empty
-let tflag = false;          // verbose
-let xflag = false;          // exit after -s limit is exceeded
-//let fileToRead = '';      // (unused) -a flag req 
+let delimiter = /[\s*\n*]/;     // regExp used as a delimiter
+let rflag = false;              // no-run-if-empty
+let tflag = false;              // verbose
+let xflag = false;              // exit after -s limit is exceeded
+let eflag = false;              // eof string is set
+let eofStr = '';                // the eof END string(used if -e is set)
+//let fileToRead = '';          // (unused) -a flag req 
 
 /**
  * Default opts for executing COMMAND
@@ -43,10 +44,13 @@ let opts = {
 	encoding: 'utf8',
 	timeout: 100,
 	killSignal: 'SIGTERM',
-	env: {
-		xargsQuery: ''
-	}
+	stdio: [0, 1, 2]
 };
+
+function main(): void {
+	parseArgs();
+	getData();
+}
 
 /** 
  * Reads data from stdin or file, depending on '-a' flag
@@ -57,9 +61,10 @@ let opts = {
  * (It is also lacking in Suckless implementation)
  */
 function getData(): void {
+	//process.exit(1);
 	//if (fileToRead === '') {
 	process.stdin.on('data', (data: Buffer) => {
-		pass(data.toString().split(delimiter));
+		divide(data.toString('utf-8').trim().split(delimiter));
 	});
 	//} else {
 	//	fs.readFile(fileToRead, (err: any, data: Buffer) => {
@@ -89,88 +94,112 @@ function help(): void {
 }
 
 /**
- * Takes string[] of arguments, formats and passes to the COMMAND
- * Writes to process.stdout
+ * Divides arguments in queries and excecutes pass()
+ * @param data Array of strings containing args to pass to COMMAND
  */
-function pass(data: string[]): void {
+function divide(data: string[]): void {
 
-	let queries: string[] = [];
+	let queries: string[][] = [];
 
 	if (rflag && data.length === 0) {
 		process.exit(0);
 	}
 
 	let i = 0;            // query number
-	let newQuery = true;  // start constructing a new query
 	let argsAdded = 0;    // number of args passed to the query
+	let charsAdded = 0;
+	let newQuery = true;  // start constructing a new query
 
 	// Constructs array(string[]) of queries
 	while (data.length > 0) {
+
+		// Start filling the new query
 		if (newQuery) {
-			queries.push(command);
-			newQuery = false;
 			argsAdded = 0;
+			charsAdded = 0;
+			queries[i] = [];
+			if (comArgs.length > 0) {
+				queries[i].push(comArgs);
+				charsAdded += comArgs.length;
+			}
+			newQuery = false;
 		}
 
 		// Check if an argument can be passed to a command
-		if (command.length + 1 > maxChars) {
+		if (command.length + comArgs.length + 2 > maxChars) {
 			process.stderr.write("cannot fit single argument within argument list size limit\n");
 			process.exit(1);
+
 		// Check if maxChars limit is reached by appending the argument
-		} else if (command.length + 1 + data[0].length > maxChars) {
+		} else if (command.length + comArgs.length + 2 + data[0].length > maxChars) {
 			process.stderr.write("argument line too long\n");
 			if (xflag) {
 				process.exit(1);
 			}
 			break;
+
 		// Append the argument if possible
-		} else if (argsAdded < maxArgs && queries[i].length + 1 + data[0].length <= maxChars)	{
+		} else if (argsAdded < maxArgs && charsAdded + 1 + data[0].length <= maxChars)	{
 			let arg = data.shift();
-			queries[i] = queries[i].concat(" ", arg);
+			queries[i].push(arg);
+			charsAdded += arg.length + 1;
 			argsAdded++;
 			if (eflag) {
 				if ( arg === eofStr) {
 					break;
 				}
 			}
-		// Start a new query
+
+		// Go to next query
 		} else {
 			i++;
 			newQuery = true;
 		}
 	}
 
-	// Runs backwards as a workaround for the output ordering
-	// TODO: Find a better way to make the -t flag work
-	for (let i = queries.length-1; i >= 0; i--) {
-		let query = '';
-		if (tflag) {
-			opts.env.xargsQuery = queries[i];
-			query = 'echo $xargsQuery xargsNewline && '.concat(queries[i]);
-		} else {
-			query = queries[i];
-		}
-		let child = child_process.exec(query, opts, (err, stdout, stderr) => {
-			if (err) {
-				process.stderr.write('error: ' + err);
-				process.exit(1);
-			}
-			let out = stdout.toString().split(/[\n*\s*]/).join(" ").concat("\n");
-			if (tflag) {
-				out = out.replace(" xargsNewline ", "\n");
-			}
-			process.stdout.write(out);
-		});
-	}
+	pass(0, queries);
 }
 
 /**
- * Parses arguments of the 'xargs' function
- * sets global variables according to the flags
+ * Excecutes COMMAND with formatted queries(needed amount of times)
+ * Appends output of queries to 'out'
+ * Writes 'out' to stdout and exits with 0 if all queries got excecuted
+ * @param i index of query to run @param queries array of queries
+ */
+function pass(i: number, queries: string[][]): void {
+	if (i === queries.length) {
+		process.stdout.write(out);
+		process.exit(0);
+		return;
+	}
+	if (tflag) {
+		out += command.concat(" ", queries[i].join(" "), "\n");
+	}
+
+	let child = child_process.spawn(command, queries[i], opts);
+
+	child.on('error', (err: any) => {
+		process.stderr.write('error: ' + err, () => {
+			process.exit(1);
+		});
+	});
+
+	child.on('exit', (code: number) => {
+		if (code) {
+			process.stderr.write(queries[i].join(" ").concat(" exited with code ", code.toString(), "\n"), () => {
+				process.exit(1);
+			});
+		} else {
+			pass(i+1, queries);
+		}
+	});
+}
+
+/**
+ * Parses arguments and COMMAND
+ * Sets global variables according to the given flags
  */
 function parseArgs(): void {
-
-	let err = 0;
 
 	let argv = process.argv.slice(2);
 
@@ -235,17 +264,20 @@ function parseArgs(): void {
 					help();
 				break;
 				default:
-					process.stdout.write(format('unknown option %s\n', arg));
+					process.stderr.write(format('unknown option %s\n', arg));
 				help();
 			}
 		}
 		i++;
 	}
-
 	if (i < argv.length) {
-		command = argv.splice(i).join(" ");
+		command = argv[i];
+		i++;
+
+		if (i < argv.length) {
+			comArgs = argv.splice(i).join(" ");
+		}
 	}
 }
 
-parseArgs();
-getData();
+main();

@@ -42,7 +42,7 @@ describe('xargs', function(): void {
 		function onExit(pid: number, code: number): void {
 			try {
 				expect(code).to.equal(0);
-				expect(stdout).to.equal('1 12\n123\n12 1\n1234');
+				expect(stdout).to.equal('1 12\n123\n12 1\n1234\n');
 				expect(stderr).to.equal('');
 				done();
 			} catch (e) {

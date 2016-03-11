@@ -56,8 +56,7 @@
     "tsd": "^0.6.4",
     "tslint": "^3.3.0",
     "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
-    "webworker-threads": "^0.6.1"
+    "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
     "node-binary-marshal": "^0.3.2",

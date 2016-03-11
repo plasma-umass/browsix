@@ -80,6 +80,27 @@ describe('mkdir /a', function(): void {
 			}
 		}
 	});
+	it('should error out on `mkdir -p`', function(done: MochaDone): void {
+		let stdout = '';
+		let stderr = '';
+		kernel.system('mkdir -p', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
+			try {
+				expect(code).to.equal(1);
+				expect(stdout).to.equal('');
+				expect(stderr).to.equal('usage: mkdir [-hp] ARGS\n');
+				done();
+			} catch (e) {
+				done(e);
+			}
+		}
+	});
 	it('should have /b/c/d', function(done: MochaDone): void {
 		kernel.fs.stat('/b/c/d', function(err: any, stat: any): void {
 			expect(err).to.be.null;

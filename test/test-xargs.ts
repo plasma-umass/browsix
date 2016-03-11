@@ -15,7 +15,7 @@ const ROOT = IS_KARMA ? '/base/fs/' : '/fs/';
 
 export const name = 'test-xargs';
 
-describe('echo "1,12,123,12345678901234567890,1234" | xargs -n 2 -s 13 -d , -x', function(): void {
+describe('xargs', function(): void {
 	this.timeout(10 * MINS);
 
 	let kernel: Kernel = null;
@@ -29,10 +29,10 @@ describe('echo "1,12,123,12345678901234567890,1234" | xargs -n 2 -s 13 -d , -x',
 		});
 	});
 
-	it('should run echo "1,12,123,12345678901234567890,1234" | xargs -n 2 -s 13 -d , -x', function(done: MochaDone): void {
+	it('should split on "," and pass max 2 args to COMMAND with a char limit of 13 on 1,12,123,12,1,1234', function(done: MochaDone): void {
 		let stdout: string = '';
 		let stderr: string = '';
-		kernel.system('/usr/bin/echo 1,12,123,12,1,1234 | /usr/bin/xargs -s 11 -d , -n 2', onExit, onStdout, onStderr);
+		kernel.system('/usr/bin/echo 1,12,123,12,1,1234 | /usr/bin/xargs -n 2 -s 13 -d , -x', onExit, onStdout, onStderr);
 		function onStdout(pid: number, out: string): void {
 			stdout += out;
 		}
@@ -43,6 +43,49 @@ describe('echo "1,12,123,12345678901234567890,1234" | xargs -n 2 -s 13 -d , -x',
 			try {
 				expect(code).to.equal(0);
 				expect(stdout).to.equal('1 12\n123\n12 1\n1234');
+				expect(stderr).to.equal('');
+				done();
+			} catch (e) {
+				done(e);
+			}
+		}
+	});
+
+	it('should split on "Bar" and limit the query to 8 chars, exit without printing if exceeded on "fooBarfooBarfooBarfoofooBarfoofoo"', function(done: MochaDone): void {
+		let stdout: string = '';
+		let stderr: string = '';
+		kernel.system('/usr/bin/echo "fooBarfooBarfooBarfoofooBarfoofoo" | /usr/bin/xargs -s 8 -d Bar -x', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
+			try {
+				expect(code).to.equal(0);
+				expect(stdout).to.equal('argument line too long\n');
+				expect(stderr).to.equal('');
+				done();
+			} catch (e) {
+				done(e);
+			}
+		}
+	});
+	it('should be verbose and pass 2 args max on "foo bar foo"', function(done: MochaDone): void {
+		let stdout: string = '';
+		let stderr: string = '';
+		kernel.system('/usr/bin/echo "foo bar foo" | /usr/bin/xargs -n 2 -t', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
+			try {
+				expect(code).to.equal(0);
+				expect(stdout).to.equal('echo foo bar\nfoo bar\necho foo\nfoo\n');
 				expect(stderr).to.equal('');
 				done();
 			} catch (e) {

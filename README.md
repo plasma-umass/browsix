@@ -82,6 +82,19 @@ utilities, run a number of tests in either Firefox or Chrome, and then
 launch a copy of the shell served locally.
 
 
+In-browser node limitations
+---------------------------
+
+Browsix's `browser-node` implementation has an important to understand
+limitation: **you must explicitly call `process.exit()`**.  Without
+this, utilities will work under real-node, but appear to hang under
+`browser-node`.  This is not an intrinsic limitation, but it is a
+hairy implementation detail -- node exits when the event loop is
+empty, and there are no active timers or network callbacks.  For us to
+do the same thing means we need to hook `setTimeout` and any other
+functions that take callbacks to ensure we don't exit early.
+
+
 Documentation
 -------------
 

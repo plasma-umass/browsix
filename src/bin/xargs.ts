@@ -9,6 +9,7 @@
  * 1. Proper help()
  * 2. Find a better solution for the -t flag
  * 3. "xargs: " before the error statement
+ * 4. Finish implementation of '-a' if required
  */
 
 'use strict';
@@ -20,20 +21,20 @@ import {format} from 'util';
 /**
  * Initialisation of default values
  */
-let maxArgs = 1000;			// argument limit
-let maxChars = 4096;		// character limit
-let command = 'echo';		// default COMMAND to run
+let maxArgs = 1000;         // argument limit
+let maxChars = 4096;        // character limit
+let command = 'echo';       // default COMMAND to run
 
 /**
  * Option defaults
  */
 let delimiter = /[\n*\s*]/; // regExp used as a delimiter
-let eflag = false;			// eof string is set
-let eofStr = '';			// the eof END string
-let rflag = false;			// no-run-if-empty
-let tflag = false;			// verbose
-let xflag = false;			// exit after -s limit is exceeded
-//let fileToRead = '';		// (unused) -a flag req 
+let eflag = false;          // eof string is set
+let eofStr = '';            // the eof END string
+let rflag = false;          // no-run-if-empty
+let tflag = false;          // verbose
+let xflag = false;          // exit after -s limit is exceeded
+//let fileToRead = '';      // (unused) -a flag req 
 
 /**
  * Default opts for executing COMMAND
@@ -70,7 +71,7 @@ function getData(): void {
 }
 
 /**
- * Displays usage, help and exits
+ * Displays usage, help and exits with code 1
  */
 function help(): void {
 	let usage = "Usage: xargs [OPTION]...COMMAND [INITIAL-ARGS]...\n";
@@ -115,14 +116,14 @@ function pass(data: string[]): void {
 		if (command.length + 1 > maxChars) {
 			process.stderr.write("cannot fit single argument within argument list size limit\n");
 			process.exit(1);
-			// Check if maxChars limit is reached by appending the argument
+		// Check if maxChars limit is reached by appending the argument
 		} else if (command.length + 1 + data[0].length > maxChars) {
 			process.stderr.write("argument line too long\n");
 			if (xflag) {
 				process.exit(1);
 			}
 			break;
-			// Append the argument if possible
+		// Append the argument if possible
 		} else if (argsAdded < maxArgs && queries[i].length + 1 + data[0].length <= maxChars)	{
 			let arg = data.shift();
 			queries[i] = queries[i].concat(" ", arg);
@@ -132,7 +133,7 @@ function pass(data: string[]): void {
 					break;
 				}
 			}
-			// Start a new query
+		// Start a new query
 		} else {
 			i++;
 			newQuery = true;

@@ -744,7 +744,7 @@ export class Kernel implements IKernel {
 				task.onStdout(task.pid, stdout.readSync().toString('utf-8'));
 
 			if (isPipe(stderr) && task.onStderr)
-				task.onStdout(task.pid, stderr.readSync().toString('utf-8'));
+				task.onStderr(task.pid, stderr.readSync().toString('utf-8'));
 			task.onExit(task.pid, task.exitCode);
 		}
 	}

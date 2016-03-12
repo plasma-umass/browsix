@@ -20,22 +20,23 @@ import {format} from 'util';
 /**
  * Initialisation of default values
  */
-let maxArgs = 10000;            // Argument limit
-let maxChars = 4096;            // Character limit
-let command = '/usr/bin/echo';  // COMMAND to run
-let comArgs = '';               // Arguments for COMMAND
-let out = '';                   // Output
+let maxArgs = 10000;						// Argument limit
+let maxChars = 4096;						// Character limit
+let command = '/usr/bin/echo';	// COMMAND to run
+let comArgs = '';								// Arguments for COMMAND
+let out = '';										// Output
+let children: any[] = [];
 
 /**
  * Option defaults
  */
-let delimiter = /[\s*\n*]/;     // regExp used as a delimiter
-let rflag = false;              // no-run-if-empty
-let tflag = false;              // verbose
-let xflag = false;              // exit after -s limit is exceeded
-let eflag = false;              // eof string is set
-let eofStr = '';                // the eof END string(used if -e is set)
-//let fileToRead = '';          // (unused) -a flag req 
+let delimiter = /[\s*\n*]/;			// regExp used as a delimiter
+let rflag = false;							// no-run-if-empty
+let tflag = false;							// verbose
+let xflag = false;							// exit after -s limit is exceeded
+let eflag = false;							// eof string is set
+let eofStr = '';								// the eof END string(used if -e is set)
+//let fileToRead = '';					// (unused) -a flag req 
 
 /**
  * Default opts for executing COMMAND
@@ -50,6 +51,7 @@ let opts = {
 function main(): void {
 	parseArgs();
 	getData();
+	return;
 }
 
 /** 
@@ -68,9 +70,9 @@ function getData(): void {
 	});
 	//} else {
 	//	fs.readFile(fileToRead, (err: any, data: Buffer) => {
-	//		if (err) throw err;
-	//		console.log(data.toString().split(delimiter));
-	//		pass(data.toString().split(delimiter));
+	//			if (err) throw err;
+	//			console.log(data.toString().split(delimiter));
+	//			pass(data.toString().split(delimiter));
 	//	});
 	//}
 }
@@ -79,17 +81,15 @@ function getData(): void {
  * Displays usage, help and exits with code 1
  */
 function help(): void {
-	let usage = "Usage: xargs [OPTION]...COMMAND [INITIAL-ARGS]...\n";
-	process.stderr.write(usage, (err: any) => {
-		if (err) {
-			process.stderr.write("error: "+err);
-			process.exit(1);
-		}
-		process.stderr.write("Run COMMAND with INITIAL-ARGS and more arguments read from input\n");
-		process.stderr.write("\n");
-		process.stderr.write("Supported options: -dEnrstx \n");
-		process.stderr.write("Bugs to: r.volosatovs@student.tue.nl\n");
+	let help = "Usage: xargs [OPTION]...COMMAND [INITIAL-ARGS]...\n";
+	help += "Run COMMAND with INITIAL-ARGS and more arguments read from input\n";
+	help += "\n";
+	help += "Supported options: -dEnrstx \n";
+	help += "Bugs to: r.volosatovs@student.tue.nl\n";
+	process.stderr.write(help, () => {
+		//process.stderr.write(help);
 		process.exit(1);
+		return;
 	});
 }
 
@@ -103,12 +103,13 @@ function divide(data: string[]): void {
 
 	if (rflag && data.length === 0) {
 		process.exit(0);
+		return;
 	}
 
-	let i = 0;            // query number
-	let argsAdded = 0;    // number of args passed to the query
+	let i = 0;						// query number
+	let argsAdded = 0;		// number of args passed to the query
 	let charsAdded = 0;
-	let newQuery = true;  // start constructing a new query
+	let newQuery = true;	// start constructing a new query
 
 	// Constructs array(string[]) of queries
 	while (data.length > 0) {
@@ -129,35 +130,42 @@ function divide(data: string[]): void {
 		if (command.length + comArgs.length + 2 > maxChars) {
 			process.stderr.write("cannot fit single argument within argument list size limit\n");
 			process.exit(1);
+			return;
 
-		// Check if maxChars limit is reached by appending the argument
+			// Check if maxChars limit is reached by appending the argument
 		} else if (command.length + comArgs.length + 2 + data[0].length > maxChars) {
 			process.stderr.write("argument line too long\n");
 			if (xflag) {
 				process.exit(1);
+				return;
 			}
 			break;
 
-		// Append the argument if possible
-		} else if (argsAdded < maxArgs && charsAdded + 1 + data[0].length <= maxChars)	{
+			// Append the argument if possible
+		} else if (argsAdded < maxArgs && charsAdded + 1 + data[0].length <= maxChars) {
 			let arg = data.shift();
 			queries[i].push(arg);
 			charsAdded += arg.length + 1;
 			argsAdded++;
 			if (eflag) {
-				if ( arg === eofStr) {
+				if (arg === eofStr) {
 					break;
 				}
 			}
 
-		// Go to next query
+			// Go to next query
 		} else {
 			i++;
 			newQuery = true;
+			continue;
 		}
 	}
 
+	for (let i = 0; i < queries.length; i++) {
+		console.log(queries[i]);
+	}
 	pass(0, queries);
+	return;
 }
 
 /**
@@ -167,30 +175,36 @@ function divide(data: string[]): void {
  * @param i index of query to run @param queries array of queries
  */
 function pass(i: number, queries: string[][]): void {
-	if (i === queries.length) {
+	if (i >= queries.length) {
 		process.stdout.write(out);
 		process.exit(0);
 		return;
 	}
+
 	if (tflag) {
 		out += command.concat(" ", queries[i].join(" "), "\n");
 	}
 
-	let child = child_process.spawn(command, queries[i], opts);
+	children.push(child_process.spawn(command, queries[i], opts));
+	console.log("child spawned, i=" + i);
 
-	child.on('error', (err: any) => {
+	children[i].on('error', (err: any) => {
 		process.stderr.write('error: ' + err, () => {
 			process.exit(1);
+			return;
 		});
 	});
 
-	child.on('exit', (code: number) => {
-		if (code) {
+	children[i].on('exit', (code: number) => {
+		console.log("child exited, code " + code);
+		if (code !== 0) {
 			process.stderr.write(queries[i].join(" ").concat(" exited with code ", code.toString(), "\n"), () => {
 				process.exit(1);
+				return;
 			});
 		} else {
-			pass(i+1, queries);
+			console.log("new pass");
+			pass(i + 1, queries);
 		}
 	});
 }
@@ -207,33 +221,33 @@ function parseArgs(): void {
 
 	while (i < argv.length && argv[i][0] === "-") {
 		groupParse:
-			for (let j = 1; j<argv[i].length; j++) {
+		for (let j = 1; j < argv[i].length; j++) {
 			let arg = argv[i][j];
 			switch (arg) {
 				case 'n':
-					if (argv[i].length > j+1) {
-					maxArgs = parseInt(argv[i].slice(j+1), 10);
-				} else {
-					i++;
-					maxArgs = parseInt(argv[i], 10);
-				}
-				break groupParse;
+					if (argv[i].length > j + 1) {
+						maxArgs = parseInt(argv[i].slice(j + 1), 10);
+					} else {
+						i++;
+						maxArgs = parseInt(argv[i], 10);
+					}
+					break groupParse;
 				case 's':
-					if (argv[i].length > j+1) {
-					maxChars = parseInt(argv[i].slice(j+1), 10);
-				} else {
-					i++;
-					maxChars = parseInt(argv[i], 10);
-				}
-				break groupParse;
+					if (argv[i].length > j + 1) {
+						maxChars = parseInt(argv[i].slice(j + 1), 10);
+					} else {
+						i++;
+						maxChars = parseInt(argv[i], 10);
+					}
+					break groupParse;
 				case 'd':
-					if (argv[i].length > j+1) {
-					delimiter = new RegExp(argv[i].slice(j+1));
-				} else {
-					i++;
-					delimiter = new RegExp(argv[i]);
-				}
-				break groupParse;
+					if (argv[i].length > j + 1) {
+						delimiter = new RegExp(argv[i].slice(j + 1));
+					} else {
+						i++;
+						delimiter = new RegExp(argv[i]);
+					}
+					break groupParse;
 				//case 'a':
 				//	if (argv[i].length > j+1) {
 				//	fileToRead = argv[i].slice(j+1);
@@ -244,28 +258,28 @@ function parseArgs(): void {
 				//break groupParse;
 				case 'E':
 					eflag = true;
-				if (argv[i].length > j+1) {
-					eofStr = argv[i].slice(j+1);
-				} else {
-					i++;
-					eofStr = argv[i];
-				}
-				break groupParse;
+					if (argv[i].length > j + 1) {
+						eofStr = argv[i].slice(j + 1);
+					} else {
+						i++;
+						eofStr = argv[i];
+					}
+					break groupParse;
 				case 't':
 					tflag = true;
-				break;
+					break;
 				case 'x':
 					xflag = true;
-				break;
+					break;
 				case 'r':
 					rflag = true;
-				break;
+					break;
 				case 'h':
 					help();
-				break;
+					break;
 				default:
 					process.stderr.write(format('unknown option %s\n', arg));
-				help();
+					help();
 			}
 		}
 		i++;
@@ -278,6 +292,7 @@ function parseArgs(): void {
 			comArgs = argv.splice(i).join(" ");
 		}
 	}
+	return;
 }
 
 main();

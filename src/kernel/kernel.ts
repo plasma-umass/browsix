@@ -467,7 +467,6 @@ class Syscalls {
 		}
 		file.stat((err: any, stats: any) => {
 			if (err) {
-				console.log(err);
 				ctx.complete(err, null);
 				return;
 			}
@@ -479,7 +478,6 @@ class Syscalls {
 	lstat(ctx: SyscallContext, p: string): void {
 		this.kernel.fs.lstat(join(ctx.task.cwd, p), (err: any, stats: any) => {
 			if (err) {
-				console.log(err);
 				ctx.complete(err, null);
 				return;
 			}
@@ -491,7 +489,6 @@ class Syscalls {
 	stat(ctx: SyscallContext, p: string): void {
 		this.kernel.fs.stat(join(ctx.task.cwd, p), (err: any, stats: any) => {
 			if (err) {
-				console.log(err);
 				ctx.complete(err, null);
 				return;
 			}
@@ -503,7 +500,6 @@ class Syscalls {
 	readlink(ctx: SyscallContext, p: string): void {
 		this.kernel.fs.readlink(join(ctx.task.cwd, p), (err: any, linkString: any) => {
 			if (err) {
-				console.log(err);
 				ctx.complete(err, null);
 				return;
 			}

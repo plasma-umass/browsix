@@ -78,36 +78,48 @@ function main (): void {
 		process.argv.slice(2), {}
 	);
 
-	let length: number = args.length;
-
-	if (!length) {
-		let prog = process.argv[1].split('/').slice(-1);
-		process.stderr.write(prog + ': ' + 'missing file operand\n');
-		process.exit(-1);
-	}
-
-	let code = 0;
-	let completed = 0;
+	let code: number = 0;
+	let outstanding: number = args.length;
 
 	function finished(): void {
-		completed++;
-		if (completed === length) {
+		outstanding--;
+		if (outstanding <= 0) {
 			process.exit(code);
 		}
 	}
 
-	if (length === 1) {
+	if (!outstanding) {
+		code = -1;
+		log('missing file operand', finished);
+		return;
+	}
+
+	if (outstanding === 1) {
 		code = -1;
 		log('missing destination file operand after ‘%s’', args, finished);
+		return;
+	}
+
+	function onStreamError(err: Error): void {
+		code = 1;
+		log(err.message);
+		this.end();
 	}
 
 	function copy(src: string, dest: string): void {
 		fs.stat(src, function (oerr: any, stats: fs.Stats): void {
 			if (oerr) {
 				code = 1;
-				log("%s", oerr, finished);
+				log(oerr.message, finished);
 			} else if (stats.isFile()) {
-				fs.createReadStream(src).pipe(fs.createWriteStream(dest));
+				let rs: any = fs.createReadStream(src);
+				rs.on('error', onStreamError);
+
+				let ws: any = fs.createWriteStream(dest);
+				ws.on('error', onStreamError);
+				ws.on('close', finished);
+
+				rs.pipe(ws);
 			} else if (stats.isDirectory()) {
 				code = 1;
 				log('omitting directory ‘%s’', src, finished);
@@ -118,18 +130,19 @@ function main (): void {
 		});
 	}
 
-	let dest: string = args[length - 1];
+	let dest: string = args[--outstanding];
 
 	fs.stat(dest, function (oerr: any, stats: fs.Stats): void {
 		if (oerr) {
-			if (length === 2 && oerr.code === "ENOENT") {
+			if (outstanding === 1 && oerr.code === "ENOENT") {
 				copy(args[0], dest);
 			} else {
 				code = 1;
-				log('fs.stat: %s', oerr, finished);
+				log(oerr.message, finished);
+				process.exit(code);
 				return;
 			}
-		} else if (length === 2 && stats.isFile()) {
+		} else if (outstanding === 1 && stats.isFile()) {
 			if (args[0] !== dest) {
 				copy(args[0], dest);
 			} else {
@@ -137,8 +150,8 @@ function main (): void {
 				log('‘%s’ and ‘%s’ are the same file', args[0], dest, finished);
 			}
 		} else if (stats.isDirectory()) {
-			for (let i = 0, end = length - 1; i < end; i++) {
-				copy(args[i], dest + '/' + args[i]);
+			for (let i = 0, end = outstanding; i < end; i++) {
+				copy(args[i], dest + '/' + args[i].split('/').pop());
 			}
 		} else {
 			code = 1;

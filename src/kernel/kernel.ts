@@ -902,7 +902,7 @@ export class Task implements ITask {
 				if (!(i in parent.files))
 					break;
 				this.files[i] = parent.files[files[i]];
-				this.files[i].ref();
+				//this.files[i].ref();
 			}
 		} else {
 			this.files[0] = new PipeFile();

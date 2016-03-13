@@ -20,23 +20,23 @@ import {format} from 'util';
 /**
  * Initialisation of default values
  */
-let maxArgs = 10000;						// Argument limit
-let maxChars = 4096;						// Character limit
-let command = '/usr/bin/echo';	// COMMAND to run
-let comArgs = '';								// Arguments for COMMAND
-let out = '';										// Output
+let maxArgs = 10000;           // Argument limit
+let maxChars = 4096;           // Character limit
+let command = '/usr/bin/echo'; // COMMAND to run
+let comArgs = '';              // Arguments for COMMAND
+let out = '';                  // Output
 let children: any[] = [];
 
 /**
  * Option defaults
  */
-let delimiter = /[\s*\n*]/;			// regExp used as a delimiter
-let rflag = false;							// no-run-if-empty
-let tflag = false;							// verbose
-let xflag = false;							// exit after -s limit is exceeded
-let eflag = false;							// eof string is set
-let eofStr = '';								// the eof END string(used if -e is set)
-//let fileToRead = '';					// (unused) -a flag req 
+let delimiter = /[\s*\n*]/; // regExp used as a delimiter
+let rflag = false;          // no-run-if-empty
+let tflag = false;          // verbose
+let xflag = false;          // exit after -s limit is exceeded
+let eflag = false;          // eof string is set
+let eofStr = '';            // the eof END string(used if -e is set)
+let fileToRead = '';        // (unused) -a flag req
 
 /**
  * Default opts for executing COMMAND
@@ -106,10 +106,10 @@ function divide(data: string[]): void {
 		return;
 	}
 
-	let i = 0;						// query number
-	let argsAdded = 0;		// number of args passed to the query
-	let charsAdded = 0;
-	let newQuery = true;	// start constructing a new query
+	let i = 0;           // query number
+	let argsAdded = 0;   // number of args passed to the query
+	let charsAdded = 0;  // number of character passed to the query
+	let newQuery = true; // start constructing a new query
 
 	// Constructs array(string[]) of queries
 	while (data.length > 0) {
@@ -132,7 +132,7 @@ function divide(data: string[]): void {
 			process.exit(1);
 			return;
 
-			// Check if maxChars limit is reached by appending the argument
+		// Check if maxChars limit is reached by appending the argument
 		} else if (command.length + comArgs.length + 2 + data[0].length > maxChars) {
 			process.stderr.write("argument line too long\n");
 			if (xflag) {
@@ -141,7 +141,7 @@ function divide(data: string[]): void {
 			}
 			break;
 
-			// Append the argument if possible
+		// Append the argument if possible
 		} else if (argsAdded < maxArgs && charsAdded + 1 + data[0].length <= maxChars) {
 			let arg = data.shift();
 			queries[i].push(arg);
@@ -153,7 +153,7 @@ function divide(data: string[]): void {
 				}
 			}
 
-			// Go to next query
+		// Go to next query
 		} else {
 			i++;
 			newQuery = true;
@@ -161,9 +161,6 @@ function divide(data: string[]): void {
 		}
 	}
 
-	for (let i = 0; i < queries.length; i++) {
-		console.log(queries[i]);
-	}
 	pass(0, queries);
 	return;
 }
@@ -182,11 +179,11 @@ function pass(i: number, queries: string[][]): void {
 	}
 
 	if (tflag) {
-		out += command.concat(" ", queries[i].join(" "), "\n");
+		//out += command.concat(" ", queries[i].join(" "), "\n");
+		process.stdout.write(command.concat(" ", queries[i].join(" "), "\n"));
 	}
 
 	children.push(child_process.spawn(command, queries[i], opts));
-	console.log("child spawned, i=" + i);
 
 	children[i].on('error', (err: any) => {
 		process.stderr.write('error: ' + err, () => {
@@ -196,14 +193,12 @@ function pass(i: number, queries: string[][]): void {
 	});
 
 	children[i].on('exit', (code: number) => {
-		console.log("child exited, code " + code);
 		if (code !== 0) {
 			process.stderr.write(queries[i].join(" ").concat(" exited with code ", code.toString(), "\n"), () => {
 				process.exit(1);
 				return;
 			});
 		} else {
-			console.log("new pass");
 			pass(i + 1, queries);
 		}
 	});

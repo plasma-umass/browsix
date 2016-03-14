@@ -205,9 +205,10 @@ function init(data: SyscallResponse): void {
 
 	process.argv = args;
 	process.env = environ;
-	process.stdin = new fs.createReadStream('<stdin>', {fd: 0});
-	process.stdout = new fs.createWriteStream('<stdout>', {fd: 1});
-	process.stderr = new fs.createWriteStream('<stderr>', {fd: 2});
+	// we shouldn't try to auto-close any of stdin, stdout or stderr.
+	process.stdin = new fs.createReadStream('<stdin>', {fd: 0, autoClose: false});
+	process.stdout = new fs.createWriteStream('<stdout>', {fd: 1, autoClose: false});
+	process.stderr = new fs.createWriteStream('<stderr>', {fd: 2, autoClose: false});
 
 	process.init(() => {
 		fs.readFile(args[1], 'utf-8', (err: any, contents: string) => {

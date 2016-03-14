@@ -50,4 +50,26 @@ describe('ls /boot', function(): void {
 			}
 		}
 	});
+
+	it('should NOT run `ls -w`', function(done: MochaDone): void {
+		let stdout = '';
+		let stderr = '';
+		kernel.system('/usr/bin/ls -w', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
+			try {
+				expect(code).to.equal(1);
+				expect(stdout).to.equal('');
+				expect(stderr).to.equal('ls: invalid option "w"\nusage: ls [-1ahl] ARGS\n');
+				done();
+			} catch (e) {
+				done(e);
+			}
+		}
+	});
 });

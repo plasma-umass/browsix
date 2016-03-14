@@ -467,7 +467,6 @@ class Syscalls {
 		}
 		file.stat((err: any, stats: any) => {
 			if (err) {
-				console.log(err);
 				ctx.complete(err, null);
 				return;
 			}
@@ -479,7 +478,6 @@ class Syscalls {
 	lstat(ctx: SyscallContext, p: string): void {
 		this.kernel.fs.lstat(join(ctx.task.cwd, p), (err: any, stats: any) => {
 			if (err) {
-				console.log(err);
 				ctx.complete(err, null);
 				return;
 			}
@@ -491,7 +489,6 @@ class Syscalls {
 	stat(ctx: SyscallContext, p: string): void {
 		this.kernel.fs.stat(join(ctx.task.cwd, p), (err: any, stats: any) => {
 			if (err) {
-				console.log(err);
 				ctx.complete(err, null);
 				return;
 			}
@@ -503,7 +500,6 @@ class Syscalls {
 	readlink(ctx: SyscallContext, p: string): void {
 		this.kernel.fs.readlink(join(ctx.task.cwd, p), (err: any, linkString: any) => {
 			if (err) {
-				console.log(err);
 				ctx.complete(err, null);
 				return;
 			}
@@ -623,9 +619,12 @@ export class Kernel implements IKernel {
 		];
 		this.spawn(null, '/', parts[0], parts, env, null, (err: any, pid: number) => {
 			if (err) {
-				// FIXME: maybe some better sort of
-				// error code
-				onExit(-1, -666);
+				let code = -666;
+				if (err.code === "ENOENT") {
+					code = -constants.ENOENT;
+					onStderr(-1, parts[0] + ": command not found\n");
+				}
+				onExit(-1, code);
 				return;
 			}
 			let t = this.tasks[pid];
@@ -744,7 +743,7 @@ export class Kernel implements IKernel {
 				task.onStdout(task.pid, stdout.readSync().toString('utf-8'));
 
 			if (isPipe(stderr) && task.onStderr)
-				task.onStdout(task.pid, stderr.readSync().toString('utf-8'));
+				task.onStderr(task.pid, stderr.readSync().toString('utf-8'));
 			task.onExit(task.pid, task.exitCode);
 		}
 	}
@@ -805,7 +804,7 @@ export class Kernel implements IKernel {
 		}
 		this.inKernel++;
 		if (syscall.name in this.syscalls) {
-			//console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
+			console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
 			console.log('unknown syscall ' + syscall.name);
@@ -1002,6 +1001,10 @@ export class Task implements ITask {
 
 		this.worker = new Worker(window.URL.createObjectURL(blob));
 		this.worker.onmessage = this.syscallHandler.bind(this);
+		this.worker.onerror = (err: ErrorEvent): void => {
+			this.onStderr(this.pid, 'Error while executing ' + this.exePath + ': ' + err.message + '\n');
+			this.kernel.exit(this, -1);
+		};
 
 		this.signal('init', [this.args, this.env, this.kernel.debug]);
 

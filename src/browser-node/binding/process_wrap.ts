@@ -6,6 +6,7 @@ import * as uv from './uv';
 // FIXME: internal/child_process checks for specific errors.  I think
 // other errors will cause us to throw?  not sure how that is handled.
 const ERROR = uv.UV_EMFILE;
+const ENOENT = uv.UV_ENOENT;
 
 export interface Environment { [k: string]: string; };
 
@@ -43,19 +44,43 @@ export class Process {
 			files.push(f.fd);
 		}
 
+		let bins = (process.env['PATH'] || '/usr/local/bin:/bin:/usr/bin').split(':');
+		let cmds = [opts.file];
+		// spawn calls execvp, which will attempt to execute a
+		// file depending on the contents of the $PATH
+		// environmental variable.  If the file contains a /
+		// (meaning it is an absolute or relative path), $PATH
+		// interpolation is skipped.
+		if (cmds[0].indexOf('/') === -1) {
+			cmds = bins.map((p: string) => {
+				// remove trailing slash if it exists
+				if (p.length && p[p.length-1] === '/')
+					p = p.slice(0, -1);
+				return p + '/' + opts.file;
+			});
+		}
+
 		let cwd = opts.cwd;
 		if (!cwd)
 			cwd = process.cwd();
 
-		syscall.spawn(cwd, opts.file, opts.args, opts.envPairs, files, (err: any, pid: number) => {
-			if (err) {
-				if (this.onexit)
-					this.onexit(-128, -1);
-				return;
-			}
-			this.pid = pid;
-			syscall.addEventListener('child', this.handleSigchild.bind(this));
-		});
+		let trySpawn = (): void => {
+			let cmd = cmds.shift();
+			syscall.spawn(cwd, cmd, opts.args, opts.envPairs, files, (err: any, pid: number) => {
+				if (err === -ENOENT && cmds.length) {
+					trySpawn();
+					return;
+				} else if (err) {
+					if (this.onexit)
+						this.onexit(-128, -1);
+					return;
+				}
+				this.pid = pid;
+				syscall.addEventListener('child', this.handleSigchild.bind(this));
+			});
+		};
+
+		trySpawn();
 
 		return null;
 	}

@@ -52,6 +52,28 @@ describe('echo a b c', function(): void {
 		}
 	});
 
+	it('should run `exec echo hi`', function(done: MochaDone): void {
+		let stdout: string = '';
+		let stderr: string = '';
+		kernel.system('/usr/bin/exec echo hi', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
+			try {
+				expect(code).to.equal(0);
+				expect(stdout).to.equal('hi\n');
+				expect(stderr).to.equal('');
+				done();
+			} catch (e) {
+				done(e);
+			}
+		}
+	});
+
 	it('should fail `system /non/existent/cmd`', function(done: MochaDone): void {
 		let stdout: string = '';
 		let stderr: string = '';

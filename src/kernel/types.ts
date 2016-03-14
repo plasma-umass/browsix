@@ -42,12 +42,23 @@ export interface Environment {
 	[name: string]: string;
 }
 
+export interface IFile {
+
+	write(buf: string|Buffer, cb: (err: any, len?: number) => void): void;
+	read(buf: Buffer, pos: number, len: number, off: number, cb: (err: any, len?: number) => void): void;
+	stat(cb: (err: any, stats: any) => void): void;
+	readdir(cb: (err: any, files: string[]) => void): void;
+
+	ref(): void;
+	unref(): void;
+}
+
 export interface ITask {
 	kernel: IKernel;
 	worker: Worker;
 
 	pid: number;
-	files: {[n: number]: any; };
+	files: {[n: number]: any; };  // TODO: should be IFile
 
 	exitCode: number;
 
@@ -61,17 +72,6 @@ export interface ITask {
 	schedule(msg: SyscallResult): void;
 	setPriority(prio: number): number;
 	run(): void;
-}
-
-export interface IFile {
-
-	write(buf: string|Buffer, cb: (err: any, len?: number) => void): void;
-	read(buf: Buffer, pos: number, len: number, off: number, cb: (err: any, len?: number) => void): void;
-	stat(cb: (err: any, stats: any) => void): void;
-	readdir(cb: (err: any, files: string[]) => void): void;
-
-	ref(): void;
-	unref(): void;
 }
 
 export class SyscallContext {

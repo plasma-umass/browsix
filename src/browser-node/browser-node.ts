@@ -216,6 +216,7 @@ function init(data: SyscallResponse): void {
 				process.stderr.write('error: ' + err, () => {
 					process.exit(1);
 				});
+				return;
 			}
 
 			// this is what node does in Module._compile.

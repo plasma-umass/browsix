@@ -17,7 +17,7 @@ function tokenize(statement: string, delim: string): string[] {
 	return statement.split(delim);
 }
 
-function parse(tokens: string[], utildir: string): string[][] {
+function parse(tokens: string[]): string[][] {
 	'use strict';
 	// each command is a list, starting with the utility,
 	// followed by flags and arguments
@@ -31,10 +31,6 @@ function parse(tokens: string[], utildir: string): string[][] {
 		}
 		// split on whitespace, don't include whitespace
 		let command = token.match(/\S+/g);
-		//if path to utility is not given, expand.
-		if (command[0].match(/\//g) === null) {
-			command[0] = utildir + command[0];
-		}
 		commands.push(command);
 	}
 	return commands;
@@ -119,10 +115,9 @@ function main(): void {
 	// do path expansion for commands.
 	// raise error if | is not surrounded by
 	// commands.
-	let utilpath = "/usr/bin/";
 	let parsetree: string[][] = [];
 	try {
-		parsetree = parse(tokens, utilpath);
+		parsetree = parse(tokens);
 	} catch (e) {
 		console.log(e);
 		if (e instanceof SyntaxError) {

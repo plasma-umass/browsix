@@ -42,7 +42,7 @@ describe('xargs', function(): void {
 		function onExit(pid: number, code: number): void {
 			try {
 				expect(code).to.equal(0);
-				expect(stdout).to.equal('1 12\n123\n12 1\n1234\n');
+				expect(stdout).to.equal('1 12\n123 12\n1 1234\n');
 				expect(stderr).to.equal('');
 				done();
 			} catch (e) {
@@ -54,7 +54,7 @@ describe('xargs', function(): void {
 	it('should split on "Bar" and limit the query to 8 chars, exit without printing if exceeded on "fooBarfooBarfooBarfoofooBarfoofoo"', function(done: MochaDone): void {
 		let stdout: string = '';
 		let stderr: string = '';
-		kernel.system('/usr/bin/echo "fooBarfooBarfooBarfoofooBarfoofoo" | /usr/bin/xargs -s 8 -d Bar -x', onExit, onStdout, onStderr);
+		kernel.system('/usr/bin/echo fooBarfooBarfooBarfoofooBarfoofoo | /usr/bin/xargs -s 8 -d Bar -x', onExit, onStdout, onStderr);
 		function onStdout(pid: number, out: string): void {
 			stdout += out;
 		}
@@ -75,7 +75,7 @@ describe('xargs', function(): void {
 	it('should be verbose and pass 2 args max on "foo bar foo"', function(done: MochaDone): void {
 		let stdout: string = '';
 		let stderr: string = '';
-		kernel.system('/usr/bin/echo "foo bar foo" | /usr/bin/xargs -n 2 -t', onExit, onStdout, onStderr);
+		kernel.system('/usr/bin/echo foo bar foo | /usr/bin/xargs -n 2 -t', onExit, onStdout, onStderr);
 		function onStdout(pid: number, out: string): void {
 			stdout += out;
 		}

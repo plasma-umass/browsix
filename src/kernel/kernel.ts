@@ -619,9 +619,12 @@ export class Kernel implements IKernel {
 		];
 		this.spawn(null, '/', parts[0], parts, env, null, (err: any, pid: number) => {
 			if (err) {
-				// FIXME: maybe some better sort of
-				// error code
-				onExit(-1, -666);
+				let code = -666;
+				if (err.code === "ENOENT") {
+					code = -constants.ENOENT;
+					onStderr(-1, parts[0] + ": command not found\n");
+				}
+				onExit(-1, code);
 				return;
 			}
 			let t = this.tasks[pid];
@@ -998,6 +1001,10 @@ export class Task implements ITask {
 
 		this.worker = new Worker(window.URL.createObjectURL(blob));
 		this.worker.onmessage = this.syscallHandler.bind(this);
+		this.worker.onerror = (err: ErrorEvent): void => {
+			this.onStderr(this.pid, 'Error while executing ' + this.exePath + ': ' + err.message + '\n');
+			this.kernel.exit(this, -1);
+		};
 
 		this.signal('init', [this.args, this.env, this.kernel.debug]);
 

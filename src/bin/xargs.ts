@@ -22,7 +22,7 @@ import {format} from 'util';
  */
 let maxArgs = 10000;           // Argument limit
 let maxChars = 4096;           // Character limit
-let command = '/usr/bin/echo'; // COMMAND to run
+let command = '/usr/bin/echo'; // COMMAND to run TODO: change to 'echo' when supported
 let comArgs = '';              // Arguments for COMMAND
 let out = '';                  // Output
 let children: any[] = [];
@@ -36,7 +36,7 @@ let tflag = false;          // verbose
 let xflag = false;          // exit after -s limit is exceeded
 let eflag = false;          // eof string is set
 let eofStr = '';            // the eof END string(used if -e is set)
-let fileToRead = '';        // (unused) -a flag req
+//let fileToRead = '';      // (unused) -a flag req
 
 /**
  * Default opts for executing COMMAND

@@ -5,6 +5,7 @@
 
 import * as chai from 'chai';
 import { Boot, Kernel } from '../lib/kernel/kernel';
+import { ENOENT } from '../lib/kernel/constants';
 
 const expect = chai.expect;
 
@@ -44,6 +45,28 @@ describe('echo a b c', function(): void {
 				expect(code).to.equal(0);
 				expect(stdout).to.equal('hi\n');
 				expect(stderr).to.equal('');
+				done();
+			} catch (e) {
+				done(e);
+			}
+		}
+	});
+
+	it('should fail `system /non/existent/cmd`', function(done: MochaDone): void {
+		let stdout: string = '';
+		let stderr: string = '';
+		kernel.system('/non/existent/cmd', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
+			try {
+				expect(code).to.equal(-ENOENT);
+				expect(stdout).to.equal('');
+				expect(stderr).to.not.equal('');
 				done();
 			} catch (e) {
 				done(e);

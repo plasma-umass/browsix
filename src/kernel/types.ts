@@ -32,6 +32,7 @@ export interface IKernel {
 
 	schedule(task: ITask): void;
 	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void;
+	exit(task: ITask, code: number): void;
 	doSyscall(syscall: Syscall): void;
 	connect(s: IFile, addr: string, port: number, cb: ConnectCallback): void;
 	unbind(s: IFile, addr: string, port: number): any;

@@ -983,8 +983,13 @@ export class Task implements ITask {
 			// that here for 2 reasons - to avoid
 			// implementing env (minor), and as a
 			// performance improvement (major).
-			if (parts.length === 2 && (parts[0] === '/usr/bin/env' || parts[0] === '/bin/env'))
+			if (parts.length === 2 && (parts[0] === '/usr/bin/env' || parts[0] === '/bin/env')) {
 				cmd = '/usr/bin/' + parts[1];
+			}
+
+			// make sure this argument is an
+			// absolute-valued path.
+			this.args[0] = this.exePath;
 
 			this.args = [cmd].concat(this.args);
 
@@ -1002,8 +1007,13 @@ export class Task implements ITask {
 		this.worker = new Worker(window.URL.createObjectURL(blob));
 		this.worker.onmessage = this.syscallHandler.bind(this);
 		this.worker.onerror = (err: ErrorEvent): void => {
-			this.onStderr(this.pid, 'Error while executing ' + this.exePath + ': ' + err.message + '\n');
-			this.kernel.exit(this, -1);
+			if (this.files[2]) {
+				this.files[2].write('Error while executing ' + this.exePath + ': ' + err.message + '\n', () => {
+					this.kernel.exit(this, -1);
+				});
+			} else {
+				this.kernel.exit(this, -1);
+			}
 		};
 
 		this.signal('init', [this.args, this.env, this.kernel.debug]);

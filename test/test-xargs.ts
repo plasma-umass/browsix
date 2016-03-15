@@ -63,9 +63,9 @@ describe('xargs', function(): void {
 		}
 		function onExit(pid: number, code: number): void {
 			try {
-				expect(code).to.equal(0);
-				expect(stdout).to.equal('argument line too long\n');
-				expect(stderr).to.equal('');
+				expect(code).to.equal(1);
+				expect(stdout).to.equal('');
+				expect(stderr).to.equal('argument line too long\n');
 				done();
 			} catch (e) {
 				done(e);

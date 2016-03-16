@@ -100,7 +100,13 @@ function main (): void {
 		return;
 	}
 
-	function onStreamError(err: Error): void {
+	function onReadStreamError(err: Error): void {
+		code = 1;
+		log(err.message);
+		this.close();
+	}
+
+	function onWriteStreamError(err: Error): void {
 		code = 1;
 		log(err.message);
 		this.end();
@@ -113,11 +119,11 @@ function main (): void {
 				log(oerr.message, finished);
 			} else if (stats.isFile()) {
 				let rs: any = fs.createReadStream(src);
-				rs.on('error', onStreamError);
+				rs.on('error', onReadStreamError);
 
 				let ws: any = fs.createWriteStream(dest);
-				ws.on('error', onStreamError);
-				ws.on('close', finished);
+				ws.on('error', onWriteStreamError);
+				ws.on('finish', finished);
 
 				rs.pipe(ws);
 			} else if (stats.isDirectory()) {

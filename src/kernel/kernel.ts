@@ -19,6 +19,10 @@ import { HTTPParser } from './http_parser';
 import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
 import { fs } from './vendor/BrowserFS/src/core/node_fs';
 
+import * as marshal from 'node-binary-marshal';
+
+import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
+
 // controls the default of whether to delay the initialization message
 // to a Worker to aid in debugging.
 let DEBUG = false;
@@ -470,8 +474,11 @@ class Syscalls {
 				ctx.complete(err, null);
 				return;
 			}
-			// FIXME: this seems necessary to capture Date fields
-			ctx.complete(null, JSON.parse(JSON.stringify(stats)));
+
+			let buf = new Uint8Array(marshal.fs.StatDef.length);
+			let view = new DataView(buf.buffer, buf.byteOffset);
+			marshal.Marshal(view, 0, stats, marshal.fs.StatDef);
+			ctx.complete(null, buf);
 		});
 	}
 
@@ -481,8 +488,11 @@ class Syscalls {
 				ctx.complete(err, null);
 				return;
 			}
-			// FIXME: this seems necessary to capture Date fields
-			ctx.complete(null, JSON.parse(JSON.stringify(stats)));
+
+			let buf = new Uint8Array(marshal.fs.StatDef.length);
+			let view = new DataView(buf.buffer, buf.byteOffset);
+			marshal.Marshal(view, 0, stats, marshal.fs.StatDef);
+			ctx.complete(null, buf);
 		});
 	}
 
@@ -492,8 +502,11 @@ class Syscalls {
 				ctx.complete(err, null);
 				return;
 			}
-			// FIXME: this seems necessary to capture Date fields
-			ctx.complete(null, JSON.parse(JSON.stringify(stats)));
+
+			let buf = new Uint8Array(marshal.fs.StatDef.length);
+			let view = new DataView(buf.buffer, buf.byteOffset);
+			marshal.Marshal(view, 0, stats, marshal.fs.StatDef);
+			ctx.complete(null, buf);
 		});
 	}
 
@@ -503,8 +516,7 @@ class Syscalls {
 				ctx.complete(err, null);
 				return;
 			}
-			// FIXME: this seems necessary to capture Date fields
-			ctx.complete(null, linkString);
+			ctx.complete(null, utf8ToBytes(linkString));
 		});
 	}
 

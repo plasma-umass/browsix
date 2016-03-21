@@ -1,4 +1,5 @@
 declare var require: any;
+require('./test-stat');
 require('./test-cat');
 require('./test-echo');
 require('./test-xhrfs');

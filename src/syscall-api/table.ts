@@ -2,7 +2,6 @@
 
 import { Marshal, socket, fs } from 'node-binary-marshal';
 import { syscall } from '../browser-node/syscall';
-import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
 
 const ENOSYS = 38;
 const AT_FDCWD = -0x64;
@@ -86,15 +85,14 @@ function sys_write(cb: Function, trap: number, arg0: any, arg1: any, arg2: any):
 function sys_stat(cb: Function, trap: number, arg0: any, arg1: any): void {
 	let $fstatArray = arg1;
 	let done = function(err: any, stats: any): void {
-		let view = new DataView($fstatArray.buffer, $fstatArray.byteOffset);
-		Marshal(view, 0, stats, fs.StatDef);
+		if (!err)
+			$fstatArray.set(stats);
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
 	let len = arg0.length;
 	if (len && arg0[arg0.length-1] === 0)
 		len--;
-	let s = utf8Slice(arg0, 0, len);
-	syscall.stat.apply(syscall, [s, done]);
+	syscall.stat.apply(syscall, [arg0.slice(0, len), done]);
 }
 
 function sys_lstat(cb: Function, trap: number, arg0: any, arg1: any): void {
@@ -107,8 +105,7 @@ function sys_lstat(cb: Function, trap: number, arg0: any, arg1: any): void {
 	let len = arg0.length;
 	if (len && arg0[arg0.length-1] === 0)
 		len--;
-	let s = utf8Slice(arg0, 0, len);
-	syscall.lstat.apply(syscall, [s, done]);
+	syscall.lstat.apply(syscall, [arg0.slice(0, len), done]);
 }
 
 function sys_fstat(cb: Function, trap: number, arg0: any, arg1: any): void {
@@ -134,17 +131,14 @@ function sys_readlinkat(cb: Function, trap: number, arg0: any, arg1: any, arg2: 
 		return;
 	}
 	let done = function(err: any, linkString: string): void {
-		let bytes: number[] = [];
-		if (!err) {
-			let bytes = utf8ToBytes(linkString);
-			$buf.set(bytes);
-		}
-		cb([err ? -1 : bytes.length, 0, err ? -1 : 0]);
+		if (!err)
+			$buf.set(linkString);
+		cb([err ? -1 : linkString.length, 0, err ? -1 : 0]);
 	};
 	let len = $path.length;
 	if (len && arg1[$path.length-1] === 0)
 		len--;
-	syscall.readlink.apply(syscall, [utf8Slice($path, 0, len), done]);
+	syscall.readlink.apply(syscall, [$path.slice(0, len), done]);
 }
 
 function sys_openat(cb: Function, trap: number, arg0: any, arg1: any, arg2: any, arg3: any): void {
@@ -162,7 +156,7 @@ function sys_openat(cb: Function, trap: number, arg0: any, arg1: any, arg2: any,
 	let len = arg1.length;
 	if (len && arg1[arg1.length-1] === 0)
 		len--;
-	syscall.open.apply(syscall, [utf8Slice(arg1, 0, len), arg2, arg3, done]);
+	syscall.open.apply(syscall, [arg1.slice(0, len), arg2, arg3, done]);
 }
 
 function sys_close(cb: Function, trap: number, arg0: any): void {

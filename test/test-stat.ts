@@ -38,20 +38,24 @@ describe('stat /a', function(): void {
 	});
 
 	it('should run `stat /a`', function(done: MochaDone): void {
-		kernel.system('/usr/bin/stat /a', catExited);
-		function catExited(code: number, stdout: string, stderr: string): void {
-			try {
-				expect(code).to.equal(0);
-				let re = new RegExp("Size", "g");
-				let i = stdout.search(re);
-				let offset = "Size: ".length
-				let size = stdout.slice(i + offset, i + offset + 2);
-				expect(size).to.equal('13');
-				expect(stderr).to.equal('');
-				done();
-			} catch (e) {
-				done(e);
-			}
+		let stdout = '';
+		let stderr = '';
+		kernel.system('/usr/bin/stat /a', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
+			expect(code).to.equal(0);
+			let re = new RegExp('Size', 'g');
+			let i = stdout.search(re);
+			let offset = "Size: ".length;
+			let size = stdout.slice(i + offset, i + offset + 2);
+			expect(size).to.equal('13');
+			expect(stderr).to.equal('');
+			done();
 		}
 	});
 });

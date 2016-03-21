@@ -2,6 +2,7 @@
 
 import { syscall } from '../syscall';
 import * as constants from './constants';
+import * as marshal from 'node-binary-marshal';
 
 export class FSReqWrap {
 	oncomplete: (err: any, ...rest: any[])=>void = undefined;
@@ -18,31 +19,29 @@ export class FSReqWrap {
 // FIXME: this is copied from node's stdlib in order to avoid
 // dependency/initialization issues
 export class Stats {
-	private atime: Date;
-	private mtime: Date;
-	private ctime: Date;
-	private birthtime: Date;
+	dev: number;
+	mode: number;
+	nlink: number;
+	uid: number;
+	gid: number;
+	rdev: number;
+	blksize: number;
+	ino: number;
+	size: number;
+	blocks: number;
+	atime: Date;
+	mtime: Date;
+	ctime: Date;
+	birthtime: Date;
 
-	constructor(
-		public dev: number,
-		public mode: number,
-		public nlink: number,
-		public uid: number,
-		public gid: number,
-		public rdev: number,
-		public blksize: number,
-		public ino: number,
-		public size: number,
-		public blocks: number,
-		atim_msec: string,
-		mtim_msec: string,
-		ctim_msec: string,
-		birthtim_msec: string) {
+	constructor() {}
 
-		this.atime = new Date(atim_msec);
-		this.mtime = new Date(mtim_msec);
-		this.ctime = new Date(ctim_msec);
-		this.birthtime = new Date(birthtim_msec);
+	_updateBirthtime(): void {
+		let oldest = this.atime;
+		if (this.mtime < oldest)
+			oldest = this.mtime;
+		if (this.ctime < oldest)
+			oldest = this.ctime;
 	}
 
 	_checkModeProperty(property: any): boolean {
@@ -109,29 +108,23 @@ export function readdir(path: string, req: FSReqWrap): void {
 	syscall.readdir(path, req.complete.bind(req));
 }
 
-function statFinished(req: FSReqWrap, err: any, s: any): void {
+function statFinished(req: FSReqWrap, err: any, buf: Uint8Array): void {
 	if (err) {
 		req.complete(err, null);
 		return;
 	}
 
-	// FIXME: is there a less-terrible way to do this?
-	let stats = new Stats(
-		s.dev,
-		s.mode,
-		s.nlink,
-		s.uid,
-		s.gid,
-		s.rdev,
-		s.blksize,
-		s.ino,
-		s.size,
-		s.blocks,
-		s.atime,
-		s.mtime,
-		s.ctime,
-		s.birthtime);
-	req.complete(null, stats);
+	let stats = new Stats();
+	let view = new DataView(buf.buffer, buf.byteOffset);
+	let len: number;
+	[len, err] = marshal.Unmarshal(stats, view, 0, marshal.fs.StatDef);
+
+	// this isn't stored in a standard stat() response -- solve it
+	// the same way upstream node does:
+	// https://github.com/nodejs/node/issues/2222
+	stats._updateBirthtime();
+
+	req.complete(err, stats);
 }
 
 export function fstat(fd: number, req: FSReqWrap): void {

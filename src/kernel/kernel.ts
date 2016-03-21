@@ -228,7 +228,14 @@ class Syscalls {
 		ctx.complete(undefined, n);
 	}
 
-	bind(ctx: SyscallContext, fd: number, addr: string, port: number): void {
+	bind(ctx: SyscallContext, fd: number, sockAddr: Uint8Array): void {
+		let info: any = {};
+		let view = new DataView(sockAddr.buffer, sockAddr.byteOffset);
+		let [_, err] = marshal.Unmarshal(info, view, 0, marshal.socket.SockAddrInDef);
+		let addr: string = info.addr;
+		let port: number = info.port;
+		// TODO: check family === SOCK.STREAM
+
 		let file = ctx.task.files[fd];
 		if (!file) {
 			ctx.complete('bad FD ' + fd, null);
@@ -240,6 +247,15 @@ class Syscalls {
 		}
 
 		return ctx.complete('ENOTSOCKET');
+	}
+
+	getsockname(ctx: SyscallContext, fd: number): void {
+		console.log('TODO: getsockname');
+		let remote = {family: SOCK.STREAM, port: 8080, addr: '127.0.0.1'};
+		let buf = new Uint8Array(marshal.socket.SockAddrInDef.length);
+		let view = new DataView(buf.buffer, buf.byteOffset);
+		marshal.Marshal(view, 0, remote, marshal.socket.SockAddrInDef);
+		return ctx.complete(null, buf);
 	}
 
 	listen(ctx: SyscallContext, fd: number, backlog: number): void {

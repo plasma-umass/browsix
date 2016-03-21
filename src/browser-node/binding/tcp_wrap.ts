@@ -3,6 +3,7 @@
 import * as uv from './uv';
 import { syscall, AF, SOCK } from '../syscall';
 import { StreamWrap, WriteWrap } from './stream_wrap';
+import * as marshal from 'node-binary-marshal';
 
 declare var Buffer: any;
 
@@ -103,7 +104,22 @@ export class TCP extends StreamWrap {
 			this.fd = fd;
 
 			// node's tcp_wrap calls into uv__tcp_bind, which
-			syscall.bind(fd, ipAddr, port, (bindErr?: any) => {
+			let sockAddr = {
+				family: SOCK.STREAM,
+				port: port,
+				addr: ipAddr,
+			};
+			let buf = new Uint8Array(marshal.socket.SockAddrInDef.length);
+			let view = new DataView(buf.buffer, buf.byteOffset);
+			let _: any;
+			[_, err] = marshal.Marshal(view, 0, sockAddr, marshal.socket.SockAddrInDef);
+			if (err) {
+				console.log('marshal failed');
+				debugger;
+				return;
+			}
+
+			syscall.bind(fd, buf, (bindErr?: any) => {
 				if (bindErr) {
 					console.log('bind failed: ' + bindErr);
 					debugger;

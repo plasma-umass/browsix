@@ -1,6 +1,5 @@
 'use strict';
 
-import { Marshal, socket, fs } from 'node-binary-marshal';
 import { syscall } from '../browser-node/syscall';
 
 const ENOSYS = 38;
@@ -98,8 +97,8 @@ function sys_stat(cb: Function, trap: number, arg0: any, arg1: any): void {
 function sys_lstat(cb: Function, trap: number, arg0: any, arg1: any): void {
 	let $fstatArray = arg1;
 	let done = function(err: any, stats: any): void {
-		let view = new DataView($fstatArray.buffer, $fstatArray.byteOffset);
-		Marshal(view, 0, stats, fs.StatDef);
+		if (!err)
+			$fstatArray.set(stats);
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
 	let len = arg0.length;
@@ -111,8 +110,8 @@ function sys_lstat(cb: Function, trap: number, arg0: any, arg1: any): void {
 function sys_fstat(cb: Function, trap: number, arg0: any, arg1: any): void {
 	let $fstatArray = arg1;
 	let done = function(err: any, stats: any): void {
-		let view = new DataView($fstatArray.buffer, $fstatArray.byteOffset);
-		Marshal(view, 0, stats, fs.StatDef);
+		if (!err)
+			$fstatArray.set(stats);
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
 	syscall.fstat.apply(syscall, [arg0, done]);
@@ -174,7 +173,7 @@ function sys_socket(cb: Function, trap: number, arg0: any, arg1: any, arg2: any)
 	let done = function(err: any, fd: number): void {
 		cb([err ? -1 : fd, 0, err ? -1 : 0]);
 	};
-	syscall.socket.apply(syscall, [arg0, arg1, arg2, done]);
+	syscall.socket(arg0, arg1, arg2, done);
 }
 
 function sys_bind(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
@@ -182,38 +181,37 @@ function sys_bind(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): 
 	let done = function(err: any): void {
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
-	syscall.bind.apply(syscall, [arg0, '127.0.0.1', 8080, done]);
+	syscall.bind(arg0, arg1.slice(0, arg2), done);
 }
 
 function sys_listen(cb: Function, trap: number, arg0: any, arg1: any): void {
 	let done = function(err: any): void {
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
-	syscall.listen.apply(syscall, [arg0, arg1, done]);
+	syscall.listen(arg0, arg1, done);
 }
 
 function sys_getsockname(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
-	console.log('TODO: getsockname');
+	let done = function(err: any, buf: Uint8Array): void {
+		if (!err) {
+			arg1.set(buf);
+			arg2.$set(buf.byteLength);
+		}
+		cb([err ? -1 : 0, 0, err ? -1 : 0]);
+	};
 
-	let view = new DataView(arg1.buffer, arg1.byteOffset);
-	Marshal(arg1, 0, {family: 2, port: 8080, addr: '127.0.0.1'}, socket.SockAddrInDef);
-	arg2.$set(socket.SockAddrInDef.length);
-	setTimeout(cb, 0, [0, 0, 0]);
+	syscall.getsockname(arg0, done);
 }
 
 function sys_accept4(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
 	let $acceptArray = arg1;
 	let $acceptLen = arg2;
-	let args = [arg0, function(err: any, fd: number, remoteAddr: string, remotePort: number): void {
-		if (remoteAddr === 'localhost')
-			remoteAddr = '127.0.0.1';
-
-		let view = new DataView($acceptArray.buffer, $acceptArray.byteOffset);
-		Marshal(view, 0, {family: 2, port: remotePort, addr: remoteAddr}, socket.SockAddrInDef);
-		$acceptLen.$set(socket.SockAddrInDef.length);
+	let done = function(err: any, fd: number, sockInfo: Uint8Array): void {
+		$acceptArray.set(sockInfo);
+		$acceptLen.$set(sockInfo.length);
 		cb([err ? -1 : fd, 0, err ? -1 : 0]);
-	}];
-	syscall.accept.apply(syscall, args);
+	};
+	syscall.accept(arg0, done);
 }
 
 function sys_setsockopt(cb: Function, trap: number): void {

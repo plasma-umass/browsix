@@ -163,10 +163,16 @@ export class USyscalls {
 		this.post(msgId, 'socket', domain, type, protocol);
 	}
 
-	bind(fd: number, addr: string, port: number, cb: SyscallCallback): void {
+	getsockname(fd: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;
-		this.post(msgId, 'bind', fd, addr, port);
+		this.post(msgId, 'getsockname', fd);
+	}
+
+	bind(fd: number, sockInfo: Uint8Array, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'bind', fd, sockInfo);
 	}
 
 	listen(fd: number, backlog: number, cb: SyscallCallback): void {

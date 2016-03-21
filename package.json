@@ -59,7 +59,7 @@
     "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
-    "node-binary-marshal": "^0.3.2",
+    "node-binary-marshal": "^0.4.0",
     "node-pipe2": "^0.2.0",
     "node-priority": "^0.1.5"
   },

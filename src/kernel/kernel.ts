@@ -636,7 +636,8 @@ export class Kernel implements IKernel {
 		// priority level.
 		this.runQueues[prio].push(task);
 
-		setImmediate(this.nextTask.bind(this));
+		this.nextTask();
+		//setImmediate(this.nextTask.bind(this));
 	}
 
 	nextTask(): void {
@@ -867,7 +868,7 @@ export class Kernel implements IKernel {
 	}
 
 	doSyscall(syscall: Syscall): void {
-		setImmediate(this.nextTask.bind(this));
+		//setImmediate(this.nextTask.bind(this));
 		this.outstanding--;
 		if (this.outstanding < 0) {
 			//console.log('underflow');
@@ -882,6 +883,7 @@ export class Kernel implements IKernel {
 		} else {
 			console.log('unknown syscall ' + syscall.name);
 		}
+		this.nextTask();
 	}
 
 	spawn(parent: Task, cwd: string, name: string, args: string[], env: string[], files: number[], cb: (err: any, pid: number)=>void): void {

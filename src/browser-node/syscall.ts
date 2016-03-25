@@ -133,8 +133,6 @@ export interface SignalHandler {
 export class USyscalls {
 	private msgIdSeq: number = 1;
 	private port: MessagePort;
-	private syscallPending: boolean = false;
-	private msgQueue: any[] = [];
 	private outstanding: UOutstandingMap = {};
 	private signalHandlers: {[name: string]: SignalHandler[]} = {};
 
@@ -355,12 +353,6 @@ export class USyscalls {
 			}
 			return;
 		}
-
-		// if there are pending syscalls, execute them after
-		// the next tick
-		this.syscallPending = false;
-		if (this.msgQueue.length)
-			setTimeout(this.doPost.bind(this), 0);
 
 		// TODO: handle reject
 		this.complete(response.id, response.args);

@@ -403,18 +403,28 @@ class Syscalls {
 		ctx.complete(undefined, ctx.task.setPriority(prio));
 	}
 
-	readdir(ctx: SyscallContext, p: string): void {
-		this.kernel.fs.readdir(join(ctx.task.cwd, p), ctx.complete.bind(ctx));
+	readdir(ctx: SyscallContext, p: any): void {
+		let s: string;
+		if (p instanceof Uint8Array)
+			s = utf8Slice(p, 0, p.length);
+		else
+			s = p;
+		this.kernel.fs.readdir(join(ctx.task.cwd, s), ctx.complete.bind(ctx));
 	}
 
-	open(ctx: SyscallContext, p: string, flags: string, mode: number): void {
-		p = join(ctx.task.cwd, p);
+	open(ctx: SyscallContext, p: any, flags: string, mode: number): void {
+		let s: string;
+		if (p instanceof Uint8Array)
+			s = utf8Slice(p, 0, p.length);
+		else
+			s = p;
+		s = join(ctx.task.cwd, s);
 		// FIXME: support CLOEXEC
-		this.kernel.fs.open(p, flagsToString(flags), mode, (err: any, fd: any) => {
+		this.kernel.fs.open(s, flagsToString(flags), mode, (err: any, fd: any) => {
 			let f: IFile;
 			if (err && err.code === 'EISDIR') {
 				// TODO: update BrowserFS to open() dirs
-				f = new DirFile(this.kernel, p);
+				f = new DirFile(this.kernel, s);
 			} else if (!err) {
 				f = new RegularFile(this.kernel, fd);
 			} else {
@@ -428,14 +438,24 @@ class Syscalls {
 		});
 	}
 
-	unlink(ctx: SyscallContext, p: string): void {
-		this.kernel.fs.unlink(join(ctx.task.cwd, p), ctx.complete.bind(ctx));
+	unlink(ctx: SyscallContext, p: any): void {
+		let s: string;
+		if (p instanceof Uint8Array)
+			s = utf8Slice(p, 0, p.length);
+		else
+			s = p;
+		this.kernel.fs.unlink(join(ctx.task.cwd, s), ctx.complete.bind(ctx));
 	}
 
-	utimes(ctx: SyscallContext, p: string, atimets: number, mtimets: number): void {
+	utimes(ctx: SyscallContext, p: any, atimets: number, mtimets: number): void {
+		let s: string;
+		if (p instanceof Uint8Array)
+			s = utf8Slice(p, 0, p.length);
+		else
+			s = p;
 		let atime = new Date(atimets*1000);
 		let mtime = new Date(mtimets*1000);
-		this.kernel.fs.utimes(join(ctx.task.cwd, p), atime, mtime, ctx.complete.bind(ctx));
+		this.kernel.fs.utimes(join(ctx.task.cwd, s), atime, mtime, ctx.complete.bind(ctx));
 	}
 
 	futimes(ctx: SyscallContext, fd: number, atimets: number, mtimets: number): void {
@@ -454,12 +474,22 @@ class Syscalls {
 		this.kernel.fs.futimes(file, atime, mtime, ctx.complete.bind(ctx));
 	}
 
-	rmdir(ctx: SyscallContext, p: string): void {
-		this.kernel.fs.rmdir(join(ctx.task.cwd, p), ctx.complete.bind(ctx));
+	rmdir(ctx: SyscallContext, p: any): void {
+		let s: string;
+		if (p instanceof Uint8Array)
+			s = utf8Slice(p, 0, p.length);
+		else
+			s = p;
+		this.kernel.fs.rmdir(join(ctx.task.cwd, s), ctx.complete.bind(ctx));
 	}
 
-	mkdir(ctx: SyscallContext, p: string, mode: number): void {
-		this.kernel.fs.mkdir(join(ctx.task.cwd, p), mode, ctx.complete.bind(ctx));
+	mkdir(ctx: SyscallContext, p: any, mode: number): void {
+		let s: string;
+		if (p instanceof Uint8Array)
+			s = utf8Slice(p, 0, p.length);
+		else
+			s = p;
+		this.kernel.fs.mkdir(join(ctx.task.cwd, s), mode, ctx.complete.bind(ctx));
 	}
 
 	close(ctx: SyscallContext, fd: number): void {
@@ -498,8 +528,13 @@ class Syscalls {
 		});
 	}
 
-	lstat(ctx: SyscallContext, p: string): void {
-		this.kernel.fs.lstat(join(ctx.task.cwd, p), (err: any, stats: any) => {
+	lstat(ctx: SyscallContext, p: any): void {
+		let s: string;
+		if (p instanceof Uint8Array)
+			s = utf8Slice(p, 0, p.length);
+		else
+			s = p;
+		this.kernel.fs.lstat(join(ctx.task.cwd, s), (err: any, stats: any) => {
 			if (err) {
 				ctx.complete(err, null);
 				return;
@@ -512,8 +547,13 @@ class Syscalls {
 		});
 	}
 
-	stat(ctx: SyscallContext, p: string): void {
-		this.kernel.fs.stat(join(ctx.task.cwd, p), (err: any, stats: any) => {
+	stat(ctx: SyscallContext, p: any): void {
+		let s: string;
+		if (p instanceof Uint8Array)
+			s = utf8Slice(p, 0, p.length);
+		else
+			s = p;
+		this.kernel.fs.stat(join(ctx.task.cwd, s), (err: any, stats: any) => {
 			if (err) {
 				ctx.complete(err, null);
 				return;
@@ -526,7 +566,12 @@ class Syscalls {
 		});
 	}
 
-	readlink(ctx: SyscallContext, p: string): void {
+	readlink(ctx: SyscallContext, p: any): void {
+		let s: string;
+		if (p instanceof Uint8Array)
+			s = utf8Slice(p, 0, p.length);
+		else
+			s = p;
 		this.kernel.fs.readlink(join(ctx.task.cwd, p), (err: any, linkString: any) => {
 			if (err) {
 				ctx.complete(err, null);

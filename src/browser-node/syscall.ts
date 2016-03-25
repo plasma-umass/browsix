@@ -381,23 +381,11 @@ export class USyscalls {
 	}
 
 	private post(msgId: number, name: string, ...args: any[]): void {
-		this.msgQueue.push({
+		this.port.postMessage({
 			id: msgId,
 			name: name,
 			args: args,
 		});
-		setTimeout(this.doPost.bind(this), 0);
-	}
-
-	private doPost(): void {
-		// serialize all syscalls - only 1 outstanding at a
-		// time
-		//if (this.syscallPending)
-		//	return;
-		//this.syscallPending = true;
-		for (let msg = this.msgQueue.shift(); msg; msg = this.msgQueue.shift()) {
-			this.port.postMessage(msg);
-		}
 	}
 }
 

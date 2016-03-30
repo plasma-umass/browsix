@@ -128,6 +128,7 @@ const PRIO_MIN = -20;
 const PRIO_MAX = 20;
 
 const O_CLOEXEC = 0x80000;
+const O_LARGEFILE = 0x8000; // required for musl
 
 // based on stringToFlags from node's lib/fs.js
 function flagsToString(flag: any): string {
@@ -136,7 +137,7 @@ function flagsToString(flag: any): string {
 	if (typeof flag !== 'number') {
 		return flag;
 	}
-	flag &= ~O_CLOEXEC;
+	flag &= ~(O_CLOEXEC|O_LARGEFILE);
 
 	switch (flag) {
 	case O_RDONLY:
@@ -498,6 +499,13 @@ class Syscalls {
 			ctx.complete('bad FD ' + fd, null);
 			return;
 		}
+
+		// FIXME: remove this hack
+		if (fd <= 2) {
+			ctx.complete(null, 0);
+			return;
+		}
+
 		ctx.task.files[fd] = undefined;
 
 		if (file instanceof Pipe) {

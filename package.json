@@ -55,15 +55,17 @@
     "through2": "^2.0.1",
     "tsd": "^0.6.4",
     "tslint": "^3.3.0",
+    "typings": "^0.7.11",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
     "node-binary-marshal": "^0.4.0",
     "node-pipe2": "^0.2.0",
-    "node-priority": "^0.1.5"
+    "node-priority": "^0.1.5",
+    "term.js": "github:bpowers/term.js"
   },
-  "engines" : {
-    "node" : ">=4.3.0"
+  "engines": {
+    "node": ">=4.3.0"
   }
 }

@@ -1,21 +1,7 @@
 package main
 
-import (
-	"fmt"
-	"os"
-)
-
-func greetingGenerator(ch chan string) {
-	for {
-		ch <- "Hello, 世界"
-	}
-}
+import "fmt"
 
 func main() {
-	ch := make(chan string)
-	go greetingGenerator(ch)
-
-	fmt.Println(<-ch)
-
-	os.Exit(0)
+	fmt.Println("Hello, 世界")
 }

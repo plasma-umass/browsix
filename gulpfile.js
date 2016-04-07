@@ -409,6 +409,7 @@ gulp.task('serve', ['app:build', 'app:styles', 'app:elements', 'app:images'], fu
     browserSync({
         port: 5000,
         notify: false,
+        ghostMode: false,
         logPrefix: 'browsix',
         snippetOptions: {
             rule: {

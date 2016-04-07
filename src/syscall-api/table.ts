@@ -12,11 +12,49 @@ function sys_ni_syscall(cb: Function, trap: number): void {
 	setTimeout(cb, 0, [-1, 0, -ENOSYS]);
 }
 
+let sys_wait4 = sys_ni_syscall;
+
 function sys_getpid(cb: Function, trap: number): void {
 	let done = function(err: any, pid: number): void {
 		cb([pid, 0, 0]);
 	};
 	syscall.getpid.apply(syscall, [done]);
+}
+
+let zeroBuf = new Uint8Array(0);
+
+function sys_spawn(
+	cb:    Function,
+	trap:  number,
+	dir:   any,
+	argv0: any,
+	argv:  any,
+	envv:  any,
+	fds:   number[]): void {
+
+	if (!(dir instanceof Uint8Array))
+		dir = zeroBuf;
+	if (!(argv0 instanceof Uint8Array))
+		argv0 = zeroBuf;
+	argv = argv.filter((x: any): boolean => x instanceof Uint8Array);
+	envv = envv.filter((x: any): boolean => x instanceof Uint8Array);
+
+	let done = function(err: any, pid: number): void {
+		cb([err ? -1 : pid, 0, err ? err : 0]);
+	};
+	// FIXME: use apply to get around string/Uint8Array typing issues for now
+	syscall.spawn.apply(syscall, [dir, argv0, argv, envv, fds, done]);
+}
+
+function sys_pipe2(cb: Function, trap: number, fds: Int32Array, flags: number): void {
+	let done = function(err: any, fd1: number, fd2: number): void {
+		if (!err) {
+			fds[0] = fd1;
+			fds[1] = fd2;
+		}
+		cb([err ? err : 0, 0, err ? err : 0]);
+	};
+	syscall.pipe2(flags, done);
 }
 
 function sys_getcwd(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
@@ -281,7 +319,7 @@ export var syscallTbl = [
 	sys_ni_syscall, // 58 vfork
 	sys_ni_syscall, // 59 execve
 	sys_ni_syscall, // 60 exit
-	sys_ni_syscall, // 61 wait4
+	sys_wait4,      // 61 wait4
 	sys_ni_syscall, // 62 kill
 	sys_ni_syscall, // 63 uname
 	sys_ni_syscall, // 64 semget
@@ -513,7 +551,7 @@ export var syscallTbl = [
 	sys_ni_syscall, // 290 eventfd2
 	sys_ni_syscall, // 291 epoll_create1
 	sys_ni_syscall, // 292 dup3
-	sys_ni_syscall, // 293 pipe2
+	sys_pipe2,      // 293 pipe2
 	sys_ni_syscall, // 294 inotify_init1
 	sys_ni_syscall, // 295 preadv
 	sys_ni_syscall, // 296 pwritev
@@ -546,4 +584,6 @@ export var syscallTbl = [
 	sys_ni_syscall, // 323 userfaultfd
 	sys_ni_syscall, // 324 membarrier
 	sys_ni_syscall, // 325 mlock2
+	// Browsix-specific syscalls
+	sys_spawn,      // 326 spawn
 ];

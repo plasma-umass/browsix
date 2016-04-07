@@ -235,6 +235,9 @@ class Syscalls {
 		let [_, err] = marshal.Unmarshal(info, view, 0, marshal.socket.SockAddrInDef);
 		let addr: string = info.addr;
 		let port: number = info.port;
+		// FIXME: this hack
+		if (port === 0)
+			port = 8080;
 		// TODO: check family === SOCK.STREAM
 
 		let file = ctx.task.files[fd];
@@ -287,7 +290,20 @@ class Syscalls {
 					return ctx.complete(err);
 
 				let n = ctx.task.addFile(s);
-				ctx.complete(undefined, n, remoteAddr, remotePort);
+
+				if (remoteAddr === 'localhost')
+					remoteAddr = '127.0.0.1';
+
+				let buf = new Uint8Array(marshal.socket.SockAddrInDef.length);
+				let view = new DataView(buf.buffer, buf.byteOffset);
+
+				marshal.Marshal(
+					view,
+					0,
+					{family: 2, port: remotePort, addr: remoteAddr},
+					marshal.socket.SockAddrInDef);
+
+				ctx.complete(undefined, n, buf);
 			});
 			return;
 		}
@@ -311,7 +327,32 @@ class Syscalls {
 		return ctx.complete('ENOTSOCKET');
 	}
 
-	spawn(ctx: SyscallContext, cwd: string, name: string, args: string[], env: string[], files: number[]): void {
+	spawn(
+		ctx: SyscallContext,
+		icwd: Uint8Array|string,
+		iname: Uint8Array|string,
+		iargs: (Uint8Array|string)[],
+		ienv: (Uint8Array|string)[],
+		files: number[]): void {
+
+		function toStr(buf: Uint8Array|string): string {
+			if (typeof buf === 'string') {
+				return <string>buf;
+			} else if (buf instanceof Uint8Array) {
+				let len = buf.length;
+				if (len > 0 && buf[len - 1] === 0)
+					len--;
+				return utf8Slice(buf, 0, len);
+			}
+			console.log('unreachable');
+			return '';
+		}
+		let cwd = toStr(icwd);
+		let name = toStr(iname);
+
+		let args: string[] = iargs.map((x: Uint8Array|string): string => toStr(x));
+		let env: string[] = ienv.map((x: Uint8Array|string): string => toStr(x));
+
 		this.kernel.spawn(<Task>ctx.task, cwd, name, args, env, files, (err: any, pid: number) => {
 			ctx.complete(err, pid);
 		});
@@ -686,7 +727,7 @@ export class Kernel implements IKernel {
 		} else {
 			parts = cmd.split(' ').filter((s) => s !== '');
 		}
-		if (parts[0][0] !== '/')
+		if (parts[0][0] !== '/' && parts[0][0] !== '.')
 			parts[0] = '/usr/bin/'+parts[0];
 
 		// FIXME: figure out else we want in the default environment
@@ -771,8 +812,10 @@ export class Kernel implements IKernel {
 				return;
 			}
 			p.execute(buf.slice(0, len));
-			buf = new Buffer(64*1024);
-			f.read(buf, 0, 64*1024, 0, onRead);
+			if (len > 0) {
+				buf = new Buffer(64*1024);
+				f.read(buf, 0, 64*1024, 0, onRead);
+			}
 		}
 
 		this.connect(f, host, port, (err: any) => {

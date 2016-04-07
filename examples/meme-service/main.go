@@ -139,6 +139,6 @@ func main() {
 	// start http server
 	err = http.ListenAndServe(*addr, nil)
 	if err != nil {
-		log.Printf("ListenAndServe:", err)
+		log.Printf("ListenAndServe: %s", err)
 	}
 }

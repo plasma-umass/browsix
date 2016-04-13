@@ -1,4 +1,5 @@
 /// <reference path="../../../bower_components/polymer-ts/polymer-ts.d.ts"/>
+/// <reference path="./term.d.ts"/>
 
 interface ExitCallback {
 	(pid: number, code: number): void;
@@ -15,6 +16,7 @@ interface Kernel {
 }
 
 namespace Terminal {
+
 	'use strict';
 
 	const ERROR = 'FLAGRANT SYSTEM ERROR';
@@ -30,8 +32,32 @@ namespace Terminal {
 		@property({type: String})
 		ps1: string = '$ ';
 
+		term: any;
+
 		constructor() {
 			super();
+
+			this.term = new window.Terminal({
+				cols: 80,
+				rows: 24,
+				screenKeys: true
+			});
+
+			this.term.on('data', function(data) {
+				console.log('DATA: ')
+				console.log(data);
+				//socket.emit('data', data);
+			});
+
+			this.term.on('title', function(title) {
+				console.log('title: ' + title);
+				//document.title = title;
+			});
+
+			// socket.on('data', function(data) {
+			// 	term.write(data);
+			// });
+
 			(<any>window).Boot(
 				'XmlHttpRequest',
 				['index.json', 'fs', true],
@@ -46,7 +72,11 @@ namespace Terminal {
 		}
 
 		attached(): void {
-			this.$.term.addEventListener('input', this.onInput.bind(this));
+
+			this.term.open(this.$.term);
+
+			this.term.write('\x1b[31mWelcome to Browsixs term.js!\x1b[m\r\n');
+			//this.$.term.addEventListener('input', this.onInput.bind(this));
 		}
 
 		onInput(ev: any): void {
@@ -104,10 +134,10 @@ namespace Terminal {
 		}
 
 		nextPrompt(): void {
-			this.$.term.value += this.ps1;
-			let len = this.$.term.value.length;
-			this.$.term.setSelectionRange(len, len);
-			this.$.term.focus();
+			// this.$.term.value += this.ps1;
+			// let len = this.$.term.value.length;
+			// this.$.term.setSelectionRange(len, len);
+			// this.$.term.focus();
 		}
 	}
 

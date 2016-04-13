@@ -1,3 +1,4 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../bower_components/polymer-ts/polymer-ts.html">
 
 <dom-module id="browsix-terminal">
@@ -24,10 +25,9 @@
         }
         </style>
 
-        <textarea
-            class="fit" id="term" disabled="[[!editable]]"
-            spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
+        <div class="fit" id="term"></div>
     </template>
 </dom-module>
 
+<script type="text/javascript" src="term.js"></script>
 <script type="text/javascript" src="browsix-terminal.js"></script>

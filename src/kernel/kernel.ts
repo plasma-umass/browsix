@@ -184,6 +184,43 @@ export enum SOCK {
 	DGRAM = 2,
 }
 
+
+// driver installed on boot, newTTY() calls kernel.driver['ptm'].new()?
+
+// TWO DIFFERENT THINGS HERE?
+
+// true pseudoterminal support w/ just /dev/ptmx and /dev/pts/$X
+// - for processes like bash to use
+// terminal support w/ IO happening to the browser
+
+// 'real tty' has no exposed ptmx master, when it is hotplugged/
+// attached/ allocated it creates /dev/tty1.  We can then just use
+// kernel.system('bash', 'tty1', 'tty1', 'tty1');
+
+class TTY {
+	// *device (maybe internal to term.js - or is this term.js?)
+	// *driver (ptm_driver)
+	// *ops (?? shared between driver and tty instances?)
+
+	// index
+
+	// line_discipline (ldisc)
+
+	// terminos
+
+	// process group pid
+	// session pid
+
+	// flags
+	// count
+
+	// link (*TTY)
+
+	// tty_files[]
+
+	// tty_port
+}
+
 // Logically, perhaps, these should all be methods on Kernel.  They're
 // here for encapsulation.
 class Syscalls {

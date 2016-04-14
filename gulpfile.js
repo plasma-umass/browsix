@@ -92,8 +92,7 @@ function tsTask(subdir, options) {
     gulp.task('dist-'+subdir, ['build-'+subdir], function() {
         var b = browserify({
             entries: ['./lib/'+subdir+'/'+subdir+'.js'],
-            builtins: false,
-            insertGlobalVars: globals,
+            builtins: true,
         });
         b.exclude('webworker-threads');
 

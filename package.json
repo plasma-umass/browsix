@@ -60,6 +60,7 @@
     "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
+    "browserfs": "git+https://github.com/jvilk/BrowserFS.git#dd7e6657e4a93873098ee9bfd91606a7d83df079",
     "node-binary-marshal": "^0.4.0",
     "node-pipe2": "^0.2.0",
     "node-priority": "^0.1.5",

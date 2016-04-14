@@ -16,8 +16,8 @@ import { ExitCallback, OutputCallback, SyscallContext, SyscallResult, SystemArgs
 
 import { HTTPParser } from './http_parser';
 
-import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
-import { fs } from './vendor/BrowserFS/src/core/node_fs';
+import * as BrowserFS from 'browserfs/dist/node/core/browserfs';
+//import { FS } from 'browserfs/dist/node/core/node_fs';
 
 import { Terminal } from './term';
 
@@ -41,10 +41,10 @@ let SCHEDULING_DELAY = 0;
 let Buffer: any;
 
 // we only import the backends we use, for now.
-require('./vendor/BrowserFS/src/backend/in_memory');
-require('./vendor/BrowserFS/src/backend/XmlHttpRequest');
-require('./vendor/BrowserFS/src/backend/overlay');
-require('./vendor/BrowserFS/src/backend/async_mirror');
+// require('browserfs/dist/node/backend/InMemory');
+// require('browserfs/dist/node/backend/XmlHttpRequest');
+// require('browserfs/dist/node/backend/OverlayFS');
+// require('browserfs/dist/node/backend/AsyncMirror');
 //require('./vendor/BrowserFS/src/backend/localStorage');
 //require('./vendor/BrowserFS/src/backend/mountable_file_system');
 //require('./vendor/BrowserFS/src/backend/zipfs');
@@ -698,7 +698,7 @@ export class Kernel implements IKernel {
 
 	private term: Terminal;
 
-	constructor(fs: fs, nCPUs: number, args: BootArgs) {
+	constructor(fs: any, nCPUs: number, args: BootArgs) {
 		this.outstanding = 0;
 		this.inKernel = 0;
 		this.nCPUs = nCPUs;
@@ -1357,7 +1357,7 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args?: Boo
 				return;
 			}
 			BrowserFS.initialize(overlaid);
-			let fs: fs = bfs.require('fs');
+			let fs: any = bfs.require('fs');
 			let k = new Kernel(fs, nCPUs, args);
 			// FIXME: this is for debugging purposes
 			(<any>window).kernel = k;

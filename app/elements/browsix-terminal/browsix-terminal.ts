@@ -42,7 +42,8 @@ namespace Terminal {
 						throw new Error(err);
 					}
 					this.kernel = k;
-				});
+				},
+				{readOnly: false});
 		}
 
 		attached(): void {

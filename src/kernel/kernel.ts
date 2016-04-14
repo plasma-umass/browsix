@@ -657,7 +657,7 @@ export class Kernel implements IKernel {
 
 	private syscalls: Syscalls;
 
-	constructor(fs: fs, nCPUs: number) {
+	constructor(fs: fs, nCPUs: number, args: BootArgs) {
 		this.outstanding = 0;
 		this.inKernel = 0;
 		this.nCPUs = nCPUs;
@@ -1259,10 +1259,20 @@ export interface BootCallback {
 	(err: any, kernel: Kernel): void;
 }
 
+export interface BootArgs {
+	fsType?: string;
+	fsArgs?: any[];
+	ttyParent?: Element;
+	readOnly?: boolean;
+};
+
 // FIXME/TODO: this doesn't match the signature specified in the
 // project.
-export function Boot(fsType: string, fsArgs: any[], cb: BootCallback): void {
+export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args?: BootArgs): void {
 	'use strict';
+
+	if (!args)
+		args = {};
 
 	// for now, simulate a single CPU for scheduling tests +
 	// simplicity.  this means we will attempt to only have a
@@ -1280,30 +1290,40 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback): void {
 	}
 	let asyncRoot = new (Function.prototype.bind.apply(rootConstructor, [null].concat(fsArgs)));
 
-	// FIXME: this is a bit gross
-	let syncRoot = new BrowserFS.FileSystem['InMemory']();
-	let root = new BrowserFS.FileSystem['AsyncMirrorFS'](syncRoot, asyncRoot);
-
-	root.initialize((err: any) => {
+	function finishInit(root: any, err: any): void {
 		if (err) {
 			cb(err, undefined);
 			return;
 		}
-		let writable = new BrowserFS.FileSystem['InMemory']();
-		let overlaid = new BrowserFS.FileSystem['OverlayFS'](writable, root);
-		overlaid.initialize((errInner: any) => {
-			if (errInner) {
-				cb(errInner, undefined);
+		BrowserFS.initialize(root);
+		let fs: fs = bfs.require('fs');
+		let k = new Kernel(fs, nCPUs, args);
+		// FIXME: this is for debugging purposes
+		(<any>window).kernel = k;
+		setImmediate(cb, null, k);
+	}
+
+	if (args.readOnly) {
+		if (asyncRoot.initialize) {
+			asyncRoot.initialize(finishInit.bind(this, asyncRoot));
+		} else {
+			finishInit(asyncRoot, null);
+		}
+	} else {
+		// FIXME: this is a bit gross
+		let syncRoot = new BrowserFS.FileSystem['InMemory']();
+		let root = new BrowserFS.FileSystem['AsyncMirrorFS'](syncRoot, asyncRoot);
+
+		root.initialize((err: any) => {
+			if (err) {
+				cb(err, undefined);
 				return;
 			}
-			BrowserFS.initialize(overlaid);
-			let fs: fs = bfs.require('fs');
-			let k = new Kernel(fs, nCPUs);
-			// FIXME: this is for debugging purposes
-			(<any>window).kernel = k;
-			setImmediate(cb, null, k);
+			let writable = new BrowserFS.FileSystem['InMemory']();
+			let overlaid = new BrowserFS.FileSystem['OverlayFS'](writable, root);
+			overlaid.initialize(finishInit.bind(this, overlaid));
 		});
-	});
+	}
 }
 
 

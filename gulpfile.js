@@ -52,7 +52,10 @@ function tsPipeline(src, dst) {
     return function() {
         var build = gulp.src(src)
             .pipe(ts(project()));
-        return build.js.pipe(gulp.dest(dst));
+        return merge([
+            //build.dts.pipe(gulp.dest(dst)),
+            build.js.pipe(gulp.dest(dst)),
+        ]);
     }
 }
 
@@ -65,7 +68,10 @@ function tsTask(subdir, options) {
     var noGlobal = options.noGlobal;
     var buildDeps = options.buildDeps || [];
     var otherSources = options.otherSources || [];
-    var sources = ['src/'+subdir+'/*.ts', 'src/'+subdir+'/**/*.ts'].concat(otherSources);
+    var sources = [
+        'src/'+subdir+'/*.ts',
+        'src/'+subdir+'/**/*.ts',
+    ].concat(otherSources);
 
     gulp.task('lint-'+subdir, function() {
         return gulp.src(['src/'+subdir+'/*.ts', 'src/'+subdir+'/*/*.ts'])
@@ -151,6 +157,7 @@ gulp.task('copy-node', function() {
 // confusing tsc :\
 tsTask('kernel', {
     otherSources: [
+	'src/kernel/term.js',
         '!src/kernel/vendor/BrowserFS/test/**/*.ts',
         '!src/kernel/vendor/BrowserFS/src/browserify_main.ts',
     ],

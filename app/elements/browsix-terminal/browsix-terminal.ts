@@ -1,5 +1,4 @@
 /// <reference path="../../../bower_components/polymer-ts/polymer-ts.d.ts"/>
-/// <reference path="./term.d.ts"/>
 
 interface ExitCallback {
 	(pid: number, code: number): void;
@@ -37,26 +36,23 @@ namespace Terminal {
 		constructor() {
 			super();
 
-			this.term = new window.Terminal({
-				cols: 80,
-				rows: 24,
-				screenKeys: true
-			});
+			// this.term.on('data', function(data) {
+			// 	console.log('DATA: ')
+			// 	console.log(data);
+			// 	//socket.emit('data', data);
+			// });
 
-			this.term.on('data', function(data) {
-				console.log('DATA: ')
-				console.log(data);
-				//socket.emit('data', data);
-			});
-
-			this.term.on('title', function(title) {
-				console.log('title: ' + title);
-				//document.title = title;
-			});
+			// this.term.on('title', function(title) {
+			// 	console.log('title: ' + title);
+			// 	//document.title = title;
+			// });
 
 			// socket.on('data', function(data) {
 			// 	term.write(data);
 			// });
+		}
+
+		attached(): void {
 
 			(<any>window).Boot(
 				'XmlHttpRequest',
@@ -68,10 +64,8 @@ namespace Terminal {
 						throw new Error(err);
 					}
 					this.kernel = k;
-				});
-		}
-
-		attached(): void {
+				},
+				{ttyParent: this.$.term});
 
 			this.term.open(this.$.term);
 

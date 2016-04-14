@@ -24,6 +24,16 @@ export interface ConnectCallback {
 	(err: any): void;
 }
 
+export interface SystemArgs {
+	onExit: ExitCallback;
+	onStdout: OutputCallback;
+	onStderr: OutputCallback;
+
+	stdinPath?: string;
+	stdoutPath?: string;
+	stderrPath?: string;
+}
+
 export interface IKernel {
 	fs: any; // FIXME
 
@@ -36,10 +46,10 @@ export interface IKernel {
 	connect(s: IFile, addr: string, port: number, cb: ConnectCallback): void;
 	unbind(s: IFile, addr: string, port: number): any;
 
-	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void;
+	// FIXME: pass everything through args
+	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback, args?: SystemArgs): void;
 
-	// TODO: should this subsume system()?
-	newTTY(parent: string|Element, cmd: string): ITTY;
+	hotplug(type: string, args: any): any;
 }
 
 export interface ITTY {

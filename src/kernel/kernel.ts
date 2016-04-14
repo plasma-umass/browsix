@@ -11,13 +11,15 @@ import { now } from './ipc';
 import { Pipe, PipeFile, isPipe } from './pipe';
 import { SocketFile, isSocket } from './socket';
 import { DirFile, RegularFile } from './file';
-import { ExitCallback, OutputCallback, SyscallContext, SyscallResult,
+import { ExitCallback, OutputCallback, SyscallContext, SyscallResult, SystemArgs,
 	Syscall, ConnectCallback, IKernel, ITask, IFile, Environment } from './types';
 
 import { HTTPParser } from './http_parser';
 
 import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
 import { fs } from './vendor/BrowserFS/src/core/node_fs';
+
+import { Terminal } from './term';
 
 import * as marshal from 'node-binary-marshal';
 
@@ -694,7 +696,9 @@ export class Kernel implements IKernel {
 
 	private syscalls: Syscalls;
 
-	constructor(fs: fs, nCPUs: number) {
+	private term: Terminal;
+
+	constructor(fs: fs, nCPUs: number, args: BootArgs) {
 		this.outstanding = 0;
 		this.inKernel = 0;
 		this.nCPUs = nCPUs;
@@ -705,6 +709,17 @@ export class Kernel implements IKernel {
 		for (let i = PRIO_MIN; i < PRIO_MAX; i++) {
 			this.runQueues[i - PRIO_MIN] = [];
 		}
+
+		this.term = new Terminal({
+			cols: 80,
+			rows: 24,
+			screenKeys: true,
+		});
+
+
+		this.term.open(args.ttyParent);
+
+		this.term.write('\x1b[31mWelcome to the new Browsix term!\x1b[m\r\n');
 	}
 
 	schedule(task: ITask): void {
@@ -756,8 +771,12 @@ export class Kernel implements IKernel {
 		}
 	}
 
+	hotplug(type: string, args: any): any {
+		return 'not implemented';
+	}
+
 	// returns the PID.
-	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void {
+	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback, args?: SystemArgs): void {
 		let parts: string[];
 		if (cmd.indexOf('|') > -1) {
 			parts = ['/usr/bin/sh', cmd];
@@ -1296,9 +1315,13 @@ export interface BootCallback {
 	(err: any, kernel: Kernel): void;
 }
 
-// FIXME/TODO: this doesn't match the signature specified in the
-// project.
-export function Boot(fsType: string, fsArgs: any[], cb: BootCallback): void {
+export interface BootArgs {
+	fsType: string;
+	fsArgs: any[];
+	ttyParent: Element;
+};
+
+export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args?: BootArgs): void {
 	'use strict';
 
 	// for now, simulate a single CPU for scheduling tests +
@@ -1335,7 +1358,7 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback): void {
 			}
 			BrowserFS.initialize(overlaid);
 			let fs: fs = bfs.require('fs');
-			let k = new Kernel(fs, nCPUs);
+			let k = new Kernel(fs, nCPUs, args);
 			// FIXME: this is for debugging purposes
 			(<any>window).kernel = k;
 			setImmediate(cb, null, k);

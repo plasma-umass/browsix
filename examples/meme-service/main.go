@@ -16,13 +16,14 @@ import (
 	"path"
 
 	"github.com/golang/freetype/truetype"
+	"golang.org/x/image/font"
 )
 
 var (
 	addr     = flag.String("addr", "127.0.0.1:8080", "address to listen on")
 	dpi      = flag.Float64("dpi", 144, "screen resolution in Dots Per Inch")
-	fontfile = flag.String("fontfile", "./font/leaguegothic-regular-webfont.ttf", "filename of the ttf font")
-	size     = flag.Float64("size", 36, "font size in points")
+	fontfile = flag.String("fontfile", "./font/impact.ttf", "filename of the ttf font")
+	size     = flag.Float64("size", 48, "font size in points")
 	imgDir   = flag.String("bgdir", "./img", "directory where background images live")
 )
 
@@ -110,6 +111,23 @@ func readImages(dir string) (map[string]image.Image, error) {
 	return images, nil
 }
 
+// from fogleman/gg
+func loadFontFace(path string, points float64) (font.Face, error) {
+	fontBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	f, err := truetype.Parse(fontBytes)
+	if err != nil {
+		return nil, err
+	}
+	face := truetype.NewFace(f, &truetype.Options{
+		Size: points,
+		// Hinting: font.HintingFull,
+	})
+	return face, nil
+}
+
 func main() {
 	flag.Parse()
 
@@ -118,12 +136,7 @@ func main() {
 		log.Fatalf("readImages: %s", err)
 	}
 
-	fontBytes, err := ioutil.ReadFile(*fontfile)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	font, err := truetype.Parse(fontBytes)
+	font, err := loadFontFace(*fontfile, *size)
 	if err != nil {
 		log.Println(err)
 		return

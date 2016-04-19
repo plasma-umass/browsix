@@ -2,7 +2,8 @@ package main
 
 import (
 	"bytes"
-	"image"
+	"encoding/json"
+	"fmt"
 	_ "image/jpeg"
 	"image/png"
 	"log"
@@ -11,50 +12,69 @@ import (
 	"strings"
 
 	"github.com/fogleman/gg"
-	"github.com/nfnt/resize"
 	"golang.org/x/image/font"
 )
 
-type Handler struct {
-	// these are read only, safe for access from multiple goroutines
-	images map[string]image.Image
-	font   font.Face
-}
-
-func NewHandler(images map[string]image.Image, font font.Face) *Handler {
-	return &Handler{images, font}
-}
-
 const imgW, imgH = 640, 480
 
-// adapted from example/meme.go
-func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	bgName := strings.Split(req.URL.Path, "/")[0]
+type Handler struct {
+	img  *ImageCache
+	font font.Face
+}
 
-	q := req.URL.Query()
-	top := q.Get("top")
-	bottom := q.Get("bottom")
+func NewHandler(ic *ImageCache, font font.Face) *Handler {
+	return &Handler{ic, font}
+}
 
-	if top == "" && bottom == "" {
-		top = "Can't think of a demo?"
-		bottom = "Why not Zoidberg?"
-	}
+type requestKind int
 
-	bgImg, ok := h.images[bgName]
-	if !ok {
+type req interface {
+	Serve(rw http.ResponseWriter)
+}
+
+type listRequest struct {
+	lst []map[string]string
+}
+
+func (req listRequest) Serve(rw http.ResponseWriter) {
+
+	bytes, err := json.Marshal(req.lst)
+	if err != nil {
 		rw.WriteHeader(http.StatusBadRequest)
+		log.Printf("marshal error: %s", err)
 		return
 	}
 
-	log.Printf("%s: \"%s\", \"%s\"", req.URL.Path, top, bottom)
+	rw.Write(bytes)
+}
 
-	// resize to match our output dimensions
-	bgImg = resize.Resize(imgW, imgH, bgImg, resize.Lanczos3)
+type imgRequest struct {
+	mime string
+	data []byte
+}
+
+type memeRequest struct {
+	h      *Handler
+	meme   string
+	top    string
+	bottom string
+}
+
+func (req memeRequest) Serve(rw http.ResponseWriter) {
+	log.Printf("requesting img")
+	bgImg, err := req.h.img.Get(req.meme, imgW, imgH)
+	if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		log.Printf("Get('%s'): %s", req.meme, err)
+		return
+	}
+
+	log.Printf("%s: \"%s\", \"%s\"", req.meme, req.top, req.bottom)
 
 	dc := gg.NewContext(imgW, imgH)
 	dc.DrawImage(bgImg, 0, 0)
 
-	dc.SetFontFace(h.font)
+	dc.SetFontFace(req.h.font)
 
 	drawString := func(s string, baseY float64) {
 		dc.SetRGB(0, 0, 0)
@@ -74,11 +94,11 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		dc.DrawStringAnchored(s, imgW/2, baseY, 0.5, 0.5)
 	}
 
-	drawString(top, float64(int(math.Ceil(*size**dpi/72))-20))
-	drawString(bottom, imgH-30)
+	drawString(req.top, float64(int(math.Ceil(*size**dpi/72))-20))
+	drawString(req.bottom, imgH-30)
 
 	b := bytes.Buffer{}
-	err := png.Encode(&b, dc.Image())
+	err = png.Encode(&b, dc.Image())
 	if err != nil {
 		log.Printf("png.Encode: %s", err)
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -87,4 +107,48 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	rw.Header().Set("Content-Type", "image/png")
 	rw.Write(b.Bytes())
+
+}
+
+type invalidRequest struct {
+	err error
+}
+
+func (req invalidRequest) Serve(rw http.ResponseWriter) {
+	rw.WriteHeader(http.StatusBadRequest)
+	fmt.Fprintf(rw, "%s", req.err)
+}
+
+func (h *Handler) request(req *http.Request) req {
+
+	parts := strings.Split(req.URL.Path, "/")
+
+	switch len(parts) {
+	case 0:
+		return invalidRequest{fmt.Errorf("must specify a subresource")}
+	case 1:
+		if parts[0] != "memes" {
+			return invalidRequest{
+				fmt.Errorf("unknown resource '%s'", parts[0]),
+			}
+		}
+		return listRequest{h.img.List()}
+	default:
+		meme := parts[1]
+		q := req.URL.Query()
+		top := q.Get("top")
+		bottom := q.Get("bottom")
+
+		if top == "" && bottom == "" {
+			top = "Can't think of a demo?"
+			bottom = "Why not Zoidberg?"
+		}
+
+		return memeRequest{h, meme, top, bottom}
+	}
+}
+
+// adapted from example/meme.go
+func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	h.request(req).Serve(rw)
 }

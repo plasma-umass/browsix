@@ -54,7 +54,6 @@ type origRequest struct {
 }
 
 func (req origRequest) Serve(rw http.ResponseWriter) {
-
 	rw.Header().Set("Content-Type", req.mime)
 	rw.Write(req.data)
 }

@@ -819,6 +819,10 @@ export class Kernel implements IKernel {
 		}
 
 		this.connect(f, host, port, (err: any) => {
+			if (err) {
+				console.log('connect failed: ' + err);
+				return;
+			}
 			console.log('connected to ' + port);
 			f.read(buf, 0, 64*1024, 0, onRead);
 
@@ -826,7 +830,7 @@ export class Kernel implements IKernel {
 				if (ierr)
 					console.log('err: ' + ierr);
 			});
-			(<any>window).F = f;
+			//(<any>window).F = f;
 		});
 
 		// read+

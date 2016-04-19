@@ -48,9 +48,15 @@ func (req listRequest) Serve(rw http.ResponseWriter) {
 	rw.Write(bytes)
 }
 
-type imgRequest struct {
+type origRequest struct {
 	mime string
 	data []byte
+}
+
+func (req origRequest) Serve(rw http.ResponseWriter) {
+
+	rw.Header().Set("Content-Type", req.mime)
+	rw.Write(req.data)
 }
 
 type memeRequest struct {
@@ -61,7 +67,6 @@ type memeRequest struct {
 }
 
 func (req memeRequest) Serve(rw http.ResponseWriter) {
-	log.Printf("requesting img")
 	bgImg, err := req.h.img.Get(req.meme, imgW, imgH)
 	if err != nil {
 		rw.WriteHeader(http.StatusBadRequest)
@@ -107,7 +112,6 @@ func (req memeRequest) Serve(rw http.ResponseWriter) {
 
 	rw.Header().Set("Content-Type", "image/png")
 	rw.Write(b.Bytes())
-
 }
 
 type invalidRequest struct {
@@ -122,6 +126,10 @@ func (req invalidRequest) Serve(rw http.ResponseWriter) {
 func (h *Handler) request(req *http.Request) req {
 
 	parts := strings.Split(req.URL.Path, "/")
+	// deal with trailing /
+	if len(parts) > 0 && parts[len(parts)-1] == "" {
+		parts = parts[:len(parts)-1]
+	}
 
 	switch len(parts) {
 	case 0:
@@ -134,6 +142,17 @@ func (h *Handler) request(req *http.Request) req {
 		}
 		return listRequest{h.img.List()}
 	default:
+		log.Printf("%#v", parts)
+		if len(parts) > 2 && parts[2] == "orig" {
+			bgData := h.img.Orig(parts[1])
+			if bgData == nil {
+				return invalidRequest{
+					fmt.Errorf("unknown resource '%s'", parts[1]),
+				}
+			}
+			return origRequest{bgData.mime, bgData.data}
+		}
+
 		meme := parts[1]
 		q := req.URL.Query()
 		top := q.Get("top")

@@ -71,6 +71,7 @@ func readImages(dir string) (map[string]background, error) {
 			continue
 		}
 
+		log.Printf("%s: (%s) %s", name(n), path.Ext(n), mime.TypeByExtension(path.Ext(n)))
 		images[name(n)] = background{
 			name:  name(n),
 			mime:  mime.TypeByExtension(path.Ext(n)),
@@ -86,6 +87,11 @@ func readImages(dir string) (map[string]background, error) {
 	return images, nil
 }
 
+type OrigImage struct {
+	mime string
+	data []byte
+}
+
 type icBgRequest struct {
 	resp   chan<- *image.Image
 	name   string
@@ -98,7 +104,7 @@ type icListRequest struct {
 }
 
 type icOrigRequest struct {
-	resp chan<- *image.Image
+	resp chan<- *OrigImage
 	name string
 }
 
@@ -124,6 +130,15 @@ func NewImageCache(dir string) *ImageCache {
 	go ic.cacheServer(dir, ch)
 
 	return ic
+}
+
+func (ic *ImageCache) Orig(name string) *OrigImage {
+	resp := make(chan *OrigImage)
+	ic.ch <- icOrigRequest{
+		resp: resp,
+		name: name,
+	}
+	return <-resp
 }
 
 func (ic *ImageCache) List() []map[string]string {
@@ -199,7 +214,7 @@ func (ic *ImageCache) cacheServer(dir string, requests <-chan imageRequest) {
 				req.resp <- nil
 				continue
 			}
-			req.resp <- &bg.img
+			req.resp <- &OrigImage{bg.mime, bg.bytes}
 		}
 	}
 }

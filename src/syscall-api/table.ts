@@ -186,8 +186,6 @@ function sys_openat(cb: Function, trap: number, arg0: any, arg1: any, arg2: any,
 		return;
 	}
 	let done = function(err: any, fd: number): void {
-		if (err)
-			console.log('error: ' + err);
 		cb([fd, 0, err ? -1 : 0]);
 	};
 	let len = arg1.length;

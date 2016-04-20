@@ -271,6 +271,16 @@ class Syscalls {
 		if (isSocket(file)) {
 			file.listen((err: any) => {
 				ctx.complete(err);
+
+				// notify anyone who was waiting that
+				// this socket is open for business.
+				if (!err) {
+					let cb = this.kernel.portWaiters[file.port];
+					if (cb) {
+						delete this.kernel.portWaiters[file.port];
+						cb(file.port);
+					}
+				}
 			});
 			return;
 		}
@@ -304,14 +314,6 @@ class Syscalls {
 					marshal.socket.SockAddrInDef);
 
 				ctx.complete(undefined, n, buf);
-
-				// notify anyone who was waiting that
-				// this socket is open for business.
-				let cb = this.kernel.portWaiters[file.port];
-				if (cb) {
-					delete this.kernel.portWaiters[file.port];
-					cb(file.port);
-				}
 			});
 			return;
 		}

@@ -840,7 +840,7 @@ export class Kernel implements IKernel {
 			let blob = new Blob([data], {type: mime});
 
 			let ctx: any = {
-				status: 200,
+				status: p.info.statusCode,
 				response: blob,
 			};
 

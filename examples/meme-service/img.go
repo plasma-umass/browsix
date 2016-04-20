@@ -188,6 +188,7 @@ func (ic *ImageCache) cacheServer(dir string, requests <-chan imageRequest) {
 		bgImg, ok := sizedCache[cacheKey]
 		if !ok {
 			// add missing image to cache
+			// FIXME: this should take into account aspect ratio
 			bgImg = resize.Resize(width, height, bg.img, resize.Lanczos3)
 			sizedCache[cacheKey] = bgImg
 		}

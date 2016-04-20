@@ -304,6 +304,14 @@ class Syscalls {
 					marshal.socket.SockAddrInDef);
 
 				ctx.complete(undefined, n, buf);
+
+				// notify anyone who was waiting that
+				// this socket is open for business.
+				let cb = this.kernel.portWaiters[file.port];
+				if (cb) {
+					delete this.kernel.portWaiters[file.port];
+					cb(file.port);
+				}
 			});
 			return;
 		}
@@ -648,6 +656,9 @@ export class Kernel implements IKernel {
 	// through Web Worker execution.
 	debug: boolean = DEBUG;
 
+	// TODO: make this private
+	portWaiters: {[port: number]: Function} = {};
+
 	// TODO: this should be per-protocol, i.e. separate for TCP
 	// and UDP
 	private ports: {[port: number]: SocketFile} = {};
@@ -668,6 +679,18 @@ export class Kernel implements IKernel {
 		for (let i = PRIO_MIN; i < PRIO_MAX; i++) {
 			this.runQueues[i - PRIO_MIN] = [];
 		}
+	}
+
+	once(event: string, cb: Function): any {
+		let parts = event.split(':');
+		if (parts.length !== 2 || parts[0] !== 'port')
+			return 'only supported event is currently port';
+
+		let port = parseInt(parts[1], 10);
+		if (!(port >= 1 && port < (2<<14)))
+			return 'invalid port: ' + port;
+
+		this.portWaiters[port] = cb;
 	}
 
 	schedule(task: ITask): void {

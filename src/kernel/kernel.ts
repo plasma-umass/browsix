@@ -806,12 +806,19 @@ export class Kernel implements IKernel {
 		let f = new SocketFile(null);
 
 		let p = new HTTPParser(HTTPParser.RESPONSE);
+
+		let getHeader = (name: string): string => {
+			let lname = name.toLowerCase();
+			for (let i = 0; i+1 < p.info.headers.length; i += 2) {
+				if (p.info.headers[i].toLowerCase() === lname)
+					return p.info.headers[i+1];
+			}
+			return '';
+		};
+
 		p.isUserCall = true;
 		p[HTTPParser.kOnHeadersComplete] = (info: any) => {
-			console.log('headers complete');
 			// who cares
-			//console.log("done");
-			//console.log(info)
 		};
 
 		p[HTTPParser.kOnBody] = (chunk: any, off: number, len: number) => {
@@ -820,10 +827,21 @@ export class Kernel implements IKernel {
 		p[HTTPParser.kOnMessageComplete] = () => {
 			console.log('TODO: close file object & socket');
 
+			let mime = getHeader('Content-Type');
+			if (!mime) {
+				console.log('WARN: no content-type header');
+				mime = 'text/plain';
+			}
 			let response = Buffer.concat(resp);
+			let data = new Uint8Array(response.data.buff.buffer, 0, response.length);
+
+			// FIXME: only convert to blob if
+			// xhr.responseType === 'blob'
+			let blob = new Blob([data], {type: mime});
+
 			let ctx: any = {
 				status: 200,
-				response: new Uint8Array(response.data.buff.buffer, 0, response.length),
+				response: blob,
 			};
 
 			cb.apply(ctx, []);
@@ -958,7 +976,7 @@ export class Kernel implements IKernel {
 		}
 		this.inKernel++;
 		if (syscall.name in this.syscalls) {
-			console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
+			//console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
 			console.log('unknown syscall ' + syscall.name);

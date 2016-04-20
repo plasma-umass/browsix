@@ -265,7 +265,6 @@ HTTPParser.prototype.HEADER = function () {
           break;
         case 'content-length':
               this.body_bytes = +headers[i + 1];
-	      console.log('body bytes: ' + this.body_bytes);
           break;
         case 'connection':
           this.connection += headers[i + 1].toLowerCase();

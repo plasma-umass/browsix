@@ -116,7 +116,7 @@
 			console.log('exited: ' + pid + ' with code ' + code);
 		}
 		kernel.once('port:8080', onInBrowserReady.bind(this));
-		kernel.system('/meme-service.js', onExit, onStdout, onStderr);
+		kernel.system('/meme-service.js -bgdir=img -fontfile=font/impact.ttf', onExit, onStdout, onStderr);
 
 		// debugging purposes
 		window.kernel = kernel;
@@ -202,4 +202,22 @@
 	});
 
 	button.addEventListener('click', clicked);
+
+	window.onload = () => {
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function(reg) {
+
+				if(reg.installing)
+					console.log('Service worker installing');
+				else if(reg.waiting)
+					console.log('Service worker installed');
+				else if(reg.active)
+					console.log('Service worker active');
+
+			}).catch(function(error) {
+				// registration failed
+				console.log('Registration failed with ' + error);
+			});
+		};
+	};
 })();

@@ -1,0 +1,21 @@
+{
+  "name": "meme-frontend",
+  "private": true,
+  "dependencies": {
+    "bootstrap-sass": "~3.3.6",
+    "lodash": "^4.11.1"
+  },
+  "overrides": {
+    "bootstrap-sass": {
+      "main": [
+        "assets/stylesheets/_bootstrap.scss",
+        "assets/fonts/bootstrap/*",
+        "assets/javascripts/bootstrap.js"
+      ]
+    }
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5"
+  }
+}

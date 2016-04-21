@@ -1,0 +1,202 @@
+(() => {
+	'use strict';
+
+	const inBrowserHost = 'http://localhost:8080';
+	const apiBase = '/api/v1/memes/';
+
+	const defaultTop = 'Can\'t think of a meme?';
+	const defaultBottom = 'Why not Zoidberg?';
+
+	let top = document.getElementById('input-top');
+	let bottom = document.getElementById('input-bottom');
+	let button = document.getElementById('create-button');
+	let remoteId = document.getElementById('remote-id');
+
+	let img = document.getElementById('meme-img');
+	let perfOut = document.getElementById('perf-out') || {};
+
+	let md = new MobileDetect(window.navigator.userAgent);
+
+	function hasParam(name) {
+		return location.search.indexOf(name) >= 0;
+	}
+
+	let inBrowser = false;
+
+	function setInBrowser(b) {
+		inBrowser = b;
+		remoteId.innerHTML = b ? 'in-browser' : 'remote';
+	}
+
+	if (!md.mobile() || hasParam('force-clientside'))
+		setInBrowser(true);
+	if (hasParam('force-remote'))
+		setInBrowser(false);
+
+	let inBrowserStarted = false;
+	let inBrowserReady = false;
+	// for any requests that are pending while browsix server
+	// starts up
+	let inBrowserQueue = [];
+
+	let kernel = null;
+
+	function remoteRequest(url, cb) {
+		let xhr = new XMLHttpRequest();
+		xhr.open('GET', url, true);
+		xhr.responseType = 'blob';
+		xhr.onload = cb;
+		xhr.onerror = () => {
+			if (!inBrowser) {
+				console.log('switching to in-browser backend');
+				setInBrowser(true);
+				inBrowserRequest(url, cb);
+			} else {
+				console.log('xhr failed');
+			}
+		};
+		xhr.send();
+	}
+
+	function inBrowserRequest(url, cb) {
+		if (!inBrowserReady) {
+			inBrowserQueue.push([url, cb]);
+			if (!inBrowserStarted)
+				startBrowsix();
+			return;
+		}
+		kernel.httpRequest(inBrowserHost + url, cb);
+	}
+
+	function memeRequest(url, cb) {
+		let start = 0;
+		if (url && url.length && url[0] === '/')
+			start = 1;
+
+		let request = inBrowser ? inBrowserRequest : remoteRequest;
+		request(apiBase + url.substring(start), cb);
+	}
+
+	function onInBrowserReady() {
+		console.log('READY FOR BUSINESS');
+		inBrowserReady = true;
+		for (let params = inBrowserQueue.shift(); params; params = inBrowserQueue.shift()) {
+			inBrowserRequest.apply(this, params);
+			console.log('LATE APPLYING');
+		}
+	}
+
+	function startBrowsix() {
+		window.Boot(
+			'XmlHttpRequest',
+			['index.json', 'fs', true],
+			(err, k) => {
+				if (err) {
+					console.log(err);
+					throw new Error(err);
+				}
+				kernel = k;
+				startServer();
+			},
+			{readOnly: true});
+	}
+
+	function startServer() {
+		function onStdout(pid, out) {
+			console.log(out);
+		}
+		function onStderr(pid, out) {
+			if (out.indexOf('ready and listening') > -1) {
+				console.log('service ready');
+			}
+			console.log(out);
+			console.log('!');
+		}
+		function onExit(pid, code) {
+			console.log('exited: ' + pid + ' with code ' + code);
+		}
+		kernel.once('port:8080', onInBrowserReady.bind(this));
+		kernel.system('/meme-service.js', onExit, onStdout, onStderr);
+
+		// debugging purposes
+		window.kernel = kernel;
+	}
+
+	function clicked() {
+		let topVal = top.value;
+		let bottomVal = bottom.value;
+
+		$(button).toggleClass('is-active').blur();
+
+		if (!topVal && !bottomVal) {
+			topVal = defaultTop;
+			bottomVal = defaultBottom;
+		}
+
+		let topEnc = encodeURIComponent(topVal);
+		let bottomEnc = encodeURIComponent(bottomVal);
+
+		let bgSelect = document.getElementById('bg');
+		let image = bgSelect.options[bgSelect.selectedIndex].value;
+
+		let url = image + '?top=' + topEnc + '&bottom=' + bottomEnc;
+
+		let start = performance.now();
+		function completed(e) {
+			if (e) {
+				console.log('inBrowser call failed:');
+				console.log(e);
+			} else if (this.status === 200) {
+				let blob = new Blob([this.response], {type: 'image/png'});
+				let blobUrl = window.URL.createObjectURL(blob);
+				img.src = blobUrl;
+
+				let totalTime = '' + ((performance.now() - start) / 1000);
+				let dot = totalTime.indexOf('.');
+				if (dot + 4 < totalTime.length) {
+					totalTime = totalTime.substr(0, dot + 4);
+				}
+				perfOut.innerHTML = totalTime;
+			} else {
+				console.log('inBrowser call failed for unknown reason');
+			}
+		}
+
+		memeRequest(url, function(e) {
+			if (this.status === 200) {
+
+				let blob = new Blob([this.response], {type: 'image/png'});
+				let url = window.URL.createObjectURL(blob);
+				img.src = url;
+			} else {
+				console.log('bad response: ' + this.status);
+				debugger;
+			}
+			$(button).toggleClass('is-active');
+		});
+	}
+
+	function optionsReady(reader) {
+				var s = String.fromCharCode.apply(null, new Uint8Array(reader.result));
+				var result = JSON.parse(s);
+				var names = _.map(result, (bg) => bg.name);
+				var html = _.reduce(names, (all, n) => all + '<option>' + n + '</option>\n', '');
+				document.getElementById('bg').innerHTML = html;
+				button.disabled = false;
+	}
+
+	memeRequest('/', function(e) {
+		if (this.status === 200) {
+			// need to use a filereader for now to get at
+			// the results, as we asked for a blob.
+			var reader = new FileReader();
+			reader.addEventListener("loadend", optionsReady.bind(this, reader));
+			reader.readAsArrayBuffer(this.response);
+		} else {
+			console.log('bad response: ' + this.status);
+			debugger;
+		}
+	});
+
+	button.addEventListener('click', clicked);
+})();

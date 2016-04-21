@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="">
+	<head>
+		<meta charset="utf-8">
+		<meta name="description" content="">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Meme Generator</title>
+
+		<link rel="apple-touch-icon" href="apple-touch-icon.png">
+		<!-- Place favicon.ico in the root directory -->
+
+		<!-- build:css styles/vendor.css -->
+		<!-- bower:css -->
+		<!-- endbower -->
+		<!-- endbuild -->
+
+		<link rel="stylesheet" href="font-awesome.css">
+
+		<!-- build:css styles/main.css -->
+		<link rel="stylesheet" href="styles/main.css">
+		<!-- endbuild -->
+
+	</head>
+	<body>
+		<!--[if lt IE 10]>
+		<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+		<![endif]-->
+
+		<div class="container">
+			<div class="header">
+				<h3 class="text-muted">Meme Generator</h3>
+			</div>
+
+			<div class="row marketing">
+				<div class="col-lg-12">
+					<form>
+						<div class="form-group">
+							<label for="bg">Background Image:</label>
+							<select class="form-control" id="bg">
+							</select>
+						</div>
+
+
+						<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon">top</span>
+								<input id="input-top" type="text"
+								       class="form-control"
+								       placeholder="Can't think of a meme?"
+								       aria-describedby="basic-addon1">
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon">bottom</span>
+								<input id="input-bottom" type="text"
+								       class="form-control"
+								       placeholder="Why not Zoidberg?"
+								       aria-describedby="basic-addon1">
+							</div>
+						</div>
+						<center>
+							<button type="button"
+								class="btn btn-primary has-spinner"
+								id="create-button"
+								disabled><span class="spinner"><i class="fa fa-refresh fa-spin"></i>&nbsp;</span>Create
+							</button>
+						</center>
+					</form>
+				</div>
+			</div>
+
+			<div class="row marketing">
+				<div class="col-lg-12">
+					<center>
+						<img id="meme-img" src="" width="320" height="240">
+					</center>
+				</div>
+			</div>
+
+			<div class="footer">
+				<p>
+					♥ from <a href="http://plasma.cs.umass.edu/">PLASMA</a>
+					<span id="remote-id" style="float: right;"></span>
+				</p>
+
+			</div>
+		</div>
+
+		<!-- build:js scripts/vendor.js -->
+		<!-- bower:js -->
+		<script src="/bower_components/jquery/dist/jquery.js"></script>
+		<script src="/bower_components/lodash/lodash.js"></script>
+		<!-- endbower -->
+		<script src="/node_modules/mobile-detect/mobile-detect.min.js"></script>
+		<!-- endbuild -->
+
+		<script src="kernel.js"></script>
+
+		<!-- build:js scripts/plugins.js -->
+		<script src="/bower_components/lodash/lodash.js"></script>
+		<script src="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/affix.js"></script>
+		<script src="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/alert.js"></script>
+		<script src="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/dropdown.js"></script>
+		<script src="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/tooltip.js"></script>
+		<script src="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/modal.js"></script>
+		<script src="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/transition.js"></script>
+		<script src="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/button.js"></script>
+		<script src="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/popover.js"></script>
+		<script src="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/carousel.js"></script>
+		<script src="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/scrollspy.js"></script>
+		<script src="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/collapse.js"></script>
+		<script src="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/tab.js"></script>
+		<!-- endbuild -->
+
+		<!-- build:js scripts/main.js -->
+		<script src="scripts/main.js"></script>
+		<!-- endbuild -->
+	</body>
+</html>

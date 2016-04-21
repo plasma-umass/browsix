@@ -42,8 +42,6 @@ this.addEventListener('fetch', function(event) {
 			return response.clone();
 		} else {
 			return fetch(event.request.clone()).then(function(response) {
-				console.log('  Response for %s from network is: %O',
-					    event.request.url, response);
 				return response;
 			});
 		}

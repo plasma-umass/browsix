@@ -1,10 +1,20 @@
 MAIN = meme-service
 
-all: $(MAIN).js
+all: build
 
-$(MAIN).js:
+$(MAIN).js: *.go Makefile
 #	rm ~/pkg/linux_js -r
-	gopherjs build
-	cp $(MAIN).js ../../../meme-frontend/fs/$(MAIN).js
+	gopherjs build -m
+
+build: $(MAIN).js
+	go build
+	cp $(MAIN).js frontend/fs
+	cd frontend && bower install
+	cd frontend && npm install
+	cd frontend && rm -rf dist
+	cd frontend && gulp build
+	rm -rf static
+	cp -a frontend/dist static
+	cp -a frontend/fs static/fs
 
 .PHONY: $(MAIN).js

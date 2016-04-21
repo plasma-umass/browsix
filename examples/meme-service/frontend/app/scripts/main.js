@@ -177,12 +177,15 @@
 	}
 
 	function optionsReady(reader) {
-				var s = String.fromCharCode.apply(null, new Uint8Array(reader.result));
-				var result = JSON.parse(s);
-				var names = _.map(result, (bg) => bg.name);
-				var html = _.reduce(names, (all, n) => all + '<option>' + n + '</option>\n', '');
-				document.getElementById('bg').innerHTML = html;
-				button.disabled = false;
+		var s = String.fromCharCode.apply(null, new Uint8Array(reader.result));
+		var result = JSON.parse(s);
+		var names = _.map(result, (bg) => bg.name);
+		// ensure a stable, reverse-alphabetical order
+		names.sort();
+		names.reverse();
+		var html = _.reduce(names, (all, n) => all + '<option>' + n + '</option>\n', '');
+		document.getElementById('bg').innerHTML = html;
+		button.disabled = false;
 	}
 
 	memeRequest('/', function(e) {

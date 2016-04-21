@@ -4,7 +4,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,9 +15,9 @@ import (
 var (
 	addr     = flag.String("addr", "127.0.0.1:8080", "address to listen on")
 	dpi      = flag.Float64("dpi", 144, "screen resolution in Dots Per Inch")
-	fontfile = flag.String("fontfile", "./font/impact.ttf", "filename of the ttf font")
+	fontfile = flag.String("fontfile", "./static/fs/font/impact.ttf", "filename of the ttf font")
 	size     = flag.Float64("size", 48, "font size in points")
-	imgDir   = flag.String("bgdir", "./img", "directory where background images live")
+	imgDir   = flag.String("bgdir", "./static/fs/img", "directory where background images live")
 )
 
 // from fogleman/gg
@@ -50,11 +49,7 @@ func main() {
 	}
 
 	http.Handle("/api/v1/", http.StripPrefix("/api/v1/", NewHandler(ic, font)))
-	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(w, "404 unknown url: %s\n", req.URL)
-		log.Printf("bad request: %s", req.URL)
-	})
+	http.Handle("/", http.FileServer(http.Dir("./static")))
 
 	log.Printf("ready and listening on %s", *addr)
 	// start http server

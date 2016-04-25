@@ -1,0 +1,13 @@
+[Unit]
+Description=%NAME% service
+After=syslog.target network.target
+
+[Service]
+ExecStart=/opt/%NAME%/%NAME%-service
+WorkingDirectory=/opt/%NAME%
+User=%NAME%
+Restart=always
+RestartSec=0
+
+[Install]
+WantedBy=multi-user.target

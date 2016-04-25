@@ -1,0 +1,57 @@
+%global basename %NAME%
+%global basedir /opt/%NAME%
+%global unitname %NAME%-service.service
+
+%define debug_package %{nil}
+
+Name:		%NAME%-service
+Version:	%VERSION%
+Release:	1%{?dist}
+Summary:	%NAME% website server
+
+Group:		System Environment/Applications
+License:	MIT
+URL:		https://meme.bpowers.net
+Source0:	%{name}-%{version}.tar.gz
+Source1:        server.service
+BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+Requires(pre): shadow-utils
+
+%description
+%NAME% Server & Assets
+
+%prep
+%setup
+
+%build
+
+%pre
+systemctl stop %{unitname} || true
+getent group %NAME% >/dev/null || groupadd -r %NAME%
+getent passwd %NAME% >/dev/null || \
+    useradd -r -g %NAME% -d %{basedir} -s /sbin/nologin \
+    -c "%NAME% server user" %NAME%
+exit 0
+
+%install
+rm -rf $RPM_BUILD_ROOT
+%{__install} -d -m 0755 $RPM_BUILD_ROOT%{_usr}/lib/systemd/system
+%{__install} -m 0644 %{SOURCE1} $RPM_BUILD_ROOT%{_usr}/lib/systemd/system/%{unitname}
+%{__install} -d -m 0755 $RPM_BUILD_ROOT%{basedir}
+%{__cp} -a * $RPM_BUILD_ROOT%{basedir}
+
+
+%post
+systemctl daemon-reload
+systemctl restart %{unitname}
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,%NAME%,%NAME%,-)
+/%{basedir}
+/usr/lib/systemd/system/%{unitname}
+
+%changelog

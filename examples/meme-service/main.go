@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	addr     = flag.String("addr", "127.0.0.1:8080", "address to listen on")
+	addr     = flag.String("addr", "127.0.0.1:8014", "address to listen on")
 	dpi      = flag.Float64("dpi", 144, "screen resolution in Dots Per Inch")
 	fontfile = flag.String("fontfile", "./static/fs/font/impact.ttf", "filename of the ttf font")
 	size     = flag.Float64("size", 48, "font size in points")

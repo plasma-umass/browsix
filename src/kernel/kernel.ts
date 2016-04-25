@@ -221,6 +221,8 @@ class Syscalls {
 	}
 
 	socket(ctx: SyscallContext, domain: AF, type: SOCK, protocol: number): void {
+		if (domain === AF.UNSPEC)
+			domain = AF.INET;
 		if (domain !== AF.INET && type !== SOCK.STREAM)
 			return ctx.complete('unsupported socket type');
 
@@ -236,8 +238,10 @@ class Syscalls {
 		let addr: string = info.addr;
 		let port: number = info.port;
 		// FIXME: this hack
-		if (port === 0)
+		if (port === 0) {
+			console.log('port was zero -- changing to 8080');
 			port = 8080;
+		}
 		// TODO: check family === SOCK.STREAM
 
 		let file = ctx.task.files[fd];
@@ -747,7 +751,7 @@ export class Kernel implements IKernel {
 	// returns the PID.
 	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void {
 		let parts: string[];
-		if (cmd.indexOf('|') > -1) {
+		if (cmd.indexOf('|') > -1 || cmd.indexOf('&') > -1) {
 			parts = ['/usr/bin/sh', cmd];
 		} else {
 			parts = cmd.split(' ').filter((s) => s !== '');
@@ -976,7 +980,14 @@ export class Kernel implements IKernel {
 		}
 		this.inKernel++;
 		if (syscall.name in this.syscalls) {
-			//console.log('sys_' + syscall.name + '\t' + syscall.args[0]);
+			let arg = syscall.args[0];
+			if (arg instanceof Uint8Array) {
+				let len = arg.length;
+				if (len > 0 && arg[len - 1] === 0)
+					len--;
+				arg = utf8Slice(arg, 0, len);
+			}
+			console.log('sys_' + syscall.name + '\t' + arg);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
 			console.log('unknown syscall ' + syscall.name);

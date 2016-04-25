@@ -142,6 +142,8 @@ function flagsToString(flag: any): string {
 	switch (flag) {
 	case O_RDONLY:
 		return 'r';
+	case O_WRONLY:
+		return 'w';
 	case O_RDONLY | O_SYNC:
 		return 'rs';
 	case O_RDWR:
@@ -980,14 +982,14 @@ export class Kernel implements IKernel {
 		}
 		this.inKernel++;
 		if (syscall.name in this.syscalls) {
-			let arg = syscall.args[0];
-			if (arg instanceof Uint8Array) {
-				let len = arg.length;
-				if (len > 0 && arg[len - 1] === 0)
-					len--;
-				arg = utf8Slice(arg, 0, len);
-			}
-			console.log('sys_' + syscall.name + '\t' + arg);
+			// let arg = syscall.args[0];
+			// if (arg instanceof Uint8Array) {
+			// 	let len = arg.length;
+			// 	if (len > 0 && arg[len - 1] === 0)
+			// 		len--;
+			// 	arg = utf8Slice(arg, 0, len);
+			// }
+			// console.log('sys_' + syscall.name + '\t' + arg);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
 			console.log('unknown syscall ' + syscall.name);
@@ -1244,9 +1246,7 @@ export class Task implements ITask {
 	// result to be sent back to the worker.
 	schedule(msg: SyscallResult): void {
 		this.pendingResults.push(msg);
-		self.setImmediate(() => {
-			this.kernel.schedule(this);
-		});
+		this.kernel.schedule(this);
 	}
 
 	// run is called by the kernel when we are selected to run by

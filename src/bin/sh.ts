@@ -44,8 +44,8 @@ function parsetree_is_valid(parsetree: string[][]): boolean {
 
 function remove_pid(pids: number[], pid: number): number[] {
 	'use strict';
-	let index = pids.indexOf(pid, 0);
-	if (index !== undefined) {
+	let index = pids.indexOf(pid);
+	if (index > -1) {
 		pids.splice(index, 1);
 	}
 	return pids;
@@ -53,9 +53,11 @@ function remove_pid(pids: number[], pid: number): number[] {
 
 function execute_child(cmd: string[], opts: Object, pids: number[], codes: number[]): child_process.ChildProcess {
 	'use strict';
-	let child = child_process.spawn(cmd[0], cmd.slice(1), opts);
+	let args = cmd.slice(1);
+	let child = child_process.spawn(cmd[0], args, opts);
+
 	pids.push(child.pid);
-	//console.log("exec pid: " + child.pid);
+
 	child.on('error', (err: any) => {
 		process.stderr.write('' + err + '\n', () => {
 			process.exit(1);
@@ -65,8 +67,6 @@ function execute_child(cmd: string[], opts: Object, pids: number[], codes: numbe
 	child.on('exit', (code: number) => {
 		codes.push(code);
 		pids = remove_pid(pids, child.pid);
-		//console.log('removing pid: ' + child.pid);
-		//console.log('remainging pids: ' + pids);
 		if (pids.length === 0) {
 			//console.log('exiting!');
 			//console.log('codes are: ' + codes);
@@ -136,6 +136,7 @@ function main(): void {
 	let codes: number[] = [];
 	let pipes: number[][] = [];
 	let pin = 0;
+	let bg = false;
 
 	// called below
 	function spawnChildren(): void {
@@ -156,6 +157,10 @@ function main(): void {
 			// pass our stdin, stdout, stderr to the child
 			stdio: [pin, 1, stderr],
 		};
+		if (cmd[cmd.length - 1] === '&') {
+			cmd = cmd.slice(0, cmd.length - 1);
+			bg = true;
+		}
 		let child = execute_child(cmd, opts, pids, codes);
 		for (let i = 0; i < pipes.length; i++) {
 			fs.close(pipes[i][0]);
@@ -165,6 +170,8 @@ function main(): void {
 	let outstanding = parsetree.length-1;
 	if (!outstanding) {
 		spawnChildren();
+		if (bg)
+			process.exit(0);
 		return;
 	}
 
@@ -175,8 +182,11 @@ function main(): void {
 				throw new Error('Pipe failed!');
 			pipes.push([rfd, wfd]);
 			outstanding--;
-			if (!outstanding)
+			if (!outstanding) {
 				spawnChildren();
+				if (bg)
+					process.exit(0);
+			}
 		});
 	}
 }

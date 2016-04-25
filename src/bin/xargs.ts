@@ -22,7 +22,7 @@ import {format} from 'util';
  */
 let maxArgs = 10000;           // Argument limit
 let maxChars = 4096;           // Character limit
-let command = 'echo';          // COMMAND to run TODO: change to 'echo' when supported
+let command = 'echo';          // COMMAND to run 
 let comArgs = '';              // Arguments for COMMAND
 let out = '';                  // Output
 let children: any[] = [];

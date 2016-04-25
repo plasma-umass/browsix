@@ -30,7 +30,6 @@ export interface IKernel {
 	nCPUs: number;
 	debug: boolean;
 
-	schedule(task: ITask): void;
 	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void;
 	exit(task: ITask, code: number): void;
 	doSyscall(syscall: Syscall): void;
@@ -73,7 +72,6 @@ export interface ITask {
 	addFile(f: IFile): number;
 	schedule(msg: SyscallResult): void;
 	setPriority(prio: number): number;
-	run(): void;
 }
 
 export class SyscallContext {

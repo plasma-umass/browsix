@@ -27,15 +27,6 @@ import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
 // to a Worker to aid in debugging.
 let DEBUG = false;
 
-// For niceness to work, the scheduler's nextTask function must be
-// scheduled with a non-zero timeout (SCHEDULING_DELAY > 0).  This is
-// because we essentially have cooperative multitasking.  To give
-// multiple processes the chance of calling back into the kernel &
-// queuing up results (so that the kernel has multiple tasks to choose
-// from when making a scheduling decision) this appears necessary.
-// This has a performance impact, so is disabled by default.
-let SCHEDULING_DELAY = 0;
-
 let Buffer: any;
 
 // we only import the backends we use, for now.
@@ -657,7 +648,6 @@ export class Kernel implements IKernel {
 	nCPUs: number;
 	runQueues: ITask[][];
 	outstanding: number;
-	inKernel: number;
 
 	// controls whether we should delay the initialization message
 	// sent to a worker, in order to aide debugging & stepping
@@ -678,7 +668,6 @@ export class Kernel implements IKernel {
 
 	constructor(fs: fs, nCPUs: number, args: BootArgs) {
 		this.outstanding = 0;
-		this.inKernel = 0;
 		this.nCPUs = nCPUs;
 		this.fs = fs;
 		this.syscalls = new Syscalls(this);
@@ -699,55 +688,6 @@ export class Kernel implements IKernel {
 			return 'invalid port: ' + port;
 
 		this.portWaiters[port] = cb;
-	}
-
-	schedule(task: ITask): void {
-		// A task's priority is between -20 and 19 - a direct
-		// correspondance to what getpriority and setpriority
-		// expect.  Add 20 here to ensure we always have a
-		// positive number.
-		let prio = task.priority + 20;
-		if (prio < 0) {
-			console.log('warning: invalid prio: ' + prio);
-			prio = 0;
-		}
-
-		// append the task to the end of the runqueue for its
-		// priority level.
-		this.runQueues[prio].push(task);
-
-		this.nextTask();
-		//setImmediate(this.nextTask.bind(this));
-	}
-
-	nextTask(): void {
-		// don't schedule anything if we don't have any
-		// virtual CPUs available
-		if (this.outstanding >= this.nCPUs) {
-			//console.log('not scheduling - out of CPUs ' + this.outstanding);
-			//return;
-		}
-
-		/*
-		let nRunnable = 0;
-		for (let i = PRIO_MIN; i < PRIO_MAX; i++) {
-			if (this.runQueues[i - PRIO_MIN].length)
-				nRunnable++;
-		}
-		console.log('nRunnable: ' + nRunnable);
-		*/
-
-		for (let i = PRIO_MIN; i < PRIO_MAX; i++) {
-			let queue = this.runQueues[i - PRIO_MIN];
-			if (!queue.length)
-				continue;
-
-			let runnable = queue.shift();
-			this.outstanding++;
-			this.inKernel--;
-			runnable.run();
-			break;
-		}
 	}
 
 	// returns the PID.
@@ -972,15 +912,6 @@ export class Kernel implements IKernel {
 	}
 
 	doSyscall(syscall: Syscall): void {
-		//setImmediate(this.nextTask.bind(this));
-		this.outstanding--;
-		if (this.outstanding < 0) {
-			//console.log('underflow');
-			this.outstanding = 0;
-		} else {
-			//console.log('outstanding ' + this.outstanding);
-		}
-		this.inKernel++;
 		if (syscall.name in this.syscalls) {
 			// let arg = syscall.args[0];
 			// if (arg instanceof Uint8Array) {
@@ -994,7 +925,6 @@ export class Kernel implements IKernel {
 		} else {
 			console.log('unknown syscall ' + syscall.name);
 		}
-		this.nextTask();
 	}
 
 	spawn(parent: Task, cwd: string, name: string, args: string[], env: string[], files: number[], cb: (err: any, pid: number)=>void): void {
@@ -1044,9 +974,6 @@ export class Task implements ITask {
 
 	private msgIdSeq: number = 1;
 	private onRunnable: (err: any, pid: number) => void;
-
-	private pendingSignals: SyscallResult[] = [];
-	private pendingResults: SyscallResult[] = [];
 
 	constructor(
 		kernel: Kernel, parent: Task, pid: number, cwd: string,
@@ -1223,51 +1150,19 @@ export class Task implements ITask {
 	}
 
 	signal(name: string, args: any[]): void {
-		self.setImmediate(
-			() => {
-				this.pendingSignals.push({
-					id: -1,
-					name: name,
-					args: args,
-				});
-				// FIXME: signal delivery should be
-				// integrated with the scheduler, but
-				// since we don't have something like
-				// Linux's rt_sigreturn, that won't
-				// currently work, as the outstanding
-				// count will become unbalanced.
-
-				//this.kernel.schedule(this);
-				this.run();
-			});
-	}
-
-	// schedule is called from SyscallContext - queue up a syscall
-	// result to be sent back to the worker.
-	schedule(msg: SyscallResult): void {
-		this.pendingResults.push(msg);
-		this.kernel.schedule(this);
+		this.schedule({
+			id: -1,
+			name: name,
+			args: args,
+		});
 	}
 
 	// run is called by the kernel when we are selected to run by
 	// the scheduler
-	run(): void {
+	schedule(msg: SyscallResult): void {
 		this.account();
 		this.state = TaskState.Running;
-
-		if (this.pendingSignals.length) {
-			let msg = this.pendingSignals.shift();
-			this.worker.postMessage(msg);
-			if (this.pendingSignals.length || this.pendingResults.length)
-				this.kernel.schedule(this);
-		}
-		if (this.pendingResults.length) {
-			let msg = this.pendingResults.shift();
-			this.worker.postMessage(msg);
-			if (this.pendingSignals.length || this.pendingResults.length)
-				this.kernel.schedule(this);
-			return;
-		}
+		this.worker.postMessage(msg);
 	}
 
 	// depending on task.state record how much time we've just

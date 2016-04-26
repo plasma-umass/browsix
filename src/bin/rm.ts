@@ -4,6 +4,73 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import {format} from 'util';
+
+function log(fmt: string, ...args: any[]): void {
+	let cb: Function = undefined;
+	if (args.length && typeof args[args.length-1] === 'function') {
+		cb = args[args.length-1];
+		args = args.slice(0, -1);
+	}
+	let prog = process.argv[1].split('/').slice(-1);
+	let msg = prog + ': ' + format.apply(undefined, [fmt].concat(args)) + '\n';
+
+	if (cb)
+		process.stderr.write(msg, cb);
+	else
+		process.stderr.write(msg);
+}
+
+function parseArgs(args: string[], handlers: {[n: string]: Function}, argsRequired = false): [string[], boolean] {
+	let ok = true;
+	let positionalArgs: string[] = args.filter((arg) => arg.substring(0, 1) !== '-');
+	args = args.filter((arg) => arg.substring(0, 1) === '-');
+
+	let errs = 0;
+	function done(): void {
+		errs--;
+		if (!errs)
+			process.exit(1);
+	}
+	function error(...args: any[]): void {
+		errs++;
+		ok = false;
+		// apply the arguments we've been given to log, and
+		// append our own callback.
+		log.apply(this, args.concat([done]));
+	}
+	function usage(): void {
+		errs++;
+		let prog = process.argv[1].split('/').slice(-1);
+		let flags = Object.keys(handlers).concat(['h']).sort().join('');
+		let msg = format('usage: %s [-%s] ARGS\n', prog, flags);
+		process.stderr.write(msg, done);
+	}
+
+	outer:
+	for (let i = 0; i < args.length; i++) {
+		let argList = args[i].slice(1);
+		if (argList.length && argList[0] === '-') {
+			error('unknown option "%s"', args[i]);
+			continue;
+		}
+		for (let j = 0; j < argList.length; j++) {
+			let arg = argList[j];
+			if (handlers[arg]) {
+				handlers[arg]();
+			} else if (arg === 'h') {
+				ok = false;
+				break outer;
+			} else {
+				error('invalid option "%s"', arg);
+			}
+		}
+	}
+
+	if (!ok || (argsRequired && positionalArgs.length === 0)) usage();
+
+	return [positionalArgs, ok];
+}
 
 // Originally adopted from https://gist.github.com/tkihira/2367067
 // Rewritten on 25 April 2016 by Romans Volosatovs
@@ -39,89 +106,78 @@ function frmdir(dir: string, cb: (err: any) => void): void {
 // Iterates over 'files' and attempts to unlink, if
 // files[i] is a file, calls frmdir with files[i] otherwise
 //
-// A recursive implementation is needed to deal with the 
+// A recursive implementation is needed to deal with the
 // Node.js concurrency.
-// 
+//
 function cleandir(dir: string, files: string[], i:  number, cb: (err: any) => void): void {
 	if (i === files.length) {
 		// The directory is empty
 		cb(null);
-	} else {
-		let filename = path.join(dir, files[i]);
-
-		fs.stat(filename, (err: any, stats: fs.Stats): void => {
-			if (err) {
-				cb(err);
-				return;
-			}
-
-			if (stats.isFile()) {
-				fs.unlink(filename, (err) => {
-					if (err) {
-						cb(err);
-						return;
-					}
-
-					cleandir(dir, files, i+1, cb);
-				});
-			} else {
-				frmdir(filename, (err) => {
-					if (err) {
-						cb(err);
-						return;
-					}
-
-					cleandir(dir, files, i+1, cb);
-				});
-			}
-		});
+		return;
 	}
+
+	// FIXME: this is a hack to work around a bug in OverlayFS (I
+	// think) preventing `rm -rf /` from working - it causes all
+	// subsequent unlinks to fail.
+	if (files[i] === '.deletedFiles.log') {
+		i++;
+	}
+
+	let filename = path.join(dir, files[i]);
+
+	fs.stat(filename, (err: any, stats: fs.Stats): void => {
+		if (err) {
+			cb(err);
+			return;
+		}
+
+		if (stats.isFile()) {
+			fs.unlink(filename, (err) => {
+				if (err) {
+					cb(err);
+					return;
+				}
+
+				cleandir(dir, files, i+1, cb);
+			});
+		} else {
+			frmdir(filename, (err) => {
+				if (err) {
+					cb(err);
+					return;
+				}
+
+				cleandir(dir, files, i+1, cb);
+			});
+		}
+	});
 }
 
 function main(): void {
 	'use strict';
 
 	let argv = process.argv;
-	let pathToNode = argv[0];
 	let pathToScript = argv[1];
-	let args = argv.slice(2);
 
-	// exit code to use - if we fail to open an input file it gets
-	// set to 1 below.
-	let code = 0;
 	let force = false;
 	let recursive = false;
 
-	let opened = 0;
+	let code = 0;
+	let completed = 0;
+
+	let [args, ok] = parseArgs(
+		process.argv.slice(2),
+		{
+			'r': (): any => recursive = true,
+			'f': (): any => force = true,
+		},
+		true
+	);
 
 	function finished(): void {
-		opened++;
-		if (opened === args.length)
+		completed++;
+		if (completed === args.length)
 			process.exit(code);
-	}
-
-	while (args.length && args[0][0] === '-') {
-		for (let i = 1; i < args[0].length; i++) {
-			switch (args[0][i]) {
-				case "f":
-					force = true;
-					break;
-				case "r":
-					recursive = true;
-					break;
-				default:
-					process.stderr.write(pathToScript + ': unknown flag ' + args[0], () => {
-						process.exit(1);
-					});
-					return;
-			}
-		}
-		args.shift();
-	}
-	if (!args.length) {
-		// no args?  no bueno!
-		process.stderr.write('usage: rm [-f | -r] FILE\n', () => process.exit(1));
-		return;
 	}
 
 	// use map instead of a for loop so that we easily get
@@ -131,7 +187,7 @@ function main(): void {
 			if (err) {
 				if (!force) {
 					code = 1;
-					process.stderr.write(process.argv[1] +': ' + path + ':  ' + err.message + '\n', finished);
+					log('%s', err, finished);
 				} else {
 					finished();
 				}
@@ -142,27 +198,25 @@ function main(): void {
 				fs.unlink(path, (oerr): void => {
 					if (oerr) {
 						code = 1;
-						process.stderr.write(process.argv[1] + ': ' + oerr.message);
+						log('unlink: %s', oerr, finished);
+					} else {
+						finished();
 					}
-					finished();
-					return;
 				});
 			} else {
 				if (recursive) {
 					frmdir(path, (oerr) => {
 						if (oerr) {
 							code = 1;
-							process.stderr.write(process.argv[1] + ': ' + oerr.message);
+							log('frmdir: %s', oerr, finished);
+						} else {
+							finished();
 						}
-						finished();
 						return;
 					});
 				} else {
 					code = 1;
-					process.stderr.write(process.argv[1] + ": cannot remove '" + path + "':  Is a directory\n", () => {
-						finished();
-						return;
-					});
+					log("cannot remove '%s':  Is a directory", path, finished);
 				}
 			}
 		});

@@ -75,7 +75,6 @@ if (typeof setImmediate === 'undefined') {
 			}
 		};
 		g.addEventListener('message', handleMessage, true);
-		console.log('using postMessage for setImmediate');
 	} else {
 		g.setImmediate = (fn: () => void, ...args: any[]) => {
 			return setTimeout.apply(this, [fn, 0].concat(args));

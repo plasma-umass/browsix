@@ -16,7 +16,7 @@
 			return;
 		}
 		if (e.data.perf) {
-			log(e.data.perf)
+			log(e.data.perf + ' μs');
 			return;
 		}
 
@@ -29,7 +29,7 @@
 		});
 
 		if (sequence > N) {
-			log('KILLING');
+			// todo: kill
 			return;
 		}
 	}

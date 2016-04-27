@@ -188,6 +188,10 @@ class Syscalls {
 		ctx.complete(ctx.task.cwd);
 	}
 
+	fork(ctx: SyscallContext, heap: ArrayBuffer): void {
+		this.kernel.fork(ctx, <Task>ctx.task, heap);
+	}
+
 	exit(ctx: SyscallContext, code?: number): void {
 		if (!code)
 			code = 0;
@@ -317,7 +321,13 @@ class Syscalls {
 		return ctx.complete('ENOTSOCKET');
 	}
 
-	connect(ctx: SyscallContext, fd: number, addr: string, port: number): void {
+	connect(ctx: SyscallContext, fd: number, sockAddr: Uint8Array): void {
+		let info: any = {};
+		let view = new DataView(sockAddr.buffer, sockAddr.byteOffset);
+		let [_, err] = marshal.Unmarshal(info, view, 0, marshal.socket.SockAddrInDef);
+		let addr: string = info.addr;
+		let port: number = info.port;
+
 		let file = ctx.task.files[fd];
 		if (!file) {
 			ctx.complete('bad FD ' + fd, null);
@@ -700,7 +710,8 @@ export class Kernel implements IKernel {
 		if (parts[0][0] !== '/' && parts[0][0] !== '.')
 			parts[0] = '/usr/bin/'+parts[0];
 
-		// FIXME: figure out else we want in the default environment
+		// FIXME: figure out what else we want in the default
+		// environment
 		let env: string[] = [
 			'PWD=/',
 			'GOPATH=/',
@@ -919,18 +930,86 @@ export class Kernel implements IKernel {
 			// 		len--;
 			// 	arg = utf8Slice(arg, 0, len);
 			// }
-			// console.log('sys_' + syscall.name + '\t' + arg);
+			// console.log('[' + syscall.ctx.task.pid + '] \tsys_' + syscall.name + '\t' + arg);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
 			console.log('unknown syscall ' + syscall.name);
 		}
 	}
 
-	spawn(parent: Task, cwd: string, name: string, args: string[], env: string[], files: number[], cb: (err: any, pid: number)=>void): void {
+	spawn(
+		parent: Task, cwd: string, name: string, args: string[],
+		envArray: string[], filesArray: number[],
+		cb: (err: any, pid: number)=>void): void {
+
 		let pid = this.nextTaskId();
 
-		let task = new Task(this, parent, pid, '/', name, args, env, files, cb);
+		envArray = envArray || [];
+		let env: Environment = {};
+		for (let i = 0; i < envArray.length; i++) {
+			let s = envArray[i];
+			let eq = s.search('=');
+			if (eq < 0)
+				continue;
+			let k = s.substring(0, eq);
+			let v = s.substring(eq+1);
+			env[k] = v;
+		}
+
+		// sparse map of files
+		let files: {[n: number]: IFile; } = [];
+		// if a task is a child of another task and has been
+		// created by a call to spawn(2), inherit the parent's
+		// file descriptors.
+		if (filesArray && parent) {
+			for (let i = 0; i < filesArray.length; i++) {
+				let fd = filesArray[i];
+				if (!(fd in parent.files)) {
+					console.log('spawn: tried to use bad fd ' + fd);
+					break;
+				}
+				files[i] = parent.files[fd];
+				files[i].ref();
+			}
+		} else {
+			files[0] = new PipeFile();
+			files[1] = new PipeFile();
+			files[2] = new PipeFile();
+		}
+
+
+		let task = new Task(this, parent, pid, '/', name, args, env, files, null, null, cb);
 		this.tasks[pid] = task;
+	}
+
+	fork(ctx: SyscallContext, task: Task, heap: ArrayBuffer): void {
+		let parent = task.parent;
+		let pid = this.nextTaskId();
+		let cwd = task.cwd;
+		let filename = task.exePath;
+		let args = task.args;
+		let env = task.env;
+
+		let files: {[n: number]: IFile; } = _clone(task.files);
+		for (let i in files) {
+			if (!files.hasOwnProperty(i))
+				continue;
+			files[i].ref();
+		}
+
+		let blobUrl = task.blobUrl;
+
+		// don't need to open() filename(?) - skip to  fileOpened
+		let forkedTask = new Task(
+			this, parent, pid, cwd, filename, args, env,
+			files, blobUrl, heap, (err: any, pid: number) => {
+				if (err) {
+					console.log('fork failed in kernel: ' + err);
+					ctx.complete(-1);
+				}
+				ctx.complete(pid);
+			});
+		this.tasks[pid] = forkedTask;
 	}
 
 	private nextTaskId(): number {
@@ -945,6 +1024,18 @@ export enum TaskState {
 	Zombie,
 }
 
+// https://stackoverflow.com/questions/728360/most-elegant-way-to-clone-a-javascript-object
+function _clone(obj: any): any {
+	if (null === obj || 'object' !== typeof obj)
+		return obj;
+	let copy: any = obj.constructor();
+	for (let attr in obj) {
+		if (obj.hasOwnProperty(attr))
+			copy[attr] = obj[attr];
+	}
+	return copy;
+}
+
 export class Task implements ITask {
 	kernel: IKernel;
 	worker: Worker;
@@ -952,15 +1043,21 @@ export class Task implements ITask {
 	state: TaskState;
 
 	pid: number;
+
+	// sparse map of files
 	files: {[n: number]: IFile; } = {};
 
 	exitCode: number;
 
 	exePath: string;
 	exeFd: any;
+	blobUrl: string;
 	args: string[];
 	env: Environment;
 	cwd: string; // must be absolute path
+
+	// used during fork, unset after that.
+	heap: ArrayBuffer;
 
 	parent: Task;
 	children: Task[];
@@ -976,7 +1073,9 @@ export class Task implements ITask {
 
 	constructor(
 		kernel: Kernel, parent: Task, pid: number, cwd: string,
-		filename: string, args: string[], env: string[], files: number[],
+		filename: string, args: string[], env: Environment,
+		files: {[n: number]: IFile; },
+		blobUrl: string, heap: ArrayBuffer,
 		cb: (err: any, pid: number)=>void) {
 
 		//console.log('spawn PID ' + pid + ': ' + args.join(' '));
@@ -993,45 +1092,26 @@ export class Task implements ITask {
 		if (parent)
 			this.priority = parent.priority;
 
-		env = env || [];
-		this.env = {};
-		for (let i = 0; i < env.length; i++) {
-			let s = env[i];
-			let eq = s.search('=');
-			if (eq < 0)
-				continue;
-			let k = s.substring(0, eq);
-			let v = s.substring(eq+1);
-			this.env[k] = v;
-		}
+		this.env = env;
+		this.files = files;
 
-		// if a task is a child of another task and has been
-		// created by a call to spawn(2), inherit the parent's
-		// file descriptors.
-		if (files && parent) {
-			for (let i = 0; i < files.length; i++) {
-				if (!(i in parent.files))
-					break;
-				this.files[i] = parent.files[files[i]];
-				this.files[i].ref();
-			}
-		} else {
-			this.files[0] = new PipeFile();
-			this.files[1] = new PipeFile();
-			this.files[2] = new PipeFile();
-		}
+		this.blobUrl = blobUrl;
+		this.heap = heap;
 
 		// often, something needs to be done after this task
 		// is ready to go.  Keep track of that callback here.
 		this.onRunnable = cb;
 
 		// the JavaScript code of the worker that we're
-		// launching comes from the filesystem - we need to
-		// read-in that file (potentially from an
-		// XMLHttpRequest) and continue initialization when it
-		// is ready.
+		// launching comes from the filesystem - unless we are
+		// forking and have a blob URL, we need to read-in that
+		// file (potentially from an XMLHttpRequest) and
+		// continue initialization when it is ready.
 
-		kernel.fs.open(filename, 'r', this.fileOpened.bind(this));
+		if (blobUrl)
+			this.blobReady(blobUrl);
+		else
+			kernel.fs.open(filename, 'r', this.fileOpened.bind(this));
 	}
 
 	addFile(f: IFile): number {
@@ -1115,8 +1195,16 @@ export class Task implements ITask {
 		let jsBytes = new Uint8Array((<any>buf).data.buff.buffer);
 		let blob = new Blob([jsBytes], {type: 'text/javascript'});
 		jsBytes = undefined;
+		let blobUrl = window.URL.createObjectURL(blob);
 
-		this.worker = new Worker(window.URL.createObjectURL(blob));
+		// keep a reference to the URL so that we can use it for fork().
+		this.blobUrl = blobUrl;
+
+		this.blobReady(blobUrl);
+	}
+
+	blobReady(blobUrl: string): void {
+		this.worker = new Worker(blobUrl);
 		this.worker.onmessage = this.syscallHandler.bind(this);
 		this.worker.onerror = (err: ErrorEvent): void => {
 			if (this.files[2]) {
@@ -1128,7 +1216,12 @@ export class Task implements ITask {
 			}
 		};
 
-		this.signal('init', [this.args, this.env, this.kernel.debug]);
+		let heap = this.heap;
+		this.heap = null;
+		this.signal(
+			'init',
+			[this.args, this.env, this.kernel.debug, heap],
+			heap ? [heap] : null);
 
 		this.onRunnable(null, this.pid);
 		this.onRunnable = undefined;
@@ -1148,20 +1241,22 @@ export class Task implements ITask {
 		return 0;
 	}
 
-	signal(name: string, args: any[]): void {
-		this.schedule({
-			id: -1,
-			name: name,
-			args: args,
-		});
+	signal(name: string, args: any[], transferrable?: any[]): void {
+		this.schedule(
+			{
+				id: -1,
+				name: name,
+				args: args,
+			},
+			transferrable);
 	}
 
 	// run is called by the kernel when we are selected to run by
 	// the scheduler
-	schedule(msg: SyscallResult): void {
+	schedule(msg: SyscallResult, transferrable?: any[]): void {
 		this.account();
 		this.state = TaskState.Running;
-		this.worker.postMessage(msg);
+		this.worker.postMessage(msg, transferrable || []);
 	}
 
 	// depending on task.state record how much time we've just

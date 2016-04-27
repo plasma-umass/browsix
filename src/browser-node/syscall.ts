@@ -149,6 +149,12 @@ export class USyscalls {
 		this.post(msgId, 'exit', code);
 	}
 
+	fork(heap: ArrayBuffer, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'fork', heap);
+	}
+
 	kill(pid: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;
@@ -185,10 +191,10 @@ export class USyscalls {
 		this.post(msgId, 'accept', fd);
 	}
 
-	connect(fd: number, addr: string, port: number, cb: SyscallCallback): void {
+	connect(fd: number, addr: Uint8Array, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;
-		this.post(msgId, 'connect', fd, addr, port);
+		this.post(msgId, 'connect', fd, addr);
 	}
 
 	getcwd(cb: SyscallCallback): void {

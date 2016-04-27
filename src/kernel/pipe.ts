@@ -26,7 +26,7 @@ export class Pipe {
 		if (this.waiter) {
 			let waiter = this.waiter;
 			this.waiter = undefined;
-			setTimeout(waiter, 0);
+			waiter();
 		}
 		return b.length;
 	}

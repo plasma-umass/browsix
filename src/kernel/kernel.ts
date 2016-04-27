@@ -188,8 +188,8 @@ class Syscalls {
 		ctx.complete(ctx.task.cwd);
 	}
 
-	fork(ctx: SyscallContext, heap: ArrayBuffer): void {
-		this.kernel.fork(ctx, <Task>ctx.task, heap);
+	fork(ctx: SyscallContext, heap: ArrayBuffer, stackTop: number, emtStackTop, pc: number): void {
+		this.kernel.fork(ctx, <Task>ctx.task, heap, stackTop, emtStackTop, pc);
 	}
 
 	exit(ctx: SyscallContext, code?: number): void {
@@ -923,14 +923,14 @@ export class Kernel implements IKernel {
 
 	doSyscall(syscall: Syscall): void {
 		if (syscall.name in this.syscalls) {
-			// let arg = syscall.args[0];
-			// if (arg instanceof Uint8Array) {
-			// 	let len = arg.length;
-			// 	if (len > 0 && arg[len - 1] === 0)
-			// 		len--;
-			// 	arg = utf8Slice(arg, 0, len);
-			// }
-			// console.log('[' + syscall.ctx.task.pid + '] \tsys_' + syscall.name + '\t' + arg);
+			let arg = syscall.args[0];
+			if (arg instanceof Uint8Array) {
+				let len = arg.length;
+				if (len > 0 && arg[len - 1] === 0)
+					len--;
+				arg = utf8Slice(arg, 0, len);
+			}
+			console.log('[' + syscall.ctx.task.pid + '] \tsys_' + syscall.name + '\t' + arg);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
 			console.log('unknown syscall ' + syscall.name);
@@ -978,11 +978,11 @@ export class Kernel implements IKernel {
 		}
 
 
-		let task = new Task(this, parent, pid, '/', name, args, env, files, null, null, cb);
+		let task = new Task(this, parent, pid, '/', name, args, env, files, null, null, null, null, null, cb);
 		this.tasks[pid] = task;
 	}
 
-	fork(ctx: SyscallContext, task: Task, heap: ArrayBuffer): void {
+	fork(ctx: SyscallContext, task: Task, heap: ArrayBuffer, stackTop: number, emtStackTop: number, pc: number): void {
 		let parent = task.parent;
 		let pid = this.nextTaskId();
 		let cwd = task.cwd;
@@ -1002,7 +1002,7 @@ export class Kernel implements IKernel {
 		// don't need to open() filename(?) - skip to  fileOpened
 		let forkedTask = new Task(
 			this, parent, pid, cwd, filename, args, env,
-			files, blobUrl, heap, (err: any, pid: number) => {
+			files, blobUrl, heap, stackTop, emtStackTop, pc, (err: any, pid: number) => {
 				if (err) {
 					console.log('fork failed in kernel: ' + err);
 					ctx.complete(-1);
@@ -1058,6 +1058,9 @@ export class Task implements ITask {
 
 	// used during fork, unset after that.
 	heap: ArrayBuffer;
+	stackTop: number;
+	emtStackTop: number;
+	pc: number;
 
 	parent: Task;
 	children: Task[];
@@ -1074,8 +1077,8 @@ export class Task implements ITask {
 	constructor(
 		kernel: Kernel, parent: Task, pid: number, cwd: string,
 		filename: string, args: string[], env: Environment,
-		files: {[n: number]: IFile; },
-		blobUrl: string, heap: ArrayBuffer,
+		files: {[n: number]: IFile; }, blobUrl: string,
+		heap: ArrayBuffer, stackTop: number, emtStackTop: number, pc: number,
 		cb: (err: any, pid: number)=>void) {
 
 		//console.log('spawn PID ' + pid + ': ' + args.join(' '));
@@ -1097,6 +1100,9 @@ export class Task implements ITask {
 
 		this.blobUrl = blobUrl;
 		this.heap = heap;
+		this.stackTop = stackTop;
+		this.emtStackTop = emtStackTop;
+		this.pc = pc;
 
 		// often, something needs to be done after this task
 		// is ready to go.  Keep track of that callback here.
@@ -1217,10 +1223,18 @@ export class Task implements ITask {
 		};
 
 		let heap = this.heap;
-		this.heap = null;
+		let stackTop = this.stackTop;
+		let emtStackTop = this.emtStackTop;
+		let pc = this.pc;
+
+		this.heap = undefined;
+		this.stackTop = undefined;
+		this.emtStackTop = undefined;
+		this.pc = undefined;
+
 		this.signal(
 			'init',
-			[this.args, this.env, this.kernel.debug, heap],
+			[this.args, this.env, this.kernel.debug, heap, this.pid, stackTop, emtStackTop, pc],
 			heap ? [heap] : null);
 
 		this.onRunnable(null, this.pid);

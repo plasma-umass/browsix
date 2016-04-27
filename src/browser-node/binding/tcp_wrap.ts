@@ -63,11 +63,24 @@ export class TCP extends StreamWrap {
 			// FIXME: call req.oncomplete
 			if (err) {
 				console.log('socket open failed');
-				debugger;
 				return;
 			}
 
-			syscall.connect(fd, addr, port, (connErr: any, localAddr: string, localPort: number) => {
+			let sockAddr = {
+				family: SOCK.STREAM,
+				port: port,
+				addr: addr,
+			};
+			let buf = new Uint8Array(marshal.socket.SockAddrInDef.length);
+			let view = new DataView(buf.buffer, buf.byteOffset);
+			let _: any;
+			[_, err] = marshal.Marshal(view, 0, sockAddr, marshal.socket.SockAddrInDef);
+			if (err) {
+				console.log('connect: marshal failed');
+				return;
+			}
+
+			syscall.connect(fd, buf, (connErr: any, localAddr: string, localPort: number) => {
 				let req = new Req();
 				req.localAddress = localAddr;
 				req.localPort = localPort;

@@ -699,7 +699,6 @@ export class Kernel implements IKernel {
 		this.portWaiters[port] = cb;
 	}
 
-	// returns the PID.
 	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void {
 		let parts: string[];
 		if (cmd.indexOf('|') > -1 || cmd.indexOf('&') > -1) {
@@ -733,13 +732,13 @@ export class Kernel implements IKernel {
 			}
 			let t = this.tasks[pid];
 			t.onExit = onExit;
-			t.onStdout = onStdout;
-			t.onStderr = onStderr;
+
+			let stdout = <PipeFile>t.files[1];
+			let stderr = <PipeFile>t.files[2];
+
+			stdout.addEventListener('write', onStdout);
+			stderr.addEventListener('write', onStderr);
 		});
-	}
-
-	socketReady(type: string, port: number, cb: any): void {
-
 	}
 
 	httpRequest(url: string, cb: any): void {
@@ -982,22 +981,21 @@ export class Kernel implements IKernel {
 		this.tasks[pid] = task;
 	}
 
-	fork(ctx: SyscallContext, task: Task, heap: ArrayBuffer, forkArgs: any): void {
-		let parent = task.parent;
+	fork(ctx: SyscallContext, parent: Task, heap: ArrayBuffer, forkArgs: any): void {
 		let pid = this.nextTaskId();
-		let cwd = task.cwd;
-		let filename = task.exePath;
-		let args = task.args;
-		let env = task.env;
+		let cwd = parent.cwd;
+		let filename = parent.exePath;
+		let args = parent.args;
+		let env = parent.env;
 
-		let files: {[n: number]: IFile; } = _clone(task.files);
+		let files: {[n: number]: IFile; } = _clone(parent.files);
 		for (let i in files) {
 			if (!files.hasOwnProperty(i))
 				continue;
 			files[i].ref();
 		}
 
-		let blobUrl = task.blobUrl;
+		let blobUrl = parent.blobUrl;
 
 		// don't need to open() filename(?) - skip to  fileOpened
 		let forkedTask = new Task(
@@ -1061,7 +1059,7 @@ export class Task implements ITask {
 	forkArgs: any;
 
 	parent: Task;
-	children: Task[];
+	children: Task[] = [];
 
 	onExit: ExitCallback;
 	onStdout: OutputCallback;
@@ -1090,8 +1088,10 @@ export class Task implements ITask {
 		this.args = args;
 		this.cwd = cwd;
 		this.priority = 0;
-		if (parent)
+		if (parent) {
 			this.priority = parent.priority;
+			this.parent.children.push(this);
+		}
 
 		this.env = env;
 		this.files = files;
@@ -1273,6 +1273,9 @@ export class Task implements ITask {
 	exit(code: number): void {
 		this.state = TaskState.Zombie;
 		this.exitCode = code;
+
+		this.blobUrl = undefined;
+
 		for (let n in this.files) {
 			if (!this.files.hasOwnProperty(n))
 				continue;

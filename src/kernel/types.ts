@@ -11,6 +11,7 @@ export interface ExitCallback {
 }
 
 export interface OutputCallback {
+	// TODO: change from string to Buffer
 	(pid: number, output: string): void;
 }
 

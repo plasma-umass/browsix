@@ -6,7 +6,7 @@
 
 'use strict';
 
-import { SyscallContext, IFile } from './types';
+import { SyscallContext, IFile, OutputCallback } from './types';
 
 declare var Buffer: any;
 
@@ -47,12 +47,12 @@ export class Pipe {
 				this.buf = new Buffer(0);
 			else
 				this.buf = this.buf.slice(pos + n);
-			return cb(undefined, n);
+			cb(undefined, n);
 		};
 	}
 
 	readSync(): Buffer {
-		return this.buf; //.toString('utf-8');
+		return this.buf;
 	}
 
 	ref(): void {
@@ -79,12 +79,22 @@ export function isPipe(f: IFile): f is PipeFile {
 }
 
 export class PipeFile implements IFile {
-	pipe:     Pipe;
+	pipe:          Pipe;
+	writeListener: OutputCallback;
 
 	constructor(pipe?: Pipe) {
 		if (!pipe)
 			pipe = new Pipe();
 		this.pipe = pipe;
+	}
+
+	addEventListener(evName: string, cb: OutputCallback): void {
+		if (evName !== 'write') {
+			console.log('eventListener only available on PipeFile for write');
+			return;
+		}
+
+		this.writeListener = cb;
 	}
 
 	write(buf: string|Buffer, cb: (err: any, len?: number) => void): void {
@@ -95,6 +105,14 @@ export class PipeFile implements IFile {
 
 		cb = arguments[arguments.length-1];
 		cb(undefined, buf.length);
+
+		if (this.writeListener) {
+			if (typeof buf === 'string')
+				this.writeListener(-1, buf);
+			else
+				this.writeListener(-1, (<Buffer>buf).toString('utf-8'));
+
+		}
 	}
 
 	read(buf: Buffer, pos: number, len: number, off: number, cb: (err: any, len?: number) => void): void {

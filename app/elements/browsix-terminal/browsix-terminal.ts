@@ -30,6 +30,8 @@ namespace Terminal {
 		@property({type: String})
 		ps1: string = '$ ';
 
+		extraNewline: boolean = false;
+
 		constructor() {
 			super();
 			(<any>window).Boot(
@@ -75,10 +77,17 @@ namespace Terminal {
 				let newlinePos = this.$.term.value.lastIndexOf('\n');
 				let lastLine = this.$.term.value.substr(newlinePos+1);
 				if (lastLine[0] === '$') {
-					if (out.length && out[out.length-1] !== '\n')
+
+					if (!this.extraNewline && out && out[out.length-1] !== '\n') {
 						out += '\n';
+						this.extraNewline = true;
+					} else if (this.extraNewline && out && out[out.length-1] === '\n') {
+						out = out.slice(0, -1);
+						this.extraNewline = false;
+					}
 					this.$.term.value = this.$.term.value.substr(0, newlinePos+1) + out + lastLine;
 				} else {
+					this.extraNewline = false;
 					this.$.term.value += out;
 				}
 

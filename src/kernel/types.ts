@@ -73,6 +73,7 @@ export interface ITask {
 	addFile(f: IFile): number;
 	schedule(msg: SyscallResult): void;
 	setPriority(prio: number): number;
+	wait4(ctx: SyscallContext, pid: number, options: number): void;
 }
 
 export class SyscallContext {

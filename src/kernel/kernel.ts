@@ -198,6 +198,10 @@ class Syscalls {
 		this.kernel.exit(<Task>ctx.task, code);
 	}
 
+	wait4(ctx: SyscallContext, pid: number, options: number): void {
+		ctx.task.wait4(ctx, pid, options);
+	}
+
 
 	getpid(ctx: SyscallContext): void {
 		ctx.complete(null, ctx.task.pid);
@@ -836,6 +840,13 @@ export class Kernel implements IKernel {
 		// call callback
 	}
 
+	wait(pid: number): void {
+		if ((pid in this.tasks) && this.tasks[pid].state === TaskState.Zombie)
+			delete this.tasks[pid];
+		else
+			console.log('wait called for bad pid ' + pid);
+	}
+
 	exit(task: Task, code: number): void {
 		// it is possible to get multiple 'exit' messages from
 		// a node app.  As the kernel should be robust to
@@ -845,34 +856,7 @@ export class Kernel implements IKernel {
 			console.log('warning, got more than 1 exit call from ' + task.pid);
 			return;
 		}
-		task.worker.onmessage = undefined;
 		task.exit(code);
-		delete this.tasks[task.pid];
-
-		// run this in the next tick to allow any work queued
-		// up in the process of task.worker.terminate() to
-		// execute before completing our callback.
-		// Practically, without this our unit tests sometimes
-		// hang :(
-		setImmediate(() => {
-			task.worker.terminate();
-			if (task.parent)
-				task.parent.signal('child', [task.pid, code, 0]);
-			setImmediate(workerTerminated);
-		});
-		function workerTerminated(): void {
-			if (!task.onExit)
-				return;
-
-			let stdout = task.files[1];
-			let stderr = task.files[2];
-			if (isPipe(stdout) && task.onStdout)
-				task.onStdout(task.pid, stdout.readSync().toString('utf-8'));
-
-			if (isPipe(stderr) && task.onStderr)
-				task.onStderr(task.pid, stderr.readSync().toString('utf-8'));
-			task.onExit(task.pid, task.exitCode);
-		}
 	}
 
 	// implement kill on the Kernel because we need to adjust our
@@ -1062,8 +1046,6 @@ export class Task implements ITask {
 	children: Task[] = [];
 
 	onExit: ExitCallback;
-	onStdout: OutputCallback;
-	onStderr: OutputCallback;
 
 	priority: number;
 
@@ -1247,6 +1229,24 @@ export class Task implements ITask {
 		return 0;
 	}
 
+	wait4(ctx: SyscallContext, pid: number, options: number): void {
+		if (pid <= 0) {
+			console.log('TODO: wait4 with pid <= 0');
+			ctx.complete(-constants.ECHILD);
+		}
+		if (options) {
+			console.log('TODO: non-zero options');
+		}
+
+		// FIXME: this should work for more than direct children
+		for (let i = 0; i < this.children.length; i++) {
+			let child = this.children[i];
+			if (child.pid !== pid)
+				continue;
+			debugger;
+		}
+	}
+
 	signal(name: string, args: any[], transferrable?: any[]): void {
 		this.schedule(
 			{
@@ -1282,6 +1282,16 @@ export class Task implements ITask {
 			if (this.files[n])
 				this.files[n].unref();
 		}
+
+		this.worker.onmessage = undefined;
+		this.worker.terminate();
+
+		if (this.parent)
+			this.parent.signal('child', [this.pid, code, 0]);
+
+		if (this.onExit)
+			this.onExit(this.pid, this.exitCode);
+
 	}
 
 	private nextMsgId(): number {

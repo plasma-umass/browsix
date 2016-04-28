@@ -72,6 +72,8 @@ namespace Terminal {
 
 			let completed = (pid: number, code: number) => {
 				this.editable = true;
+				// reap our children
+				this.kernel.wait(pid);
 			}
 			let onInput = (pid: number, out: string) => {
 				let newlinePos = this.$.term.value.lastIndexOf('\n');

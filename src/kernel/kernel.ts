@@ -1038,6 +1038,8 @@ export class Task implements ITask {
 	env: Environment;
 	cwd: string; // must be absolute path
 
+	waitQueue: any[] = [];
+
 	// used during fork, unset after that.
 	heap: ArrayBuffer;
 	forkArgs: any;
@@ -1107,16 +1109,14 @@ export class Task implements ITask {
 	fileOpened(err: any, fd: any): void {
 		if (err) {
 			this.onRunnable(err, undefined);
-			this.onRunnable = undefined;
-			// FIXME: what other cleanup is required here?
+			this.exit(-1);
 			return;
 		}
 		this.exeFd = fd;
 		this.kernel.fs.fstat(fd, (serr: any, stats: any) => {
 			if (serr) {
 				this.onRunnable(serr, undefined);
-				this.onRunnable = undefined;
-				// FIXME: what other cleanup is required here?
+				this.exit(-1);
 				return;
 			}
 			let buf = new Buffer(stats.size);
@@ -1127,8 +1127,7 @@ export class Task implements ITask {
 	fileRead(err: any, bytesRead: number, buf: Buffer): void {
 		if (err) {
 			this.onRunnable(err, undefined);
-			this.onRunnable = undefined;
-			// FIXME: what other cleanup is required here?
+			this.exit(-1);
 			return;
 		}
 
@@ -1230,8 +1229,8 @@ export class Task implements ITask {
 	}
 
 	wait4(ctx: SyscallContext, pid: number, options: number): void {
-		if (pid <= 0) {
-			console.log('TODO: wait4 with pid <= 0');
+		if (pid < -1) {
+			console.log('TODO: wait4 with pid < -1');
 			ctx.complete(-constants.ECHILD);
 		}
 		if (options) {
@@ -1241,13 +1240,44 @@ export class Task implements ITask {
 		// FIXME: this should work for more than direct children
 		for (let i = 0; i < this.children.length; i++) {
 			let child = this.children[i];
-			if (child.pid !== pid)
+			if (pid !== -1 && pid !== 0 && child.pid !== pid)
 				continue;
-			debugger;
+			// not a zombie
+			if (child.state !== TaskState.Zombie)
+				continue;
+			// at this point, we have a zombie that matches our filter
+			let wstatus = 0; // TODO: fill in wstatus
+			ctx.complete(child.pid, wstatus, null);
+			// reap the zombie!
+			this.kernel.wait(child.pid);
+			this.children.splice(i, 1);
+			return;
 		}
+
+		// ok - no alive children match what we're waiting for,
+		// so actually sleep until someone dies.
+		this.waitQueue.push([ctx, pid, options]);
+	}
+
+	childDied(pid: number, code: number): void {
+		if (!this.waitQueue.length) {
+			this.signal('child', [pid, code, 0]);
+			return;
+		}
+
+		// FIXME: this is naiive, and can be optimized
+		let queue = this.waitQueue;
+		this.waitQueue = [];
+		for (let i = 0; i < queue.length; i++) {
+			this.wait4.apply(this, queue[i]);
+		}
+
+		// TODO: when does sigchild get sent?
+		this.signal('child', [pid, code, 0]);
 	}
 
 	signal(name: string, args: any[], transferrable?: any[]): void {
+		// TODO: signal mask
 		this.schedule(
 			{
 				id: -1,
@@ -1260,37 +1290,60 @@ export class Task implements ITask {
 	// run is called by the kernel when we are selected to run by
 	// the scheduler
 	schedule(msg: SyscallResult, transferrable?: any[]): void {
-		this.account();
-		this.state = TaskState.Running;
-		this.worker.postMessage(msg, transferrable || []);
-	}
+		// this may happen if we have an async thing that
+		// eventually results in a syscall response, but we've
+		// killed the process in the meantime.
+		if (this.state === TaskState.Zombie)
+			return;
 
-	// depending on task.state record how much time we've just
-	// spent in this state
-	account(): void {
+		this.state = TaskState.Running;
+
+		this.worker.postMessage(msg, transferrable || []);
 	}
 
 	exit(code: number): void {
 		this.state = TaskState.Zombie;
 		this.exitCode = code;
 
+		this.onRunnable = undefined;
 		this.blobUrl = undefined;
 
 		for (let n in this.files) {
 			if (!this.files.hasOwnProperty(n))
 				continue;
-			if (this.files[n])
+			if (this.files[n]) {
 				this.files[n].unref();
+				this.files[n] = undefined;
+			}
 		}
 
-		this.worker.onmessage = undefined;
-		this.worker.terminate();
+		if (this.worker) {
+			this.worker.onmessage = undefined;
+			this.worker.terminate();
+			this.worker = undefined;
+		}
+
+		// our children are now officially orphans.  re-parent them,
+		// if possible
+		for (let i = 0; i < this.children.length; i++) {
+			let child = this.children[i];
+			child.parent = this.parent;
+			// if our process was careless and left zombies
+			// hanging around, deal with that now.
+			if (!child.parent && child.state === TaskState.Zombie)
+				this.kernel.wait(child.pid);
+		}
 
 		if (this.parent)
-			this.parent.signal('child', [this.pid, code, 0]);
+			this.parent.childDied(this.pid, code);
 
 		if (this.onExit)
 			this.onExit(this.pid, this.exitCode);
+
+		// if we have no parent, and there is no init process yet to
+		// reparent to, reap the zombies ourselves.
+		if (!this.parent)
+			this.kernel.wait(this.pid);
 
 	}
 
@@ -1305,11 +1358,12 @@ export class Task implements ITask {
 			return;
 		}
 
-		// TODO: figure out if this is right
-		this.account();
-		if (this.state !== TaskState.Running) {
-			//console.log('suspicious, unbalanced syscall');
-		}
+		// we might have queued up some messages from a process
+		// that is no longer considered alive - silently discard
+		// them if that is the case.
+		if (this.state === TaskState.Zombie)
+			return;
+
 		this.state = TaskState.Interruptable;
 
 		// many syscalls influence not just the state

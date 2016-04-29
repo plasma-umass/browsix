@@ -1237,14 +1237,16 @@ export class Task implements ITask {
 			console.log('TODO: non-zero options');
 		}
 
-		// FIXME: this should work for more than direct children
 		for (let i = 0; i < this.children.length; i++) {
 			let child = this.children[i];
 			if (pid !== -1 && pid !== 0 && child.pid !== pid)
 				continue;
-			// not a zombie
-			if (child.state !== TaskState.Zombie)
-				continue;
+			// we have a child that matches, but it is still
+			// alive.  Sleep until the child meets its maker.
+			if (child.state !== TaskState.Zombie) {
+				this.waitQueue.push([ctx, pid, options]);
+				return;
+			}
 			// at this point, we have a zombie that matches our filter
 			let wstatus = 0; // TODO: fill in wstatus
 			ctx.complete(child.pid, wstatus, null);
@@ -1254,9 +1256,9 @@ export class Task implements ITask {
 			return;
 		}
 
-		// ok - no alive children match what we're waiting for,
-		// so actually sleep until someone dies.
-		this.waitQueue.push([ctx, pid, options]);
+		// no children match what the process wants to wait for,
+		// so return ECHILD immediately
+		ctx.complete(-constants.ECHILD);
 	}
 
 	childDied(pid: number, code: number): void {

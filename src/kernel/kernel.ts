@@ -113,6 +113,7 @@ const O_RDWR = constants.O_RDWR || 0;
 const O_SYNC = constants.O_SYNC || 0;
 const O_TRUNC = constants.O_TRUNC || 0;
 const O_WRONLY = constants.O_WRONLY || 0;
+const O_NONBLOCK = constants.O_NONBLOCK || 0;
 
 const PRIO_MIN = -20;
 const PRIO_MAX = 20;
@@ -127,7 +128,10 @@ function flagsToString(flag: any): string {
 	if (typeof flag !== 'number') {
 		return flag;
 	}
-	flag &= ~(O_CLOEXEC|O_LARGEFILE);
+	if (flag & O_NONBLOCK) {
+		console.log('TODO: nonblocking flag');
+	}
+	flag &= ~(O_CLOEXEC|O_LARGEFILE|O_NONBLOCK);
 
 	switch (flag) {
 	case O_RDONLY:

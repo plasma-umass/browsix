@@ -18,7 +18,14 @@ function sys_getpid(cb: Function, trap: number): void {
 	let done = function(err: any, pid: number): void {
 		cb([pid, 0, 0]);
 	};
-	syscall.getpid.apply(syscall, [done]);
+	syscall.getpid(done);
+}
+
+function sys_getppid(cb: Function, trap: number): void {
+	let done = function(err: any, pid: number): void {
+		cb([pid, 0, 0]);
+	};
+	syscall.getppid(done);
 }
 
 let zeroBuf = new Uint8Array(0);
@@ -366,7 +373,7 @@ export var syscallTbl = [
 	sys_ni_syscall, // 107 geteuid
 	sys_ni_syscall, // 108 getegid
 	sys_ni_syscall, // 109 setpgid
-	sys_ni_syscall, // 110 getppid
+	sys_getppid,    // 110 getppid
 	sys_ni_syscall, // 111 getpgrp
 	sys_ni_syscall, // 112 setsid
 	sys_ni_syscall, // 113 setreuid

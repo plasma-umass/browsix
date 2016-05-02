@@ -209,6 +209,12 @@ export class USyscalls {
 		this.post(msgId, 'getpid');
 	}
 
+	getppid(cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'getppid');
+	}
+
 	spawn(cwd: string, name: string, args: string[], env: string[], files: number[], cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;

@@ -58,6 +58,7 @@ export interface IFile {
 
 export interface ITask {
 	kernel: IKernel;
+	parent: ITask;
 	worker: Worker;
 
 	pid: number;

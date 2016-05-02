@@ -206,9 +206,12 @@ class Syscalls {
 		ctx.task.wait4(ctx, pid, options);
 	}
 
-
 	getpid(ctx: SyscallContext): void {
 		ctx.complete(null, ctx.task.pid);
+	}
+
+	getppid(ctx: SyscallContext): void {
+		ctx.complete(null, ctx.task.parent ? ctx.task.parent.pid : 0);
 	}
 
 	getdents(ctx: SyscallContext, fd: number, length: number): void {

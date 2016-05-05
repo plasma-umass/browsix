@@ -78,11 +78,9 @@
 	}
 
 	function onInBrowserReady() {
-		console.log('READY FOR BUSINESS');
 		inBrowserReady = true;
 		for (let params = inBrowserQueue.shift(); params; params = inBrowserQueue.shift()) {
 			inBrowserRequest.apply(this, params);
-			console.log('LATE APPLYING');
 		}
 	}
 
@@ -106,11 +104,7 @@
 			console.log(out);
 		}
 		function onStderr(pid, out) {
-			if (out.indexOf('ready and listening') > -1) {
-				console.log('service ready');
-			}
 			console.log(out);
-			console.log('!');
 		}
 		function onExit(pid, code) {
 			console.log('exited: ' + pid + ' with code ' + code);
@@ -118,7 +112,7 @@
 		kernel.once('port:8080', onInBrowserReady.bind(this));
 		kernel.system('/meme-service.js -bgdir=img -fontfile=font/impact.ttf', onExit, onStdout, onStderr);
 
-		// debugging purposes
+		// explicitly leak kernel for debugging purposes
 		window.kernel = kernel;
 	}
 
@@ -133,8 +127,8 @@
 			bottomVal = defaultBottom;
 		}
 
-		let topEnc = encodeURIComponent(topVal);
-		let bottomEnc = encodeURIComponent(bottomVal);
+		let topEnc = encodeURIComponent(topVal.toUpperCase());
+		let bottomEnc = encodeURIComponent(bottomVal.toUpperCase());
 
 		let bgSelect = document.getElementById('bg');
 		let image = bgSelect.options[bgSelect.selectedIndex].value;

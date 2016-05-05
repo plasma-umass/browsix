@@ -925,7 +925,6 @@ var BrowserFS = require('./vendor/BrowserFS/src/core/browserfs');
 var marshal = require('node-binary-marshal');
 var buffer_1 = require('../browser-node/binding/buffer');
 var DEBUG = false;
-var SCHEDULING_DELAY = 0;
 var Buffer;
 require('./vendor/BrowserFS/src/backend/in_memory');
 require('./vendor/BrowserFS/src/backend/XmlHttpRequest');
@@ -967,7 +966,6 @@ if (typeof setImmediate === 'undefined') {
             }
         };
         g.addEventListener('message', handleMessage, true);
-        console.log('using postMessage for setImmediate');
     }
     else {
         g.setImmediate = function (fn) {
@@ -995,6 +993,7 @@ var O_RDWR = constants.O_RDWR || 0;
 var O_SYNC = constants.O_SYNC || 0;
 var O_TRUNC = constants.O_TRUNC || 0;
 var O_WRONLY = constants.O_WRONLY || 0;
+var O_NONBLOCK = constants.O_NONBLOCK || 0;
 var PRIO_MIN = -20;
 var PRIO_MAX = 20;
 var O_CLOEXEC = 0x80000;
@@ -1004,10 +1003,15 @@ function flagsToString(flag) {
     if (typeof flag !== 'number') {
         return flag;
     }
-    flag &= ~(O_CLOEXEC | O_LARGEFILE);
+    if (flag & O_NONBLOCK) {
+        console.log('TODO: nonblocking flag');
+    }
+    flag &= ~(O_CLOEXEC | O_LARGEFILE | O_NONBLOCK);
     switch (flag) {
         case O_RDONLY:
             return 'r';
+        case O_WRONLY:
+            return 'w';
         case O_RDONLY | O_SYNC:
             return 'rs';
         case O_RDWR:
@@ -1055,13 +1059,22 @@ var Syscalls = (function () {
     Syscalls.prototype.getcwd = function (ctx) {
         ctx.complete(ctx.task.cwd);
     };
+    Syscalls.prototype.fork = function (ctx, heap, args) {
+        this.kernel.fork(ctx, ctx.task, heap, args);
+    };
     Syscalls.prototype.exit = function (ctx, code) {
         if (!code)
             code = 0;
         this.kernel.exit(ctx.task, code);
     };
+    Syscalls.prototype.wait4 = function (ctx, pid, options) {
+        ctx.task.wait4(ctx, pid, options);
+    };
     Syscalls.prototype.getpid = function (ctx) {
         ctx.complete(null, ctx.task.pid);
+    };
+    Syscalls.prototype.getppid = function (ctx) {
+        ctx.complete(null, ctx.task.parent ? ctx.task.parent.pid : 0);
     };
     Syscalls.prototype.getdents = function (ctx, fd, length) {
         var file = ctx.task.files[fd];
@@ -1076,6 +1089,8 @@ var Syscalls = (function () {
         dir.getdents(length, ctx.complete.bind(ctx));
     };
     Syscalls.prototype.socket = function (ctx, domain, type, protocol) {
+        if (domain === AF.UNSPEC)
+            domain = AF.INET;
         if (domain !== AF.INET && type !== SOCK.STREAM)
             return ctx.complete('unsupported socket type');
         var f = new socket_1.SocketFile(ctx.task);
@@ -1088,8 +1103,10 @@ var Syscalls = (function () {
         var _a = marshal.Unmarshal(info, view, 0, marshal.socket.SockAddrInDef), _ = _a[0], err = _a[1];
         var addr = info.addr;
         var port = info.port;
-        if (port === 0)
+        if (port === 0) {
+            console.log('port was zero -- changing to 8080');
             port = 8080;
+        }
         var file = ctx.task.files[fd];
         if (!file) {
             ctx.complete('bad FD ' + fd, null);
@@ -1153,7 +1170,12 @@ var Syscalls = (function () {
         }
         return ctx.complete('ENOTSOCKET');
     };
-    Syscalls.prototype.connect = function (ctx, fd, addr, port) {
+    Syscalls.prototype.connect = function (ctx, fd, sockAddr) {
+        var info = {};
+        var view = new DataView(sockAddr.buffer, sockAddr.byteOffset);
+        var _a = marshal.Unmarshal(info, view, 0, marshal.socket.SockAddrInDef), _ = _a[0], err = _a[1];
+        var addr = info.addr;
+        var port = info.port;
         var file = ctx.task.files[fd];
         if (!file) {
             ctx.complete('bad FD ' + fd, null);
@@ -1427,7 +1449,6 @@ var Kernel = (function () {
         this.tasks = {};
         this.taskIdSeq = 0;
         this.outstanding = 0;
-        this.inKernel = 0;
         this.nCPUs = nCPUs;
         this.fs = fs;
         this.syscalls = new Syscalls(this);
@@ -1445,33 +1466,10 @@ var Kernel = (function () {
             return 'invalid port: ' + port;
         this.portWaiters[port] = cb;
     };
-    Kernel.prototype.schedule = function (task) {
-        var prio = task.priority + 20;
-        if (prio < 0) {
-            console.log('warning: invalid prio: ' + prio);
-            prio = 0;
-        }
-        this.runQueues[prio].push(task);
-        this.nextTask();
-    };
-    Kernel.prototype.nextTask = function () {
-        if (this.outstanding >= this.nCPUs) {
-        }
-        for (var i = PRIO_MIN; i < PRIO_MAX; i++) {
-            var queue = this.runQueues[i - PRIO_MIN];
-            if (!queue.length)
-                continue;
-            var runnable = queue.shift();
-            this.outstanding++;
-            this.inKernel--;
-            runnable.run();
-            break;
-        }
-    };
     Kernel.prototype.system = function (cmd, onExit, onStdout, onStderr) {
         var _this = this;
         var parts;
-        if (cmd.indexOf('|') > -1) {
+        if (cmd.indexOf('|') > -1 || cmd.indexOf('&') > -1) {
             parts = ['/usr/bin/sh', cmd];
         }
         else {
@@ -1500,11 +1498,11 @@ var Kernel = (function () {
             }
             var t = _this.tasks[pid];
             t.onExit = onExit;
-            t.onStdout = onStdout;
-            t.onStderr = onStderr;
+            var stdout = t.files[1];
+            var stderr = t.files[2];
+            stdout.addEventListener('write', onStdout);
+            stderr.addEventListener('write', onStderr);
         });
-    };
-    Kernel.prototype.socketReady = function (type, port, cb) {
     };
     Kernel.prototype.httpRequest = function (url, cb) {
         var port = 80;
@@ -1579,31 +1577,18 @@ var Kernel = (function () {
         });
         var _a;
     };
+    Kernel.prototype.wait = function (pid) {
+        if ((pid in this.tasks) && this.tasks[pid].state === TaskState.Zombie)
+            delete this.tasks[pid];
+        else
+            console.log('wait called for bad pid ' + pid);
+    };
     Kernel.prototype.exit = function (task, code) {
         if (task.state === TaskState.Zombie) {
             console.log('warning, got more than 1 exit call from ' + task.pid);
             return;
         }
-        task.worker.onmessage = undefined;
         task.exit(code);
-        delete this.tasks[task.pid];
-        setImmediate(function () {
-            task.worker.terminate();
-            if (task.parent)
-                task.parent.signal('child', [task.pid, code, 0]);
-            setImmediate(workerTerminated);
-        });
-        function workerTerminated() {
-            if (!task.onExit)
-                return;
-            var stdout = task.files[1];
-            var stderr = task.files[2];
-            if (pipe_1.isPipe(stdout) && task.onStdout)
-                task.onStdout(task.pid, stdout.readSync().toString('utf-8'));
-            if (pipe_1.isPipe(stderr) && task.onStderr)
-                task.onStderr(task.pid, stderr.readSync().toString('utf-8'));
-            task.onExit(task.pid, task.exitCode);
-        }
     };
     Kernel.prototype.kill = function (pid) {
         if (!(pid in this.tasks))
@@ -1640,25 +1625,67 @@ var Kernel = (function () {
         return;
     };
     Kernel.prototype.doSyscall = function (syscall) {
-        this.outstanding--;
-        if (this.outstanding < 0) {
-            this.outstanding = 0;
-        }
-        else {
-        }
-        this.inKernel++;
         if (syscall.name in this.syscalls) {
             this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
         }
         else {
             console.log('unknown syscall ' + syscall.name);
         }
-        this.nextTask();
     };
-    Kernel.prototype.spawn = function (parent, cwd, name, args, env, files, cb) {
+    Kernel.prototype.spawn = function (parent, cwd, name, args, envArray, filesArray, cb) {
         var pid = this.nextTaskId();
-        var task = new Task(this, parent, pid, '/', name, args, env, files, cb);
+        envArray = envArray || [];
+        var env = {};
+        for (var i = 0; i < envArray.length; i++) {
+            var s = envArray[i];
+            var eq = s.search('=');
+            if (eq < 0)
+                continue;
+            var k = s.substring(0, eq);
+            var v = s.substring(eq + 1);
+            env[k] = v;
+        }
+        var files = [];
+        if (filesArray && parent) {
+            for (var i = 0; i < filesArray.length; i++) {
+                var fd = filesArray[i];
+                if (!(fd in parent.files)) {
+                    console.log('spawn: tried to use bad fd ' + fd);
+                    break;
+                }
+                files[i] = parent.files[fd];
+                files[i].ref();
+            }
+        }
+        else {
+            files[0] = new pipe_1.PipeFile();
+            files[1] = new pipe_1.PipeFile();
+            files[2] = new pipe_1.PipeFile();
+        }
+        var task = new Task(this, parent, pid, '/', name, args, env, files, null, null, null, cb);
         this.tasks[pid] = task;
+    };
+    Kernel.prototype.fork = function (ctx, parent, heap, forkArgs) {
+        var pid = this.nextTaskId();
+        var cwd = parent.cwd;
+        var filename = parent.exePath;
+        var args = parent.args;
+        var env = parent.env;
+        var files = _clone(parent.files);
+        for (var i in files) {
+            if (!files.hasOwnProperty(i))
+                continue;
+            files[i].ref();
+        }
+        var blobUrl = parent.blobUrl;
+        var forkedTask = new Task(this, parent, pid, cwd, filename, args, env, files, blobUrl, heap, forkArgs, function (err, pid) {
+            if (err) {
+                console.log('fork failed in kernel: ' + err);
+                ctx.complete(-1);
+            }
+            ctx.complete(pid);
+        });
+        this.tasks[pid] = forkedTask;
     };
     Kernel.prototype.nextTaskId = function () {
         return ++this.taskIdSeq;
@@ -1673,12 +1700,22 @@ exports.Kernel = Kernel;
     TaskState[TaskState["Zombie"] = 3] = "Zombie";
 })(exports.TaskState || (exports.TaskState = {}));
 var TaskState = exports.TaskState;
+function _clone(obj) {
+    if (null === obj || 'object' !== typeof obj)
+        return obj;
+    var copy = obj.constructor();
+    for (var attr in obj) {
+        if (obj.hasOwnProperty(attr))
+            copy[attr] = obj[attr];
+    }
+    return copy;
+}
 var Task = (function () {
-    function Task(kernel, parent, pid, cwd, filename, args, env, files, cb) {
+    function Task(kernel, parent, pid, cwd, filename, args, env, files, blobUrl, heap, forkArgs, cb) {
         this.files = {};
+        this.waitQueue = [];
+        this.children = [];
         this.msgIdSeq = 1;
-        this.pendingSignals = [];
-        this.pendingResults = [];
         this.state = TaskState.Starting;
         this.pid = pid;
         this.parent = parent;
@@ -1688,34 +1725,20 @@ var Task = (function () {
         this.args = args;
         this.cwd = cwd;
         this.priority = 0;
-        if (parent)
+        if (parent) {
             this.priority = parent.priority;
-        env = env || [];
-        this.env = {};
-        for (var i = 0; i < env.length; i++) {
-            var s = env[i];
-            var eq = s.search('=');
-            if (eq < 0)
-                continue;
-            var k = s.substring(0, eq);
-            var v = s.substring(eq + 1);
-            this.env[k] = v;
+            this.parent.children.push(this);
         }
-        if (files && parent) {
-            for (var i = 0; i < files.length; i++) {
-                if (!(i in parent.files))
-                    break;
-                this.files[i] = parent.files[files[i]];
-                this.files[i].ref();
-            }
-        }
-        else {
-            this.files[0] = new pipe_1.PipeFile();
-            this.files[1] = new pipe_1.PipeFile();
-            this.files[2] = new pipe_1.PipeFile();
-        }
+        this.env = env;
+        this.files = files;
+        this.blobUrl = blobUrl;
+        this.heap = heap;
+        this.forkArgs = forkArgs;
         this.onRunnable = cb;
-        kernel.fs.open(filename, 'r', this.fileOpened.bind(this));
+        if (blobUrl)
+            this.blobReady(blobUrl);
+        else
+            kernel.fs.open(filename, 'r', this.fileOpened.bind(this));
     }
     Task.prototype.addFile = function (f) {
         var n = Object.keys(this.files).length;
@@ -1726,14 +1749,14 @@ var Task = (function () {
         var _this = this;
         if (err) {
             this.onRunnable(err, undefined);
-            this.onRunnable = undefined;
+            this.exit(-1);
             return;
         }
         this.exeFd = fd;
         this.kernel.fs.fstat(fd, function (serr, stats) {
             if (serr) {
                 _this.onRunnable(serr, undefined);
-                _this.onRunnable = undefined;
+                _this.exit(-1);
                 return;
             }
             var buf = new Buffer(stats.size);
@@ -1741,10 +1764,9 @@ var Task = (function () {
         });
     };
     Task.prototype.fileRead = function (err, bytesRead, buf) {
-        var _this = this;
         if (err) {
             this.onRunnable(err, undefined);
-            this.onRunnable = undefined;
+            this.exit(-1);
             return;
         }
         if (bytesRead > 2 && buf.readUInt8(0) === 0x23 && buf.readUInt8(1) === 0x21) {
@@ -1766,7 +1788,13 @@ var Task = (function () {
         var jsBytes = new Uint8Array(buf.data.buff.buffer);
         var blob = new Blob([jsBytes], { type: 'text/javascript' });
         jsBytes = undefined;
-        this.worker = new Worker(window.URL.createObjectURL(blob));
+        var blobUrl = window.URL.createObjectURL(blob);
+        this.blobUrl = blobUrl;
+        this.blobReady(blobUrl);
+    };
+    Task.prototype.blobReady = function (blobUrl) {
+        var _this = this;
+        this.worker = new Worker(blobUrl);
         this.worker.onmessage = this.syscallHandler.bind(this);
         this.worker.onerror = function (err) {
             if (_this.files[2]) {
@@ -1778,7 +1806,11 @@ var Task = (function () {
                 _this.kernel.exit(_this, -1);
             }
         };
-        this.signal('init', [this.args, this.env, this.kernel.debug]);
+        var heap = this.heap;
+        var args = this.forkArgs;
+        this.heap = undefined;
+        this.forkArgs = undefined;
+        this.signal('init', [this.args, this.env, this.kernel.debug, this.pid, heap, args], heap ? [heap] : null);
         this.onRunnable(null, this.pid);
         this.onRunnable = undefined;
     };
@@ -1790,52 +1822,85 @@ var Task = (function () {
             this.priority = PRIO_MAX - 1;
         return 0;
     };
-    Task.prototype.signal = function (name, args) {
-        var _this = this;
-        self.setImmediate(function () {
-            _this.pendingSignals.push({
-                id: -1,
-                name: name,
-                args: args,
-            });
-            _this.run();
-        });
-    };
-    Task.prototype.schedule = function (msg) {
-        var _this = this;
-        this.pendingResults.push(msg);
-        self.setImmediate(function () {
-            _this.kernel.schedule(_this);
-        });
-    };
-    Task.prototype.run = function () {
-        this.account();
-        this.state = TaskState.Running;
-        if (this.pendingSignals.length) {
-            var msg = this.pendingSignals.shift();
-            this.worker.postMessage(msg);
-            if (this.pendingSignals.length || this.pendingResults.length)
-                this.kernel.schedule(this);
+    Task.prototype.wait4 = function (ctx, pid, options) {
+        if (pid < -1) {
+            console.log('TODO: wait4 with pid < -1');
+            ctx.complete(-constants.ECHILD);
         }
-        if (this.pendingResults.length) {
-            var msg = this.pendingResults.shift();
-            this.worker.postMessage(msg);
-            if (this.pendingSignals.length || this.pendingResults.length)
-                this.kernel.schedule(this);
+        if (options) {
+            console.log('TODO: non-zero options');
+        }
+        for (var i = 0; i < this.children.length; i++) {
+            var child = this.children[i];
+            if (pid !== -1 && pid !== 0 && child.pid !== pid)
+                continue;
+            if (child.state !== TaskState.Zombie) {
+                this.waitQueue.push([ctx, pid, options]);
+                return;
+            }
+            var wstatus = 0;
+            ctx.complete(child.pid, wstatus, null);
+            this.kernel.wait(child.pid);
+            this.children.splice(i, 1);
             return;
         }
+        ctx.complete(-constants.ECHILD);
     };
-    Task.prototype.account = function () {
+    Task.prototype.childDied = function (pid, code) {
+        if (!this.waitQueue.length) {
+            this.signal('child', [pid, code, 0]);
+            return;
+        }
+        var queue = this.waitQueue;
+        this.waitQueue = [];
+        for (var i = 0; i < queue.length; i++) {
+            this.wait4.apply(this, queue[i]);
+        }
+        this.signal('child', [pid, code, 0]);
+    };
+    Task.prototype.signal = function (name, args, transferrable) {
+        this.schedule({
+            id: -1,
+            name: name,
+            args: args,
+        }, transferrable);
+    };
+    Task.prototype.schedule = function (msg, transferrable) {
+        if (this.state === TaskState.Zombie)
+            return;
+        this.state = TaskState.Running;
+        this.worker.postMessage(msg, transferrable || []);
     };
     Task.prototype.exit = function (code) {
         this.state = TaskState.Zombie;
         this.exitCode = code;
+        this.onRunnable = undefined;
+        this.blobUrl = undefined;
         for (var n in this.files) {
             if (!this.files.hasOwnProperty(n))
                 continue;
-            if (this.files[n])
+            if (this.files[n]) {
                 this.files[n].unref();
+                this.files[n] = undefined;
+            }
         }
+        if (this.worker) {
+            this.worker.onmessage = undefined;
+            this.worker.terminate();
+            this.worker = undefined;
+        }
+        for (var i = 0; i < this.children.length; i++) {
+            var child = this.children[i];
+            child.parent = this.parent;
+            if (!child.parent && child.state === TaskState.Zombie)
+                this.kernel.wait(child.pid);
+        }
+        if (this.parent)
+            this.parent.childDied(this.pid, code);
+        if (this.onExit)
+            this.onExit(this.pid, this.exitCode);
+        if (!this.parent)
+            this.kernel.wait(this.pid);
     };
     Task.prototype.nextMsgId = function () {
         return ++this.msgIdSeq;
@@ -1846,9 +1911,8 @@ var Task = (function () {
             console.log('bad syscall message, dropping');
             return;
         }
-        this.account();
-        if (this.state !== TaskState.Running) {
-        }
+        if (this.state === TaskState.Zombie)
+            return;
         this.state = TaskState.Interruptable;
         this.kernel.doSyscall(syscall);
     };
@@ -1928,7 +1992,7 @@ var Pipe = (function () {
         if (this.waiter) {
             var waiter = this.waiter;
             this.waiter = undefined;
-            setTimeout(waiter, 0);
+            waiter();
         }
         return b.length;
     };
@@ -1948,7 +2012,7 @@ var Pipe = (function () {
                 _this.buf = new Buffer(0);
             else
                 _this.buf = _this.buf.slice(pos + n);
-            return cb(undefined, n);
+            cb(undefined, n);
         };
     };
     Pipe.prototype.readSync = function () {
@@ -1980,6 +2044,13 @@ var PipeFile = (function () {
             pipe = new Pipe();
         this.pipe = pipe;
     }
+    PipeFile.prototype.addEventListener = function (evName, cb) {
+        if (evName !== 'write') {
+            console.log('eventListener only available on PipeFile for write');
+            return;
+        }
+        this.writeListener = cb;
+    };
     PipeFile.prototype.write = function (buf, cb) {
         if (typeof buf === 'string')
             this.pipe.write(buf);
@@ -1987,6 +2058,12 @@ var PipeFile = (function () {
             this.pipe.writeBuffer(buf);
         cb = arguments[arguments.length - 1];
         cb(undefined, buf.length);
+        if (this.writeListener) {
+            if (typeof buf === 'string')
+                this.writeListener(-1, buf);
+            else
+                this.writeListener(-1, buf.toString('utf-8'));
+        }
     };
     PipeFile.prototype.read = function (buf, pos, len, off, cb) {
         this.pipe.read(buf, pos, len, off, cb);
@@ -8727,10 +8804,33 @@ function IPv4StrToBytes(dst, off, src) {
     return [4, null];
 }
 exports.IPv4StrToBytes = IPv4StrToBytes;
+function htons(dst, off, src) {
+    if (!dst || dst.byteLength < 4)
+        return [undefined, new Error('invalid dst')];
+    dst.setUint8(off + 0, (src >> 8) & 0xff);
+    dst.setUint8(off + 1, src & 0xff);
+    return [2, null];
+}
+exports.htons = htons;
+function ntohs(src, off) {
+    if (!off)
+        off = 0;
+    return [
+        src.getUint8(off + 1) + (src.getUint8(off) << 8),
+        2,
+        null
+    ];
+}
+exports.ntohs = ntohs;
 exports.SockAddrInDef = {
     fields: [
         { name: 'family', type: 'uint16' },
-        { name: 'port', type: 'uint16' },
+        {
+            name: 'port',
+            type: 'uint16',
+            marshal: htons,
+            unmarshal: ntohs,
+        },
         {
             name: 'addr',
             type: 'uint8',

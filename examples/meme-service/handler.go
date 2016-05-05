@@ -141,7 +141,6 @@ func (h *Handler) request(req *http.Request) req {
 		}
 		return listRequest{h.img.List()}
 	default:
-		log.Printf("%#v", parts)
 		if len(parts) > 2 && parts[2] == "orig" {
 			bgData := h.img.Orig(parts[1])
 			if bgData == nil {

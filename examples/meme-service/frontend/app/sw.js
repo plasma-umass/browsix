@@ -1,6 +1,9 @@
+var CACHE_VERSION = 'v4';
+
 this.addEventListener('install', function(event) {
 	event.waitUntil(
-		caches.open('v1').then(function(cache) {
+		caches.open(CACHE_VERSION).then(function(cache) {
+			console.log('populating cache ' + CACHE_VERSION);
 			return cache.addAll([
 				'/',
 				'/?force-remote',
@@ -35,7 +38,7 @@ this.addEventListener('fetch', function(event) {
 	}).then(function(response) {
 		if (response) {
 			if (event.request.method === 'GET') {
-				caches.open('v1').then(function(cache) {
+				caches.open(CACHE_VERSION).then(function(cache) {
 					cache.put(event.request, response);
 				});
 			}

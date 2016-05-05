@@ -14,7 +14,7 @@ all: build
 
 $(MAIN).js: *.go Makefile
 #	rm ~/pkg/linux_js -r
-	gopherjs build -m
+	gopherjs build
 
 build: $(MAIN).js
 	go build

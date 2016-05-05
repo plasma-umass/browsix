@@ -1,11 +1,11 @@
-var CACHE_VERSION = 'v4';
+var CACHE_VERSION = 'v6';
 
 this.addEventListener('install', function(event) {
 	event.waitUntil(
 		caches.open(CACHE_VERSION).then(function(cache) {
 			console.log('populating cache ' + CACHE_VERSION);
 			return cache.addAll([
-				'/',
+//				'/',
 				'/?force-remote',
 				'/?force-clientside',
 				'/apple-touch-icon.png',

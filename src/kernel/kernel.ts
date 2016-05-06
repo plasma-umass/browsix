@@ -983,7 +983,8 @@ export class Kernel implements IKernel {
 		for (let i in files) {
 			if (!files.hasOwnProperty(i))
 				continue;
-			files[i].ref();
+			if (files[i])
+				files[i].ref();
 		}
 
 		let blobUrl = parent.blobUrl;

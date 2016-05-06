@@ -215,7 +215,22 @@ gulp.task('dist-test', ['build-test'], function() {
         .pipe(buffer())
         .on('error', gutil.log)
         .pipe(gulp.dest('./lib-dist/'));
+});
 
+gulp.task('dist-bench', ['build-test'], function() {
+    var testMain = './test/bench.js';
+    var b = browserify({
+        entries: [testMain],
+        builtins: false,
+        insertGlobalVars: globalVars,
+    });
+    b.exclude('webworker-threads');
+
+    return b.bundle()
+        .pipe(source(testMain))
+        .pipe(buffer())
+        .on('error', gutil.log)
+        .pipe(gulp.dest('./lib-dist/'));
 });
 
 // XXX: this doesn't work due to the tight integration of the kernel
@@ -235,6 +250,15 @@ gulp.task('test-browser', ['dist-test'], function(done) {
     }, done).start();
 
     gulp.watch(['src/**/*.ts', 'test/*.ts'], ['dist-test']);
+});
+
+// this runs karma once, exiting gulp on completion or failure
+gulp.task('bench', ['dist-bench'], function(done) {
+    new karma.Server({
+        configFile: __dirname + '/karma.conf.js',
+        singleRun: true,
+        browsers: ['Firefox'],
+    }, done).start();
 });
 
 // this runs karma once, exiting gulp on completion or failure

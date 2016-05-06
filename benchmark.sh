@@ -42,4 +42,8 @@ mkdir -p "$RESULTDIR"
 
 node_modules/.bin/gulp bench >"$RESULTDIR/raw"
 
+(cd "$HBENCH" && rm Results -r && make && make run)
+
+mv "$HBENCH/Results/linux-x86_64" "$RESULTDIR"
+
 ./analyze.sh "$RESULTDIR"

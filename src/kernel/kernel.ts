@@ -913,13 +913,20 @@ export class Kernel implements IKernel {
 
 	doSyscall(syscall: Syscall): void {
 		if (syscall.name in this.syscalls) {
-			// let arg = syscall.args[0];
-			// if (arg instanceof Uint8Array) {
-			// 	let len = arg.length;
-			// 	if (len > 0 && arg[len - 1] === 0)
-			// 		len--;
-			// 	arg = utf8Slice(arg, 0, len);
-			// }
+			// let argfmt = (arg: any): any => {
+			// 	if (arg instanceof Uint8Array) {
+			// 		let len = arg.length;
+			// 		if (len > 0 && arg[len - 1] === 0)
+			// 			len--;
+			// 		return utf8Slice(arg, 0, len);
+			// 	} else {
+			// 		return arg;
+			// 	}
+			// };
+
+			// let arg = argfmt(syscall.args[0]);
+			// if (syscall.args[1])
+			// 	arg += '\t' + argfmt(syscall.args[1]);
 			// console.log('[' + syscall.ctx.task.pid + '] \tsys_' + syscall.name + '\t' + arg);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {

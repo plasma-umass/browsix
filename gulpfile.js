@@ -267,6 +267,8 @@ gulp.task('bench', ['dist-bench'], function(done) {
         configFile: __dirname + '/karma.conf.js',
         singleRun: true,
         concurrency: 1,
+        colors: false,
+        reporters: ['dots'],
         browsers: ['Firefox', 'Chrome'],
         files: [
             'lib-dist/test/bench.js',

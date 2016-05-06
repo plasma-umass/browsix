@@ -13,13 +13,13 @@ const MINS = 60 * 1000; // milliseconds
 const IS_KARMA = typeof window !== 'undefined' && typeof (<any>window).__karma__ !== 'undefined';
 const ROOT = IS_KARMA ? '/base/benchfs/' : '/benchfs/';
 
-const N = 15;
+const N = 3;
 
 // from https://stackoverflow.com/questions/2400935/browser-detection-in-javascript
 const userAgent = (function(){
 	var ua = navigator.userAgent;
-	var tem;
-	var M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+(\.\d+)*)/i) || [];
+	var tem: any;
+	var M: RegExpMatchArray | any[] = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+(\.\d+)*)/i) || [];
 
 	if (/trident/i.test(M[1])) {
 		tem =  /\brv[ :]+(\d+)/g.exec(ua) || [];
@@ -40,17 +40,74 @@ const userAgent = (function(){
 	return M.join('-');
 })();
 
-function log(cmd: string, kind: string, result: string): void {
-	console.log(userAgent + '\t' + cmd + '\t' + kind + '\t' + result);
+function log(...args: string[]): void {
+	console.log(userAgent + '\t' + args.join('\t'));
 }
 
 function nullOut(pid: number, out: string): void {}
 
+
+const BENCHMARKS = [
+	{
+		name: 'lat_syscall-getpid',
+		cmd: 'lat_syscall %d getpid',
+	},
+	{
+		name: 'lat_proc-null',
+		cmd: 'lat_proc %d null static',
+	},
+];
+
+let kernel: Kernel = null;
+
+function describeBenchmark(benchmark: any): void {
+	let iterations: number = NaN;
+
+	it(benchmark.name + ' calibrate', function(done: MochaDone): void {
+		let cmd = benchmark.cmd.replace('%d', 0);
+		let stdout: string = '';
+
+		kernel.system(cmd, onExit, onStdout, nullOut);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onExit(pid: number, code: number): void {
+			iterations = parseInt(stdout, 10);
+
+			expect(iterations).not.to.be.NaN;
+			done();
+
+			log(benchmark.name, cmd, 'conf', iterations + ' iterations');
+		}
+	});
+
+	it(benchmark.name + ' run ' + iterations + ' times', function(done: MochaDone): void {
+		let cmd = benchmark.cmd.replace('%d', iterations);
+		let run = 0;
+
+		let stdout: string = '';
+
+		kernel.system(cmd, onExit, onStdout, nullOut);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onExit(pid: number, code: number): void {
+			expect(stdout).not.to.be.empty;
+			log(benchmark.name, cmd, 'run', stdout.trim());
+
+			stdout = '';
+			run++;
+			if (run < N) {
+				kernel.system(cmd, onExit, onStdout, nullOut);
+			} else {
+				done();
+			}
+		}
+	});
+}
+
 describe('syscall', function(): void {
 	this.timeout(10 * MINS);
-
-	let kernel: Kernel = null;
-	let iterations: number = NaN;
 
 	it('should boot', function(done: MochaDone): void {
 		Boot(
@@ -64,45 +121,7 @@ describe('syscall', function(): void {
 			});
 	});
 
-	it('calibrate', function(done: MochaDone): void {
-		let cmd = 'lat_syscall 0 getpid';
-		let stdout: string = '';
-
-		kernel.system(cmd, onExit, onStdout, nullOut);
-		function onStdout(pid: number, out: string): void {
-			stdout += out;
-		}
-		function onExit(pid: number, code: number): void {
-			iterations = parseInt(stdout, 10);
-
-			expect(iterations).not.to.be.NaN;
-			done();
-
-			log(cmd, 'conf', iterations + ' iterations');
-		}
-	});
-
-	it('run $N times', function(done: MochaDone): void {
-		let cmd = 'lat_syscall ' + iterations + ' getpid';
-		let run = 0;
-
-		let stdout: string = '';
-
-		kernel.system(cmd, onExit, onStdout, nullOut);
-		function onStdout(pid: number, out: string): void {
-			stdout += out;
-		}
-		function onExit(pid: number, code: number): void {
-			expect(stdout).not.to.be.empty;
-			log(cmd, 'run', stdout.trim());
-
-			stdout = '';
-			run++;
-			if (run < N) {
-				kernel.system(cmd, onExit, onStdout, nullOut);
-			} else {
-				done();
-			}
-		}
-	});
+	for (let i = 0; i < BENCHMARKS.length; i++) {
+		describeBenchmark(BENCHMARKS[i]);
+	}
 });

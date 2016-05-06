@@ -5,6 +5,7 @@ FSROOT="./benchfs"
 BIN="$FSROOT/usr/bin"
 HBENCH="./test/hbench-os"
 SHROOT="./fs"
+RESULTDIRB="results/browsix"
 
 export CHROME_BIN='google-chrome-beta'
 
@@ -31,4 +32,14 @@ cp "$SHROOT/usr/bin/sh" "$BIN"
 
 mkdir -p results
 
-node_modules/.bin/gulp bench >results/raw
+RESULTDIR="$RESULTDIRB.1"
+while [ -d $RESULTDIR ]; do
+    EXT=`expr $EXT + 1`
+    RESULTDIR=$RESULTDIRB.$EXT
+done
+
+mkdir -p "$RESULTDIR"
+
+node_modules/.bin/gulp bench >"$RESULTDIR/raw"
+
+./analyze.sh "$RESULTDIR"

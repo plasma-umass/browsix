@@ -6,6 +6,7 @@
 /test/*.js
 /core.*
 /fs
+/fs_*
 /lib-dist
 /.tmp
 /app/elements/**/*.js
@@ -15,3 +16,5 @@
 *.blg
 *.dvi
 /report.out
+/results
+/benchfs

@@ -193,6 +193,15 @@ gulp.task('index-fs', ['build-fs'], function() {
         .pipe(gulp.dest('./fs'));
 });
 
+gulp.task('index-benchfs', [], function() {
+    return run('./xhrfs-index benchfs').exec()
+        .pipe(rename(function(path) {
+            path.basename = 'index';
+            path.extname = '.json';
+        }))
+        .pipe(gulp.dest('./benchfs'));
+});
+
 gulp.task('build-test', ['index-fs'], function() {
     return gulp.src('test/*.ts')
         .pipe(ts(project())).js
@@ -217,7 +226,7 @@ gulp.task('dist-test', ['build-test'], function() {
         .pipe(gulp.dest('./lib-dist/'));
 });
 
-gulp.task('dist-bench', ['build-test'], function() {
+gulp.task('dist-bench', ['build-test', 'index-benchfs'], function() {
     var testMain = './test/bench.js';
     var b = browserify({
         entries: [testMain],
@@ -257,7 +266,16 @@ gulp.task('bench', ['dist-bench'], function(done) {
     new karma.Server({
         configFile: __dirname + '/karma.conf.js',
         singleRun: true,
-        browsers: ['Firefox'],
+        concurrency: 1,
+        browsers: ['Firefox', 'Chrome'],
+        files: [
+            'lib-dist/test/bench.js',
+            {
+                pattern: 'benchfs/**/*',
+                included: false,
+                nocache: true,
+            },
+        ],
     }, done).start();
 });
 
@@ -452,6 +470,7 @@ gulp.task('serve', ['app:build', 'app:styles', 'app:elements', 'app:images'], fu
             routes: {
                 '/bower_components': 'bower_components',
                 '/fs': 'fs',
+                '/benchfs': 'benchfs',
             },
             middleware: [proxy(proxyOptions)],
         }

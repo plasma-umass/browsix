@@ -14,7 +14,7 @@ HOSTID="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)"
 HOSTDIR="$DIR/$HOSTID/$(hostname)"
 
 echo "system	test	command	kind	data" >"$RESULTS"
-cat "$DIR/raw" | grep 'LOG:' | cut -d "'" -f 2 >>"$RESULTS"
+cat "$DIR/raw" | grep 'LOG:' | cut -d "'" -f 2 | grep -v conf >>"$RESULTS"
 
 for f in $HOSTDIR/lat_*; do
     TEST="$(basename $f)"

@@ -13,7 +13,7 @@ const MINS = 60 * 1000; // milliseconds
 const IS_KARMA = typeof window !== 'undefined' && typeof (<any>window).__karma__ !== 'undefined';
 const ROOT = IS_KARMA ? '/base/benchfs/' : '/benchfs/';
 
-const N = 3;
+const N = 25;
 
 // from https://stackoverflow.com/questions/2400935/browser-detection-in-javascript
 const userAgent = (function(){
@@ -49,12 +49,21 @@ function nullOut(pid: number, out: string): void {}
 
 const BENCHMARKS = [
 	{
-		name: 'lat_syscall-getpid',
-		cmd: 'lat_syscall %d getpid',
+		name: 'lat_tcp',
+		cmd: 'lat_tcp %d 127.0.0.1',
+		remote_cmd: 'lat_tcp 0 -s',
 	},
 	{
 		name: 'lat_proc-null',
 		cmd: 'lat_proc %d null static',
+	},
+	{
+		name: 'lat_syscall-getpid',
+		cmd: 'lat_syscall %d getpid',
+	},
+	{
+		name: 'lat_pipe',
+		cmd: 'lat_pipe %d',
 	},
 ];
 
@@ -62,6 +71,15 @@ let kernel: Kernel = null;
 
 function describeBenchmark(benchmark: any): void {
 	let iterations: number = NaN;
+
+
+	if (benchmark.remote_cmd) {
+		it(benchmark.name + ' server-task', function(done: MochaDone): void {
+			kernel.once('port:3962', () => { done(); });
+			kernel.system(benchmark.remote_cmd, onExit, nullOut, nullOut);
+			function onExit(pid: number, code: number): void {}
+		});
+	}
 
 	it(benchmark.name + ' calibrate', function(done: MochaDone): void {
 		let cmd = benchmark.cmd.replace('%d', 0);

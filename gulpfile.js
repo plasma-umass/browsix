@@ -268,6 +268,7 @@ gulp.task('bench', ['dist-bench'], function(done) {
         singleRun: true,
         concurrency: 1,
         colors: false,
+        browserNoActivityTimeout: 100000, // ms
         reporters: ['dots'],
         browsers: ['Firefox', 'Chrome'],
         files: [

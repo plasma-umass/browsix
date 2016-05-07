@@ -49,16 +49,16 @@ function nullOut(pid: number, out: string): void {}
 
 const BENCHMARKS = [
 	{
-		name: 'lat_tcp',
+		name: 'lat_tcp_localhost',
 		cmd: 'lat_tcp %d 127.0.0.1',
 		remote_cmd: 'lat_tcp 0 -s',
 	},
 	{
-		name: 'lat_proc-null',
+		name: 'lat_proc_null_static',
 		cmd: 'lat_proc %d null static',
 	},
 	{
-		name: 'lat_syscall-getpid',
+		name: 'lat_syscall_getpid',
 		cmd: 'lat_syscall %d getpid',
 	},
 	{

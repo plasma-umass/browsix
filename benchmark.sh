@@ -42,7 +42,7 @@ mkdir -p "$RESULTDIR"
 
 node_modules/.bin/gulp bench >"$RESULTDIR/raw"
 
-(cd "$HBENCH" && rm Results -r && make && make run)
+(cd "$HBENCH" && rm -rf Results/linux* && make && make run)
 
 mv "$HBENCH/Results/linux-x86_64" "$RESULTDIR"
 

@@ -250,6 +250,17 @@ class Syscalls {
 		dir.getdents(length, ctx.complete.bind(ctx));
 	}
 
+	llseek(ctx: SyscallContext, fd: number, offhi: number, offlo: number, whence: number): void {
+		let file = ctx.task.files[fd];
+		if (!file) {
+			ctx.complete(-constants.EBADF, undefined);
+			return;
+		}
+		file.llseek(offhi, offlo, whence, (err: number, off: any): void => {
+			ctx.complete(err, off);
+		});
+	}
+
 	socket(ctx: SyscallContext, domain: AF, type: SOCK, protocol: number): void {
 		if (domain === AF.UNSPEC)
 			domain = AF.INET;

@@ -6,6 +6,7 @@
 
 'use strict';
 
+import { EINVAL } from './constants';
 import { ConnectCallback, SyscallContext, IFile, ITask } from './types';
 import { Pipe } from './pipe';
 
@@ -127,6 +128,10 @@ export class SocketFile implements IFile {
 
 	readSync(): Buffer {
 		return this.incoming.readSync();
+	}
+
+	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void {
+		cb(-EINVAL, undefined);
 	}
 
 	ref(): void {

@@ -50,6 +50,7 @@ export interface IFile {
 	write(buf: string|Buffer, cb: (err: any, len?: number) => void): void;
 	read(buf: Buffer, pos: number, len: number, off: number, cb: (err: any, len?: number) => void): void;
 	stat(cb: (err: any, stats: any) => void): void;
+	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void;
 	readdir(cb: (err: any, files: string[]) => void): void;
 
 	ref(): void;

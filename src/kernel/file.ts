@@ -10,9 +10,13 @@ import { SyscallContext, IKernel, IFile } from './types';
 import { Marshal, fs } from 'node-binary-marshal';
 import { EFAULT } from './constants';
 
+const SEEK_SET = 0;
+const SEEK_CUR = 1;
+const SEEK_END = 2;
+
 export class RegularFile implements IFile {
 	kernel:   IKernel;
-	fd:       number;
+	fd:       any;
 
 	refCount: number;
 
@@ -37,6 +41,16 @@ export class RegularFile implements IFile {
 
 	readdir(cb: (err: any, files: string[]) => void): void {
 		setTimeout(cb, 0, 'cant readdir on normal file');
+	}
+
+	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void {
+		if (whence === SEEK_CUR)
+			this.fd._pos += offlo;
+		else if (whence === SEEK_SET)
+			this.fd._pos = offlo;
+		else if (whence === SEEK_END)
+			debugger;
+		cb(0, this.fd._pos);
 	}
 
 	ref(): void {
@@ -81,6 +95,11 @@ export class DirFile implements IFile {
 
 	readdir(cb: (err: any, files: string[]) => void): void {
 		this.kernel.fs.readdir(this.path, cb);
+	}
+
+	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void {
+		console.log('TODO: dir.llseek');
+		cb(0, 0);
 	}
 
 	getdents(length: number, cb: (err: any, buf: Uint8Array) => void): void {

@@ -76,6 +76,7 @@ export interface ITask {
 	schedule(msg: SyscallResult): void;
 	setPriority(prio: number): number;
 	wait4(ctx: SyscallContext, pid: number, options: number): void;
+	chdir(path: string, cb: Function): void;
 }
 
 export class SyscallContext {

@@ -8,6 +8,7 @@
 
 import { SyscallContext, IKernel, IFile } from './types';
 import { Marshal, fs } from 'node-binary-marshal';
+import { EFAULT } from './constants';
 
 export class RegularFile implements IFile {
 	kernel:   IKernel;
@@ -85,7 +86,8 @@ export class DirFile implements IFile {
 	getdents(length: number, cb: (err: any, buf: Uint8Array) => void): void {
 		this.readdir((err: any, files: string[]) => {
 			if (err) {
-				cb('readdir: ' + err, null);
+				console.log('readdir: ' + err);
+				cb(-EFAULT, null);
 				return;
 			}
 			files = files.slice(this.off);
@@ -101,7 +103,8 @@ export class DirFile implements IFile {
 					break;
 				let [len, err] = Marshal(view, voff, dent, fs.DirentDef);
 				if (err) {
-					cb('dirent marshal: ' + err, null);
+					console.log('dirent marshal failed: ' + err);
+					cb(-EFAULT, null);
 					return;
 				}
 				voff += len;

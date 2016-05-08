@@ -106,7 +106,7 @@ else
 const ENOTTY = 25;
 
 const ENOENT = constants.ENOENT;
-const EACCESS = 2; // FIXME: is this right?
+const EACCES = constants.EACCES;
 
 const F_OK = constants.F_OK;
 const R_OK = constants.R_OK;
@@ -201,7 +201,7 @@ class Syscalls {
 		public kernel: Kernel) {}
 
 	getcwd(ctx: SyscallContext): void {
-		ctx.complete(ctx.task.cwd);
+		ctx.complete(utf8ToBytes(ctx.task.cwd));
 	}
 
 	fork(ctx: SyscallContext, heap: ArrayBuffer, args: any): void {
@@ -212,6 +212,17 @@ class Syscalls {
 		if (!code)
 			code = 0;
 		this.kernel.exit(<Task>ctx.task, code);
+	}
+
+	chdir(ctx: SyscallContext, p: any): void {
+		let s: string;
+		if (p instanceof Uint8Array)
+			s = utf8Slice(p, 0, p.length);
+		else
+			s = p;
+		ctx.task.chdir(s, (err: number): void => {
+			ctx.complete(err);
+		});
 	}
 
 	wait4(ctx: SyscallContext, pid: number, options: number): void {
@@ -229,11 +240,11 @@ class Syscalls {
 	getdents(ctx: SyscallContext, fd: number, length: number): void {
 		let file = ctx.task.files[fd];
 		if (!file) {
-			ctx.complete('bad FD ' + fd, null);
+			ctx.complete(-constants.EBADF, null);
 			return;
 		}
 		if (!(file instanceof DirFile)) {
-			ctx.complete('getdents on non-directory ' + fd, null);
+			ctx.complete(-constants.ENOTDIR, null);
 		}
 		let dir = <DirFile>file;
 		dir.getdents(length, ctx.complete.bind(ctx));
@@ -636,13 +647,13 @@ class Syscalls {
 
 			let result = 0;
 			if ((flags & R_OK) && !(stats.mode & S_IRUSR)) {
-				result = -EACCESS;
+				result = -EACCES;
 			}
 			if ((flags & W_OK) && !(stats.mode & S_IWUSR)) {
-				result = -EACCESS;
+				result = -EACCES;
 			}
 			if ((flags & X_OK) && !(stats.mode & S_IXUSR)) {
-				result = -EACCESS;
+				result = -EACCES;
 			}
 			ctx.complete(result);
 		});
@@ -1157,6 +1168,29 @@ export class Task implements ITask {
 			this.blobReady(blobUrl);
 		else
 			kernel.fs.open(filename, 'r', this.fileOpened.bind(this));
+	}
+
+	chdir(path: string, cb: Function): void {
+		if (!path.length) {
+			cb(-constants.ENOENT);
+		}
+		if (path[0] !== '/')
+			path = join(this.cwd, path);
+		// make sure we are chdir'ing into a (1) directory
+		// that (2) exists
+		this.kernel.fs.stat(path, (err: any, stats: any) => {
+			if (err) {
+				cb(-EACCES);
+				return;
+			}
+			if (!stats.isDirectory()) {
+				cb(-constants.ENOTDIR);
+				return;
+			}
+			// TODO: should we canonicalize this?
+			this.cwd = path;
+			cb(0);
+		});
 	}
 
 	addFile(f: IFile): number {

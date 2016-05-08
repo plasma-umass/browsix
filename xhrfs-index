@@ -7,7 +7,7 @@ var fs = require('fs');
 var path = require('path');
 
 var exclude = [
-        /^\./, // dotfiles
+//        /^\./, // dotfiles
         /^bower_components$/,
         /^node_modules$/,
         /^build$/,

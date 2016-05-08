@@ -105,6 +105,17 @@ else
 
 const ENOTTY = 25;
 
+const ENOENT = constants.ENOENT;
+const EACCESS = 2; // FIXME: is this right?
+
+const F_OK = constants.F_OK;
+const R_OK = constants.R_OK;
+const W_OK = constants.W_OK;
+const X_OK = constants.X_OK;
+const S_IRUSR = constants.S_IRUSR;
+const S_IWUSR = constants.S_IWUSR;
+const S_IXUSR = constants.S_IXUSR;
+
 const O_APPEND = constants.O_APPEND || 0;
 const O_CREAT = constants.O_CREAT || 0;
 const O_EXCL = constants.O_EXCL || 0;
@@ -114,6 +125,7 @@ const O_SYNC = constants.O_SYNC || 0;
 const O_TRUNC = constants.O_TRUNC || 0;
 const O_WRONLY = constants.O_WRONLY || 0;
 const O_NONBLOCK = constants.O_NONBLOCK || 0;
+const O_DIRECTORY = constants.O_DIRECTORY || 0;
 
 const PRIO_MIN = -20;
 const PRIO_MAX = 20;
@@ -131,7 +143,7 @@ function flagsToString(flag: any): string {
 	if (flag & O_NONBLOCK) {
 		console.log('TODO: nonblocking flag');
 	}
-	flag &= ~(O_CLOEXEC|O_LARGEFILE|O_NONBLOCK);
+	flag &= ~(O_CLOEXEC|O_LARGEFILE|O_DIRECTORY|O_NONBLOCK);
 
 	switch (flag) {
 	case O_RDONLY:
@@ -601,6 +613,38 @@ class Syscalls {
 			let view = new DataView(buf.buffer, buf.byteOffset);
 			marshal.Marshal(view, 0, stats, marshal.fs.StatDef);
 			ctx.complete(null, buf);
+		});
+	}
+
+	access(ctx: SyscallContext, p: any, flags: number): void {
+		let s: string;
+		if (p instanceof Uint8Array)
+			s = utf8Slice(p, 0, p.length);
+		else
+			s = p;
+		// TODO: the difference between access and stat
+		this.kernel.fs.stat(join(ctx.task.cwd, s), (err: any, stats: any) => {
+			if (err) {
+				ctx.complete(-ENOENT);
+				return;
+			}
+
+			if (flags === F_OK) {
+				ctx.complete(F_OK);
+				return;
+			}
+
+			let result = 0;
+			if ((flags & R_OK) && !(stats.mode & S_IRUSR)) {
+				result = -EACCESS;
+			}
+			if ((flags & W_OK) && !(stats.mode & S_IWUSR)) {
+				result = -EACCESS;
+			}
+			if ((flags & X_OK) && !(stats.mode & S_IXUSR)) {
+				result = -EACCESS;
+			}
+			ctx.complete(result);
 		});
 	}
 

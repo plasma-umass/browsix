@@ -396,10 +396,10 @@ class Syscalls {
 		ienv: (Uint8Array|string)[],
 		files: number[]): void {
 
-		function toStr(buf: Uint8Array|string): string {
+		function toStr(buf: Uint8Array|number[]|string): string {
 			if (typeof buf === 'string') {
 				return <string>buf;
-			} else if (buf instanceof Uint8Array) {
+			} else if (buf instanceof Uint8Array || buf instanceof Array) {
 				let len = buf.length;
 				if (len > 0 && buf[len - 1] === 0)
 					len--;

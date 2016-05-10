@@ -1,0 +1,104 @@
+#!/usr/bin/env node
+// based on jvilk's XHRIndexer, but in plain JS using async APIs
+
+'use strict';
+
+var fs = require('fs');
+var path = require('path');
+
+var exclude = [
+        /^\./, // dotfiles
+        /^bower_components$/,
+        /^node_modules$/,
+        /^build$/,
+        /^dist$/,
+        /~$/, // emacs backups
+];
+
+function shouldExclude(name) {
+    for (var i = 0; i < exclude.length; i++) {
+        if (name.match(exclude[i]))
+            return true;
+    }
+    return false;
+}
+
+var outstanding = 1;
+var tree = {};
+
+function subtreeAt(relative) {
+    if (!relative)
+	return tree;
+
+    var parts = relative.split(path.sep);
+    var subtree = tree;
+    // start at 1 to skip the leading /
+    for (var i = 1; i < parts.length; i++)
+        subtree = subtree[parts[i]];
+
+    return subtree;
+}
+
+function maybeFinished(file, err, onComplete) {
+    if (--outstanding === 0) {
+	onComplete(err, tree);
+    }
+}
+
+function walkDir(base, curr, onComplete) {
+    var parent = curr.slice(base.length);
+    fs.readdir(curr, function(err, files) {
+	if (err) {
+	    process.stderr.write('error reading dir: ' + err);
+	    maybeFinished(curr, err, onComplete);
+	    return;
+	}
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            if (shouldExclude(file))
+                continue;
+
+	    outstanding++;
+
+	    var absFile = path.join(curr, file)
+            fs.stat(absFile, function statFile(absFile, err, stats) {
+		if (err) {
+		    maybeFinished(absFile, err, onComplete);
+		    return;
+		}
+		var parts = absFile.split(path.sep);
+		var file = parts[parts.length-1];
+                var subtree = subtreeAt(parent);
+                if (stats.isDirectory()) {
+                    subtree[file] = {};
+                    walkDir(base, absFile, onComplete);
+                } else {
+                    subtree[file] = null;
+		    maybeFinished(absFile, null, onComplete);
+                }
+            }.bind(null, absFile));
+        }
+	maybeFinished(curr, null, onComplete);
+    });
+}
+
+function main() {
+    var pathToNode = process.argv[0];
+    var pathToScript = process.argv[1];
+    var args = process.argv.slice(2);
+
+    var root = process.cwd();
+    if (args.length > 0)
+        root = args[0];
+
+    walkDir(root, root, function writeJSON(err, tree) {
+        if (err) {
+            process.stderr.write('error: ' + err + '\n');
+            process.exit(-1);
+            return;
+        }
+        process.stdout.write(JSON.stringify(tree) + '\n');
+    });
+}
+
+main();

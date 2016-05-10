@@ -1,0 +1,163 @@
+17441 execve("/home/bpowers/src/texlive-2015/dist_musl/bin/bibtex", ["/home/bpowers/src/texlive-2015/d"..., "example"], [/* 94 vars */]) = 0
+17441 arch_prctl(ARCH_SET_FS, 0x7feb0ac85c68) = 0
+17441 set_tid_address(0x7feb0ac85ca0)   = 17441
+17441 mprotect(0x7feb0ac82000, 4096, PROT_READ) = 0
+17441 mprotect(0x628000, 4096, PROT_READ) = 0
+17441 lstat("/home", {st_mode=S_IFDIR|0755, st_size=4096, ...}) = 0
+17441 lstat("/home/bpowers", {st_mode=S_IFDIR|0755, st_size=12288, ...}) = 0
+17441 lstat("/home/bpowers/src", {st_mode=S_IFDIR|0755, st_size=12288, ...}) = 0
+17441 lstat("/home/bpowers/src/texlive-2015", {st_mode=S_IFDIR|0755, st_size=4096, ...}) = 0
+17441 lstat("/home/bpowers/src/texlive-2015/dist_musl", {st_mode=S_IFDIR|0755, st_size=4096, ...}) = 0
+17441 lstat("/home/bpowers/src/texlive-2015/dist_musl/bin", {st_mode=S_IFDIR|0755, st_size=12288, ...}) = 0
+17441 lstat("/home/bpowers/src/texlive-2015/dist_musl/bin/bibtex", {st_mode=S_IFREG|0755, st_size=170392, ...}) = 0
+17441 brk(NULL)                         = 0x1437000
+17441 brk(0x1438000)                    = 0x1438000
+17441 brk(0x1439000)                    = 0x1439000
+17441 brk(0x143a000)                    = 0x143a000
+17441 brk(0x143c000)                    = 0x143c000
+17441 stat("/home/bpowers/src/texlive-2015/dist_musl/bin", {st_mode=S_IFDIR|0755, st_size=12288, ...}) = 0
+17441 access("/home/bpowers/src/texlive-2015/dist_musl/bin/texmf.cnf", R_OK) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/dist_musl/bin/share/texmf-local/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/dist_musl/bin/share/texmf-dist/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/dist_musl/bin/share/texmf/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/dist_musl/bin/texmf-local/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/dist_musl/bin/texmf-dist/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/dist_musl/bin/texmf/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/dist_musl", {st_mode=S_IFDIR|0755, st_size=4096, ...}) = 0
+17441 access("/home/bpowers/src/texlive-2015/dist_musl/texmf.cnf", R_OK) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/dist_musl/share/texmf-local/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/dist_musl/share/texmf-dist/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/dist_musl/share/texmf/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/dist_musl/texmf-local/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/dist_musl/texmf-dist/web2c", {st_mode=S_IFDIR|0755, st_size=4096, ...}) = 0
+17441 access("/home/bpowers/src/texlive-2015/dist_musl/texmf-dist/web2c/texmf.cnf", R_OK) = 0
+17441 stat("/home/bpowers/src/texlive-2015/dist_musl/texmf-dist/web2c/texmf.cnf", {st_mode=S_IFREG|0644, st_size=31983, ...}) = 0
+17441 stat("/home/bpowers/src/texlive-2015/dist_musl/texmf/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texmf-local/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015", {st_mode=S_IFDIR|0755, st_size=4096, ...}) = 0
+17441 access("/home/bpowers/src/texlive-2015/texmf.cnf", R_OK) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/share/texmf-local/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/share/texmf-dist/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/share/texmf/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/texmf-local/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/texmf-dist/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/texmf/web2c", 0x7ffdcdbea130) = -1 ENOENT (No such file or directory)
+17441 open("/home/bpowers/src/texlive-2015/dist_musl/texmf-dist/web2c/texmf.cnf", O_RDONLY) = 3
+17441 readv(3, [{"", 0}, {"% original texmf.cnf -- runtime "..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"\n% variables before they are def"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"ectory of our several trees, i.e"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {" more than one per-user tree, se"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"for ls-R files.  There need not "..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"FCACHE = $TEXMFSYSVAR;$TEXMFVAR\n"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"rectory may not be\n% a good plac"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"tex/, macros that can only be\n% "..., 1024}], 2) = 1024
+17441 brk(0x143d000)                    = 0x143d000
+17441 readv(3, [{"", 0}, {"    = .;$TEXMF/tex/{latex,generi"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"EXMF/tex/{xetex,plain,generic,}/"..., 1024}], 2) = 1024
+17441 brk(0x143e000)                    = 0x143e000
+17441 readv(3, [{"", 0}, {"ex,plain,generic}//\nTEX.upmpost "..., 1024}], 2) = 1024
+17441 brk(0x143f000)                    = 0x143f000
+17441 readv(3, [{"", 0}, {"         .;$TEXMF/ttf2pk//\n\n% Me"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"s}//\nVFFONTS.XDvi   = .;$TEXMF/%"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"nts/map// because ConTeXt\n% want"..., 1024}], 2) = 1024
+17441 brk(0x1440000)                    = 0x1440000
+17441 readv(3, [{"", 0}, {"r allowing TeX to find\n% fonts i"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"e feature files (.fea).\nFONTFEAT"..., 1024}], 2) = 1024
+17441 brk(0x1441000)                    = 0x1441000
+17441 readv(3, [{"", 0}, {"d CWeb input paths.\nWEBINPUTS = "..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {" Lua needs to look in TEXINPUTS "..., 1024}], 2) = 1024
+17441 brk(0x1442000)                    = 0x1442000
+17441 readv(3, [{"", 0}, {"uages.\nJAVAINPUTS   = .;$TEXMF/s"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {". in this path.\n%\n% The idea beh"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"SELFAUTOLOC/share/texmf/web2c,\\\n"..., 1024}], 2) = 1024
+17441 brk(0x1443000)                    = 0x1443000
+17441 readv(3, [{"", 0}, {" Part 2: Options.\n\n% If this opt"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"wed.  Although this\n% is not ful"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"and Windows convert\n%   is somet"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {": as `r' and disallow going to p"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"as the options -enctex,\n% -mltex"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"rogram called for the\n% interact"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"  The TL Perl does provide all t"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"inimemory available; also applie"..., 1024}], 2) = 1024
+17441 brk(0x1444000)                    = 0x1444000
+17441 readv(3, [{"", 0}, {"ding .fmt\npool_free = 47500\n\n% B"..., 1024}], 2) = 1024
+17441 readv(3, [{"", 0}, {"size  = 100000     % for saving "..., 1024}], 2) = 1024
+17441 brk(0x1445000)                    = 0x1445000
+17441 readv(3, [{"", 0}, {"ings.pbibtex = 35307\n\n% GFtype o"..., 1024}], 2) = 239
+17441 readv(3, [{"", 0}, {"ings.pbibtex = 35307\n\n% GFtype o"..., 1024}], 2) = 0
+17441 close(3)                          = 0
+17441 stat("/home/bpowers/src/texlive-2015/texmf-config", 0x7ffdcdbea060) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/texmf-var", 0x7ffdcdbea060) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texmf-local", 0x7ffdcdbea060) = -1 ENOENT (No such file or directory)
+17441 stat("/home/bpowers/src/texlive-2015/texmf-dist", 0x7ffdcdbea060) = -1 ENOENT (No such file or directory)
+17441 mmap(NULL, 516096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7feb0ac04000
+17441 munmap(0x7feb0ac04000, 516096)    = 0
+17441 brk(0x1447000)                    = 0x1447000
+17441 brk(0x144a000)                    = 0x144a000
+17441 brk(0x144f000)                    = 0x144f000
+17441 brk(0x145f000)                    = 0x145f000
+17441 brk(0x1464000)                    = 0x1464000
+17441 brk(0x1469000)                    = 0x1469000
+17441 brk(0x146e000)                    = 0x146e000
+17441 brk(0x1473000)                    = 0x1473000
+17441 brk(0x1487000)                    = 0x1487000
+17441 brk(0x148c000)                    = 0x148c000
+17441 brk(0x14bd000)                    = 0x14bd000
+17441 brk(0x14e0000)                    = 0x14e0000
+17441 brk(0x1503000)                    = 0x1503000
+17441 brk(0x1526000)                    = 0x1526000
+17441 brk(0x152f000)                    = 0x152f000
+17441 brk(0x1552000)                    = 0x1552000
+17441 brk(0x155b000)                    = 0x155b000
+17441 open("example.aux", O_RDONLY)     = 3
+17441 open("example.blg", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 4
+17441 ioctl(4, TIOCGWINSZ, 0x7ffdcdbea2d8) = -1 ENOTTY (Inappropriate ioctl for device)
+17441 open("example.bbl", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 5
+17441 ioctl(5, TIOCGWINSZ, 0x7ffdcdbea2d8) = -1 ENOTTY (Inappropriate ioctl for device)
+17441 ioctl(1, TIOCGWINSZ, {ws_row=44, ws_col=180, ws_xpixel=0, ws_ypixel=0}) = 0
+17441 writev(1, [{"This is BibTeX, Version 0.99d (T"..., 53}, {"\n", 1}], 2) = 54
+17441 writev(1, [{"The top-level auxiliary file: ex"..., 41}, {"\n", 1}], 2) = 42
+17441 readv(3, [{"", 0}, {"\\relax \n\\citation{Nobody06}\n\\bib"..., 1024}], 2) = 61
+17441 stat(".", {st_mode=S_IFDIR|0755, st_size=4096, ...}) = 0
+17441 access("./mybib.bib", R_OK)       = 0
+17441 stat("./mybib.bib", {st_mode=S_IFREG|0644, st_size=99, ...}) = 0
+17441 open("mybib.bib", O_RDONLY)       = 6
+17441 access("./plain.bst", R_OK)       = 0
+17441 stat("./plain.bst", {st_mode=S_IFREG|0644, st_size=20613, ...}) = 0
+17441 open("plain.bst", O_RDONLY)       = 7
+17441 writev(1, [{"The style file: plain.bst", 25}, {"\n", 1}], 2) = 26
+17441 readv(3, [{"", 0}, {"\\relax \n\\citation{Nobody06}\n\\bib"..., 1024}], 2) = 0
+17441 close(3)                          = 0
+17441 readv(7, [{"", 0}, {"% BibTeX standard bibliography s"..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"t.state.consts}\n{ #0 'before.all"..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"\nFUNCTION {new.sentence}\n{ outpu"..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"eptr \"{ff~}{vv~}{ll}{, jj}\" form"..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"=\n            }\n            {   "..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"mphasize * }\n      if$\n      \"vo"..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"obal.max$ substring$ 't := }\n   "..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"\"In \" booktitle emphasize * }\n  "..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {".names$ duplicate$\n  #2 >\n    { "..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"    { key empty$\n        { bookt"..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"$\n    }\n  if$\n  new.block\n  form"..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"    format.chapter.pages \"chapte"..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"\nFUNCTION {inproceedings}\n{ outp"..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"{ format.authors output.nonnull "..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"item\n  format.authors \"author\" o"..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"ut.bibitem\n  format.authors \"aut"..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"CRO {ieeese} {\"IEEE Transactions"..., 1024}], 2) = 1024
+17441 writev(1, [{"Database file #1: mybib.bib", 27}, {"\n", 1}], 2) = 28
+17441 readv(6, [{"", 0}, {"@misc{ Nobody06,\n       author ="..., 1024}], 2) = 99
+17441 readv(6, [{"", 0}, {"@misc{ Nobody06,\n       author ="..., 1024}], 2) = 0
+17441 close(6)                          = 0
+17441 readv(7, [{"", 0}, {"'s\n  if$\n}\n\nFUNCTION {sort.forma"..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"       }\n            { key sorti"..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"ditor.organization.sort\n        "..., 1024}], 2) = 1024
+17441 readv(7, [{"", 0}, {"it.state.consts}\n\nITERATE {call."..., 1024}], 2) = 133
+17441 readv(7, [{"", 0}, {"it.state.consts}\n\nITERATE {call."..., 1024}], 2) = 0
+17441 close(7)                          = 0
+17441 writev(5, [{"\\begin{thebibliography}{1}\n\n\\bib"..., 109}, {NULL, 0}], 2) = 109
+17441 close(5)                          = 0
+17441 writev(4, [{"This is BibTeX, Version 0.99d (T"..., 859}, {NULL, 0}], 2) = 859
+17441 close(4)                          = 0
+17441 exit_group(0)                     = ?
+17441 +++ exited with 0 +++

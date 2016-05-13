@@ -42,11 +42,14 @@
 	let kernel = null;
 
 	function remoteRequest(url, cb) {
-		let xhr = new XMLHttpRequest();
-		xhr.open('GET', url, true);
-		xhr.responseType = 'blob';
-		xhr.onload = cb;
-		xhr.onerror = () => {
+		let request = new XMLHttpRequest();
+		request.open('GET', url, true);
+		request.responseType = 'blob';
+		request.onload = cb;
+		request.onerror = () => {
+			// if the request failed, and we haven't
+			// already switched to targeting Browsix, do
+			// so now.
 			if (!inBrowser) {
 				console.log('switching to in-browser backend');
 				setInBrowser(true);
@@ -55,7 +58,7 @@
 				console.log('xhr failed');
 			}
 		};
-		xhr.send();
+		request.send();
 	}
 
 	function inBrowserRequest(url, cb) {
@@ -69,12 +72,16 @@
 	}
 
 	function memeRequest(url, cb) {
+		let startTime = performance.now();
 		let start = 0;
 		if (url && url.length && url[0] === '/')
 			start = 1;
 
 		let request = inBrowser ? inBrowserRequest : remoteRequest;
-		request(apiBase + url.substring(start), cb);
+		request(apiBase + url.substring(start), function() {
+			console.log('took ' + (performance.now() - startTime) + ' ms')
+			cb.apply(this);
+		});
 	}
 
 	function onInBrowserReady() {
@@ -194,6 +201,7 @@
 			debugger;
 		}
 	});
+	window.memeRequest = memeRequest;
 
 	button.addEventListener('click', clicked);
 

@@ -227,7 +227,7 @@ gulp.task('dist-test', ['build-test'], function() {
 });
 
 gulp.task('dist-bench', ['build-test', 'index-benchfs'], function() {
-    var testMain = './test/bench.js';
+    var testMain = './bench/bench.js';
     var b = browserify({
         entries: [testMain],
         builtins: false,
@@ -272,7 +272,7 @@ gulp.task('bench', ['dist-bench'], function(done) {
         reporters: ['dots'],
         browsers: ['Firefox', 'Chrome'],
         files: [
-            'lib-dist/test/bench.js',
+            'lib-dist/bench/bench.js',
             {
                 pattern: 'benchfs/**/*',
                 included: false,

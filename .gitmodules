@@ -8,5 +8,5 @@
 	path = src/kernel/vendor/BrowserFS
 	url = https://github.com/bpowers/BrowserFS
 [submodule "test/hbench-os"]
-	path = test/hbench-os
+	path = bench/hbench-os
 	url = git@github.com:bpowers/HBench-OS.git

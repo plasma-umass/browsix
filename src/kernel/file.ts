@@ -130,7 +130,7 @@ export class DirFile implements IFile {
 				this.off++;
 			}
 
-			cb(null, buf.slice(0, voff));
+			cb(null, buf.subarray(0, voff));
 		});
 	}
 

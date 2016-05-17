@@ -107,6 +107,7 @@ const ENOTTY = 25;
 
 const ENOENT = constants.ENOENT;
 const EACCES = constants.EACCES;
+const EINVAL = constants.EINVAL;
 
 const F_OK = constants.F_OK;
 const R_OK = constants.R_OK;
@@ -116,16 +117,16 @@ const S_IRUSR = constants.S_IRUSR;
 const S_IWUSR = constants.S_IWUSR;
 const S_IXUSR = constants.S_IXUSR;
 
-const O_APPEND = constants.O_APPEND || 0;
-const O_CREAT = constants.O_CREAT || 0;
-const O_EXCL = constants.O_EXCL || 0;
-const O_RDONLY = constants.O_RDONLY || 0;
-const O_RDWR = constants.O_RDWR || 0;
-const O_SYNC = constants.O_SYNC || 0;
-const O_TRUNC = constants.O_TRUNC || 0;
-const O_WRONLY = constants.O_WRONLY || 0;
-const O_NONBLOCK = constants.O_NONBLOCK || 0;
-const O_DIRECTORY = constants.O_DIRECTORY || 0;
+const O_APPEND = constants.O_APPEND;
+const O_CREAT = constants.O_CREAT;
+const O_EXCL = constants.O_EXCL;
+const O_RDONLY = constants.O_RDONLY;
+const O_RDWR = constants.O_RDWR;
+const O_SYNC = constants.O_SYNC;
+const O_TRUNC = constants.O_TRUNC;
+const O_WRONLY = constants.O_WRONLY;
+const O_NONBLOCK = constants.O_NONBLOCK;
+const O_DIRECTORY = constants.O_DIRECTORY;
 
 const PRIO_MIN = -20;
 const PRIO_MAX = 20;
@@ -206,6 +207,36 @@ class Syscalls {
 
 	fork(ctx: SyscallContext, heap: ArrayBuffer, args: any): void {
 		this.kernel.fork(ctx, <Task>ctx.task, heap, args);
+	}
+
+	execve(ctx: SyscallContext, filename: Uint8Array, args: Uint8Array[], env: Uint8Array[]): void {
+		// TODO: see if its possible/useful to avoid
+		// converting from uint8array to string here.
+		let file = utf8Slice(filename, 0, filename.length);
+		let sargs: string[] = [];
+		let senv: Environment = {};
+		for (let i = 0; i < args.length; i++) {
+			let arg = args[i];
+			sargs[i] = utf8Slice(arg, 0, arg.length);
+		}
+		for (let i = 0; i < env.length; i++) {
+			let pair = utf8Slice(env[i], 0, env[i].length);
+			let n = pair.indexOf('=');
+			if (n > 0)
+				senv[pair.slice(0, n)] = pair.slice(n+1);
+		}
+
+		ctx.task.exec(file, sargs, senv, (err: any, pid: number) => {
+			let nerr = -EACCES;
+			if (err && err.code === 'ENOENT')
+				nerr = -ENOENT;
+			// only complete if we don't have a pid. if we
+			// DO have a new pid, it means exec succeeded
+			// and we shouldn't try communicating with our
+			// old, dead worker.
+			if (!pid)
+				ctx.complete(err);
+		});
 	}
 
 	exit(ctx: SyscallContext, code?: number): void {
@@ -541,6 +572,45 @@ class Syscalls {
 		});
 	}
 
+	dup(ctx: SyscallContext, fd1: number): void {
+		let origFile = ctx.task.files[fd1];
+		if (!origFile) {
+			ctx.complete(-constants.EBADF);
+			return;
+		}
+
+		origFile.ref();
+
+		let fd2 = ctx.task.allocFD();
+		ctx.task.files[fd2] = origFile;
+
+		ctx.complete(fd2);
+	}
+
+	dup3(ctx: SyscallContext, fd1: number, fd2: number, opts: number): void {
+		// only allowed values for option are 0 and O_CLOEXEC
+		if (fd1 === fd2 || (opts & ~O_CLOEXEC)) {
+			ctx.complete(-EINVAL);
+			return;
+		}
+		let origFile = ctx.task.files[fd1];
+		if (!origFile) {
+			ctx.complete(-constants.EBADF);
+			return;
+		}
+
+		let oldFile = ctx.task.files[fd2];
+		if (oldFile) {
+			oldFile.unref();
+			oldFile = undefined;
+		}
+
+		origFile.ref();
+		ctx.task.files[fd2] = origFile;
+
+		ctx.complete(fd2);
+	}
+
 	unlink(ctx: SyscallContext, p: any): void {
 		let s: string;
 		if (p instanceof Uint8Array)
@@ -610,13 +680,8 @@ class Syscalls {
 
 		ctx.task.files[fd] = undefined;
 
-		if (file instanceof Pipe) {
-			ctx.complete(null, 0);
-			file.unref();
-			return;
-		}
-		file.unref();
 		ctx.complete(null, 0);
+		file.unref();
 	}
 
 	fstat(ctx: SyscallContext, fd: number): void {
@@ -1117,6 +1182,9 @@ export class Task implements ITask {
 	blobUrl: string;
 	args: string[];
 	env: Environment;
+	pendingExePath: string;
+	pendingArgs: string[];
+	pendingEnv: Environment;
 	cwd: string; // must be absolute path
 
 	waitQueue: any[] = [];
@@ -1148,9 +1216,7 @@ export class Task implements ITask {
 		this.pid = pid;
 		this.parent = parent;
 		this.kernel = kernel;
-		this.exePath = filename;
 		this.exeFd = null;
-		this.args = args;
 		this.cwd = cwd;
 		this.priority = 0;
 		if (parent) {
@@ -1158,16 +1224,11 @@ export class Task implements ITask {
 			this.parent.children.push(this);
 		}
 
-		this.env = env;
 		this.files = files;
 
 		this.blobUrl = blobUrl;
 		this.heap = heap;
 		this.forkArgs = forkArgs;
-
-		// often, something needs to be done after this task
-		// is ready to go.  Keep track of that callback here.
-		this.onRunnable = cb;
 
 		// the JavaScript code of the worker that we're
 		// launching comes from the filesystem - unless we are
@@ -1178,7 +1239,19 @@ export class Task implements ITask {
 		if (blobUrl)
 			this.blobReady(blobUrl);
 		else
-			kernel.fs.open(filename, 'r', this.fileOpened.bind(this));
+			this.exec(filename, args, env, cb);
+	}
+
+	exec(filename: string, args: string[], env: Environment, cb: (err: any, pid: number) => void): void {
+		this.pendingArgs = args;
+		this.pendingEnv = env;
+		this.pendingExePath = filename;
+
+		// often, something needs to be done after this task
+		// is ready to go.  Keep track of that callback here.
+		this.onRunnable = cb;
+
+		this.kernel.fs.open(filename, 'r', this.fileOpened.bind(this));
 	}
 
 	chdir(path: string, cb: Function): void {
@@ -1204,8 +1277,15 @@ export class Task implements ITask {
 		});
 	}
 
+	allocFD(): number {
+		let n = 0;
+		for (n = 0; this.files[n]; n++) {}
+
+		return n;
+	}
+
 	addFile(f: IFile): number {
-		let n = Object.keys(this.files).length;
+		let n = this.allocFD();
 		this.files[n] = f;
 		return n;
 	}
@@ -1268,9 +1348,9 @@ export class Task implements ITask {
 
 			// make sure this argument is an
 			// absolute-valued path.
-			this.args[0] = this.exePath;
+			this.pendingArgs[0] = this.pendingExePath;
 
-			this.args = [cmd].concat(this.args);
+			this.pendingArgs = [cmd].concat(this.pendingArgs);
 
 			// OK - we've changed what our executable is
 			// at this point so we need to read in the new
@@ -1291,11 +1371,16 @@ export class Task implements ITask {
 	}
 
 	blobReady(blobUrl: string): void {
+		if (this.worker) {
+			this.worker.onmessage = undefined;
+			this.worker.terminate();
+			this.worker = undefined;
+		}
 		this.worker = new Worker(blobUrl);
 		this.worker.onmessage = this.syscallHandler.bind(this);
 		this.worker.onerror = (err: ErrorEvent): void => {
 			if (this.files[2]) {
-				this.files[2].write('Error while executing ' + this.exePath + ': ' + err.message + '\n', () => {
+				this.files[2].write('Error while executing ' + this.pendingExePath + ': ' + err.message + '\n', () => {
 					this.kernel.exit(this, -1);
 				});
 			} else {
@@ -1308,6 +1393,13 @@ export class Task implements ITask {
 
 		this.heap = undefined;
 		this.forkArgs = undefined;
+
+		this.args = this.pendingArgs;
+		this.env = this.pendingEnv;
+		this.exePath = this.pendingExePath;
+		this.pendingArgs = undefined;
+		this.pendingEnv = undefined;
+		this.pendingExePath = undefined;
 
 		this.signal(
 			'init',

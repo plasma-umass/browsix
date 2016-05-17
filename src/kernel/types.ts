@@ -73,6 +73,8 @@ export interface ITask {
 	cwd: string;
 	priority: number;
 
+	exec(filename: string, args: string[], env: Environment, cb: (err: any, pid: number) => void): void;
+	allocFD(): number;
 	addFile(f: IFile): number;
 	schedule(msg: SyscallResult): void;
 	setPriority(prio: number): number;

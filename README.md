@@ -12,8 +12,8 @@ they can run in a Unix-like environment within the browser. Browsix
 also provides a POSIX-like shell that makes it easy to compose
 applications together for parallel data processing via pipes.
 
-For more details, check out our [tech
-report](https://web.cs.umass.edu/publication/details.php?id=2414).
+*For more details, check out our [tech
+report (PDF)](https://web.cs.umass.edu/publication/details.php?id=2414)*.
 
 
 Another way to think about this is that modern web applications are
@@ -33,14 +33,8 @@ parallel with the main browser thread, can communicate over pipes,
 sockets, or the filesystem, and can create subprocesses.  This process
 model is implemented on top of existing browser APIs, like [web
 workers](https://en.wikipedia.org/wiki/Web_worker), so it works in all
-modern browsers.
-
-Using Browsix, you can run a large class of existing
-[*node.js*](https://nodejs.org/) and [*Go*](https://golang.org/), and
-C/C++ utilities and services in the browser without code changes and
-without having to allocate server-side resources -- Browsix
-applications can be served statically or over a
-[CDN](https://en.wikipedia.org/wiki/Content_delivery_network).
+modern browsers.  Browsix applications can be served statically or
+over a [CDN](https://en.wikipedia.org/wiki/Content_delivery_network).
 
 ### The Browsix Shell
 

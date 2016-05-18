@@ -1,29 +1,45 @@
-Browsix - A Unix-like Operating System for the Browser
-======================================================
+Browsix - Bringing Unix to the Browser
+======================================
 
-Modern web applications are multi-process by nature - the client and
-some of the application logic lives in the browser, and some of it
-lives in the cloud, often implemented as
+While standard operating systems like Unix make it relatively simple
+to build complex applications, web browsers lack the features that
+make this possible.  This project is Browsix, a JavaScript-only
+framework that brings the essence of Unix to the browser. Browsix
+makes core Unix features available to web applications (including
+pipes, processes, signals, sockets, and a shared file system) and
+extends JavaScript runtimes for C, C++, Go, and Node.js programs so
+they can run in a Unix-like environment within the browser. Browsix
+also provides a POSIX-like shell that makes it easy to compose
+applications together for parallel data processing via pipes.
+
+For more details, check out our [tech
+report](https://web.cs.umass.edu/publication/details.php?id=2414).
+
+
+Another way to think about this is that modern web applications are
+multi-process by nature - the client and some of the application logic
+lives in the browser, and some of it lives in the cloud, often
+implemented as
 [microservices](https://en.wikipedia.org/wiki/Microservices).
 
 Browsix lets you rethink the boundary between code executing in the
 browser vs. server-side, while taking advantage of the multi-core
 nature of modern computing devices.
 
-With Browsix, you compose the in-browser part of your web applications
-out of processes.  Processes behave as you would expect coming from
-[Unix](https://en.wikipedia.org/wiki/Unix): they run in parallel with
-the main browser thread, can communicate over pipes, sockets, or the
-filesystem, and can create subprocesses.  This process model is
-implemented on top of existing browser APIs, like [web
+Browsix enables you to compose the in-browser part of your web
+applications out of processes.  Processes behave as you would expect
+coming from [Unix](https://en.wikipedia.org/wiki/Unix): they run in
+parallel with the main browser thread, can communicate over pipes,
+sockets, or the filesystem, and can create subprocesses.  This process
+model is implemented on top of existing browser APIs, like [web
 workers](https://en.wikipedia.org/wiki/Web_worker), so it works in all
 modern browsers.
 
 Using Browsix, you can run a large class of existing
-[*node.js*](https://nodejs.org/) and [*Go*](https://golang.org/)
-utilities and services in the browser without code changes and without
-having to allocate server-side resources -- Browsix applications can
-be served statically or by
+[*node.js*](https://nodejs.org/) and [*Go*](https://golang.org/), and
+C/C++ utilities and services in the browser without code changes and
+without having to allocate server-side resources -- Browsix
+applications can be served statically or over a
 [CDN](https://en.wikipedia.org/wiki/Content_delivery_network).
 
 ### The Browsix Shell
@@ -41,8 +57,9 @@ Try it out here: [live demo!](https://unix.bpowers.net/)
 
 ### Details
 
-Browsix currently supports running node.js and Go programs.  It
-supports Go with a modified GopherJS compiler.
+Browsix currently supports running node.js, Go, and C/C++ programs.
+It supports Go with a modified GopherJS compiler, and C/C++ with
+modifications to Emscripten.
 
 
 Using Browsix

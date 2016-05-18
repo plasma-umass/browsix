@@ -226,6 +226,11 @@ class Syscalls {
 				senv[pair.slice(0, n)] = pair.slice(n+1);
 		}
 
+		// FIXME: hack to work around unidentified GNU make issue
+		if (!senv['PATH'])
+			senv['PATH'] = '/usr/bin';
+
+
 		ctx.task.exec(file, sargs, senv, (err: any, pid: number) => {
 			let nerr = -EACCES;
 			if (err && err.code === 'ENOENT')
@@ -1230,22 +1235,31 @@ export class Task implements ITask {
 		this.heap = heap;
 		this.forkArgs = forkArgs;
 
+		// often, something needs to be done after this task
+		// is ready to go.  Keep track of that callback here
+		// -- this is overriden in exec().
+		this.onRunnable = cb;
+
 		// the JavaScript code of the worker that we're
 		// launching comes from the filesystem - unless we are
 		// forking and have a blob URL, we need to read-in that
 		// file (potentially from an XMLHttpRequest) and
 		// continue initialization when it is ready.
 
-		if (blobUrl)
+		if (blobUrl) {
+			this.pendingExePath = filename;
+			this.pendingArgs = args;
+			this.pendingEnv = env;
 			this.blobReady(blobUrl);
-		else
+		} else {
 			this.exec(filename, args, env, cb);
+		}
 	}
 
 	exec(filename: string, args: string[], env: Environment, cb: (err: any, pid: number) => void): void {
+		this.pendingExePath = filename;
 		this.pendingArgs = args;
 		this.pendingEnv = env;
-		this.pendingExePath = filename;
 
 		// often, something needs to be done after this task
 		// is ready to go.  Keep track of that callback here.

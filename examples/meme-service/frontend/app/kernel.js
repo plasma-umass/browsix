@@ -436,6 +436,10 @@ exports.X_OK = 1;
 },{}],3:[function(require,module,exports){
 'use strict';
 var node_binary_marshal_1 = require('node-binary-marshal');
+var constants_1 = require('./constants');
+var SEEK_SET = 0;
+var SEEK_CUR = 1;
+var SEEK_END = 2;
 var RegularFile = (function () {
     function RegularFile(kernel, fd) {
         this.kernel = kernel;
@@ -454,6 +458,15 @@ var RegularFile = (function () {
     };
     RegularFile.prototype.readdir = function (cb) {
         setTimeout(cb, 0, 'cant readdir on normal file');
+    };
+    RegularFile.prototype.llseek = function (offhi, offlo, whence, cb) {
+        if (whence === SEEK_CUR)
+            this.fd._pos += offlo;
+        else if (whence === SEEK_SET)
+            this.fd._pos = offlo;
+        else if (whence === SEEK_END)
+            debugger;
+        cb(0, this.fd._pos);
     };
     RegularFile.prototype.ref = function () {
         this.refCount++;
@@ -487,11 +500,16 @@ var DirFile = (function () {
     DirFile.prototype.readdir = function (cb) {
         this.kernel.fs.readdir(this.path, cb);
     };
+    DirFile.prototype.llseek = function (offhi, offlo, whence, cb) {
+        console.log('TODO: dir.llseek');
+        cb(0, 0);
+    };
     DirFile.prototype.getdents = function (length, cb) {
         var _this = this;
         this.readdir(function (err, files) {
             if (err) {
-                cb('readdir: ' + err, null);
+                console.log('readdir: ' + err);
+                cb(-constants_1.EFAULT, null);
                 return;
             }
             files = files.slice(_this.off);
@@ -505,13 +523,14 @@ var DirFile = (function () {
                     break;
                 var _a = node_binary_marshal_1.Marshal(view, voff, dent, node_binary_marshal_1.fs.DirentDef), len = _a[0], err_1 = _a[1];
                 if (err_1) {
-                    cb('dirent marshal: ' + err_1, null);
+                    console.log('dirent marshal failed: ' + err_1);
+                    cb(-constants_1.EFAULT, null);
                     return;
                 }
                 voff += len;
                 _this.off++;
             }
-            cb(null, buf.slice(0, voff));
+            cb(null, buf.subarray(0, voff));
         });
     };
     DirFile.prototype.ref = function () {
@@ -527,7 +546,7 @@ var DirFile = (function () {
 })();
 exports.DirFile = DirFile;
 
-},{"node-binary-marshal":36}],4:[function(require,module,exports){
+},{"./constants":2,"node-binary-marshal":36}],4:[function(require,module,exports){
 /*jshint node:true */
 
 exports.HTTPParser = HTTPParser;
@@ -985,15 +1004,26 @@ if (typeof window === 'undefined' || typeof window.Worker === 'undefined')
 else
     var Worker = window.Worker;
 var ENOTTY = 25;
-var O_APPEND = constants.O_APPEND || 0;
-var O_CREAT = constants.O_CREAT || 0;
-var O_EXCL = constants.O_EXCL || 0;
-var O_RDONLY = constants.O_RDONLY || 0;
-var O_RDWR = constants.O_RDWR || 0;
-var O_SYNC = constants.O_SYNC || 0;
-var O_TRUNC = constants.O_TRUNC || 0;
-var O_WRONLY = constants.O_WRONLY || 0;
-var O_NONBLOCK = constants.O_NONBLOCK || 0;
+var ENOENT = constants.ENOENT;
+var EACCES = constants.EACCES;
+var EINVAL = constants.EINVAL;
+var F_OK = constants.F_OK;
+var R_OK = constants.R_OK;
+var W_OK = constants.W_OK;
+var X_OK = constants.X_OK;
+var S_IRUSR = constants.S_IRUSR;
+var S_IWUSR = constants.S_IWUSR;
+var S_IXUSR = constants.S_IXUSR;
+var O_APPEND = constants.O_APPEND;
+var O_CREAT = constants.O_CREAT;
+var O_EXCL = constants.O_EXCL;
+var O_RDONLY = constants.O_RDONLY;
+var O_RDWR = constants.O_RDWR;
+var O_SYNC = constants.O_SYNC;
+var O_TRUNC = constants.O_TRUNC;
+var O_WRONLY = constants.O_WRONLY;
+var O_NONBLOCK = constants.O_NONBLOCK;
+var O_DIRECTORY = constants.O_DIRECTORY;
 var PRIO_MIN = -20;
 var PRIO_MAX = 20;
 var O_CLOEXEC = 0x80000;
@@ -1006,7 +1036,7 @@ function flagsToString(flag) {
     if (flag & O_NONBLOCK) {
         console.log('TODO: nonblocking flag');
     }
-    flag &= ~(O_CLOEXEC | O_LARGEFILE | O_NONBLOCK);
+    flag &= ~(O_CLOEXEC | O_LARGEFILE | O_DIRECTORY | O_NONBLOCK);
     switch (flag) {
         case O_RDONLY:
             return 'r';
@@ -1057,15 +1087,49 @@ var Syscalls = (function () {
         this.kernel = kernel;
     }
     Syscalls.prototype.getcwd = function (ctx) {
-        ctx.complete(ctx.task.cwd);
+        ctx.complete(buffer_1.utf8ToBytes(ctx.task.cwd));
     };
     Syscalls.prototype.fork = function (ctx, heap, args) {
         this.kernel.fork(ctx, ctx.task, heap, args);
+    };
+    Syscalls.prototype.execve = function (ctx, filename, args, env) {
+        var file = buffer_1.utf8Slice(filename, 0, filename.length);
+        var sargs = [];
+        var senv = {};
+        for (var i = 0; i < args.length; i++) {
+            var arg = args[i];
+            sargs[i] = buffer_1.utf8Slice(arg, 0, arg.length);
+        }
+        for (var i = 0; i < env.length; i++) {
+            var pair = buffer_1.utf8Slice(env[i], 0, env[i].length);
+            var n = pair.indexOf('=');
+            if (n > 0)
+                senv[pair.slice(0, n)] = pair.slice(n + 1);
+        }
+        if (!senv['PATH'])
+            senv['PATH'] = '/usr/bin';
+        ctx.task.exec(file, sargs, senv, function (err, pid) {
+            var nerr = -EACCES;
+            if (err && err.code === 'ENOENT')
+                nerr = -ENOENT;
+            if (!pid)
+                ctx.complete(err);
+        });
     };
     Syscalls.prototype.exit = function (ctx, code) {
         if (!code)
             code = 0;
         this.kernel.exit(ctx.task, code);
+    };
+    Syscalls.prototype.chdir = function (ctx, p) {
+        var s;
+        if (p instanceof Uint8Array)
+            s = buffer_1.utf8Slice(p, 0, p.length);
+        else
+            s = p;
+        ctx.task.chdir(s, function (err) {
+            ctx.complete(err);
+        });
     };
     Syscalls.prototype.wait4 = function (ctx, pid, options) {
         ctx.task.wait4(ctx, pid, options);
@@ -1079,14 +1143,24 @@ var Syscalls = (function () {
     Syscalls.prototype.getdents = function (ctx, fd, length) {
         var file = ctx.task.files[fd];
         if (!file) {
-            ctx.complete('bad FD ' + fd, null);
+            ctx.complete(-constants.EBADF, null);
             return;
         }
         if (!(file instanceof file_1.DirFile)) {
-            ctx.complete('getdents on non-directory ' + fd, null);
+            ctx.complete(-constants.ENOTDIR, null);
         }
         var dir = file;
         dir.getdents(length, ctx.complete.bind(ctx));
+    };
+    Syscalls.prototype.llseek = function (ctx, fd, offhi, offlo, whence) {
+        var file = ctx.task.files[fd];
+        if (!file) {
+            ctx.complete(-constants.EBADF, undefined);
+            return;
+        }
+        file.llseek(offhi, offlo, whence, function (err, off) {
+            ctx.complete(err, off);
+        });
     };
     Syscalls.prototype.socket = function (ctx, domain, type, protocol) {
         if (domain === AF.UNSPEC)
@@ -1194,7 +1268,7 @@ var Syscalls = (function () {
             if (typeof buf === 'string') {
                 return buf;
             }
-            else if (buf instanceof Uint8Array) {
+            else if (buf instanceof Uint8Array || buf instanceof Array) {
                 var len = buf.length;
                 if (len > 0 && buf[len - 1] === 0)
                     len--;
@@ -1304,6 +1378,36 @@ var Syscalls = (function () {
             ctx.complete(undefined, n);
         });
     };
+    Syscalls.prototype.dup = function (ctx, fd1) {
+        var origFile = ctx.task.files[fd1];
+        if (!origFile) {
+            ctx.complete(-constants.EBADF);
+            return;
+        }
+        origFile.ref();
+        var fd2 = ctx.task.allocFD();
+        ctx.task.files[fd2] = origFile;
+        ctx.complete(fd2);
+    };
+    Syscalls.prototype.dup3 = function (ctx, fd1, fd2, opts) {
+        if (fd1 === fd2 || (opts & ~O_CLOEXEC)) {
+            ctx.complete(-EINVAL);
+            return;
+        }
+        var origFile = ctx.task.files[fd1];
+        if (!origFile) {
+            ctx.complete(-constants.EBADF);
+            return;
+        }
+        var oldFile = ctx.task.files[fd2];
+        if (oldFile) {
+            oldFile.unref();
+            oldFile = undefined;
+        }
+        origFile.ref();
+        ctx.task.files[fd2] = origFile;
+        ctx.complete(fd2);
+    };
     Syscalls.prototype.unlink = function (ctx, p) {
         var s;
         if (p instanceof Uint8Array)
@@ -1363,13 +1467,8 @@ var Syscalls = (function () {
             return;
         }
         ctx.task.files[fd] = undefined;
-        if (file instanceof pipe_1.Pipe) {
-            ctx.complete(null, 0);
-            file.unref();
-            return;
-        }
-        file.unref();
         ctx.complete(null, 0);
+        file.unref();
     };
     Syscalls.prototype.fstat = function (ctx, fd) {
         var file = ctx.task.files[fd];
@@ -1386,6 +1485,34 @@ var Syscalls = (function () {
             var view = new DataView(buf.buffer, buf.byteOffset);
             marshal.Marshal(view, 0, stats, marshal.fs.StatDef);
             ctx.complete(null, buf);
+        });
+    };
+    Syscalls.prototype.access = function (ctx, p, flags) {
+        var s;
+        if (p instanceof Uint8Array)
+            s = buffer_1.utf8Slice(p, 0, p.length);
+        else
+            s = p;
+        this.kernel.fs.stat(join(ctx.task.cwd, s), function (err, stats) {
+            if (err) {
+                ctx.complete(-ENOENT);
+                return;
+            }
+            if (flags === F_OK) {
+                ctx.complete(F_OK);
+                return;
+            }
+            var result = 0;
+            if ((flags & R_OK) && !(stats.mode & S_IRUSR)) {
+                result = -EACCES;
+            }
+            if ((flags & W_OK) && !(stats.mode & S_IWUSR)) {
+                result = -EACCES;
+            }
+            if ((flags & X_OK) && !(stats.mode & S_IXUSR)) {
+                result = -EACCES;
+            }
+            ctx.complete(result);
         });
     };
     Syscalls.prototype.lstat = function (ctx, p) {
@@ -1675,7 +1802,8 @@ var Kernel = (function () {
         for (var i in files) {
             if (!files.hasOwnProperty(i))
                 continue;
-            files[i].ref();
+            if (files[i])
+                files[i].ref();
         }
         var blobUrl = parent.blobUrl;
         var forkedTask = new Task(this, parent, pid, cwd, filename, args, env, files, blobUrl, heap, forkArgs, function (err, pid) {
@@ -1720,28 +1848,62 @@ var Task = (function () {
         this.pid = pid;
         this.parent = parent;
         this.kernel = kernel;
-        this.exePath = filename;
         this.exeFd = null;
-        this.args = args;
         this.cwd = cwd;
         this.priority = 0;
         if (parent) {
             this.priority = parent.priority;
             this.parent.children.push(this);
         }
-        this.env = env;
         this.files = files;
         this.blobUrl = blobUrl;
         this.heap = heap;
         this.forkArgs = forkArgs;
         this.onRunnable = cb;
-        if (blobUrl)
+        if (blobUrl) {
+            this.pendingExePath = filename;
+            this.pendingArgs = args;
+            this.pendingEnv = env;
             this.blobReady(blobUrl);
-        else
-            kernel.fs.open(filename, 'r', this.fileOpened.bind(this));
+        }
+        else {
+            this.exec(filename, args, env, cb);
+        }
     }
+    Task.prototype.exec = function (filename, args, env, cb) {
+        this.pendingExePath = filename;
+        this.pendingArgs = args;
+        this.pendingEnv = env;
+        this.onRunnable = cb;
+        this.kernel.fs.open(filename, 'r', this.fileOpened.bind(this));
+    };
+    Task.prototype.chdir = function (path, cb) {
+        var _this = this;
+        if (!path.length) {
+            cb(-constants.ENOENT);
+        }
+        if (path[0] !== '/')
+            path = join(this.cwd, path);
+        this.kernel.fs.stat(path, function (err, stats) {
+            if (err) {
+                cb(-EACCES);
+                return;
+            }
+            if (!stats.isDirectory()) {
+                cb(-constants.ENOTDIR);
+                return;
+            }
+            _this.cwd = path;
+            cb(0);
+        });
+    };
+    Task.prototype.allocFD = function () {
+        var n = 0;
+        for (n = 0; this.files[n]; n++) { }
+        return n;
+    };
     Task.prototype.addFile = function (f) {
-        var n = Object.keys(this.files).length;
+        var n = this.allocFD();
         this.files[n] = f;
         return n;
     };
@@ -1780,8 +1942,8 @@ var Task = (function () {
             if (parts.length === 2 && (parts[0] === '/usr/bin/env' || parts[0] === '/bin/env')) {
                 cmd = '/usr/bin/' + parts[1];
             }
-            this.args[0] = this.exePath;
-            this.args = [cmd].concat(this.args);
+            this.pendingArgs[0] = this.pendingExePath;
+            this.pendingArgs = [cmd].concat(this.pendingArgs);
             this.kernel.fs.open(cmd, 'r', this.fileOpened.bind(this));
             return;
         }
@@ -1794,11 +1956,16 @@ var Task = (function () {
     };
     Task.prototype.blobReady = function (blobUrl) {
         var _this = this;
+        if (this.worker) {
+            this.worker.onmessage = undefined;
+            this.worker.terminate();
+            this.worker = undefined;
+        }
         this.worker = new Worker(blobUrl);
         this.worker.onmessage = this.syscallHandler.bind(this);
         this.worker.onerror = function (err) {
             if (_this.files[2]) {
-                _this.files[2].write('Error while executing ' + _this.exePath + ': ' + err.message + '\n', function () {
+                _this.files[2].write('Error while executing ' + _this.pendingExePath + ': ' + err.message + '\n', function () {
                     _this.kernel.exit(_this, -1);
                 });
             }
@@ -1810,6 +1977,12 @@ var Task = (function () {
         var args = this.forkArgs;
         this.heap = undefined;
         this.forkArgs = undefined;
+        this.args = this.pendingArgs;
+        this.env = this.pendingEnv;
+        this.exePath = this.pendingExePath;
+        this.pendingArgs = undefined;
+        this.pendingEnv = undefined;
+        this.pendingExePath = undefined;
         this.signal('init', [this.args, this.env, this.kernel.debug, this.pid, heap, args], heap ? [heap] : null);
         this.onRunnable(null, this.pid);
         this.onRunnable = undefined;
@@ -1976,6 +2149,7 @@ if (typeof window !== 'undefined')
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"../browser-node/binding/buffer":1,"./constants":2,"./file":3,"./http_parser":4,"./pipe":6,"./socket":7,"./types":8,"./vendor/BrowserFS/src/backend/XmlHttpRequest":9,"./vendor/BrowserFS/src/backend/async_mirror":10,"./vendor/BrowserFS/src/backend/in_memory":11,"./vendor/BrowserFS/src/backend/overlay":12,"./vendor/BrowserFS/src/core/browserfs":14,"node-binary-marshal":36,"webworker-threads":undefined}],6:[function(require,module,exports){
 'use strict';
+var constants_1 = require('./constants');
 var Pipe = (function () {
     function Pipe() {
         this.buf = new Buffer(0);
@@ -2071,6 +2245,9 @@ var PipeFile = (function () {
     PipeFile.prototype.stat = function (cb) {
         throw new Error('TODO: PipeFile.stat not implemented');
     };
+    PipeFile.prototype.llseek = function (offhi, offlo, whence, cb) {
+        cb(-constants_1.EINVAL, undefined);
+    };
     PipeFile.prototype.readdir = function (cb) {
         setTimeout(cb, 0, 'cant readdir on normal file');
     };
@@ -2087,8 +2264,9 @@ var PipeFile = (function () {
 })();
 exports.PipeFile = PipeFile;
 
-},{}],7:[function(require,module,exports){
+},{"./constants":2}],7:[function(require,module,exports){
 'use strict';
+var constants_1 = require('./constants');
 var pipe_1 = require('./pipe');
 function isSocket(f) {
     return f instanceof SocketFile;
@@ -2170,6 +2348,9 @@ var SocketFile = (function () {
     SocketFile.prototype.readSync = function () {
         return this.incoming.readSync();
     };
+    SocketFile.prototype.llseek = function (offhi, offlo, whence, cb) {
+        cb(-constants_1.EINVAL, undefined);
+    };
     SocketFile.prototype.ref = function () {
         this.refCount++;
         if (this.outgoing)
@@ -2192,7 +2373,7 @@ var SocketFile = (function () {
 })();
 exports.SocketFile = SocketFile;
 
-},{"./pipe":6}],8:[function(require,module,exports){
+},{"./constants":2,"./pipe":6}],8:[function(require,module,exports){
 'use strict';
 var SyscallContext = (function () {
     function SyscallContext(task, id) {

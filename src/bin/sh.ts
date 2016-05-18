@@ -97,6 +97,8 @@ function main(): void {
 	let pathToNode = argv[0];
 	let pathToScript = argv[1];
 	let args = argv.slice(2);
+	if (args.length > 0 && args[0] === '-c')
+		args.shift();
 	if (args.length < 1) {
 		let usage = 'usage: ' + path.basename(pathToScript) + ' CMD [ARGS...]\n';
 		process.stderr.write(usage, (err: any) => {

@@ -14,10 +14,11 @@ all: build
 
 $(MAIN).js: *.go Makefile
 #	rm ~/pkg/linux_js -r
-	gopherjs build
+	browsix-gopherjs build
 
 build: $(MAIN).js
 	go build
+	cp ../../lib-dist/lib/kernel/kernel.js frontend/app
 	cp $(MAIN).js frontend/fs
 	cd frontend && bower install
 	cd frontend && npm install

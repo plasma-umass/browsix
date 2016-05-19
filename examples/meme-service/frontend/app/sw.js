@@ -1,4 +1,4 @@
-var CACHE_VERSION = 'v6';
+var CACHE_VERSION = 'v7';
 
 this.addEventListener('install', function(event) {
 	event.waitUntil(
@@ -23,7 +23,7 @@ this.addEventListener('install', function(event) {
 				'/index.html',
 				'/kernel.js',
 				'/robots.txt',
-				'/scripts/main.js',
+//				'/scripts/main.js',
 				'/scripts/plugins.js',
 				'/scripts/vendor.js',
 				'/styles/main.css',

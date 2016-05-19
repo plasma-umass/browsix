@@ -239,7 +239,7 @@ export class USyscalls {
 		this.post(msgId, 'setpriority', which, who, prio);
 	}
 
-	open(path: string, flags: string, mode: number, cb: SyscallCallback): void {
+	open(path: string|Uint8Array, flags: number|string, mode: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;
 		this.post(msgId, 'open', path, flags, mode);
@@ -281,7 +281,7 @@ export class USyscalls {
 		this.post(msgId, 'close', fd);
 	}
 
-	pwrite(fd: number, buf: string, pos: number, cb: SyscallCallback): void {
+	pwrite(fd: number, buf: string|Uint8Array, pos: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;
 		this.post(msgId, 'pwrite', fd, buf, pos);
@@ -317,7 +317,7 @@ export class USyscalls {
 		this.post(msgId, 'ioctl', fd, request, length);
 	}
 
-	readlink(path: string, cb: SyscallCallback): void {
+	readlink(path: string|Uint8Array, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;
 		this.post(msgId, 'readlink', path);

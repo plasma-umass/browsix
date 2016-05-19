@@ -50,7 +50,7 @@ function sys_spawn(
 		cb([err ? -1 : pid, 0, err ? err : 0]);
 	};
 	// FIXME: use apply to get around string/Uint8Array typing issues for now
-	syscall.spawn.apply(syscall, [dir, argv0, argv, envv, fds, done]);
+	syscall.spawn(dir, argv0, argv, envv, fds, done);
 }
 
 function sys_pipe2(cb: Function, trap: number, fds: Int32Array, flags: number): void {
@@ -64,197 +64,177 @@ function sys_pipe2(cb: Function, trap: number, fds: Int32Array, flags: number): 
 	syscall.pipe2(flags, done);
 }
 
-function sys_getcwd(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
-	let $getcwdArray = arg0;
-	let $getcwdLen = arg1;
-	let done = function(p: string): void {
-		for (let i = 0; i < p.length; i++)
-			$getcwdArray[i] = p.charCodeAt(i);
+function sys_getcwd(cb: Function, trap: number, path: Uint8Array, len: number): void {
+	let done = function(p: Uint8Array): void {
+		path.subarray(0, len).set(p);
 		let nullPos = p.length;
-		if (nullPos >= $getcwdArray.byteLength)
-			nullPos = $getcwdArray.byteLength;
+		if (nullPos >= path.byteLength)
+			nullPos = path.byteLength;
 		// XXX: Go expects the kernel to return a null
 		// terminated string, hence the null write and +1
 		// below.
-		$getcwdArray[nullPos] = 0;
+		path[nullPos] = 0;
 		cb([p.length+1, 0, 0]);
 	};
-	syscall.getcwd.apply(syscall, [done]);
+	syscall.getcwd(done);
 }
 
-function sys_ioctl(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
-	let $fd = arg0;
-	let $request = arg1;
-	let $argp = arg2;
+function sys_ioctl(cb: Function, trap: number, fd: number, request: any, argp: any): void {
 	let done = function(err: any, buf: Uint8Array): void {
-		if (!err && $argp.byteLength !== undefined)
-			$argp.set(buf);
+		if (!err && argp.byteLength !== undefined)
+			argp.set(buf);
 		cb([err ? err : buf.byteLength, 0, err ? -1 : 0]);
 	};
-	syscall.ioctl.apply(syscall, [$fd, $request, $argp.byteLength, done]);
+	syscall.ioctl(fd, request, argp.byteLength, done);
 }
 
-function sys_getdents64(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
-	let $fd = arg0;
-	let $buf = arg1;
-	let $len = arg2;
-	let done = function(err: any, buf: Uint8Array): void {
+function sys_getdents64(cb: Function, trap: number, fd: number, buf: Uint8Array, len: number): void {
+	let done = function(err: any, dents: Uint8Array): void {
 		if (!err)
-			$buf.set(buf);
-		cb([err ? -1 : buf.byteLength, 0, err ? -1 : 0]);
+			buf.set(dents);
+		cb([err ? -1 : dents.byteLength, 0, err ? -1 : 0]);
 	};
-	syscall.getdents.apply(syscall, [$fd, $len, done]);
+	syscall.getdents(fd, len, done);
 }
 
-function sys_read(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
-	let $readArray = arg1;
-	let $readLen = arg2;
+function sys_read(cb: Function, trap: number, fd: number, readArray: any, readLen: any): void {
 	let done = function(err: any, dataLen: number, data: Uint8Array): void {
 		if (!err) {
 			for (let i = 0; i < dataLen; i++)
-				$readArray[i] = data[i];
+				readArray[i] = data[i];
 		}
 		cb([dataLen, 0, err ? -1 : 0]);
 	};
-	syscall.pread.apply(syscall, [arg0, arg2, -1, done]);
+	syscall.pread(fd, readLen, -1, done);
 }
 
-function sys_write(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
+function sys_write(cb: Function, trap: number, fd: number, buf: Uint8Array, blen: number): void {
 	let done = function(err: any, len: number): void {
 		cb([len, 0, err ? -1 : 0]);
 	};
-	syscall.pwrite.apply(syscall, [arg0, new Uint8Array(arg1, 0, arg2), 0, done]);
+	syscall.pwrite(fd, new Uint8Array(buf, 0, blen), 0, done);
 }
 
-function sys_stat(cb: Function, trap: number, arg0: any, arg1: any): void {
-	let $fstatArray = arg1;
-	let done = function(err: any, stats: any): void {
+function sys_stat(cb: Function, trap: number, path: any, buf: Uint8Array): void {
+	let done = function(err: any, stats: Uint8Array): void {
 		if (!err)
-			$fstatArray.set(stats);
+			buf.set(stats);
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
-	let len = arg0.length;
-	if (len && arg0[arg0.length-1] === 0)
+	let len = path.length;
+	if (len && path[path.length-1] === 0)
 		len--;
-	syscall.stat.apply(syscall, [arg0.slice(0, len), done]);
+	syscall.stat(path.subarray(0, len), done);
 }
 
-function sys_lstat(cb: Function, trap: number, arg0: any, arg1: any): void {
-	let $fstatArray = arg1;
+function sys_lstat(cb: Function, trap: number, path: any, buf: Uint8Array): void {
 	let done = function(err: any, stats: any): void {
 		if (!err)
-			$fstatArray.set(stats);
+			buf.set(stats);
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
-	let len = arg0.length;
-	if (len && arg0[arg0.length-1] === 0)
+	let len = path.length;
+	if (len && path[path.length-1] === 0)
 		len--;
-	syscall.lstat.apply(syscall, [arg0.slice(0, len), done]);
+	syscall.lstat(path.subarray(0, len), done);
 }
 
-function sys_fstat(cb: Function, trap: number, arg0: any, arg1: any): void {
-	let $fstatArray = arg1;
-	let done = function(err: any, stats: any): void {
+function sys_fstat(cb: Function, trap: number, fd: number, buf: Uint8Array): void {
+	let done = function(err: any, stats: Uint8Array): void {
 		if (!err)
-			$fstatArray.set(stats);
+			buf.set(stats);
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
-	syscall.fstat.apply(syscall, [arg0, done]);
+	syscall.fstat(fd, done);
 }
 
-function sys_readlinkat(cb: Function, trap: number, arg0: any, arg1: any, arg2: any, arg3: any): void {
-	let $fd = arg0|0;
-	let $path = arg1;
-	let $buf = arg2;
-	let $buflen = arg3;
-
+function sys_readlinkat(cb: Function, trap: number, fd: number, path: Uint8Array, buf: Uint8Array, blen: number): void {
 	// TODO: we only support AT_FDCWD
-	if ((arg0|0) !== AT_FDCWD) {
-		debugger;
+	if (fd !== AT_FDCWD) {
+		console.log('openat: TODO: we only support AT_FDCWD');
 		setTimeout(cb, 0, [-1, 0, -1]);
 		return;
 	}
-	let done = function(err: any, linkString: string): void {
+	let done = function(err: any, linkString: Uint8Array): void {
 		if (!err)
-			$buf.set(linkString);
+			buf.set(linkString);
 		cb([err ? -1 : linkString.length, 0, err ? -1 : 0]);
 	};
-	let len = $path.length;
-	if (len && arg1[$path.length-1] === 0)
+	let len = path.length;
+	if (len && path[path.length-1] === 0)
 		len--;
-	syscall.readlink.apply(syscall, [$path.slice(0, len), done]);
+	syscall.readlink(path.subarray(0, len), done);
 }
 
-function sys_openat(cb: Function, trap: number, arg0: any, arg1: any, arg2: any, arg3: any): void {
-	// TODO: we only support AT_FDCWD
-	if ((arg0|0) !== AT_FDCWD) {
-		debugger;
+function sys_openat(cb: Function, trap: number, fd: number, path: Uint8Array, flags: number, mode: number): void {
+	// coerce to signed int, to match our constants
+	fd = fd|0;
+
+	if (fd !== AT_FDCWD) {
+		console.log('openat: TODO: we only support AT_FDCWD');
 		setTimeout(cb, 0, [-1, 0, -1]);
 		return;
 	}
 	let done = function(err: any, fd: number): void {
 		cb([fd, 0, err ? -1 : 0]);
 	};
-	let len = arg1.length;
-	if (len && arg1[arg1.length-1] === 0)
+	let len = path.length;
+	if (len && path[path.length-1] === 0)
 		len--;
-	syscall.open.apply(syscall, [arg1.slice(0, len), arg2, arg3, done]);
+	syscall.open(path.subarray(0, len), flags, mode, done);
 }
 
-function sys_close(cb: Function, trap: number, arg0: any): void {
+function sys_close(cb: Function, trap: number, fd: number): void {
 	let done = function(err: any): void {
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
-	syscall.close.apply(syscall, [arg0, done]);
+	syscall.close(fd, done);
 }
 
-function sys_exit_group(cb: Function, trap: number, arg0: any): void {
-	syscall.exit(arg0);
+function sys_exit_group(cb: Function, trap: number, code: number): void {
+	syscall.exit(code);
 }
 
-function sys_socket(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
+function sys_socket(cb: Function, trap: number, domain: number, type: number, protocol: number): void {
 	let done = function(err: any, fd: number): void {
 		cb([err ? -1 : fd, 0, err ? -1 : 0]);
 	};
-	syscall.socket(arg0, arg1, arg2, done);
+	syscall.socket(domain, type, protocol, done);
 }
 
-function sys_bind(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
-	console.log('FIXME: unmarshal');
+function sys_bind(cb: Function, trap: number, fd: number, buf: Uint8Array, blen: number): void {
 	let done = function(err: any): void {
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
-	syscall.bind(arg0, arg1.slice(0, arg2), done);
+	syscall.bind(fd, buf.subarray(0, blen), done);
 }
 
-function sys_listen(cb: Function, trap: number, arg0: any, arg1: any): void {
+function sys_listen(cb: Function, trap: number, fd: number, backlog: number): void {
 	let done = function(err: any): void {
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
-	syscall.listen(arg0, arg1, done);
+	syscall.listen(fd, backlog, done);
 }
 
-function sys_getsockname(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
-	let done = function(err: any, buf: Uint8Array): void {
+function sys_getsockname(cb: Function, trap: number, fd: number, buf: Uint8Array, lenp: any): void {
+	let done = function(err: any, sockInfo: Uint8Array): void {
 		if (!err) {
-			arg1.set(buf);
-			arg2.$set(buf.byteLength);
+			buf.set(sockInfo);
+			lenp.$set(sockInfo.byteLength);
 		}
 		cb([err ? -1 : 0, 0, err ? -1 : 0]);
 	};
 
-	syscall.getsockname(arg0, done);
+	syscall.getsockname(fd, done);
 }
 
-function sys_accept4(cb: Function, trap: number, arg0: any, arg1: any, arg2: any): void {
-	let $acceptArray = arg1;
-	let $acceptLen = arg2;
+function sys_accept4(cb: Function, trap: number, fd: number, buf: Uint8Array, lenp: any): void {
 	let done = function(err: any, fd: number, sockInfo: Uint8Array): void {
-		$acceptArray.set(sockInfo);
-		$acceptLen.$set(sockInfo.length);
+		buf.set(sockInfo);
+		lenp.$set(sockInfo.length);
 		cb([err ? -1 : fd, 0, err ? -1 : 0]);
 	};
-	syscall.accept(arg0, done);
+	syscall.accept(fd, done);
 }
 
 function sys_setsockopt(cb: Function, trap: number): void {

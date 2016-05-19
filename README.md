@@ -145,7 +145,7 @@ filesystem, which is [primarily MIT licensed](LICENSE.browserfs).
 
 browser-node's [`nextTick`](src/browser-node/browser-node.ts#L114)
 implementation comes from the
-[acorn](https://github.com/marijnh/acorn) project, released under [the
+[acorn](https://github.com/ternjs/acorn) project, released under [the
 MIT license](LICENSE.acorn).
 
 A large portion of browser-node is the

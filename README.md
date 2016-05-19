@@ -49,17 +49,39 @@ executed in their own workers, and piping works as expected:
 
 Try it out here: [live demo!](https://unix.bpowers.net/)
 
+### Meme creator
+
+Browsix is useful for more than web terminals.  With Browsix, you can
+run Go microservices directly in the browser!  As an example, we have
+implemented a meme creator, that lets you create memes (sometimes
+known as image macros) with (hopefully) humorous text on top of
+several images.  We wrote this as a standard REST service in Go,
+accepting the text and image type as parameters, and returning a PNG.
+We used [our modified
+GopherJS](https://github.com/bpowers/browsix-gopherjs) compiler to
+compile the Go service (including all dependencies, such as the
+TrueType font renderer and image manipulation libraries) to
+JavaScript, and Browsix to run this JavaScript as a process in a
+background Web Worker.  We then dynamically route requests to either
+this in-browser server or a remote server depending on user agent and
+network connectivity.
+
+![shell](doc/meme_screenshot.png)
+
 ### Details
 
 Browsix currently supports running node.js, Go, and C/C++ programs.
-It supports Go with a modified GopherJS compiler, and C/C++ with
-modifications to Emscripten.
+It supports Go with a [modified GopherJS
+compiler](https://github.com/bpowers/browsix-gopherjs), and C/C++ with
+[modifications to
+Emscripten](https://github.com/bpowers/emscripten/tree/_browsix).
 
 
 Using Browsix
 -------------
 
-There are two parts to Browsix: build-tooling and runtime support.
+There are two parts to Browsix: build tooling (the modified Go + C
+compilers) and runtime support (the kernel + Browsix APIs).
 
 Get browsix through npm:
 

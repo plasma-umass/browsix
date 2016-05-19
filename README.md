@@ -66,7 +66,7 @@ background Web Worker.  We then dynamically route requests to either
 this in-browser server or a remote server depending on user agent and
 network connectivity.
 
-![shell](doc/meme_screenshot.png)
+<div style="text-align:center"><img src="doc/meme_screenshot.png" width="423"></div>
 
 ### Details
 

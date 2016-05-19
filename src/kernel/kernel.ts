@@ -1063,7 +1063,7 @@ export class Kernel implements IKernel {
 			// let arg = argfmt(syscall.args[0]);
 			// if (syscall.args[1])
 			// 	arg += '\t' + argfmt(syscall.args[1]);
-			// console.log('[' + syscall.ctx.task.pid + '] \tsys_' + syscall.name + '\t' + arg);
+			// console.log('[' + syscall.ctx.task.pid + '|' + syscall.ctx.id + '] \tsys_' + syscall.name + '\t' + arg);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
 			console.log('unknown syscall ' + syscall.name);
@@ -1510,6 +1510,7 @@ export class Task implements ITask {
 
 		this.state = TaskState.Running;
 
+		// console.log('[' + this.pid + '|' + msg.id + '] \tCOMPLETE');
 		this.worker.postMessage(msg, transferrable || []);
 	}
 

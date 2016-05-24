@@ -29,6 +29,17 @@ let DEBUG = false;
 
 let Buffer: any;
 
+// Polyfill.  Previously, Atomics.wait was called Atomics.futexWait and
+// Atomics.wake was called Atomics.futexWake.
+
+declare var Atomics: any;
+if (!Atomics.wait && Atomics.futexWait)
+	Atomics.wait = Atomics.futexWait;
+
+if (!Atomics.wake && Atomics.futexWake)
+	Atomics.wake = Atomics.futexWake;
+
+
 // we only import the backends we use, for now.
 require('./vendor/BrowserFS/src/backend/in_memory');
 require('./vendor/BrowserFS/src/backend/XmlHttpRequest');
@@ -102,6 +113,10 @@ if (typeof window === 'undefined' || typeof (<any>window).Worker === 'undefined'
 else
 	var Worker = <WorkerStatic>(<any>window).Worker;
 /* tslint:enable */
+
+const PER_NONBLOCK = 0x40;
+const PER_BLOCKING = 0x80;
+
 
 const ENOTTY = 25;
 
@@ -204,6 +219,12 @@ class Syscalls {
 	getcwd(ctx: SyscallContext): void {
 		ctx.complete(utf8ToBytes(ctx.task.cwd));
 	}
+
+	personality(ctx: SyscallContext, kind: number, heap: SharedArrayBuffer, off: number): void {
+		ctx.task.personality(kind, heap, off, (err: any): void => {
+			ctx.complete(err);
+		});
+	};
 
 	fork(ctx: SyscallContext, heap: ArrayBuffer, args: any): void {
 		this.kernel.fork(ctx, <Task>ctx.task, heap, args);
@@ -519,8 +540,6 @@ class Syscalls {
 
 	pipe2(ctx: SyscallContext, flags: number): void {
 		let pipe = new Pipe();
-		// FIXME: this isn't POSIX semantics - we don't
-		// necessarily reuse lowest free FD.
 		let n1 = ctx.task.addFile(new PipeFile(pipe));
 		let n2 = ctx.task.addFile(new PipeFile(pipe));
 		ctx.complete(undefined, n1, n2);
@@ -570,8 +589,6 @@ class Syscalls {
 				ctx.complete(err, null);
 				return;
 			}
-			// FIXME: this isn't POSIX semantics - we
-			// don't necessarily reuse lowest free FD.
 			let n = ctx.task.addFile(f);
 			ctx.complete(undefined, n);
 		});
@@ -1047,6 +1064,34 @@ export class Kernel implements IKernel {
 		return;
 	}
 
+	doSyncSyscall(task: Task, trap: number, args: number[]): void {
+		const SYS_WRITE = 1;
+		const SYS_EXIT_GROUP = 231;
+
+		switch (trap) {
+		case SYS_WRITE:
+			let fd = args[0];
+			let bufp = args[1];
+			let len = args[2];
+			let buf = new Buffer(new DataView(task.sheap, bufp, bufp+len));
+			task.files[fd].write(buf, 0, len, (err: any, len: number) => {
+				if (err)
+					len = -1;
+				Atomics.store(task.heap32, (task.waitOff >> 2)+1, len);
+				Atomics.store(task.heap32, task.waitOff >> 2, 1);
+				Atomics.wake(task.heap32, task.waitOff >> 2, 1);
+				console.log('woke up child.');
+			});
+			break;
+		case SYS_EXIT_GROUP:
+			this.exit(task, args[0]);
+			break;
+		default:
+			console.log('unknown sync syscall: ' + trap);
+		}
+
+	}
+
 	doSyscall(syscall: Syscall): void {
 		if (syscall.name in this.syscalls) {
 			// let argfmt = (arg: any): any => {
@@ -1194,6 +1239,11 @@ export class Task implements ITask {
 
 	waitQueue: any[] = [];
 
+	heapu8: Uint8Array;
+	heap32: Int32Array;
+	sheap: SharedArrayBuffer;
+	waitOff: number;
+
 	// used during fork, unset after that.
 	heap: ArrayBuffer;
 	forkArgs: any;
@@ -1254,6 +1304,20 @@ export class Task implements ITask {
 		} else {
 			this.exec(filename, args, env, cb);
 		}
+	}
+
+	personality(kind: number, sab: SharedArrayBuffer, off: number, cb: (err: any) => void): void {
+		if (kind !== PER_BLOCKING) {
+			cb(-EINVAL);
+			return;
+		}
+
+		this.sheap = sab;
+		this.heapu8 = new Uint8Array(sab);
+		this.heap32 = new Int32Array(sab);
+		this.waitOff = off;
+
+		cb(null);
 	}
 
 	exec(filename: string, args: string[], env: Environment, cb: (err: any, pid: number) => void): void {
@@ -1565,6 +1629,11 @@ export class Task implements ITask {
 	}
 
 	private syscallHandler(ev: MessageEvent): void {
+		if (ev.data.trap) {
+			this.kernel.doSyncSyscall(this, ev.data.trap, ev.data.args);
+			return;
+		}
+
 		let syscall = Syscall.From(this, ev);
 		if (!syscall) {
 			console.log('bad syscall message, dropping');

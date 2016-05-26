@@ -23,7 +23,7 @@ export interface SyscallResult {
 }
 
 export interface ConnectCallback {
-	(err: any): void;
+	(err: number): void;
 }
 
 export interface IKernel {
@@ -81,7 +81,7 @@ export interface ITask {
 	addFile(f: IFile): number;
 	schedule(msg: SyscallResult): void;
 	setPriority(prio: number): number;
-	wait4(ctx: SyscallContext, pid: number, options: number): void;
+	wait4(pid: number, options: number, cb: (pid: number, wstatus?: number, rusage?: any) => void): void;
 	chdir(path: string, cb: Function): void;
 }
 

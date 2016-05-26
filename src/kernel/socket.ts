@@ -11,7 +11,7 @@ import { ConnectCallback, SyscallContext, IFile, ITask } from './types';
 import { Pipe } from './pipe';
 
 export interface AcceptCallback {
-	(err: any, s?: SocketFile, remoteAddr?: string, remotePort?: number): void;
+	(err: number, s?: SocketFile, remoteAddr?: string, remotePort?: number): void;
 }
 
 export function isSocket(f: IFile): f is SocketFile {
@@ -52,9 +52,9 @@ export class SocketFile implements IFile {
 		setTimeout(cb, 0, 'cant readdir on normal file');
 	}
 
-	listen(cb: (err: any) => void): void {
+	listen(cb: (err: number) => void): void {
 		this.isListening = true;
-		cb(undefined);
+		cb(0);
 	}
 
 	accept(cb: AcceptCallback): void {
@@ -77,7 +77,7 @@ export class SocketFile implements IFile {
 		local.incoming = incoming;
 		remote.outgoing = incoming;
 
-		cb(null, local, queued.addr, queued.port);
+		cb(0, local, queued.addr, queued.port);
 		queued.cb(null);
 	}
 
@@ -105,7 +105,7 @@ export class SocketFile implements IFile {
 		local.incoming = incoming;
 		remote.outgoing = incoming;
 
-		acceptCB(null, local, remoteAddr, remotePort);
+		acceptCB(0, local, remoteAddr, remotePort);
 		cb(null);
 	}
 

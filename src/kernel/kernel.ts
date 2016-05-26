@@ -1177,6 +1177,9 @@ export class Task implements ITask {
 
 	pid: number;
 
+	// syscall usage histogram
+	hist: {[n: string]: number} = {};
+
 	// sparse map of files
 	files: {[n: number]: IFile; } = {};
 
@@ -1558,6 +1561,19 @@ export class Task implements ITask {
 		if (!this.parent)
 			this.kernel.wait(this.pid);
 
+		let syscalls = Object.keys(this.hist);
+		syscalls.sort((a: string, b: string) => {
+			if (this.hist[a] < this.hist[b])
+				return -1;
+			if (this.hist[a] > this.hist[b])
+				return 1;
+			return 0;
+		});
+		console.log('syscall usage:');
+		for (let i = 0; i < syscalls.length; i++) {
+			let call = syscalls[i];
+			console.log('\t' + call + ': \t' + this.hist[call]);
+		}
 	}
 
 	private nextMsgId(): number {
@@ -1578,6 +1594,8 @@ export class Task implements ITask {
 			return;
 
 		this.state = TaskState.Interruptable;
+
+		this.hist[syscall.name] = (this.hist[syscall.name]|0) + 1;
 
 		// many syscalls influence not just the state
 		// maintained in this task structure, but state in the

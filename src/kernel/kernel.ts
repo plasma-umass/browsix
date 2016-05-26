@@ -1074,14 +1074,13 @@ export class Kernel implements IKernel {
 			let fd = args[0];
 			let bufp = args[1];
 			let len = args[2];
-			let buf = new Buffer(new DataView(task.sheap, bufp, bufp+len));
+			let buf = new Buffer(new DataView(task.sheap, bufp, len));
 			task.files[fd].write(buf, 0, len, (err: any, len: number) => {
 				if (err)
 					len = -1;
 				Atomics.store(task.heap32, (task.waitOff >> 2)+1, len);
 				Atomics.store(task.heap32, task.waitOff >> 2, 1);
 				Atomics.wake(task.heap32, task.waitOff >> 2, 1);
-				console.log('woke up child.');
 			});
 			break;
 		case SYS_EXIT_GROUP:

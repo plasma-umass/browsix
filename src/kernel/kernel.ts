@@ -33,11 +33,12 @@ let Buffer: any;
 // Atomics.wake was called Atomics.futexWake.
 
 declare var Atomics: any;
-if (!Atomics.wait && Atomics.futexWait)
-	Atomics.wait = Atomics.futexWait;
-
-if (!Atomics.wake && Atomics.futexWake)
-	Atomics.wake = Atomics.futexWake;
+if (typeof Atomics !== 'undefined') {
+	if (!Atomics.wait && Atomics.futexWait)
+		Atomics.wait = Atomics.futexWait;
+	if (!Atomics.wake && Atomics.futexWake)
+		Atomics.wake = Atomics.futexWake;
+}
 
 
 // we only import the backends we use, for now.

@@ -220,6 +220,18 @@ export enum SOCK {
 
 function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void): (n: number, args: number[]) => void {
 	let table: {[n: number]: Function} = {
+		3: (fd: number, bufp: number, len: number): void => {
+			let buf = new Buffer(new DataView(task.sheap, bufp, len));
+			sys.pread(task, fd, buf, -1, (err: any, len: number) => {
+				if (err) {
+					if (typeof err === 'number')
+						len = err;
+					else
+						len = -1;
+				}
+				sysret(len);
+			});
+		},
 		4: (fd: number, bufp: number, len: number): void => {
 			let buf = new Buffer(new DataView(task.sheap, bufp, len));
 			sys.pwrite(task, fd, buf, 0, (err: any, len: number) => {

@@ -159,6 +159,7 @@ tsTask('kernel', {
 tsTask('browser-node', {buildDeps: ['copy-node']});
 tsTask('bin');
 tsTask('syscall-api', {buildDeps: ['build-browser-node'], noGlobal: true});
+tsTask('hello-sync', {noGlobal: true});
 
 // next, we need to collect the various pieces we've built, and put
 // then in a sane directory hierarchy.  There is no dist step needed

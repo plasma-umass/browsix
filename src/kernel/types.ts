@@ -36,7 +36,6 @@ export interface IKernel {
 	exit(task: ITask, code: number): void;
 	wait(pid: number): void;
 	doSyscall(syscall: Syscall): void;
-	doSyncSyscall(task: ITask, trap: number, args: number[]): void;
 	connect(s: IFile, addr: string, port: number, cb: ConnectCallback): void;
 	unbind(s: IFile, addr: string, port: number): any;
 

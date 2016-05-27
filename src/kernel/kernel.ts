@@ -218,6 +218,36 @@ export enum SOCK {
 // Task.
 
 
+function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void): (n: number, args: number[]) => void {
+	let table: {[n: number]: Function} = {
+		4: (fd: number, bufp: number, len: number): void => {
+			let buf = new Buffer(new DataView(task.sheap, bufp, len));
+			sys.pwrite(task, fd, buf, 0, (err: any, len: number) => {
+				if (err) {
+					if (typeof err === 'number')
+						len = err;
+					else
+						len = -1;
+				}
+				sysret(len);
+			});
+		},
+		252: (code: number): void => {
+			sys.exit(task, code);
+		},
+	};
+
+	return (n: number, args: number[]) => {
+		if (!(n in table)) {
+			console.log('sync syscall: unknown ' + n);
+			sysret(-constants.ENOTSUP);
+			return;
+		}
+		table[n].apply(this, args);
+	};
+}
+
+
 class AsyncSyscalls {
 	[syscallName: string]: any;
 
@@ -564,7 +594,7 @@ class AsyncSyscalls {
 }
 
 
-class Syscalls {
+export class Syscalls {
 	kernel: Kernel;
 
 	constructor(kernel: Kernel) {
@@ -1082,6 +1112,8 @@ export class Kernel implements IKernel {
 	// TODO: make this private
 	portWaiters: {[port: number]: Function} = {};
 
+	syscallsCommon: Syscalls;
+
 	// TODO: this should be per-protocol, i.e. separate for TCP
 	// and UDP
 	private ports: {[port: number]: SocketFile} = {};
@@ -1090,7 +1122,6 @@ export class Kernel implements IKernel {
 	private taskIdSeq: number = 0;
 
 	private syscalls: AsyncSyscalls;
-	private syscallsCommon: Syscalls;
 
 	constructor(fs: fs, nCPUs: number, args: BootArgs) {
 		this.outstanding = 0;
@@ -1325,33 +1356,6 @@ export class Kernel implements IKernel {
 		listener.doAccept(local, addr, port, cb);
 	}
 
-	doSyncSyscall(task: Task, trap: number, args: number[]): void {
-		const SYS_WRITE = 1;
-		const SYS_EXIT_GROUP = 231;
-
-		switch (trap) {
-		case SYS_WRITE:
-			let fd = args[0];
-			let bufp = args[1];
-			let len = args[2];
-			let buf = new Buffer(new DataView(task.sheap, bufp, len));
-			task.files[fd].write(buf, (err: any, len: number) => {
-				if (err)
-					len = -1;
-				Atomics.store(task.heap32, (task.waitOff >> 2)+1, len);
-				Atomics.store(task.heap32, task.waitOff >> 2, 1);
-				Atomics.wake(task.heap32, task.waitOff >> 2, 1);
-			});
-			break;
-		case SYS_EXIT_GROUP:
-			this.exit(task, args[0]);
-			break;
-		default:
-			console.log('unknown sync syscall: ' + trap);
-		}
-
-	}
-
 	doSyscall(syscall: Syscall): void {
 		if (syscall.name in this.syscalls) {
 			// let argfmt = (arg: any): any => {
@@ -1518,6 +1522,8 @@ export class Task implements ITask {
 	private msgIdSeq: number = 1;
 	private onRunnable: (err: number, pid: number) => void;
 
+	private syncSyscall: (n: number, args: number[]) => void;
+
 	constructor(
 		kernel: Kernel, parent: Task, pid: number, cwd: string,
 		filename: string, args: string[], env: Environment,
@@ -1576,6 +1582,11 @@ export class Task implements ITask {
 		this.heapu8 = new Uint8Array(sab);
 		this.heap32 = new Int32Array(sab);
 		this.waitOff = off;
+		this.syncSyscall = syncSyscalls((<Kernel>this.kernel).syscallsCommon, this, (ret: number) => {
+			Atomics.store(this.heap32, (this.waitOff >> 2)+1, ret);
+			Atomics.store(this.heap32, this.waitOff >> 2, 1);
+			Atomics.wake(this.heap32, this.waitOff >> 2, 1);
+		});
 
 		cb(null);
 	}
@@ -1891,7 +1902,7 @@ export class Task implements ITask {
 	private syscallHandler(ev: MessageEvent): void {
 		// TODO: there is probably a better way to handle this :\
 		if (ev.data.trap) {
-			this.kernel.doSyncSyscall(this, ev.data.trap, ev.data.args);
+			this.syncSyscall(ev.data.trap, ev.data.args);
 			return;
 		}
 

@@ -219,9 +219,38 @@ export enum SOCK {
 
 
 function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void): (n: number, args: number[]) => void {
+	let dataViewWorks = true;
+	try {
+		let _ = new DataView(new SharedArrayBuffer(32), 0, 32);
+	} catch (e) {
+		dataViewWorks = false;
+	}
+	console.log('working DataView? ' + dataViewWorks);
+
+	function bufferAt(off: number, len: number): Buffer {
+		if (dataViewWorks) {
+			return new Buffer(new DataView(task.sheap, off, len));
+		} else {
+			let tmp = new Uint8Array(task.sheap, off, len);
+			let notShared = new ArrayBuffer(len);
+			new Uint8Array(notShared).set(tmp);
+			return new Buffer(new DataView(notShared));
+		}
+	}
+
+	function stringAt(ptr: number): string {
+		let s = new Uint8Array(task.sheap, ptr);
+
+		let len = 0;
+		while (s[len] !== 0)
+			len++;
+
+		return utf8Slice(s, 0, len);
+	}
+
 	let table: {[n: number]: Function} = {
-		3: (fd: number, bufp: number, len: number): void => {
-			let buf = new Buffer(new DataView(task.sheap, bufp, len));
+		3: (fd: number, bufp: number, len: number): void => { // read
+			let buf = bufferAt(bufp, len);
 			sys.pread(task, fd, buf, -1, (err: any, len: number) => {
 				if (err) {
 					if (typeof err === 'number')
@@ -232,8 +261,8 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 				sysret(len);
 			});
 		},
-		4: (fd: number, bufp: number, len: number): void => {
-			let buf = new Buffer(new DataView(task.sheap, bufp, len));
+		4: (fd: number, bufp: number, len: number): void => { // write
+			let buf = bufferAt(bufp, len);
 			sys.pwrite(task, fd, buf, 0, (err: any, len: number) => {
 				if (err) {
 					if (typeof err === 'number')
@@ -244,7 +273,64 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 				sysret(len);
 			});
 		},
-		252: (code: number): void => {
+		5: (pathp: number, flags: number, mode: number): void => { // open
+			let path = stringAt(pathp);
+			let sflags: string = flagsToString(flags);
+
+			sys.open(task, path, sflags, mode, (err: number, fd: number) => {
+				if ((typeof err === 'number') && err < 0)
+					fd = err;
+				sysret(fd|0);
+			});
+		},
+		6: (fd: number): void => { // close
+			sys.close(task, fd, sysret);
+		},
+		10: (pathp: number): void => { // unlink
+			let path = stringAt(pathp);
+			sys.unlink(task, path, (err: any) => {
+				// TODO: handle other err.codes
+				if (err && err.code === 'ENOENT')
+					sysret(-constants.ENOENT);
+				else if (err)
+					sysret(-1);
+				else
+					sysret(0);
+			});
+		},
+		33: (pathp: number, amode: number): void => { // access
+			let path = stringAt(pathp);
+			sys.access(task, path, amode, sysret);
+		},
+		54: (fd: number, op: number): void => { // ioctl
+			sys.ioctl(task, fd, op, -1, sysret);
+		},
+		140: (fd: number, offhi: number, offlo: number, resultp: number, whence: number): void => { // llseek
+			sys.llseek(task, fd, offhi, offlo, whence, (err: number, off: number) => {
+				if (!err) {
+					task.heap32[resultp >> 2] = off;
+				}
+				sysret(err);
+			});
+		},
+		183: (bufp: number, size: number): void => { // getcwd
+			let cwd = utf8ToBytes(sys.getcwd(task));
+			if (cwd.byteLength > size)
+				cwd = cwd.subarray(0, size);
+			task.heapu8.subarray(bufp, bufp+size).set(cwd);
+			sysret(cwd.byteLength);
+		},
+		195: (pathp: number, bufp: number): void => { // stat64
+			let path = stringAt(pathp);
+			let buf = task.heapu8.subarray(bufp, bufp+marshal.fs.StatDef.length);
+			sys.stat(task, path, buf, sysret);
+		},
+		196: (pathp: number, bufp: number): void => { // lstat64
+			let path = stringAt(pathp);
+			let buf = task.heapu8.subarray(bufp, bufp+marshal.fs.StatDef.length);
+			sys.lstat(task, path, buf, sysret);
+		},
+		252: (code: number): void => { // exit_group
 			sys.exit(task, code);
 		},
 	};
@@ -255,6 +341,8 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 			sysret(-constants.ENOTSUP);
 			return;
 		}
+		//console.log('[' + task.pid + '] \tsys_' + n + '\t' + args[0]);
+
 		table[n].apply(this, args);
 	};
 }
@@ -501,7 +589,8 @@ class AsyncSyscalls {
 				ctx.complete(-constants.ENOENT);
 			else if (err)
 				ctx.complete(-1);
-			else ctx.complete(0);
+			else
+				ctx.complete(0);
 		});
 	}
 
@@ -988,9 +1077,10 @@ export class Syscalls {
 		this.kernel.fs.mkdir(fullpath, mode, cb);
 	}
 
-	close(task: ITask, fd: number, cb: (err: any) => void): void {
+	close(task: ITask, fd: number, cb: (err: number) => void): void {
 		let file = task.files[fd];
 		if (!file) {
+			debugger;
 			cb(-constants.EBADF);
 			return;
 		}
@@ -1598,6 +1688,7 @@ export class Task implements ITask {
 			Atomics.store(this.heap32, (this.waitOff >> 2)+1, ret);
 			Atomics.store(this.heap32, this.waitOff >> 2, 1);
 			Atomics.wake(this.heap32, this.waitOff >> 2, 1);
+			//console.log('[' + this.pid + '] \t\tDONE \t' + ret);
 		});
 
 		cb(null);
@@ -1741,6 +1832,7 @@ export class Task implements ITask {
 		this.worker.onmessage = this.syscallHandler.bind(this);
 		this.worker.onerror = (err: ErrorEvent): void => {
 			if (this.files[2]) {
+				console.log(err);
 				this.files[2].write('Error while executing ' + this.pendingExePath + ': ' + err.message + '\n', () => {
 					this.kernel.exit(this, -1);
 				});

@@ -1,6 +1,6 @@
 (() => {
 	'use strict';
-	let f = 'example';
+	let f = 'main';
 	let texFile = f + '.tex';
 	let bibFile = 'mybib.bib';
 	let edTex = document.getElementById('ed-tex');

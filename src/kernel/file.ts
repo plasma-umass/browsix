@@ -102,35 +102,34 @@ export class DirFile implements IFile {
 		cb(0, 0);
 	}
 
-	getdents(length: number, cb: (err: any, buf: Uint8Array) => void): void {
+	getdents(buf: Uint8Array, cb: (err: number) => void): void {
 		this.readdir((err: any, files: string[]) => {
 			if (err) {
 				console.log('readdir: ' + err);
-				cb(-EFAULT, null);
+				cb(-EFAULT);
 				return;
 			}
 			files = files.slice(this.off);
 
 			let dents = files.map((n) => new fs.Dirent(-1, fs.DT.UNKNOWN, n));
-			let buf = new Uint8Array(length);
-			let view = new DataView(buf.buffer);
+			let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
 			let voff = 0;
 
 			for (let i = 0; i < dents.length; i++) {
 				let dent = dents[i];
-				if (voff + dent.reclen > length)
+				if (voff + dent.reclen > buf.byteLength)
 					break;
 				let [len, err] = Marshal(view, voff, dent, fs.DirentDef);
 				if (err) {
 					console.log('dirent marshal failed: ' + err);
-					cb(-EFAULT, null);
+					cb(-EFAULT);
 					return;
 				}
 				voff += len;
 				this.off++;
 			}
 
-			cb(null, buf.subarray(0, voff));
+			cb(voff);
 		});
 	}
 

@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 /// <reference path="../../typings/node/node.d.ts" />
+/// <reference path="../../typings/sharedarraybuffer.d.ts" />
 
 'use strict';
 
@@ -22,7 +23,7 @@ export interface SyscallResult {
 }
 
 export interface ConnectCallback {
-	(err: any): void;
+	(err: number): void;
 }
 
 export interface IKernel {
@@ -73,12 +74,13 @@ export interface ITask {
 	cwd: string;
 	priority: number;
 
+	personality(kind: number, sab: SharedArrayBuffer, off: number, cb: (err: any) => void): void;
 	exec(filename: string, args: string[], env: Environment, cb: (err: any, pid: number) => void): void;
 	allocFD(): number;
 	addFile(f: IFile): number;
 	schedule(msg: SyscallResult): void;
 	setPriority(prio: number): number;
-	wait4(ctx: SyscallContext, pid: number, options: number): void;
+	wait4(pid: number, options: number, cb: (pid: number, wstatus?: number, rusage?: any) => void): void;
 	chdir(path: string, cb: Function): void;
 }
 

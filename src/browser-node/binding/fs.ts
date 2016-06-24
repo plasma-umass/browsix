@@ -110,6 +110,15 @@ export function readdir(path: string, req: FSReqWrap): void {
 
 function statFinished(req: FSReqWrap, err: any, buf: Uint8Array): void {
 	if (err) {
+		// FIXME: we should have a more general way of
+		// converting back from numerical to Node errors
+		if (typeof err === 'number') {
+			let nerr = err;
+			err = new Error('FS error');
+			if (nerr === -constants.ENOENT) {
+				err.code = 'ENOENT';
+			}
+		}
 		req.complete(err, null);
 		return;
 	}

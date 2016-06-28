@@ -238,6 +238,18 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		}
 	}
 
+	function arrayAt(off: number, len: number): Uint8Array {
+		if (dataViewWorks) {
+			return task.heapu8.subarray(off, off+len);
+		} else {
+			let tmp = new Uint8Array(task.sheap, off, len);
+			let notShared = new ArrayBuffer(len);
+			let notSharedArray = new Uint8Array(notShared);
+			notSharedArray.set(tmp);
+			return notSharedArray;
+		}
+	}
+
 	function stringAt(ptr: number): string {
 		let s = new Uint8Array(task.sheap, ptr);
 
@@ -322,13 +334,25 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		195: (pathp: number, bufp: number): void => { // stat64
 			let path = stringAt(pathp);
-			let buf = task.heapu8.subarray(bufp, bufp+marshal.fs.StatDef.length);
-			sys.stat(task, path, buf, sysret);
+			let len = marshal.fs.StatDef.length;
+			let buf = arrayAt(bufp, len);
+			sys.stat(task, path, buf, function(): void {
+				// workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1246597
+				if (!dataViewWorks)
+					task.heapu8.subarray(bufp, bufp+len).set(buf);
+				sysret.apply(this, arguments);
+			});
 		},
 		196: (pathp: number, bufp: number): void => { // lstat64
 			let path = stringAt(pathp);
-			let buf = task.heapu8.subarray(bufp, bufp+marshal.fs.StatDef.length);
-			sys.lstat(task, path, buf, sysret);
+			let len = marshal.fs.StatDef.length;
+			let buf = arrayAt(bufp, len);
+			sys.lstat(task, path, buf, function(): void {
+				// workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1246597
+				if (!dataViewWorks)
+					task.heapu8.subarray(bufp, bufp+len).set(buf);
+				sysret.apply(this, arguments);
+			});
 		},
 		252: (code: number): void => { // exit_group
 			sys.exit(task, code);

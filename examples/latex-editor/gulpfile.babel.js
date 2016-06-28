@@ -52,15 +52,19 @@ const testLintOptions = {
   }
 };
 
+gulp.task('copy-fs', ['index-fs'], () => {
+  return gulp.src(['fs/**/*']).pipe(gulp.dest('dist/fs'));
+});
+
 gulp.task('lint', lint('app/scripts/**/*.js', {rules: {'no-use-before-define': [2, {functions: false}]}}));
 gulp.task('lint:test', lint('test/spec/**/*.js', testLintOptions));
 
-gulp.task('html', ['styles', 'scripts'], () => {
-  return gulp.src('app/*.html')
+gulp.task('html', ['styles', 'scripts', 'copy-fs'], () => {
+  return gulp.src(['app/*.html', 'app/*.js'])
     .pipe($.useref({searchPath: ['.tmp', 'app', '.']}))
-    .pipe($.if('*.js', $.uglify()))
-    .pipe($.if('*.css', $.cssnano()))
-    .pipe($.if('*.html', $.htmlmin({collapseWhitespace: true})))
+//    .pipe($.if('*.js', $.uglify()))
+//    .pipe($.if('*.css', $.cssnano()))
+//    .pipe($.if('*.html', $.htmlmin({collapseWhitespace: true})))
     .pipe(gulp.dest('dist'));
 });
 

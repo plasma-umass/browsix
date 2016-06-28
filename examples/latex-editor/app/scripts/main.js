@@ -8,15 +8,15 @@
 	var IS_FIREFOX = typeof navigator !== 'undefined' &&
 			navigator.userAgent.match(/Firefox/);
 
-	let f = 'main';
-	let texFile = f + '.tex';
-	let bibFile = 'mybib.bib';
-	let edTex = document.getElementById('ed-tex');
-	let edBib = document.getElementById('ed-bib');
-	let button = document.getElementById('create-button');
-	let loading = document.getElementById('loading');
-	let pdfParent = document.getElementById('pdf-parent');
-	let kernel = null;
+	var f = 'main';
+	var texFile = f + '.tex';
+	var bibFile = 'mybib.bib';
+	var edTex = document.getElementById('ed-tex');
+	var edBib = document.getElementById('ed-bib');
+	var button = document.getElementById('create-button');
+	var loading = document.getElementById('loading');
+	var pdfParent = document.getElementById('pdf-parent');
+	var kernel = null;
 	function startBrowsix() {
 		if (!IS_CHROME || typeof SharedArrayBuffer === 'undefined') {
 			$('#sab-alert').removeClass('browsix-hidden');
@@ -67,15 +67,15 @@
 
 		$(button).toggleClass('is-active').blur();
 	}
-	let sequence = [
+	var sequence = [
 		'pdflatex ' + f,
 		'bibtex ' + f,
 		'pdflatex ' + f,
 		'pdflatex ' + f,
 	];
 	function runLatex() {
-		let log = '';
-		let seq = sequence.slice();
+		var log = '';
+		var seq = sequence.slice();
 		function onStdout(pid, out) {
 			log += out;
 			//console.log(out);

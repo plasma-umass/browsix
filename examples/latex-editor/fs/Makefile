@@ -30,3 +30,5 @@ all: paper
 	$(TEX) $(TEX_FLAGS) $<
 
 paper: $(MAIN).pdf
+
+.PHONY: all paper

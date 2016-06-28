@@ -26,33 +26,70 @@
 		<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
 		<![endif]-->
 
+
+		<nav class="navbar navbar-default navbar-fixed-top">
+			<div class="container">
+				<div class="navbar-header">
+					<span class="navbar-brand" href="#"><a href="https://github.com/plasma-umass/browsix">Browsix</a> LaTeX editor</span>
+				</div>
+				<div id="navbar">
+					<ul class="nav navbar-nav navbar-right">
+						<li>
+							<span id="loading" class="browsix-hidden">
+								<span><i class="fa fa-refresh fa-spin"></i>&nbsp;</span>
+								<i>loading</i>
+							</span>
+							<button type="button"
+								class="btn btn-primary has-spinner"
+								id="create-button"
+								disabled><span class="spinner"><i class="fa fa-refresh fa-spin"></i>&nbsp;</span>Build PDF
+							</button>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+
 		<div class="container-fluid">
-			<div class="header">
-				<h3 class="text-muted">
-					LaTeX editor
-				<span style="float: right;">
-					<button type="button"
-						class="btn btn-primary has-spinner"
-						id="create-button"
-						disabled><span class="spinner"><i class="fa fa-refresh fa-spin"></i>&nbsp;</span>Build
-					</button>
-				</span>
 
-				</h3>
-
+			<div id="sab-alert" class="alert alert-danger browsix-hidden" role="alert">
+				<strong>Uh oh!</strong>
+				This demo uses
+				<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer">Shared Array Buffers</a>,
+				and requires Chrome due to
+				<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1246597">an open issue in Firefox</a>.
+				Try it by starting Chrome
+				from the command-line with the
+				arguments
+				<code>--js-flags=--harmony-sharedarraybuffer --enable-blink-feature=SharedArrayBuffer</code>
 			</div>
 
-			<center>
+			<div class="jumbotron">
+					This split-panel editor uses
+					<a href="https://github.com/plasma-umass/browsix">Browsix</a>
+					to run traditional,
+					multi-process command line
+					tools like the <a href="https://www.tug.org/texlive/">TeX Live suite</a> in the browser.  When
+					you hit the build button in
+					the upper left, we run <code>latex main.tex;
+						bibtex main.aux;
+						latex main.tex;
+						latex main.tex</code>
+					in sequence, with each command
+					executed as a process in its
+					own Web Worker, to generate
+					(or regenerate) the PDF shown
+					below on the right.</div>
+
 			<div class="row">
-				<div class="col-6">
+				<div class="col-lg-6">
 					<textarea class="in-text" id="ed-tex" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
 					<textarea class="in-text" id="ed-bib" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
 				</div>
-				<div class="col-6">
-					<embed id="pdf-embed" class="pdf" src="" alt="main.pdf" pluginspage="http://www.adobe.com/products/acrobat/readstep2.html">
+				<div class="col-lg-6"  id="pdf-parent">
+					<center><b>PDF will appear here when built</b></center>
 				</div>
 			</div>
-			</center>
 
 			<div class="footer">
 				<p>

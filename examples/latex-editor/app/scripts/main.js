@@ -1,14 +1,30 @@
 (() => {
 	'use strict';
+
+	var IS_CHROME =	typeof navigator !== 'undefined' &&
+			navigator.userAgent.match(/Chrome/) &&
+			!navigator.userAgent.match(/Edge/);
+
+	var IS_FIREFOX = typeof navigator !== 'undefined' &&
+			navigator.userAgent.match(/Firefox/);
+
 	let f = 'main';
 	let texFile = f + '.tex';
 	let bibFile = 'mybib.bib';
 	let edTex = document.getElementById('ed-tex');
 	let edBib = document.getElementById('ed-bib');
 	let button = document.getElementById('create-button');
-	let pdfEmbed = document.getElementById('pdf-embed');
+	let loading = document.getElementById('loading');
+	let pdfParent = document.getElementById('pdf-parent');
 	let kernel = null;
 	function startBrowsix() {
+		if (!IS_CHROME || typeof SharedArrayBuffer === 'undefined') {
+			$('#sab-alert').removeClass('browsix-hidden');
+			return;
+		}
+
+		$('#loading').removeClass('browsix-hidden');
+
 		window.Boot(
 			'XmlHttpRequest',
 			['index.json', 'fs', true],
@@ -25,6 +41,7 @@
 		edTex.value = kernel.fs.readFileSync(texFile).toString();
 		edBib.value = kernel.fs.readFileSync(bibFile).toString();
 
+		$('#loading').addClass('browsix-hidden');
 		button.disabled = false;
 	}
 	function saveFiles(next) {
@@ -36,10 +53,17 @@
 	}
 	function showPDF() {
 		var fName = f + '.pdf';
-		var mimeType = 'application/pdf';
 		var buf = new Uint8Array(kernel.fs.readFileSync(fName).data.buff.buffer);
-		var blob = new Blob([buf], {type: mimeType});
-		pdfEmbed.src = window.URL.createObjectURL(blob);
+		var blob = new Blob([buf], {type: 'application/pdf'});
+
+		var pdfEmbed = document.createElement('embed');
+		pdfEmbed.className = 'pdf';
+		pdfEmbed['src'] = window.URL.createObjectURL(blob);
+		pdfEmbed.setAttribute('alt', 'main.pdf');
+		pdfEmbed.setAttribute('pluginspage', 'http://www.adobe.com/products/acrobat/readstep2.html');
+
+		pdfParent.innerHTML = '';
+		pdfParent.appendChild(pdfEmbed);
 
 		$(button).toggleClass('is-active').blur();
 	}
@@ -50,16 +74,23 @@
 		'pdflatex ' + f,
 	];
 	function runLatex() {
+		let log = '';
 		let seq = sequence.slice();
 		function onStdout(pid, out) {
-			console.log(out);
+			log += out;
+			//console.log(out);
 		}
 		function onStderr(pid, out) {
-			console.log(out);
+			log += out;
+			//console.log(out);
 		}
 		function runNext(pid, code) {
-			if (code !== 0)
+			if (code !== 0) {
 				alert('latex failed');
+				console.log(log);
+			}
+				console.log(log);
+			log = '';
 			var cmd = seq.shift();
 			if (!cmd) {
 				showPDF();

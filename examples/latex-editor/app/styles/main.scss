@@ -163,3 +163,67 @@ body {
        width: 48%;
        display: inline-block;
 }
+
+.vertical-center {
+padding-bottom: 500px;
+}
+
+.vcenter {
+font-weight: bold;
+    display: inline-block;
+    vertical-align: bottom;
+    height: 300px;
+    float: none;
+}
+
+@media (max-width: 768px) {
+    .navbar-nav {
+        margin: 0px;
+    }
+    .navbar-header {
+    float: left;
+}
+
+    .navbar-nav > li {
+        float: left;
+    }
+
+    .navbar-right {
+        float: right !important;
+        margin-right: -15px;
+    }
+}
+
+.container > .navbar-header {
+    margin-right: 0;
+    margin-left: 0;
+}
+
+
+.navbar-right {
+    margin-right: 20px;
+    margin-top: 8px;
+}
+
+body {
+    padding-top: 70px;
+}
+
+.browsix-hidden {
+     display:none;
+}
+
+#loading {
+    padding-right: 8px;
+}
+
+
+@media (max-width: 1200px) {
+.col-lg-6 {
+    width: 50%;
+}
+
+.col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
+    float: left;
+}
+}

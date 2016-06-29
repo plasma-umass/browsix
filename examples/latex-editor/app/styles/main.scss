@@ -5,225 +5,240 @@ $icon-font-path: '../fonts/';
 // endbower
 
 .browserupgrade {
-  margin: 0.2em 0;
-  background: #ccc;
-  color: #000;
-  padding: 0.2em 0;
+	margin: 0.2em 0;
+	background: #ccc;
+	color: #000;
+	padding: 0.2em 0;
 }
 
 /* Space out content a bit */
 body {
-  padding-top: 20px;
-  padding-bottom: 20px;
+	padding-top: 20px;
+	padding-bottom: 20px;
 }
 
 /* Everything but the jumbotron gets side spacing for mobile first views */
 .header,
 .marketing,
 .footer {
-  padding-left: 15px;
-  padding-right: 15px;
+	padding-left: 15px;
+	padding-right: 15px;
 }
 
 /* Custom page header */
 .header {
-  border-bottom: 1px solid #e5e5e5;
+	border-bottom: 1px solid #e5e5e5;
 
-  /* Make the masthead heading the same height as the navigation */
-  h3 {
-    margin-top: 0;
-    margin-bottom: 0;
-    line-height: 40px;
-    padding-bottom: 19px;
-  }
+	/* Make the masthead heading the same height as the navigation */
+	h3 {
+		margin-top: 0;
+		margin-bottom: 0;
+		line-height: 40px;
+		padding-bottom: 19px;
+	}
 }
 
 /* Custom page footer */
 .footer {
-  padding-top: 19px;
-  color: #777;
-  border-top: 1px solid #e5e5e5;
+	padding-top: 19px;
+	color: #777;
+	border-top: 1px solid #e5e5e5;
 }
 
 .container-narrow > hr {
-  margin: 30px 0;
+	margin: 30px 0;
 }
 
 /* Main marketing message and sign up button */
 .jumbotron {
-  text-align: center;
-  border-bottom: 1px solid #e5e5e5;
-  .btn {
-    font-size: 21px;
-    padding: 14px 24px;
-  }
+	text-align: center;
+	border-bottom: 1px solid #e5e5e5;
+	.btn {
+		font-size: 21px;
+		padding: 14px 24px;
+	}
 }
 
 /* Supporting marketing content */
 .marketing {
-  margin: 40px 0;
-  p + h4 {
-    margin-top: 28px;
-  }
+	margin: 40px 0;
+	p + h4 {
+		margin-top: 28px;
+	}
 }
 
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 768px) {
-  .container {
-    max-width: 730px;
-  }
+	.container {
+		max-width: 730px;
+	}
 
-  /* Remove the padding we set earlier */
-  .header,
-  .marketing,
-  .footer {
-    padding-left: 0;
-    padding-right: 0;
-  }
+	/* Remove the padding we set earlier */
+	.header,
+	.marketing,
+	.footer {
+		padding-left: 0;
+		padding-right: 0;
+	}
 
-  /* Space out the masthead */
-  .header {
-    margin-bottom: 30px;
-  }
+	/* Space out the masthead */
+	.header {
+		margin-bottom: 30px;
+	}
 
-  /* Remove the bottom border on the jumbotron for visual effect */
-  .jumbotron {
-    border-bottom: 0;
-  }
+	/* Remove the bottom border on the jumbotron for visual effect */
+	.jumbotron {
+		border-bottom: 0;
+	}
 }
 
 .spinner {
-  display: inline-block;
-  opacity: 0;
-  width: 0;
+	display: inline-block;
+	opacity: 0;
+	width: 0;
 
-  -webkit-transition: opacity 0.25s, width 0.25s;
-  -moz-transition: opacity 0.25s, width 0.25s;
-  -o-transition: opacity 0.25s, width 0.25s;
-  transition: opacity 0.25s, width 0.25s;
+	-webkit-transition: opacity 0.25s, width 0.25s;
+	-moz-transition: opacity 0.25s, width 0.25s;
+	-o-transition: opacity 0.25s, width 0.25s;
+	transition: opacity 0.25s, width 0.25s;
 }
 
 .has-spinner.is-active {
-  cursor:progress;
+	cursor:progress;
 }
 
 .has-spinner.is-active .spinner {
-  opacity: 1;
-    width: 16px;
+	opacity: 1;
+	width: 16px;
 }
 
 .has-spinner.btn-mini.is-active .spinner {
-    width: 10px;
+	width: 10px;
 }
 
 .has-spinner.btn-small.is-active .spinner {
-    width: 13px;
+	width: 13px;
 }
 
 .has-spinner.btn.is-active .spinner {
-    width: 16px;
+	width: 16px;
 }
 
 .has-spinner.btn-large.is-active .spinner {
-    width: 19px;
+	width: 19px;
 }
 
 .form-control {
-    border-radius: 0px;
+	border-radius: 0px;
 }
 
 .btn {
-    border-radius: 0px;
+	border-radius: 0px;
 }
 
 .input-group-addon {
-    border-radius: 0px;
+	border-radius: 0px;
 }
 
 .in-text {
-	 font-size: 14px;
-	 font-family: 'Hack', 'Courier New', Courier, monospace;
-	 outline: 0px solid transparent;
-	 width: 100%;
+	font-size: 14px;
+	font-family: 'Hack', 'Courier New', Courier, monospace;
+	outline: 0px solid transparent;
+	width: 100%;
 }
 
 #ed-tex {
-	 height: 500px;
+	height: 500px;
 }
 #ed-bib {
-	 height: 300px;
+	height: 300px;
 }
 
 .pdf {
-	 width: 100%;
-	 height: 800px;
+	width: 100%;
+	height: 800px;
 }
 
 .col-6 {
-       width: 48%;
-       display: inline-block;
+	width: 48%;
+	display: inline-block;
 }
 
 .vertical-center {
-padding-bottom: 500px;
+	padding-bottom: 500px;
 }
 
 .vcenter {
-font-weight: bold;
-    display: inline-block;
-    vertical-align: bottom;
-    height: 300px;
-    float: none;
+	font-weight: bold;
+	display: inline-block;
+	vertical-align: bottom;
+	height: 300px;
+	float: none;
 }
 
 @media (max-width: 768px) {
-    .navbar-nav {
-        margin: 0px;
-    }
-    .navbar-header {
-    float: left;
-}
+	.navbar-nav {
+		margin: 0px;
+	}
+	.navbar-header {
+		float: left;
+	}
 
-    .navbar-nav > li {
-        float: left;
-    }
+	.navbar-nav > li {
+		float: left;
+	}
 
-    .navbar-right {
-        float: right !important;
-        margin-right: -15px;
-    }
+	.navbar-right {
+		float: right !important;
+		margin-right: -15px;
+	}
 }
 
 .container > .navbar-header {
-    margin-right: 0;
-    margin-left: 0;
+	margin-right: 0;
+	margin-left: 0;
 }
 
 
 .navbar-right {
-    margin-right: 20px;
-    margin-top: 8px;
+	margin-right: 20px;
+	margin-top: 8px;
 }
 
 body {
-    padding-top: 70px;
+	padding-top: 70px;
 }
 
 .browsix-hidden {
-     display:none;
+	display:none;
 }
 
 #loading {
-    padding-right: 8px;
+	padding-right: 8px;
 }
 
 
 @media (max-width: 1200px) {
-.col-lg-6 {
-    width: 50%;
+	.col-lg-6 {
+		width: 50%;
+	}
+
+	.col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
+		float: left;
+	}
 }
 
-.col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
-    float: left;
+#toolbar {
+	display:     flex;
+	align-items: center;
 }
+
+#build-progress {
+	align-items: flex-start;
+	text-align: center;
+
+	width: 200px;
+
+	margin-right: 10px;
+	margin-bottom: 0px;
 }

@@ -1,22 +1,29 @@
 (() => {
 	'use strict';
 
-	var IS_CHROME =	typeof navigator !== 'undefined' &&
+	const TEX_FLAGS = '-halt-on-error -interaction nonstopmode --shell-escape ';
+
+	const IS_CHROME = typeof navigator !== 'undefined' &&
 			navigator.userAgent.match(/Chrome/) &&
 			!navigator.userAgent.match(/Edge/);
 
-	var IS_FIREFOX = typeof navigator !== 'undefined' &&
+	const IS_FIREFOX = typeof navigator !== 'undefined' &&
 			navigator.userAgent.match(/Firefox/);
 
-	var f = 'main';
-	var texFile = f + '.tex';
-	var bibFile = 'mybib.bib';
-	var edTex = document.getElementById('ed-tex');
-	var edBib = document.getElementById('ed-bib');
-	var button = document.getElementById('create-button');
-	var loading = document.getElementById('loading');
-	var pdfParent = document.getElementById('pdf-parent');
-	var kernel = null;
+	let f = 'main';
+	let texFile = f + '.tex';
+	let bibFile = 'mybib.bib';
+	let edTex = document.getElementById('ed-tex');
+	let edBib = document.getElementById('ed-bib');
+	let button = document.getElementById('create-button');
+	let loading = document.getElementById('loading');
+	let pdfParent = document.getElementById('pdf-parent');
+	let kernel = null;
+
+	function replaceAll(target, search, replacement) {
+		return target.replace(new RegExp(search, 'g'), replacement);
+	}
+
 	function startBrowsix() {
 		if (!IS_CHROME || typeof SharedArrayBuffer === 'undefined') {
 			$('#sab-alert').removeClass('browsix-hidden');
@@ -52,11 +59,11 @@
 		});
 	}
 	function showPDF() {
-		var fName = f + '.pdf';
-		var buf = new Uint8Array(kernel.fs.readFileSync(fName).data.buff.buffer);
-		var blob = new Blob([buf], {type: 'application/pdf'});
+		let fName = f + '.pdf';
+		let buf = new Uint8Array(kernel.fs.readFileSync(fName).data.buff.buffer);
+		let blob = new Blob([buf], {type: 'application/pdf'});
 
-		var pdfEmbed = document.createElement('embed');
+		let pdfEmbed = document.createElement('embed');
 		pdfEmbed.className = 'pdf';
 		pdfEmbed['src'] = window.URL.createObjectURL(blob);
 		pdfEmbed.setAttribute('alt', 'main.pdf');
@@ -65,35 +72,60 @@
 		pdfParent.innerHTML = '';
 		pdfParent.appendChild(pdfEmbed);
 
-		$(button).toggleClass('is-active').blur();
+		$(button).removeClass('is-active').blur();
 	}
-	var sequence = [
-		'pdflatex ' + f,
+	let sequence = [
+		'pdflatex ' + TEX_FLAGS + f,
 		'bibtex ' + f,
-		'pdflatex ' + f,
-		'pdflatex ' + f,
+		'pdflatex ' + TEX_FLAGS + f,
+		'pdflatex ' + TEX_FLAGS + f,
 	];
 	function runLatex() {
-		var log = '';
-		var seq = sequence.slice();
+		let progress = 10;
+
+		$('#build-progress').removeClass('browsix-hidden');
+		pdfParent.innerHTML = '<center><b>PDF will appear here when built</b></center>';
+
+		let log = '';
+		let seq = sequence.slice();
 		function onStdout(pid, out) {
 			log += out;
-			//console.log(out);
+			console.log(out);
 		}
 		function onStderr(pid, out) {
 			log += out;
-			//console.log(out);
+			console.log(out);
 		}
 		function runNext(pid, code) {
+			console.log('code? ' + code);
 			if (code !== 0) {
-				alert('latex failed');
 				console.log(log);
+
+				let errEmbed = document.createElement('code');
+				errEmbed.innerHTML = replaceAll(log, '\n', '<br>\n');
+
+				pdfParent.innerHTML = '<h2>Error:</h2><br>';
+				pdfParent.appendChild(errEmbed);
+
+				$('#build-progress').addClass('browsix-hidden');
+				$('#build-bar').css('width', '10%').attr('aria-valuenow', 10);
+
+				$(button).removeClass('is-active').blur();
+
+				return;
 			}
-				console.log(log);
+
+			console.log('progress: ' + progress);
+			$('#build-bar').css('width', ''+progress+'%').attr('aria-valuenow', progress);
+			progress += 25;
+
+			//console.log(log);
 			log = '';
-			var cmd = seq.shift();
+			let cmd = seq.shift();
 			if (!cmd) {
 				showPDF();
+				$('#build-progress').addClass('browsix-hidden');
+				$('#build-bar').css('width', '10%').attr('aria-valuenow', 10);
 				return;
 			}
 			kernel.system(cmd, runNext, onStdout, onStderr);

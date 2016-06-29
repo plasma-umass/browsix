@@ -34,7 +34,13 @@
 				</div>
 				<div id="navbar">
 					<ul class="nav navbar-nav navbar-right">
-						<li>
+						<li id="toolbar">
+							<div class="progress browsix-hidden" id="build-progress">
+								<div id="build-bar" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="width: 10%">
+									<span class="sr-only"></span>
+								</div>
+							</div>
+
 							<span id="loading" class="browsix-hidden">
 								<span><i class="fa fa-refresh fa-spin"></i>&nbsp;</span>
 								<i>loading</i>
@@ -70,8 +76,8 @@
 					to run traditional,
 					multi-process command line
 					tools like the <a href="https://www.tug.org/texlive/">TeX Live suite</a> in the browser.  When
-					you hit the build button in
-					the upper left, we run <code>latex main.tex;
+					you hit the "Build PDF" button in
+					the upper right, Browsix runs <code>latex main.tex;
 						bibtex main.aux;
 						latex main.tex;
 						latex main.tex</code>

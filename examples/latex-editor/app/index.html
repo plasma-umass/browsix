@@ -59,6 +59,7 @@
 		<div class="container-fluid">
 
 			<div id="sab-alert" class="alert alert-danger browsix-hidden" role="alert">
+				<p>
 				<strong>Uh oh!</strong>
 				This demo uses
 				<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer">Shared Array Buffers</a>,
@@ -68,16 +69,24 @@
 				from the command-line with the
 				arguments
 				<code>--js-flags=--harmony-sharedarraybuffer --enable-blink-feature=SharedArrayBuffer</code>
+				</p>
 			</div>
 
 			<div class="jumbotron">
-					This split-panel editor uses
+				<p>
+				Browsix makes core Unix features available in web
+				applications (including processes, pipes, signals, sockets, and a
+				shared file system) and extends JavaScript runtimes for C, C++, Go,
+				and Node.js programs so they can run in a Unix-like environment within
+				the browser.</p>
+
+
+					<p>This split-panel editor uses
 					<a href="https://github.com/plasma-umass/browsix">Browsix</a>
-					to run traditional,
-					multi-process command line
-					tools like the <a href="https://www.tug.org/texlive/">TeX Live suite</a> in the browser.  When
-					you hit the "Build PDF" button in
-					the upper right, Browsix runs <code>latex main.tex;
+					to run programs from the <a href="https://www.tug.org/texlive/">TeX Live suite</a>
+					in the browser.  When you hit
+					the "Build PDF" button in the
+					upper right, Browsix runs<code>latex main.tex;
 						bibtex main.aux;
 						latex main.tex;
 						latex main.tex</code>
@@ -85,12 +94,15 @@
 					executed as a process in its
 					own Web Worker, to generate
 					(or regenerate) the PDF shown
-					below on the right.</div>
+					below on the right.  The
+					process takes between 15-20
+					seconds on a recent laptop.</p>
+			</div>
 
 			<div class="row">
 				<div class="col-lg-6">
-					<textarea class="in-text" id="ed-tex" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
-					<textarea class="in-text" id="ed-bib" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
+					<textarea class="in-text" id="ed-tex" spellcheck="false" autocorrect="off" autocapitalize="off">(loading)</textarea>
+					<textarea class="in-text" id="ed-bib" spellcheck="false" autocorrect="off" autocapitalize="off">(loading)</textarea>
 				</div>
 				<div class="col-lg-6"  id="pdf-parent">
 					<center><b>PDF will appear here when built</b></center>
@@ -100,7 +112,7 @@
 			<div class="footer">
 				<p>
 					♥ from <a href="http://plasma.cs.umass.edu/">PLASMA</a>
-					<span id="remote-id" style="float: right;"></span>
+					<span id="timing" class="browsix-hidden" style="float: right;">PDF creation took <span id="perf-out"></span> secs.</span>
 				</p>
 			</div>
 		</div>

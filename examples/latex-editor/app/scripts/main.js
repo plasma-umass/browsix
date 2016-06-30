@@ -18,6 +18,7 @@
 	let button = document.getElementById('create-button');
 	let loading = document.getElementById('loading');
 	let pdfParent = document.getElementById('pdf-parent');
+	let perfOut = document.getElementById('perf-out');
 	let kernel = null;
 
 	function replaceAll(target, search, replacement) {
@@ -81,8 +82,12 @@
 		'pdflatex ' + TEX_FLAGS + f,
 	];
 	function runLatex() {
+		let startTime = performance.now();
+
 		let progress = 10;
 
+		$('#timing').addClass('browsix-hidden');
+		perfOut.innerHTML = '';
 		$('#build-progress').removeClass('browsix-hidden');
 		pdfParent.innerHTML = '<center><b>PDF will appear here when built</b></center>';
 
@@ -90,11 +95,11 @@
 		let seq = sequence.slice();
 		function onStdout(pid, out) {
 			log += out;
-			console.log(out);
+			//console.log(out);
 		}
 		function onStderr(pid, out) {
 			log += out;
-			console.log(out);
+			//console.log(out);
 		}
 		function runNext(pid, code) {
 			console.log('code? ' + code);
@@ -126,6 +131,14 @@
 				showPDF();
 				$('#build-progress').addClass('browsix-hidden');
 				$('#build-bar').css('width', '10%').attr('aria-valuenow', 10);
+				let totalTime = '' + ((performance.now() - startTime) / 1000);
+				let dot = totalTime.indexOf('.');
+				if (dot + 2 < totalTime.length) {
+					totalTime = totalTime.substr(0, dot + 2);
+				}
+				$('#timing').removeClass('browsix-hidden');
+				perfOut.innerHTML = totalTime;
+
 				return;
 			}
 			kernel.system(cmd, runNext, onStdout, onStderr);

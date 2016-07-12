@@ -150,6 +150,28 @@ const PRIO_MAX = 20;
 const O_CLOEXEC = 0x80000;
 const O_LARGEFILE = 0x8000; // required for musl
 
+// for fcntl
+const F_DUPFD = 0;
+const F_GETFD = 1;
+const F_SETFD = 2;
+const F_GETFL = 3;
+const F_SETFL = 4;
+
+const F_SETOWN = 8;
+const F_GETOWN = 9;
+const F_SETSIG = 10;
+const F_GETSIG = 11;
+
+const F_GETLK = 12;
+const F_SETLK = 13;
+const F_SETLKW = 14;
+
+const F_SETOWN_EX = 15;
+const F_GETOWN_EX = 16;
+
+const F_GETOWNER_UIDS = 17;
+
+
 // based on stringToFlags from node's lib/fs.js
 function flagsToString(flag: any): string {
 	'use strict';
@@ -353,6 +375,51 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 					task.heapu8.subarray(bufp, bufp+len).set(buf);
 				sysret.apply(this, arguments);
 			});
+		},
+		220: (fd: number, dirp: number, count: number): void => { // getdents64
+			let buf = arrayAt(dirp, count); // count is the number of bytes
+			sys.getdents(task, fd, buf, sysret);
+		},
+		221: (fd: number, cmd: number, arg: number): void => { // fcntl64
+			switch (cmd) {
+			case F_DUPFD:
+				console.log('TODO: fcntl(DUPFD)');
+				break;
+			case F_GETFD:
+				console.log('TODO: fcntl(GETFD)');
+				break;
+			case F_SETFD:
+				console.log('TODO: fcntl(SETFD)');
+				break;
+			case F_GETFL:
+				console.log('TODO: fcntl(GETFL)');
+				break;
+			case F_SETFL:
+				console.log('TODO: fcntl(SETFL)');
+				break;
+			case F_GETLK:
+				console.log('TODO: fcntl(GETLK)');
+				break;
+			case F_SETLK:
+				console.log('TODO: fcntl(SETLK)');
+				break;
+			case F_SETLKW:
+				console.log('TODO: fcntl(SETLKW)');
+				break;
+			case F_GETOWN_EX:
+				console.log('TODO: fcntl(GETOWN_EX)');
+				break;
+			case F_SETOWN:
+				console.log('TODO: fcntl(SETOWN)');
+				break;
+			case F_GETOWN:
+				console.log('TODO: fcntl(GETOWN)');
+				break;
+			default:
+				console.log('TODO: unrecognized fctl64 cmd: ' + cmd);
+			}
+
+			sysret(0);
 		},
 		252: (code: number): void => { // exit_group
 			sys.exit(task, code);

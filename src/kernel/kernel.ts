@@ -2184,19 +2184,21 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args?: Boo
 			finishInit(asyncRoot, null);
 		}
 	} else {
-		// FIXME: this is a bit gross
-		let syncRoot = new bfs.FileSystem['InMemory']();
-		let root = new bfs.FileSystem['AsyncMirror'](syncRoot, asyncRoot);
-
-		root.initialize((err: any) => {
-			if (err) {
-				cb(err, undefined);
-				return;
-			}
+		if (asyncRoot.initialize) {
+			asyncRoot.initialize((err: any) => {
+				if (err) {
+					cb(err, undefined);
+					return;
+				}
+				let writable = new bfs.FileSystem['InMemory']();
+				let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
+				overlaid.initialize(finishInit.bind(this, overlaid));
+			});
+		} else {
 			let writable = new bfs.FileSystem['InMemory']();
-			let overlaid = new bfs.FileSystem['OverlayFS'](writable, root);
+			let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
 			overlaid.initialize(finishInit.bind(this, overlaid));
-		});
+		}
 	}
 }
 

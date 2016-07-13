@@ -2,8 +2,7 @@
 // Use of this source code is governed by the ISC
 // license that can be found in the LICENSE file.
 
-/// <reference path="../../typings/node/node.d.ts" />
-/// <reference path="../../typings/sharedarraybuffer.d.ts" />
+/// <reference path="../../typings/index.d.ts" />
 
 'use strict';
 
@@ -99,11 +98,6 @@ export class SyscallContext {
 }
 
 export class Syscall {
-	constructor(
-		public ctx:  SyscallContext,
-		public name: string,
-		public args: any[]) {}
-
 	private static requiredOnData: string[] = ['id', 'name', 'args'];
 
 	static From(task: ITask, ev: MessageEvent): Syscall {
@@ -116,6 +110,11 @@ export class Syscall {
 		let ctx = new SyscallContext(task, ev.data.id);
 		return new Syscall(ctx, ev.data.name, ev.data.args);
 	}
+
+	constructor(
+		public ctx:  SyscallContext,
+		public name: string,
+		public args: any[]) {}
 
 	callArgs(): any[] {
 		return [this.ctx].concat(this.args);

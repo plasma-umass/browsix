@@ -99,11 +99,6 @@ function convertApiErrors(e: any): any {
 }
 
 export class SyscallResponse {
-	constructor(
-		public id: number,
-		public name: string,
-		public args: any[]) {}
-
 	private static requiredOnData: string[] = ['id', 'name', 'args'];
 
 	static From(ev: MessageEvent): SyscallResponse {
@@ -116,6 +111,11 @@ export class SyscallResponse {
 		let args: any[] = ev.data.args.map(convertApiErrors);
 		return new SyscallResponse(ev.data.id, ev.data.name, args);
 	}
+
+	constructor(
+		public id: number,
+		public name: string,
+		public args: any[]) {}
 }
 
 export interface SyscallCallback {

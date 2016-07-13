@@ -4,6 +4,9 @@
  * Options implemented: [dEnrstx]
  */
 
+/// <reference path="../../typings/index.d.ts" />
+
+
 /**
  * TODO:
  * 1. Proper help()
@@ -22,7 +25,7 @@ import {format} from 'util';
  */
 let maxArgs = 10000;           // Argument limit
 let maxChars = 4096;           // Character limit
-let command = 'echo';          // COMMAND to run 
+let command = 'echo';          // COMMAND to run
 let comArgs = '';              // Arguments for COMMAND
 let out = '';                  // Output
 let children: any[] = [];
@@ -54,7 +57,7 @@ function main(): void {
 	return;
 }
 
-/** 
+/**
  * Reads data from stdin or file, depending on '-a' flag
  * Calls pass() with a string[] of values
  * NB! The -a flag is not implemented.

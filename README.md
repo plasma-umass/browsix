@@ -1,6 +1,10 @@
 Browsix - Bringing Unix to the Browser
 ======================================
 
+[![NPM version](https://badge.fury.io/js/browsix.svg)](http://badge.fury.io/js/browsix)
+[![david-dm-status-badge](https://david-dm.org/plasma-umass/browsix.svg)](https://david-dm.org/jvilk/browserfs#info=dependencies&view=table)
+[![david-dm-status-badge](https://david-dm.org/plasma-umass/browsix/dev-status.svg)](https://david-dm.org/plasma-umass/browsix#info=devDependencies&view=table)
+
 While standard operating systems like Unix make it relatively simple
 to build complex applications, web browsers lack the features that
 make this possible.  This project is Browsix, a JavaScript-only

@@ -33,10 +33,19 @@ var addShebang = require('./gulp-plugins/add-shebang');
 // don't do anything when seeing use of several node builtins -- we
 // handle this ourselves.
 var globalVars = {
+    'RELEASE': function() { return 'false'; },
+    'buffer': function() { return 'require("browserfs").BFSRequire("buffer")'; },
+    'Buffer': function() { return 'require("browserfs").BFSRequire("buffer").Buffer'; },
     'process': function() { return "" },
-    'Buffer': function() { return "" },
-    'buffer': function() { return "" },
-}
+};
+
+var builtins = {
+//    'process': function() { return "" },
+
+//    'Buffer': function() { return "" },
+//    'buffer': require.resolve('bfs-buffer'),
+    'path': require.resolve('bfs-path'),
+};
 
 // each user of our tsconfig.json setup needs a different instance of
 // the 'ts project', as gulp-typescript seems to use it as a dumping
@@ -86,7 +95,7 @@ function tsTask(subdir, options) {
     gulp.task('dist-'+subdir, ['build-'+subdir], function() {
         var b = browserify({
             entries: ['./lib/'+subdir+'/'+subdir+'.js'],
-            builtins: false,
+            builtins: builtins,
             insertGlobalVars: globals,
         });
         b.exclude('webworker-threads');
@@ -337,7 +346,7 @@ var optimizeHtmlTask = function (src, dest) {
         .pipe($.if('*.html', $.replace('elements/elements.html', 'elements/elements.vulcanized.html')))
         .pipe(assets)
     // Concatenate and minify JavaScript
-        .pipe($.if('*.js', $.uglify({preserveComments: 'some'})))
+//        .pipe($.if('*.js', $.uglify({preserveComments: 'some'})))
     // Concatenate and minify styles
     // In case you are still using useref build blocks
         .pipe($.if('*.css', $.cssmin()))

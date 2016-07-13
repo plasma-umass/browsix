@@ -16,8 +16,8 @@ import { ExitCallback, OutputCallback, SyscallContext, SyscallResult,
 
 import { HTTPParser } from './http_parser';
 
-import * as BrowserFS from './vendor/BrowserFS/src/core/browserfs';
-import { fs } from './vendor/BrowserFS/src/core/node_fs';
+import * as bfs from 'browserfs';
+//import { fs } from './vendor/BrowserFS/src/core/node_fs';
 
 import * as marshal from 'node-binary-marshal';
 
@@ -42,17 +42,17 @@ if (typeof Atomics !== 'undefined') {
 
 
 // we only import the backends we use, for now.
-require('./vendor/BrowserFS/src/backend/in_memory');
-require('./vendor/BrowserFS/src/backend/XmlHttpRequest');
-require('./vendor/BrowserFS/src/backend/overlay');
-require('./vendor/BrowserFS/src/backend/async_mirror');
+//require('./vendor/BrowserFS/src/backend/in_memory');
+//require('./vendor/BrowserFS/src/backend/XmlHttpRequest');
+//require('./vendor/BrowserFS/src/backend/overlay');
+//require('./vendor/BrowserFS/src/backend/async_mirror');
 //require('./vendor/BrowserFS/src/backend/localStorage');
 //require('./vendor/BrowserFS/src/backend/mountable_file_system');
 //require('./vendor/BrowserFS/src/backend/zipfs');
 
 // from + for John's BrowserFS
 // TODO: don't copy paste code :\
-if (typeof setImmediate === 'undefined') {
+if (true/*typeof setImmediate === 'undefined'*/) {
 	let g: any = global;
 
 	let timeouts: [Function, any[]][] = [];
@@ -1316,7 +1316,7 @@ export class Kernel implements IKernel {
 
 	private syscalls: AsyncSyscalls;
 
-	constructor(fs: fs, nCPUs: number, args: BootArgs) {
+	constructor(fs: any, nCPUs: number, args: BootArgs) {
 		this.outstanding = 0;
 		this.nCPUs = nCPUs;
 		this.fs = fs;
@@ -1612,7 +1612,6 @@ export class Kernel implements IKernel {
 			files[2] = new PipeFile();
 		}
 
-
 		let task = new Task(this, parent, pid, '/', name, args, env, files, null, null, null, cb);
 		this.tasks[pid] = task;
 	}
@@ -1794,7 +1793,9 @@ export class Task implements ITask {
 		// is ready to go.  Keep track of that callback here.
 		this.onRunnable = cb;
 
-		this.kernel.fs.open(filename, 'r', this.fileOpened.bind(this));
+		setImmediate(() => {
+			this.kernel.fs.open(filename, 'r', this.fileOpened.bind(this));
+		});
 	}
 
 	chdir(path: string, cb: Function): void {
@@ -2148,24 +2149,28 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args?: Boo
 	// single web worker running at any given time.
 	let nCPUs = 1;
 
-	let bfs: any = {};
-	BrowserFS.install(bfs);
-	Buffer = bfs.Buffer;
-	(<any>window).Buffer = Buffer;
-	let rootConstructor = BrowserFS.FileSystem[fsType];
+	let browserfs: any = {};
+	bfs.install(browserfs);
+	// this is the 'Buffer' in the file-level/module scope above.
+	Buffer = browserfs.Buffer;
+	if (typeof window !== 'undefined' && !(<any>window).Buffer) {
+		(<any>window).Buffer = browserfs.Buffer;
+	}
+	let rootConstructor: any = (<any>bfs).FileSystem[fsType];
 	if (!rootConstructor) {
 		setImmediate(cb, 'unknown FileSystem type: ' + fsType);
 		return;
 	}
 	let asyncRoot = new (Function.prototype.bind.apply(rootConstructor, [null].concat(fsArgs)));
+	asyncRoot.supportsSynch = function(): boolean { return false; };
 
 	function finishInit(root: any, err: any): void {
 		if (err) {
 			cb(err, undefined);
 			return;
 		}
-		BrowserFS.initialize(root);
-		let fs: fs = bfs.require('fs');
+		bfs.initialize(root);
+		let fs = bfs.BFSRequire('fs');
 		let k = new Kernel(fs, nCPUs, args);
 		// FIXME: this is for debugging purposes
 		(<any>window).kernel = k;
@@ -2180,16 +2185,16 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args?: Boo
 		}
 	} else {
 		// FIXME: this is a bit gross
-		let syncRoot = new BrowserFS.FileSystem['InMemory']();
-		let root = new BrowserFS.FileSystem['AsyncMirrorFS'](syncRoot, asyncRoot);
+		let syncRoot = new bfs.FileSystem['InMemory']();
+		let root = new bfs.FileSystem['AsyncMirror'](syncRoot, asyncRoot);
 
 		root.initialize((err: any) => {
 			if (err) {
 				cb(err, undefined);
 				return;
 			}
-			let writable = new BrowserFS.FileSystem['InMemory']();
-			let overlaid = new BrowserFS.FileSystem['OverlayFS'](writable, root);
+			let writable = new bfs.FileSystem['InMemory']();
+			let overlaid = new bfs.FileSystem['OverlayFS'](writable, root);
 			overlaid.initialize(finishInit.bind(this, overlaid));
 		});
 	}

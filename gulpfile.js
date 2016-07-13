@@ -78,8 +78,10 @@ function tsTask(subdir, options) {
 
     gulp.task('lint-'+subdir, function() {
         return gulp.src(['src/'+subdir+'/*.ts', 'src/'+subdir+'/*/*.ts'])
-            .pipe(lint())
-            .pipe(lint.report('verbose'));
+            .pipe(lint({
+		formatter: "verbose"
+	    }))
+            .pipe(lint.report());
     });
 
     // run lint by default, but if lint is specified as 'false' skip it

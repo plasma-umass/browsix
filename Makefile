@@ -6,9 +6,6 @@ MOCHA     ?= node_modules/.bin/mocha
 
 TEX        = pdflatex
 
-BROWSERFS  = src/kernel/vendor/BrowserFS/dist/browserfs.js
-BROWSERFS_DIR = src/kernel/vendor/BrowserFS
-
 NPM_DEPS   = $(GULP) $(TSLINT) $(MOCHA)
 BUILD_DEPS = $(NPM_DEPS) bower_components
 
@@ -54,7 +51,7 @@ serve: $(BUILD_DEPS)
 	@echo "  SERVE"
 	$(GULP) serve
 
-node_modules: $(BROWSERFS) bower_components package.json
+node_modules: bower_components package.json
 	@echo "  NPM"
 	npm install
 	touch -c $@
@@ -71,11 +68,6 @@ bower_components: $(BOWER) bower.json
 	@echo "  BOWER"
 	$(BOWER) install --silent
 	touch -c $@
-
-$(BROWSERFS): $(BROWSERFS_DIR) .gitmodules Makefile
-	@echo "  GIT   $<"
-	git submodule update --init
-	touch $@
 
 syscall-api: $(BUILD_DEPS)
 	@echo "  SYSCALL"

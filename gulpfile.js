@@ -111,17 +111,10 @@ function tsTask(subdir, options) {
     });
 }
 
-gulp.task('copy-node-kernel', function() {
-    return gulp.src([
-        'node-modified/lib/binding/http_parser.js',
-    ]).pipe(copy('./lib/kernel/', {prefix: 3}));
-});
-
 gulp.task('copy-node', function() {
     return gulp.src([
         'node/lib/internal/util.js',
         'node/lib/internal/freelist.js',
-        'node-modified/lib/binding/http_parser.js',
         'node-modified/lib/internal/child_process.js',
         'node/lib/_linklist.js',
         'node/lib/_stream_*.js',
@@ -165,7 +158,7 @@ tsTask('kernel', {
         '!src/kernel/vendor/BrowserFS/test/**/*.ts',
         '!src/kernel/vendor/BrowserFS/src/browserify_main.ts',
     ],
-    buildDeps: ['copy-node-kernel'],
+    buildDeps: ['copy-node'],
 });
 tsTask('browser-node', {buildDeps: ['copy-node']});
 tsTask('bin');

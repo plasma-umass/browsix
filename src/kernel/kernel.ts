@@ -2126,7 +2126,7 @@ export class Task implements ITask {
 }
 
 export interface BootCallback {
-	(err: any, kernel: Kernel): void;
+	(err: any, kernel: IKernel): void;
 }
 
 export interface BootArgs {

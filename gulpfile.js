@@ -61,7 +61,9 @@ function tsPipeline(src, dst) {
     return function() {
         var build = gulp.src(src)
             .pipe(ts(project()));
-        return build.js.pipe(gulp.dest(dst));
+        return merge(
+	    build.js.pipe(gulp.dest(dst)),
+	    build.dts.pipe(gulp.dest(dst)));
     }
 }
 

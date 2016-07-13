@@ -1,4 +1,5 @@
-declare var require: any;
+/// <reference path="../typings/index.d.ts" />
+
 require('./test-stat');
 require('./test-cat');
 require('./test-echo');

@@ -1,5 +1,5 @@
-/// <reference path="../typings/chai/chai.d.ts" />
-/// <reference path="../typings/mocha/mocha.d.ts" />
+/// <reference path="../typings/globals/chai/index.d.ts" />
+/// <reference path="../typings/globals/mocha/index.d.ts" />
 
 'use strict';
 
@@ -39,8 +39,16 @@ describe('sched test', function(): void {
 	// even in nested closures
 	count.map((i: number) => {
 		it('should run `priority-test /usr/bin/cpu-intensive-program`' + i, (done: MochaDone) => {
-			kernel.system('priority-test /usr/bin/cpu-intensive-program', cmdExited);
-			function cmdExited(code: number, stdout: string, stderr: string): void {
+			let stdout: string = '';
+			let stderr: string = '';
+			kernel.system('priority-test /usr/bin/cpu-intensive-program', onExit, onStdout, onStderr);
+			function onStdout(pid: number, out: string): void {
+				stdout += out;
+			}
+			function onStderr(pid: number, out: string): void {
+				stderr += out;
+			}
+			function onExit(pid: number, code: number): void {
 				try {
 					expect(code).to.equal(0);
 					done();

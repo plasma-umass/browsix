@@ -1,5 +1,5 @@
-/// <reference path="../typings/chai/chai.d.ts" />
-/// <reference path="../typings/mocha/mocha.d.ts" />
+/// <reference path="../typings/globals/chai/index.d.ts" />
+/// <reference path="../typings/globals/mocha/index.d.ts" />
 
 'use strict';
 
@@ -46,8 +46,16 @@ describe('grep /a /b', function(): void {
 	});
 
 	it('should run `grep past /a /b`', function(done: MochaDone): void {
-		kernel.system('/usr/bin/grep past /a /b', catExited);
-		function catExited(code: number, stdout: string, stderr: string): void {
+		let stdout: string = '';
+		let stderr: string = '';
+		kernel.system('/usr/bin/grep past /a /b', onExit, onStdout, onStderr);
+		function onStdout(pid: number, out: string): void {
+			stdout += out;
+		}
+		function onStderr(pid: number, out: string): void {
+			stderr += out;
+		}
+		function onExit(pid: number, code: number): void {
 			try {
 				expect(code).to.equal(0);
 				expect(stdout).to.equal('past the barn fell.\nthe past plate.');

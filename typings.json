@@ -1,9 +1,11 @@
 {
   "globalDependencies": {
+    "chai": "registry:dt/chai#3.4.0+20160601211834",
     "dropboxjs": "registry:dt/dropboxjs#0.0.0+20160317120654",
     "es6-promise": "registry:dt/es6-promise#0.0.0+20160614011821",
     "filesystem": "registry:dt/filesystem#0.0.0+20160316155526",
     "filewriter": "registry:dt/filewriter#0.0.0+20160316155526",
+    "mocha": "registry:dt/mocha#2.2.5+20160619032855",
     "node": "registry:dt/node#6.0.0+20160709114037"
   }
 }

@@ -90,9 +90,9 @@ function sys_ioctl(cb: Function, trap: number, fd: number, request: any, argp: a
 
 function sys_getdents64(cb: Function, trap: number, fd: number, buf: Uint8Array, len: number): void {
 	let done = function(err: any, dents: Uint8Array): void {
-		if (!err)
+		if (dents)
 			buf.set(dents);
-		cb([err ? -1 : dents.byteLength, 0, err ? -1 : 0]);
+		cb([err, 0, err < 0 ? -1 : 0]);
 	};
 	syscall.getdents(fd, len, done);
 }
@@ -112,7 +112,7 @@ function sys_write(cb: Function, trap: number, fd: number, buf: Uint8Array, blen
 	let done = function(err: any, len: number): void {
 		cb([len, 0, err ? -1 : 0]);
 	};
-	syscall.pwrite(fd, new Uint8Array(buf, 0, blen), 0, done);
+	syscall.pwrite(fd, new Uint8Array(buf, 0, blen), -1, done);
 }
 
 function sys_stat(cb: Function, trap: number, path: any, buf: Uint8Array): void {

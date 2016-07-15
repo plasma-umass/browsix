@@ -650,7 +650,7 @@ class AsyncSyscalls {
 		else
 			spath = path;
 
-		this.sys.open(ctx.task, path, sflags, mode, ctx.complete.bind(ctx));
+		this.sys.open(ctx.task, spath, sflags, mode, ctx.complete.bind(ctx));
 	}
 
 	dup(ctx: SyscallContext, fd1: number): void {
@@ -719,7 +719,7 @@ class AsyncSyscalls {
 			spath = utf8Slice(path, 0, path.length);
 		else
 			spath = path;
-		this.sys.access(ctx.task, path, flags, ctx.complete.bind(ctx));
+		this.sys.access(ctx.task, spath, flags, ctx.complete.bind(ctx));
 	}
 
 	fstat(ctx: SyscallContext, fd: number): void {
@@ -1456,7 +1456,7 @@ export class Kernel implements IKernel {
 			console.log('connected to ' + port);
 			f.read(buf, -1, onRead);
 
-			f.write(Buffer.from(req), -1, (ierr: any, len?: number) => {
+			f.write(new Buffer(req, 'utf8'), -1, (ierr: any, len?: number) => {
 				if (ierr)
 					console.log('err: ' + ierr);
 			});
@@ -1915,7 +1915,8 @@ export class Task implements ITask {
 		this.worker.onerror = (err: ErrorEvent): void => {
 			if (this.files[2]) {
 				console.log(err);
-				this.files[2].write(Buffer.from('Error while executing ' + this.pendingExePath + ': ' + err.message + '\n'), -1, () => {
+				let msg = new Buffer('Error while executing ' + this.pendingExePath + ': ' + err.message + '\n', 'utf8');
+				this.files[2].write(msg, -1, () => {
 					this.kernel.exit(this, -1);
 				});
 			} else {

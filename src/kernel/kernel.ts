@@ -297,7 +297,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		4: (fd: number, bufp: number, len: number): void => { // write
 			let buf = bufferAt(bufp, len);
-			sys.pwrite(task, fd, buf, 0, (err: any, len: number) => {
+			sys.pwrite(task, fd, buf, -1, (err: any, len: number) => {
 				if (err) {
 					if (typeof err === 'number')
 						len = err;
@@ -586,22 +586,17 @@ class AsyncSyscalls {
 		this.sys.spawn(ctx.task, cwd, name, args, env, files, ctx.complete.bind(ctx));
 	}
 
-	pread(ctx: SyscallContext, fd: number, len: number, off: number): void {
+	pread(ctx: SyscallContext, fd: number, len: number, pos: number): void {
 		let abuf = new Uint8Array(len);
 		let buf = new Buffer(abuf.buffer);
-		this.sys.pread(ctx.task, fd, buf, off, (err: any, lenRead?: number) => {
-			if (err) {
-				console.log('pread: ' + err);
-				ctx.complete(-constants.EIO);
-				return;
-			}
+		this.sys.pread(ctx.task, fd, buf, pos, (err: any, lenRead?: number) => {
+			if (err)
+				return ctx.complete(-constants.EIO);
 			ctx.complete(0, lenRead, abuf.subarray(0, lenRead));
 		});
 	}
 
-	pwrite(ctx: SyscallContext, fd: number, buf: Buffer|Uint8Array, off: number): void {
-		off = off|0;
-
+	pwrite(ctx: SyscallContext, fd: number, buf: Buffer|Uint8Array, pos: number): void {
 		let bbuf: Buffer = null;
 		if (!(buf instanceof Buffer) && (buf instanceof Uint8Array)) {
 			// we need to slice the Uint8Array, because it
@@ -615,13 +610,11 @@ class AsyncSyscalls {
 			bbuf = <Buffer>buf;
 		}
 
-		this.sys.pwrite(ctx.task, fd, bbuf, off, (err: any, len?: number) => {
+		this.sys.pwrite(ctx.task, fd, bbuf, pos, (err: any, len?: number) => {
 			if (err) {
-				if (!(typeof err === 'number'))
-					ctx.complete(-constants.EIO);
-				else
-					ctx.complete(err);
-				return;
+				if (typeof err !== 'number')
+					err = -constants.EIO;
+				return ctx.complete(err);
 			}
 			ctx.complete(0, len);
 		});
@@ -1007,35 +1000,32 @@ export class Syscalls {
 		this.kernel.spawn(<Task>task, cwd, path, args, env, files, cb);
 	}
 
-	pread(task: ITask, fd: number, buf: Buffer, off: number, cb: (err: any, len?: number) => void): void {
+	pread(task: ITask, fd: number, buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
 		let file = task.files[fd];
 		if (!file) {
 			cb(-constants.EBADF);
 			return;
 		}
 
-		// node uses both 'undefined' and -1 to represent
-		// 'dont do pread, do a read', BrowserFS uses null :(
-		if (off === -1 || off === undefined)
-			off = null;
+		if (typeof pos !== 'number')
+			pos = -1;
+		pos = pos|0; // ensure integer
 
-		file.read(buf, 0, buf.length, off, cb);
+		file.read(buf, pos, cb);
 	}
 
-	pwrite(task: ITask, fd: number, buf: Buffer, off: number, cb: (err: any, len?: number) => void): void {
+	pwrite(task: ITask, fd: number, buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
 		let file = task.files[fd];
 		if (!file) {
 			cb(-constants.EBADF);
 			return;
 		}
 
-		if (off !== 0) {
-			console.log('TODO pwrite: non-zero off');
-			cb(-constants.EINVAL);
-			return;
-		}
+		if (typeof pos !== 'number')
+			pos = -1;
+		pos = pos|0; // ensure integer
 
-		file.write(buf, 0, buf.length, cb);
+		file.write(buf, pos, cb);
 	}
 
 	pipe2(task: ITask, flags: number, cb: (err: number, fd1: number, fd2: number) => void): void {
@@ -1454,7 +1444,7 @@ export class Kernel implements IKernel {
 			p.execute(buf.slice(0, len));
 			if (len > 0) {
 				buf = new Buffer(64*1024);
-				f.read(buf, 0, 64*1024, 0, onRead);
+				f.read(buf, -1, onRead);
 			}
 		}
 
@@ -1464,9 +1454,9 @@ export class Kernel implements IKernel {
 				return;
 			}
 			console.log('connected to ' + port);
-			f.read(buf, 0, 64*1024, 0, onRead);
+			f.read(buf, -1, onRead);
 
-			f.write(req, (ierr: any, len?: number) => {
+			f.write(Buffer.from(req), -1, (ierr: any, len?: number) => {
 				if (ierr)
 					console.log('err: ' + ierr);
 			});
@@ -1925,7 +1915,7 @@ export class Task implements ITask {
 		this.worker.onerror = (err: ErrorEvent): void => {
 			if (this.files[2]) {
 				console.log(err);
-				this.files[2].write('Error while executing ' + this.pendingExePath + ': ' + err.message + '\n', () => {
+				this.files[2].write(Buffer.from('Error while executing ' + this.pendingExePath + ': ' + err.message + '\n'), -1, () => {
 					this.kernel.exit(this, -1);
 				});
 			} else {

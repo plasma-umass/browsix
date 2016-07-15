@@ -17,6 +17,7 @@ const SEEK_END = 2;
 export class RegularFile implements IFile {
 	kernel:   IKernel;
 	fd:       any;
+	pos:      number;
 
 	refCount: number;
 
@@ -24,15 +25,29 @@ export class RegularFile implements IFile {
 		this.kernel = kernel;
 		this.fd = fd;
 		this.refCount = 1;
+		this.pos = 0;
 	}
 
-	write(buf: string|Buffer, cb: (err: any, len?: number) => void): void {
-		let args = Array.prototype.slice.apply(arguments);
-		this.kernel.fs.write.apply(this.kernel.fs, (<any[]>[this.fd]).concat(args));
+	read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+		if (pos < 0)
+			pos = this.pos;
+
+		this.kernel.fs.read(this.fd, buf, 0, buf.length, pos, (err: any, len?: number) => {
+			if (!err && len)
+				this.pos += len;
+			cb(err, len);
+		});
 	}
 
-	read(buf: Buffer, pos: number, len: number, off: number, cb: (err: any, len?: number) => void): void {
-		this.kernel.fs.read(this.fd, buf, pos, len, off, cb);
+	write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+		if (pos < 0)
+			pos = this.pos;
+
+		this.kernel.fs.write(this.fd, buf, 0, buf.length, pos, (err: any, len?: number) => {
+			if (!err && len)
+				this.pos += len;
+			cb(err, len);
+		});
 	}
 
 	stat(cb: (err: any, stats: any) => void): void {
@@ -45,11 +60,13 @@ export class RegularFile implements IFile {
 
 	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void {
 		if (whence === SEEK_CUR)
-			this.fd._pos += offlo;
+			this.pos += offlo;
 		else if (whence === SEEK_SET)
-			this.fd._pos = offlo;
-		else if (whence === SEEK_END)
+			this.pos = offlo;
+		else if (whence === SEEK_END) {
+			console.log('TODO: llseek(SEEK_END, ...)');
 			debugger;
+		}
 		cb(0, this.fd._pos);
 	}
 
@@ -81,12 +98,12 @@ export class DirFile implements IFile {
 		this.refCount = 1;
 	}
 
-	write(buf: string|Buffer, cb: (err: any, len?: number) => void): void {
-		setTimeout(cb, 0, 'cant write to a dir');
+	read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+		setTimeout(cb, 0, 'cant read from a dir -- use readdir');
 	}
 
-	read(buf: Buffer, pos: number, len: number, off: number, cb: (err: any, len?: number) => void): void {
-		setTimeout(cb, 0, 'cant read from a dir -- use readdir');
+	write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+		setTimeout(cb, 0, 'cant write to a dir');
 	}
 
 	stat(cb: (err: any, stats: any) => void): void {

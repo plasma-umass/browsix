@@ -113,17 +113,18 @@ export class SocketFile implements IFile {
 		this.task.kernel.connect(this, addr, port, cb);
 	}
 
-	write(buf: string|Buffer, cb: (err: any, len?: number) => void): void {
-		if (typeof buf === 'string')
-			this.outgoing.write(buf);
-		else
-			this.outgoing.writeBuffer((<Buffer>buf));
-		cb = arguments[arguments.length-1];
-		cb(undefined, buf.length);
+
+	read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+		if (pos !== -1)
+			return cb('offset read not supported on socket');
+		this.incoming.read(buf, 0, buf.length, undefined, cb);
 	}
 
-	read(buf: Buffer, pos: number, len: number, off: number, cb: (err: any, len?: number) => void): void {
-		this.incoming.read(buf, pos, len, off, cb);
+	write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+		if (pos !== -1)
+			return cb('offset write not supported on socket');
+		this.outgoing.writeBuffer(buf);
+		cb(undefined, buf.length);
 	}
 
 	readSync(): Buffer {

@@ -32,22 +32,22 @@ export class Pipe {
 		return b.length;
 	}
 
-	read(buf: Buffer, pos: number, len: number, off: number, cb: (err: any, len?: number) => void): void {
+	read(buf: Buffer, off: number, len: number, pos: number, cb: (err: any, len?: number) => void): void {
 		if (this.buf.length || this.closed) {
-			let n = this.buf.copy(buf, off, pos, pos+len);
-			if (this.buf.length === pos + n)
+			let n = this.buf.copy(buf, pos, off, off+len);
+			if (this.buf.length === off + n)
 				this.buf = new Buffer(0);
 			else
-				this.buf = this.buf.slice(pos + n);
+				this.buf = this.buf.slice(off + n);
 			return cb(undefined, n);
 		}
 		// at this point, we're waiting on more data or an EOF.
 		this.waiter = () => {
-			let n = this.buf.copy(buf, off, pos, pos+len);
-			if (this.buf.length === pos + n)
+			let n = this.buf.copy(buf, pos, off, off+len);
+			if (this.buf.length === off + n)
 				this.buf = new Buffer(0);
 			else
-				this.buf = this.buf.slice(pos + n);
+				this.buf = this.buf.slice(off + n);
 			cb(undefined, n);
 		};
 	}
@@ -98,26 +98,20 @@ export class PipeFile implements IFile {
 		this.writeListener = cb;
 	}
 
-	write(buf: string|Buffer, cb: (err: any, len?: number) => void): void {
-		if (typeof buf === 'string')
-			this.pipe.write(buf);
-		else
-			this.pipe.writeBuffer((<Buffer>buf));
-
-		cb = arguments[arguments.length-1];
-		cb(undefined, buf.length);
-
-		if (this.writeListener) {
-			if (typeof buf === 'string')
-				this.writeListener(-1, buf);
-			else
-				this.writeListener(-1, (<Buffer>buf).toString('utf-8'));
-
-		}
+	read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+		if (pos !== -1)
+			return cb('offset read not supported on pipe');
+		this.pipe.read(buf, 0, buf.length, 0, cb);
 	}
 
-	read(buf: Buffer, pos: number, len: number, off: number, cb: (err: any, len?: number) => void): void {
-		this.pipe.read(buf, pos, len, off, cb);
+	write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+		if (pos !== -1)
+			return cb('offset write not supported on pipe');
+		this.pipe.writeBuffer(buf);
+		cb(undefined, buf.length);
+
+		if (this.writeListener)
+			this.writeListener(-1, buf.toString('utf-8'));
 	}
 
 	stat(cb: (err: any, stats: any) => void): void {

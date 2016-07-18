@@ -4,21 +4,26 @@
 
 root = true
 
-
 [*]
 
-# change these settings to your own preference
-indent_style = tab
-indent_size = 8
-
-# we recommend you to keep these unchanged
 end_of_line = lf
 charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
+[*.js]
+indent_style = tab
+indent_size = 8
+
+[{*.py,mktexlsr}]
+indent_style = space
+indent_size = 4
+
+
+
 [*.md]
 trim_trailing_whitespace = false
+
 
 [{package,bower}.json]
 indent_style = space

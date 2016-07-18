@@ -1,44 +1,151 @@
-\documentclass[11pt]{article}
-\usepackage{cite}
-\usepackage[T1,hyphens]{url}
+% OSDI template from https://www.usenix.org/sites/default/files/osdi_submit.tex_.txt
 
-\newcommand{\Browsix}{\textsc{Browsix}}
+\documentclass[10pt,twocolumn]{article}
+\setlength{\columnsep}{0.25in}
+\usepackage{amsthm,amsmath,amssymb,amsfonts}
+\usepackage{color}
+\usepackage{epsfig}
+%\usepackage{endnotes}
+\usepackage[T1,hyphens]{url}
+\usepackage{hyperref}
+\usepackage{makecell}
+\usepackage{microtype}
+\usepackage{pifont}
+\usepackage[labelformat=parens]{subcaption}
+%\usepackage[hyphenbreaks]{breakurl}
+\usepackage{xspace}
+\usepackage{comment}
+\usepackage{listings}
+\usepackage{times}
+\usepackage{fullpage}
+
+%%% Set up microtype %%%
+\microtypesetup{
+  final,
+  expansion=false,
+  tracking=true,
+  kerning=true,
+  spacing=true,
+  factor=1100,
+  stretch=20,
+  shrink=20
+}
+\SetTracking{encoding={*}, shape=sc}{0} % No tracking for smallcaps
+
+%% @INPROCEEDINGS{798383,
+%% author={J. C. Mogul},
+%% booktitle={Hot Topics in Operating Systems, 1999. Proceedings of the Seventh Workshop on},
+%% title={Brittle metrics in operating systems research},
+%% year={1999},
+%% pages={90-95},
+%% keywords={operating systems (computers);research and development management;software metrics;software performance evaluation;Internet servers;benchmarks;brittle metrics;comparable metrics;external latencies;file systems;operating systems research;performance;realistic metrics;repeatable metrics;Application software;Benchmark testing;Computer architecture;Delay;File servers;File systems;Internet;Laboratories;Operating systems;Web server},
+%% doi={10.1109/HOTOS.1999.798383},
+%% month={},}
+
+\newcommand{\ignore}[1]{}
+\newcommand{\doppio}{\textsc{Doppio}}
+\newcommand{\Doppio}{\textsc{Doppio}}
+\newcommand{\DoppioJVM}{\textsc{DoppioJVM}}
+\newcommand{\doppiojvm}{\textsc{DoppioJVM}}
+\newcommand{\doppioboth}{\textsc{Doppio(JVM)}}
+\renewcommand{\rothead}[2][60]{\makebox[9mm][c]{\rotatebox{#1}{\makecell[c]{#2}}}}
+\newcolumntype{M}{>{\centering\arraybackslash}m{\dimexpr.25\linewidth-2\tabcolsep}}
+\newcommand{\ck}{\checkmark}
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+\newcommand{\superscript}[1]{\ensuremath{^{\textrm{#1}}}}
+
+% For comments, these two:
+\usepackage[author={John Vilk}]{pdfcomment}
+\usepackage[svgnames,rgb]{xcolor}
+
+\newcommand{\tocite}{\textbf{{[\small CITE ]}}}
+\newcommand{\todo}[1]{\textbf{{[\small TODO: #1 ]}}}
+
+\newcommand{\browsix}{\textsc{Browsix}\xspace}
+\newcommand{\Browsix}{\textsc{Browsix}\xspace}
+
+% JavaScript language for lstlistings.
+% Credit: http://lenaherrmann.net/2010/05/20/javascript-syntax-highlighting-in-the-latex-listings-package
+\definecolor{lightgray}{rgb}{.9,.9,.9}
+\definecolor{darkgray}{rgb}{.4,.4,.4}
+\definecolor{purple}{rgb}{0.65, 0.12, 0.82}
+
+\lstdefinelanguage{JavaScript}{
+  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while
+, do, else, case, break},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  sensitive=false,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  morestring=[b]',
+  morestring=[b]''
+}
+
+\lstset{
+   language=JavaScript,
+   backgroundcolor=\color{lightgray},
+   extendedchars=true,
+   basicstyle=\scriptsize\ttfamily,
+   showstringspaces=false,
+   showspaces=false,
+   numbers=none,
+   numberstyle=\footnotesize,
+   numbersep=9pt,
+   tabsize=2,
+   breaklines=true,
+   showtabs=false,
+   captionpos=b
+}
+
 
 \begin{document}
 
+%make title bold and 14 pt font (Latex default is non-bold, 16 pt)
 \title{\bf \Browsix{}: Bringing Unix to the Browser}
-\author{The \Browsix{} Authors}
-\date{\today}
+\author{Paper \#308}
+
+\author{
+ Bobby~Powers, John~Vilk, Emery~D.~Berger \\ University of Massachusetts, Amherst
+}
+
+\date{}
 \maketitle
+%Uncomment to remove page numbers for camera ready:
+%\thispagestyle{empty}
+
 
 \begin{abstract}
-
-While standard operating systems like Unix make it relatively simple
-to build complex applications, web browsers lack the features that
-make this possible. In this paper, we present \Browsix{}, a
-JavaScript-only framework that brings the essence of Unix to the
-browser. \Browsix{} makes core Unix features available to web
-applications (including pipes, processes, signals, sockets, and a
-shared file system) and extends JavaScript runtimes for C, C++, Go,
-and Node.js programs so they can run in a Unix-like environment within
-the browser. We illustrate \Browsix{}'s capabilities by converting a
-client-server application to run entirely in the browser and
-developing a serverless \LaTeX{} editor that executes PDFLaTeX and
-BibTeX in the browser.
-
+\input{abstract}
 \end{abstract}
 
-\section{Related Work}
-\label{sec:related}
+\input{introduction}
 
-\Browsix{} builds on and extends its filesystem component,
-BrowserFS. Emscripten compiles LLVM bytecode to JavaScript, enabling
-the compilation of C and C++ to JavaScript~\cite{emscripten}.
-\Browsix{} augments its runtime system so that unmodified C and C++
-programs compiled with Emscripten can take full advantage of its
-facilities. GopherJS compiles Go code to JavaScript and provides
-similar runtime support~\cite{musiol:2016gopherjs}.
+\input{overview}
 
-\bibliography{mybib}{}
-\bibliographystyle{plain}
+\input{system}
+
+\input{shell}
+
+\input{integrations}
+
+\input{evaluation}
+
+\input{discussion}
+
+\input{related-work}
+
+\input{conclusion}
+
+
+\bibliography{emery,main}
+\bibliographystyle{abbrv}
+
+%\theendnotes
+
 \end{document}

@@ -2071,6 +2071,10 @@ export class Task implements ITask {
 			this.worker = undefined;
 		}
 
+		this.sheap = null;
+		this.heapu8 = null;
+		this.heap32 = null;
+
 		// our children are now officially orphans.  re-parent them,
 		// if possible
 		for (let i = 0; i < this.children.length; i++) {

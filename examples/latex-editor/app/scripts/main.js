@@ -12,7 +12,7 @@
 
 	let f = 'main';
 	let texFile = f + '.tex';
-	let bibFile = 'mybib.bib';
+	let bibFile = 'main.bib';
 	let edTex = document.getElementById('ed-tex');
 	let edBib = document.getElementById('ed-bib');
 	let button = document.getElementById('create-button');
@@ -102,9 +102,8 @@
 			//console.log(out);
 		}
 		function runNext(pid, code) {
-			console.log('code? ' + code);
 			if (code !== 0) {
-				console.log(log);
+				//console.log(log);
 
 				let errEmbed = document.createElement('code');
 				errEmbed.innerHTML = replaceAll(log, '\n', '<br>\n');

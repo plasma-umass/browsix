@@ -16,7 +16,7 @@ const SEEK_END = 2;
 
 export class RegularFile implements IFile {
 	kernel:   IKernel;
-	fd:       any;
+	fd:       number;
 	pos:      number;
 
 	refCount: number;
@@ -59,15 +59,20 @@ export class RegularFile implements IFile {
 	}
 
 	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void {
-		if (whence === SEEK_CUR)
+		if (whence === SEEK_CUR) {
 			this.pos += offlo;
-		else if (whence === SEEK_SET)
+		} else if (whence === SEEK_SET) {
 			this.pos = offlo;
-		else if (whence === SEEK_END) {
-			console.log('TODO: llseek(SEEK_END, ...)');
-			debugger;
+		} else if (whence === SEEK_END) {
+			this.kernel.fs.fstat(this.fd, (err: any, stats?: any) => {
+				if (err || !stats)
+					return cb(err, -1);
+				this.pos = stats.size + offlo;
+				cb(0, this.pos);
+			});
+			return;
 		}
-		cb(0, this.fd._pos);
+		cb(0, this.pos);
 	}
 
 	ref(): void {

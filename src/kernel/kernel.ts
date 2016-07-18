@@ -17,8 +17,6 @@ import { ExitCallback, OutputCallback, SyscallContext, SyscallResult,
 import { HTTPParser } from './http_parser';
 
 import * as bfs from 'browserfs';
-//import { fs } from './vendor/BrowserFS/src/core/node_fs';
-
 import * as marshal from 'node-binary-marshal';
 
 import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
@@ -31,7 +29,6 @@ let Buffer: any;
 
 // Polyfill.  Previously, Atomics.wait was called Atomics.futexWait and
 // Atomics.wake was called Atomics.futexWake.
-
 declare var Atomics: any;
 if (typeof Atomics !== 'undefined') {
 	if (!Atomics.wait && Atomics.futexWait)
@@ -124,6 +121,7 @@ const ENOTTY = 25;
 const ENOENT = constants.ENOENT;
 const EACCES = constants.EACCES;
 const EINVAL = constants.EINVAL;
+const EISDIR = constants.EISDIR;
 
 const F_OK = constants.F_OK;
 const R_OK = constants.R_OK;
@@ -310,6 +308,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		5: (pathp: number, flags: number, mode: number): void => { // open
 			let path = stringAt(pathp);
 			let sflags: string = flagsToString(flags);
+//			console.log('open(' + path + ')');
 
 			sys.open(task, path, sflags, mode, (err: number, fd: number) => {
 				if ((typeof err === 'number') && err < 0)
@@ -323,9 +322,8 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		10: (pathp: number): void => { // unlink
 			let path = stringAt(pathp);
 			sys.unlink(task, path, (err: any) => {
-				// TODO: handle other err.codes
-				if (err && err.code === 'ENOENT')
-					sysret(-constants.ENOENT);
+				if (err && err.errno)
+					sysret(-err.errno);
 				else if (err)
 					sysret(-1);
 				else
@@ -334,6 +332,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		33: (pathp: number, amode: number): void => { // access
 			let path = stringAt(pathp);
+//			console.log('access(' + path + ')');
 			sys.access(task, path, amode, sysret);
 		},
 		54: (fd: number, op: number): void => { // ioctl
@@ -356,6 +355,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		195: (pathp: number, bufp: number): void => { // stat64
 			let path = stringAt(pathp);
+//			console.log('stat(' + path + ')');
 			let len = marshal.fs.StatDef.length;
 			let buf = arrayAt(bufp, len);
 			sys.stat(task, path, buf, function(): void {
@@ -367,6 +367,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		196: (pathp: number, bufp: number): void => { // lstat64
 			let path = stringAt(pathp);
+//			console.log('lstat(' + path + ')');
 			let len = marshal.fs.StatDef.length;
 			let buf = arrayAt(bufp, len);
 			sys.lstat(task, path, buf, function(): void {
@@ -668,9 +669,8 @@ class AsyncSyscalls {
 		else
 			spath = path;
 		this.sys.unlink(ctx.task, spath, (err: any) => {
-			// TODO: handle other err.codes
-			if (err && err.code === 'ENOENT')
-				ctx.complete(-constants.ENOENT);
+			if (err && err.errno)
+				ctx.complete(-err.errno);
 			else if (err)
 				ctx.complete(-1);
 			else
@@ -805,8 +805,8 @@ export class Syscalls {
 
 		task.exec(path, args, env, (err: any, pid: number) => {
 			let nerr = -EACCES;
-			if (err && err.code === 'ENOENT')
-				nerr = -ENOENT;
+			if (err && err.errno)
+				nerr = -err.errno;
 			// only complete if we don't have a pid. if we
 			// DO have a new pid, it means exec succeeded
 			// and we shouldn't try communicating with our
@@ -1061,17 +1061,16 @@ export class Syscalls {
 		// FIXME: support CLOEXEC
 		this.kernel.fs.open(fullpath, flags, mode, (err: any, fd: any) => {
 			let f: IFile;
-			if (err && err.code === 'EISDIR') {
+			if (err && err.errno === EISDIR) {
 				// TODO: update BrowserFS to open() dirs
 				f = new DirFile(this.kernel, fullpath);
 			} else if (!err) {
 				f = new RegularFile(this.kernel, fd);
 			} else {
-				// TODO: marshal the other types of err.code
 				if (typeof err === 'number')
 					cb(err, -1);
-				else if (err && err.code === 'ENOENT')
-					cb(-constants.ENOENT, -1);
+				else if (err && err.errno)
+					cb(-err.errno, -1);
 				else
 					cb(-1, -1);
 				return;
@@ -1161,7 +1160,6 @@ export class Syscalls {
 	close(task: ITask, fd: number, cb: (err: number) => void): void {
 		let file = task.files[fd];
 		if (!file) {
-			debugger;
 			cb(-constants.EBADF);
 			return;
 		}
@@ -1213,8 +1211,8 @@ export class Syscalls {
 			return;
 		}
 		file.stat((err: any, stats: any) => {
-			if (err && err.code === 'ENOENT') {
-				cb(-constants.ENOENT);
+			if (err && err.errno) {
+				cb(-err.errno);
 				return;
 			} else if (err) {
 				cb(-1);
@@ -1230,8 +1228,8 @@ export class Syscalls {
 	lstat(task: ITask, path: string, buf: Uint8Array, cb: (err: number) => void): void {
 		let fullpath = join(task.cwd, path);
 		this.kernel.fs.lstat(fullpath, (err: any, stats: any) => {
-			if (err && err.code === 'ENOENT') {
-				cb(-constants.ENOENT);
+			if (err && err.errno) {
+				cb(-err.errno);
 				return;
 			} else if (err) {
 				cb(-1);
@@ -1247,8 +1245,8 @@ export class Syscalls {
 	stat(task: ITask, path: string, buf: Uint8Array, cb: (err: number) => any): void {
 		let fullpath = join(task.cwd, path);
 		this.kernel.fs.stat(fullpath, (err: any, stats: any) => {
-			if (err && err.code === 'ENOENT') {
-				cb(-constants.ENOENT);
+			if (err && err.errno) {
+				cb(-err.errno);
 				return;
 			} else if (err) {
 				cb(-1);
@@ -1264,8 +1262,8 @@ export class Syscalls {
 	readlink(task: ITask, path: string, cb: (err: number, buf?: Uint8Array) => any): void {
 		let fullpath = join(task.cwd, path);
 		this.kernel.fs.readlink(fullpath, (err: any, linkString: any) => {
-			if (err && err.code === 'ENOENT')
-				cb(-constants.ENOENT);
+			if (err && err.errno)
+				cb(-err.errno);
 			else if (err)
 				cb(-1);
 			else
@@ -1355,7 +1353,7 @@ export class Kernel implements IKernel {
 		this.spawn(null, '/', parts[0], parts, env, null, (err: any, pid: number) => {
 			if (err) {
 				let code = -666;
-				if (err.code === "ENOENT") {
+				if (err.errno === ENOENT) {
 					code = -constants.ENOENT;
 					onStderr(-1, parts[0] + ": command not found\n");
 				}
@@ -1705,6 +1703,11 @@ export class Task implements ITask {
 	private onRunnable: (err: number, pid: number) => void;
 
 	private syncSyscall: (n: number, args: number[]) => void;
+	private syncSyscallStart: number = 0.0;
+
+	private timeWorkerStart: number = 0.0;
+	private timeFirstMsg: number = 0.0;
+	private timeSyscallTotal: number = 0.0;
 
 	constructor(
 		kernel: Kernel, parent: Task, pid: number, cwd: string,
@@ -1759,12 +1762,15 @@ export class Task implements ITask {
 			cb(-EINVAL);
 			return;
 		}
+		this.timeFirstMsg = performance.now();
 
 		this.sheap = sab;
 		this.heapu8 = new Uint8Array(sab);
 		this.heap32 = new Int32Array(sab);
 		this.waitOff = off;
 		this.syncSyscall = syncSyscalls((<Kernel>this.kernel).syscallsCommon, this, (ret: number) => {
+			this.timeSyscallTotal += performance.now() - this.syncSyscallStart;
+
 			Atomics.store(this.heap32, (this.waitOff >> 2)+1, ret);
 			Atomics.store(this.heap32, this.waitOff >> 2, 1);
 			Atomics.wake(this.heap32, this.waitOff >> 2, 1);
@@ -1910,6 +1916,7 @@ export class Task implements ITask {
 			this.worker.terminate();
 			this.worker = undefined;
 		}
+		this.timeWorkerStart = performance.now();
 		this.worker = new Worker(blobUrl);
 		this.worker.onmessage = this.syscallHandler.bind(this);
 		this.worker.onerror = (err: ErrorEvent): void => {
@@ -2043,6 +2050,12 @@ export class Task implements ITask {
 		this.onRunnable = undefined;
 		this.blobUrl = undefined;
 
+		let exit = performance.now();
+		console.log('' + this.pid + ' real: ' + (exit - this.timeWorkerStart));
+		if (this.timeFirstMsg)
+			console.log('' + this.pid + ' init: ' + (this.timeFirstMsg - this.timeWorkerStart));
+		console.log('' + this.pid + ' sys:  ' + this.timeSyscallTotal);
+
 		for (let n in this.files) {
 			if (!this.files.hasOwnProperty(n))
 				continue;
@@ -2089,6 +2102,7 @@ export class Task implements ITask {
 	private syscallHandler(ev: MessageEvent): void {
 		// TODO: there is probably a better way to handle this :\
 		if (ev.data.trap) {
+			this.syncSyscallStart = performance.now();
 			this.syncSyscall(ev.data.trap, ev.data.args);
 			return;
 		}

@@ -60,7 +60,7 @@ gulp.task('lint', lint('app/scripts/**/*.js', {rules: {'no-use-before-define': [
 gulp.task('lint:test', lint('test/spec/**/*.js', testLintOptions));
 
 gulp.task('html', ['styles', 'scripts', 'copy-fs'], () => {
-  return gulp.src(['app/*.html', 'app/*.js'])
+  return gulp.src(['app/*.html', 'app/*.js', 'app/*.json'])
     .pipe($.useref({searchPath: ['.tmp', 'app', '.']}))
 //    .pipe($.if('*.js', $.uglify()))
 //    .pipe($.if('*.css', $.cssnano()))
@@ -104,12 +104,12 @@ gulp.task('clean', del.bind(null, ['.tmp', 'dist']));
 // finally, we create an index.json file so that BrowserFS can see
 // everything in our nice hierarchy
 gulp.task('index-fs', /*['build-fs'],*/ function() {
-    return run('./xhrfs-index fs').exec()
-        .pipe(rename(function(path) {
-            path.basename = 'index';
-            path.extname = '.json';
-        }))
-        .pipe(gulp.dest('./fs'));
+    return//  run('./xhrfs-index fs').exec()
+        // .pipe(rename(function(path) {
+        //     path.basename = 'index';
+        //     path.extname = '.json';
+        // }))
+        // .pipe(gulp.dest('./fs'));
 });
 
 gulp.task('serve', ['styles', 'scripts', 'fonts', 'index-fs'], () => {

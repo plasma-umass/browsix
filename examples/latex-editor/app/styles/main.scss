@@ -92,40 +92,8 @@ body {
 	}
 }
 
-.spinner {
-	display: inline-block;
-	opacity: 0;
-	width: 0;
-
-	-webkit-transition: opacity 0.25s, width 0.25s;
-	-moz-transition: opacity 0.25s, width 0.25s;
-	-o-transition: opacity 0.25s, width 0.25s;
-	transition: opacity 0.25s, width 0.25s;
-}
-
 .has-spinner.is-active {
 	cursor:progress;
-}
-
-.has-spinner.is-active .spinner {
-	opacity: 1;
-	width: 16px;
-}
-
-.has-spinner.btn-mini.is-active .spinner {
-	width: 10px;
-}
-
-.has-spinner.btn-small.is-active .spinner {
-	width: 13px;
-}
-
-.has-spinner.btn.is-active .spinner {
-	width: 16px;
-}
-
-.has-spinner.btn-large.is-active .spinner {
-	width: 19px;
 }
 
 .form-control {

@@ -36,7 +36,7 @@
 					<ul class="nav navbar-nav navbar-right">
 						<li id="toolbar">
 							<div class="progress browsix-hidden" id="build-progress">
-								<div id="build-bar" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="width: 10%">
+								<div id="build-bar" class="progress-bar" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="width: 10%">
 									<span class="sr-only"></span>
 								</div>
 							</div>
@@ -45,10 +45,8 @@
 								<span><i class="fa fa-refresh fa-spin"></i>&nbsp;</span>
 								<i>loading</i>
 							</span>
-							<button type="button"
-								class="btn btn-primary has-spinner"
-								id="create-button"
-								disabled><span class="spinner"><i class="fa fa-refresh fa-spin"></i>&nbsp;</span>Build PDF
+							<button type="button" class="btn btn-primary has-spinner" id="create-button" disabled>
+								Build PDF
 							</button>
 						</li>
 					</ul>
@@ -95,7 +93,7 @@
 					own Web Worker, to generate
 					(or regenerate) the PDF shown
 					below on the right.  The
-					process takes between 15-20
+					process takes between 40-55
 					seconds on a recent laptop.</p>
 			</div>
 

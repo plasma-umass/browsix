@@ -1,0 +1,44 @@
+#!/usr/bin/env python2
+
+import argparse
+import os
+import re
+import sys
+
+from os.path import isdir, join
+
+
+def index_dir(index_file, root, prefix, d):
+    is_root = prefix == ''
+    err = False
+    full_dir = join(root, prefix, d)
+    dents = sorted(os.listdir(full_dir))
+    dents = filter(lambda f: f != 'ls-R', dents)
+
+    if is_root:
+        index_file.write('./:\n')
+    index_file.write('%s:\n' % join(prefix, d))
+    index_file.write('\n'.join(dents))
+    index_file.write('\n\n')
+
+    subdirs = filter(lambda f: isdir(join(full_dir, f)), dents)
+    for sd in subdirs:
+        err |= index_dir(index_file, root, join(prefix, d), sd)
+
+    return err
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('DIR', help='path to index into tex-compatible ls-R file')
+    args = parser.parse_args()
+
+    err = False
+
+    with open(join(args.DIR, 'ls-R'), 'w') as index_file:
+        err |= index_dir(index_file, args.DIR, '', '.')
+
+    return err
+
+if __name__ == '__main__':
+    exit(main())

@@ -109,7 +109,7 @@ along with node), and `make`, and builds on OSX and Linux systems.
 Once you have those dependencies:
 
 ```
-    $ git clone https://github.com/plasma-umass/browsix
+    $ git clone --recursive https://github.com/plasma-umass/browsix
     $ cd browsix
     $ make test-once serve
 ```

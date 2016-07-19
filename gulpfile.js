@@ -34,8 +34,8 @@ var addShebang = require('./gulp-plugins/add-shebang');
 // handle this ourselves.
 var globalVars = {
     'RELEASE': function() { return 'false'; },
-    'buffer': function() { return 'require("browserfs").BFSRequire("buffer")'; },
-    'Buffer': function() { return 'require("browserfs").BFSRequire("buffer").Buffer'; },
+    'buffer': function() { return 'require("browserfs-browsix-tmp").BFSRequire("buffer")'; },
+    'Buffer': function() { return 'require("browserfs-browsix-tmp").BFSRequire("buffer").Buffer'; },
     'process': function() { return "" },
 };
 
@@ -162,13 +162,7 @@ gulp.task('copy-node', function() {
 // the kernel directly uses BrowserFS's typescript modules - we need
 // to explicitly exclude tests and the browserify main here to avoid
 // confusing tsc :\
-tsTask('kernel', {
-    otherSources: [
-        '!src/kernel/vendor/BrowserFS/test/**/*.ts',
-        '!src/kernel/vendor/BrowserFS/src/browserify_main.ts',
-    ],
-    buildDeps: ['copy-node-kernel'],
-});
+tsTask('kernel', {buildDeps: ['copy-node-kernel', 'copy-node']});
 tsTask('browser-node', {buildDeps: ['copy-node']});
 tsTask('bin');
 tsTask('syscall-api', {buildDeps: ['build-browser-node'], noGlobal: true});

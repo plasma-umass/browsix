@@ -10,3 +10,6 @@
 [submodule "test/hbench-os"]
 	path = bench/hbench-os
 	url = git@github.com:bpowers/HBench-OS.git
+[submodule "src/init"]
+	path = src/init
+	url = git@github.com:b1101/systemgo.git

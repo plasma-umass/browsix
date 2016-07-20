@@ -188,6 +188,7 @@ gulp.task('build-fs', ['dist-kernel', 'dist-browser-node', 'build-bin', 'dist-sy
           .pipe(gulp.dest('./fs/usr/bin/'));
 
     var copyLd = gulp.src('src/ld.js')
+          .pipe(rename(function(path) { path.extname = ''; }))
           .pipe(chmod(755))
           .pipe(gulp.dest('./fs/usr/bin/'));
 

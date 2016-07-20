@@ -5,41 +5,16 @@
 \usepackage{amsthm,amsmath,amssymb,amsfonts}
 \usepackage{color}
 \usepackage{epsfig}
-%\usepackage{endnotes}
 \usepackage[T1,hyphens]{url}
 \usepackage{hyperref}
 \usepackage{makecell}
-\usepackage{microtype}
 \usepackage{pifont}
 \usepackage[labelformat=parens]{subcaption}
-%\usepackage[hyphenbreaks]{breakurl}
 \usepackage{xspace}
 \usepackage{comment}
 \usepackage{listings}
 \usepackage{times}
 \usepackage{fullpage}
-
-%%% Set up microtype %%%
-\microtypesetup{
-  final,
-  tracking=true,
-  kerning=true,
-  spacing=true,
-  factor=1100,
-  stretch=20,
-  shrink=20
-}
-\SetTracking{encoding={*}, shape=sc}{0} % No tracking for smallcaps
-
-%% @INPROCEEDINGS{798383,
-%% author={J. C. Mogul},
-%% booktitle={Hot Topics in Operating Systems, 1999. Proceedings of the Seventh Workshop on},
-%% title={Brittle metrics in operating systems research},
-%% year={1999},
-%% pages={90-95},
-%% keywords={operating systems (computers);research and development management;software metrics;software performance evaluation;Internet servers;benchmarks;brittle metrics;comparable metrics;external latencies;file systems;operating systems research;performance;realistic metrics;repeatable metrics;Application software;Benchmark testing;Computer architecture;Delay;File servers;File systems;Internet;Laboratories;Operating systems;Web server},
-%% doi={10.1109/HOTOS.1999.798383},
-%% month={},}
 
 \newcommand{\ignore}[1]{}
 \newcommand{\doppio}{\textsc{Doppio}}
@@ -54,10 +29,6 @@
 \newcommand{\xmark}{\ding{55}}
 \newcommand{\superscript}[1]{\ensuremath{^{\textrm{#1}}}}
 
-% For comments, these two:
-\usepackage[author={John Vilk}]{pdfcomment}
-\usepackage[svgnames,rgb]{xcolor}
-
 \newcommand{\tocite}{\textbf{{[\small CITE ]}}}
 \newcommand{\todo}[1]{\textbf{{[\small TODO: #1 ]}}}
 
@@ -71,8 +42,7 @@
 \definecolor{purple}{rgb}{0.65, 0.12, 0.82}
 
 \lstdefinelanguage{JavaScript}{
-  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while
-, do, else, case, break},
+  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
   keywordstyle=\color{blue}\bfseries,
   ndkeywords={class, export, boolean, throw, implements, import, this},
   ndkeywordstyle=\color{darkgray}\bfseries,

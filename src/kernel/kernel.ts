@@ -901,11 +901,20 @@ export class Syscalls {
 	}
 
 	getsockname(task: ITask, fd: number, buf: Uint8Array, cb: (err: number, len: number) => void): void {
-		console.log('TODO: getsockname');
-		let remote = {family: SOCK.STREAM, port: 8080, addr: '127.0.0.1'};
-		let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
-		marshal.Marshal(view, 0, remote, marshal.socket.SockAddrInDef);
-		cb(0, marshal.socket.SockAddrInDef.length);
+		let file = task.files[fd];
+		if (!file) {
+			cb(-constants.EBADF, -1);
+			return;
+		}
+		if (isSocket(file)) {
+			let remote = {family: SOCK.STREAM, port: file.port, addr: file.addr};
+			let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+			marshal.Marshal(view, 0, remote, marshal.socket.SockAddrInDef);
+			cb(0, marshal.socket.SockAddrInDef.length);
+			return;
+		}
+
+		return cb(-constants.ENOTSOCK, -1);
 	}
 
 	listen(task: ITask, fd: number, backlog: number, cb: (err: number) => void): void {

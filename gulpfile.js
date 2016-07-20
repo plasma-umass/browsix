@@ -187,7 +187,11 @@ gulp.task('build-fs', ['dist-kernel', 'dist-browser-node', 'build-bin', 'dist-sy
           .pipe(chmod(755))
           .pipe(gulp.dest('./fs/usr/bin/'));
 
-    return merge(copyKernel, copyNode, copyBin);
+    var copyLd = gulp.src('src/ld.js')
+          .pipe(chmod(755))
+          .pipe(gulp.dest('./fs/usr/bin/'));
+
+    return merge(copyKernel, copyNode, copyBin, copyLd);
 });
 
 // finally, we create an index.json file so that BrowserFS can see

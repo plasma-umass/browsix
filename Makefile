@@ -9,6 +9,12 @@ TEX        = pdflatex
 NPM_DEPS   = $(GULP) $(TSLINT) $(MOCHA)
 BUILD_DEPS = $(NPM_DEPS) bower_components
 
+WORKDIR  = $(PWD)/.work
+
+GOPATH	   = $(WORKDIR)
+INIT	   = fs/usr/bin/init
+SYSTEMGO   = github.com/b1101/systemgo
+
 # quiet output, but allow us to look at what commands are being
 # executed by passing 'V=1' to make, without requiring temporarily
 # editing the Makefile.
@@ -76,6 +82,15 @@ syscall-api: $(BUILD_DEPS)
 bin: $(BUILD_DEPS)
 	@echo "  BIN"
 	node_modules/.bin/gulp index-fs
+
+init: $(BUILD_DEPS)
+	@echo "  INIT"
+	mkdir -p $(WORKDIR)/src/$(SYSTEMGO)
+	rm -rf $(WORKDIR)/src/$(SYSTEMGO)
+	cp -rf src/init $(WORKDIR)/src/$(SYSTEMGO)
+	browsix-gopherjs build $(SYSTEMGO)/cmd/init -o $(INIT)
+	rm $(INIT).map
+	chmod +x $(INIT)
 
 test-browser: $(BUILD_DEPS)
 	@echo "  TEST BROWSER"

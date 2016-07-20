@@ -78,7 +78,7 @@
 	let sequence = [
 		'pdflatex ' + TEX_FLAGS + '-draftmode ' + f,
 		'bibtex ' + f,
-		'pdflatex ' + TEX_FLAGS + '-draftmode ' + f,
+//		'pdflatex ' + TEX_FLAGS + '-draftmode ' + f,
 		'pdflatex ' + TEX_FLAGS + f,
 	];
 	function runLatex() {

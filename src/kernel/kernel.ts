@@ -1855,6 +1855,20 @@ export class Task implements ITask {
 			return;
 		}
 
+		function isShebang(buf: Buffer): boolean {
+			return buf.length > 2
+				&& buf.readUInt8(0) === 0x23 /*'#'*/
+				&& buf.readUInt8(1) === 0x21 /*'!'*/;
+		}
+
+		function isWasm(buf: Buffer): boolean {
+			return buf.length > 4
+				&& buf.readUInt8(0) === 0x00 /*null*/
+				&& buf.readUInt8(1) === 0x61 /*'a'*/
+				&& buf.readUInt8(2) === 0x73 /*'s'*/
+				&& buf.readUInt8(3) === 0x6d /*'m'*/;
+		}
+
 		// Some executables (typically scripts) have a shebang
 		// line that specifies an interpreter to use on the
 		// rest of the file.  Check for that here, and adjust
@@ -1862,7 +1876,7 @@ export class Task implements ITask {
 		//
 		// TODO: abstract this into something like a binfmt
 		// handler
-		if (bytesRead > 2 && buf.readUInt8(0) === 0x23 /*'#'*/ && buf.readUInt8(1) === 0x21 /*'!'*/) {
+		if (isShebang(buf)) {
 			let newlinePos = buf.indexOf('\n');
 			if (newlinePos < 0)
 				throw new Error('shebang with no newline: ' + buf);
@@ -1896,6 +1910,10 @@ export class Task implements ITask {
 			// at this point so we need to read in the new
 			// exe.
 			this.kernel.fs.open(cmd, 'r', this.fileOpened.bind(this));
+			return;
+		} else if (isWasm(buf)) {
+			this.pendingArgs = ['/usr/bin/ld'].concat(this.pendingArgs);
+			this.kernel.fs.open('/usr/bin/ld', 'r', this.fileOpened.bind(this));
 			return;
 		}
 

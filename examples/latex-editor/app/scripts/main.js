@@ -1,153 +1,173 @@
 (() => {
-	'use strict';
+    'use strict';
 
-	const TEX_FLAGS = '-halt-on-error -interaction nonstopmode --shell-escape ';
+    const TEX_FLAGS = '-halt-on-error -interaction nonstopmode --shell-escape ';
 
-	const IS_CHROME = typeof navigator !== 'undefined' &&
-			navigator.userAgent.match(/Chrome/) &&
-			!navigator.userAgent.match(/Edge/);
+    const IS_CHROME = typeof navigator !== 'undefined' &&
+          navigator.userAgent.match(/Chrome/) &&
+          !navigator.userAgent.match(/Edge/);
 
-	const IS_FIREFOX = typeof navigator !== 'undefined' &&
-			navigator.userAgent.match(/Firefox/);
+    const IS_FIREFOX = typeof navigator !== 'undefined' &&
+          navigator.userAgent.match(/Firefox/);
 
-	let f = 'main';
-	let texFile = f + '.tex';
-	let bibFile = 'main.bib';
-	let edTex = document.getElementById('ed-tex');
-	let edBib = document.getElementById('ed-bib');
-	let button = document.getElementById('create-button');
-	let loading = document.getElementById('loading');
-	let pdfParent = document.getElementById('pdf-parent');
-	let perfOut = document.getElementById('perf-out');
-	let kernel = null;
+    let f = 'main';
+    let texFile = f + '.tex';
+    let bibFile = 'main.bib';
+    let edTex = document.getElementById('ed-tex');
+    let edBib = document.getElementById('ed-bib');
+    let button = document.getElementById('create-button');
+    let loading = document.getElementById('loading');
+    let pdfParent = document.getElementById('pdf-parent');
+    let perfOut = document.getElementById('perf-out');
+    let kernel = null;
 
-	function replaceAll(target, search, replacement) {
-		return target.replace(new RegExp(search, 'g'), replacement);
-	}
+    function replaceAll(target, search, replacement) {
+        return target.replace(new RegExp(search, 'g'), replacement);
+    }
 
-	function startBrowsix() {
-		if (!IS_CHROME || typeof SharedArrayBuffer === 'undefined') {
-			$('#sab-alert').removeClass('browsix-hidden');
-			return;
-		}
+    function startBrowsix() {
+        if (!IS_CHROME || typeof SharedArrayBuffer === 'undefined') {
+            $('#sab-alert').removeClass('browsix-hidden');
+            return;
+        }
 
-		$('#loading').removeClass('browsix-hidden');
+        $('#loading').removeClass('browsix-hidden');
 
-		window.Boot(
-			'XmlHttpRequest',
-			['index.json', 'fs', true],
-			(err, k) => {
-				if (err) {
-					console.log(err);
-					throw new Error(err);
-				}
-				kernel = k;
-				loadFiles();
-			});
-	}
-	function loadFiles() {
-		edTex.value = kernel.fs.readFileSync(texFile).toString();
-		edBib.value = kernel.fs.readFileSync(bibFile).toString();
+	let fs = BrowsixFSes();
 
-		$('#loading').addClass('browsix-hidden');
-		button.disabled = false;
-	}
-	function saveFiles(next) {
-		kernel.fs.writeFile(texFile, edTex.value, () => {
-			kernel.fs.writeFile(bibFile, edBib.value, () => {
-				next();
-			});
+	let texlive = new fs.XmlHttpRequest('index.json', 'texmf', true);
+	let bin = new fs.XmlHttpRequest('index.json', 'asyncbinfs', true);
+	let paperSmall = new fs.XmlHttpRequest('index.json', 'paper_small', true);
+	texlive.supportsSynch = function() { return false; };
+	bin.supportsSynch = function() { return false; };
+	paperSmall.supportsSynch = function() { return false; };
+
+	let underlay = new fs.MountableFileSystem();
+	underlay.mount('/texmf', texlive);
+	underlay.mount('/usr', bin);
+	underlay.mount('/', paperSmall);
+
+	let writable = new fs.InMemory();
+	let overlaid = new fs.OverlayFS(writable, underlay);
+
+	overlaid.initialize((err) => {
+            window.BootWith(
+		overlaid,
+		(err, k) => {
+                    if (err) {
+			console.log(err);
+			throw new Error(err);
+                    }
+                    kernel = k;
+                    loadFiles();
 		});
-	}
-	function showPDF() {
-		let fName = f + '.pdf';
-		let buf = new Uint8Array(kernel.fs.readFileSync(fName).data.buff.buffer);
-		let blob = new Blob([buf], {type: 'application/pdf'});
+	});
+    }
 
-		let pdfEmbed = document.createElement('embed');
-		pdfEmbed.className = 'pdf';
-		pdfEmbed['src'] = window.URL.createObjectURL(blob);
-		pdfEmbed.setAttribute('alt', 'main.pdf');
-		pdfEmbed.setAttribute('pluginspage', 'http://www.adobe.com/products/acrobat/readstep2.html');
+    function loadFiles() {
+        edTex.value = kernel.fs.readFileSync(texFile).toString();
+        edBib.value = kernel.fs.readFileSync(bibFile).toString();
 
-		pdfParent.innerHTML = '';
-		pdfParent.appendChild(pdfEmbed);
+        $('#loading').addClass('browsix-hidden');
+        button.disabled = false;
+    }
 
-		$(button).removeClass('is-active').blur();
-	}
-	let sequence = [
-		'pdflatex ' + TEX_FLAGS + '-draftmode ' + f,
-		'bibtex ' + f,
-//		'pdflatex ' + TEX_FLAGS + '-draftmode ' + f,
-		'pdflatex ' + TEX_FLAGS + f,
-	];
-	function runLatex() {
-		let startTime = performance.now();
+    function saveFiles(next) {
+        kernel.fs.writeFile(texFile, edTex.value, () => {
+            kernel.fs.writeFile(bibFile, edBib.value, () => {
+                next();
+            });
+        });
+    }
 
-		let progress = 10;
+    function showPDF() {
+        let fName = f + '.pdf';
+        let buf = new Uint8Array(kernel.fs.readFileSync(fName).data.buff.buffer);
+        let blob = new Blob([buf], {type: 'application/pdf'});
 
-		$('#timing').addClass('browsix-hidden');
-		perfOut.innerHTML = '';
-		$('#build-progress').removeClass('browsix-hidden');
-		pdfParent.innerHTML = '<center><b>PDF will appear here when built</b></center>';
+        let pdfEmbed = document.createElement('embed');
+        pdfEmbed.className = 'pdf';
+        pdfEmbed['src'] = window.URL.createObjectURL(blob);
+        pdfEmbed.setAttribute('alt', 'main.pdf');
+        pdfEmbed.setAttribute('pluginspage', 'http://www.adobe.com/products/acrobat/readstep2.html');
 
-		let log = '';
-		let seq = sequence.slice();
-		function onStdout(pid, out) {
-			log += out;
-			//console.log(out);
-		}
-		function onStderr(pid, out) {
-			log += out;
-			//console.log(out);
-		}
-		function runNext(pid, code) {
-			if (code !== 0) {
-				//console.log(log);
+        pdfParent.innerHTML = '';
+        pdfParent.appendChild(pdfEmbed);
 
-				let errEmbed = document.createElement('code');
-				errEmbed.innerHTML = replaceAll(log, '\n', '<br>\n');
+        $(button).removeClass('is-active').blur();
+    }
+    let sequence = [
+        'pdflatex ' + TEX_FLAGS + '-draftmode ' + f,
+        'bibtex ' + f,
+        'pdflatex ' + TEX_FLAGS + f,
+    ];
+    function runLatex() {
+        let startTime = performance.now();
 
-				pdfParent.innerHTML = '<h2>Error:</h2><br>';
-				pdfParent.appendChild(errEmbed);
+        let progress = 10;
 
-				$('#build-progress').addClass('browsix-hidden');
-				$('#build-bar').css('width', '10%').attr('aria-valuenow', 10);
+        $('#timing').addClass('browsix-hidden');
+        perfOut.innerHTML = '';
+        $('#build-progress').removeClass('browsix-hidden');
+        pdfParent.innerHTML = '<center><b>PDF will appear here when built</b></center>';
 
-				$(button).removeClass('is-active').blur();
+        let log = '';
+        let seq = sequence.slice();
+        function onStdout(pid, out) {
+            log += out;
+            //console.log(out);
+        }
+        function onStderr(pid, out) {
+            log += out;
+            //console.log(out);
+        }
+        function runNext(pid, code) {
+            if (code !== 0) {
+                //console.log(log);
 
-				return;
-			}
+                let errEmbed = document.createElement('code');
+                errEmbed.innerHTML = replaceAll(log, '\n', '<br>\n');
 
-			console.log('progress: ' + progress);
-			$('#build-bar').css('width', ''+progress+'%').attr('aria-valuenow', progress);
-			progress += 25;
+                pdfParent.innerHTML = '<h2>Error:</h2><br>';
+                pdfParent.appendChild(errEmbed);
 
-			//console.log(log);
-			log = '';
-			let cmd = seq.shift();
-			if (!cmd) {
-				showPDF();
-				$('#build-progress').addClass('browsix-hidden');
-				$('#build-bar').css('width', '10%').attr('aria-valuenow', 10);
-				let totalTime = '' + ((performance.now() - startTime) / 1000);
-				let dot = totalTime.indexOf('.');
-				if (dot + 2 < totalTime.length) {
-					totalTime = totalTime.substr(0, dot + 2);
-				}
-				$('#timing').removeClass('browsix-hidden');
-				perfOut.innerHTML = totalTime;
+                $('#build-progress').addClass('browsix-hidden');
+                $('#build-bar').css('width', '10%').attr('aria-valuenow', 10);
 
-				return;
-			}
-			kernel.system(cmd, runNext, onStdout, onStderr);
-		}
-		runNext(-1, 0);
-	}
-	function clicked() {
-		$(button).toggleClass('is-active').blur();
-		saveFiles(runLatex);
-	}
-	button.addEventListener('click', clicked);
-	startBrowsix();
+                $(button).removeClass('is-active').blur();
+
+                return;
+            }
+
+            console.log('progress: ' + progress);
+            $('#build-bar').css('width', ''+progress+'%').attr('aria-valuenow', progress);
+            progress += 25;
+
+            //console.log(log);
+            log = '';
+            let cmd = seq.shift();
+            if (!cmd) {
+                showPDF();
+                $('#build-progress').addClass('browsix-hidden');
+                $('#build-bar').css('width', '10%').attr('aria-valuenow', 10);
+                let totalTime = '' + ((performance.now() - startTime) / 1000);
+                let dot = totalTime.indexOf('.');
+                if (dot + 2 < totalTime.length) {
+                    totalTime = totalTime.substr(0, dot + 2);
+                }
+                $('#timing').removeClass('browsix-hidden');
+                perfOut.innerHTML = totalTime;
+
+                return;
+            }
+            kernel.system(cmd, runNext, onStdout, onStderr);
+        }
+        runNext(-1, 0);
+    }
+    function clicked() {
+        $(button).toggleClass('is-active').blur();
+        saveFiles(runLatex);
+    }
+    button.addEventListener('click', clicked);
+    startBrowsix();
 })();

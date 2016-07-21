@@ -125,9 +125,6 @@ gulp.task('serve', ['styles', 'scripts', 'fonts', 'index-fs'], () => {
         '/node_modules': 'node_modules',
         '/bower_components': 'bower_components',
         '/fs': 'fs',
-        '/texmf': 'texmf',
-        '/asyncbinfs': 'asyncbinfs',
-        '/paper_small': 'paper_small',
       },
       middleware: [proxy(proxyOptions)],
     }

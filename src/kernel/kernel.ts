@@ -37,16 +37,6 @@ if (typeof Atomics !== 'undefined') {
 		Atomics.wake = Atomics.futexWake;
 }
 
-
-// we only import the backends we use, for now.
-//require('./vendor/BrowserFS/src/backend/in_memory');
-//require('./vendor/BrowserFS/src/backend/XmlHttpRequest');
-//require('./vendor/BrowserFS/src/backend/overlay');
-//require('./vendor/BrowserFS/src/backend/async_mirror');
-//require('./vendor/BrowserFS/src/backend/localStorage');
-//require('./vendor/BrowserFS/src/backend/mountable_file_system');
-//require('./vendor/BrowserFS/src/backend/zipfs');
-
 // from + for John's BrowserFS
 // TODO: don't copy paste code :\
 if (true/*typeof setImmediate === 'undefined'*/) {
@@ -237,15 +227,15 @@ export enum SOCK {
 // shared Syscalls instance that dispatches into either the Kernel or
 // Task.
 
-
 function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void): (n: number, args: number[]) => void {
+	// Firefox doesn't support DataViews on SharedArrayBuffers:
+	// https://bugzilla.mozilla.org/show_bug.cgi?id=1246597
 	let dataViewWorks = true;
 	try {
 		let _ = new DataView(new SharedArrayBuffer(32), 0, 32);
 	} catch (e) {
 		dataViewWorks = false;
 	}
-	console.log('working DataView? ' + dataViewWorks);
 
 	function bufferAt(off: number, len: number): Buffer {
 		if (dataViewWorks) {
@@ -1469,10 +1459,6 @@ export class Kernel implements IKernel {
 			});
 			//(<any>window).F = f;
 		});
-
-		// read+
-		// close
-		// call callback
 	}
 
 	wait(pid: number): void {
@@ -2174,19 +2160,7 @@ export interface BootArgs {
 	readOnly?: boolean;
 };
 
-// FIXME/TODO: this doesn't match the signature specified in the
-// project.
-export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args?: BootArgs): void {
-	'use strict';
-
-	if (!args)
-		args = {};
-
-	// for now, simulate a single CPU for scheduling tests +
-	// simplicity.  this means we will attempt to only have a
-	// single web worker running at any given time.
-	let nCPUs = 1;
-
+export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: BootArgs = {}): void {
 	let browserfs: any = {};
 	bfs.install(browserfs);
 	// this is the 'Buffer' in the file-level/module scope above.
@@ -2207,12 +2181,7 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args?: Boo
 			cb(err, undefined);
 			return;
 		}
-		bfs.initialize(root);
-		let fs = bfs.BFSRequire('fs');
-		let k = new Kernel(fs, nCPUs, args);
-		// FIXME: this is for debugging purposes
-		(<any>window).kernel = k;
-		setImmediate(cb, null, k);
+		BootWith(root, cb, args);
 	}
 
 	if (args.readOnly) {
@@ -2240,7 +2209,32 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args?: Boo
 	}
 }
 
+export function BootWith(rootFs: any, cb: BootCallback, args: BootArgs = {}): void {
+	let nCPUs = 1;
+
+	let browserfs: any = {};
+	bfs.install(browserfs);
+	// this is the 'Buffer' in the file-level/module scope above.
+	Buffer = browserfs.Buffer;
+	if (typeof window !== 'undefined' && !(<any>window).Buffer) {
+		(<any>window).Buffer = browserfs.Buffer;
+	}
+
+	bfs.initialize(rootFs);
+	let fs = bfs.BFSRequire('fs');
+	let k = new Kernel(fs, nCPUs, args);
+	// FIXME: this is for debugging purposes
+	(<any>window).kernel = k;
+	setImmediate(cb, null, k);
+}
+
+export function BrowsixFSes(): any {
+	return (<any>bfs).FileSystem;
+}
 
 // install our Boot method in the global scope
-if (typeof window !== 'undefined')
+if (typeof window !== 'undefined') {
 	(<any>window).Boot = Boot;
+	(<any>window).BootWith = BootWith;
+	(<any>window).BrowsixFSes = BrowsixFSes;
+}

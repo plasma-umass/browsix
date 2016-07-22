@@ -30,7 +30,7 @@
 		<nav class="navbar navbar-default navbar-fixed-top">
 			<div class="container">
 				<div class="navbar-header">
-					<span class="navbar-brand" href="#"><a href="https://github.com/plasma-umass/browsix">Browsix</a> LaTeX editor</span>
+					<span class="navbar-brand" href="#">Browsix LaTeX editor</span>
 				</div>
 				<div id="navbar">
 					<ul class="nav navbar-nav navbar-right">
@@ -80,11 +80,11 @@
 
 
 					<p>This split-panel editor uses
-					<a href="https://github.com/plasma-umass/browsix">Browsix</a>
+					Browsix
 					to run programs from the <a href="https://www.tug.org/texlive/">TeX Live suite</a>
 					in the browser.  When you hit
 					the "Build PDF" button in the
-					upper right, Browsix runs<code>latex main.tex;
+					upper right, Browsix runs <code>latex main.tex;
 						bibtex main.aux;
 						latex main.tex;
 						latex main.tex</code>
@@ -93,14 +93,14 @@
 					own Web Worker, to generate
 					(or regenerate) the PDF shown
 					below on the right.  The first
-					run takes between 90 and 120
+					run takes between 15 and 30
 					seconds, as every class file
 					and font needs to be
-					downloaded (over 1000
+					downloaded (hundreds of
 					individual files).  After the
 					files have been cached,
 					subsequent runs complete in
-					30-45 seconds.</p>
+					6 - 10 seconds.</p>
 			</div>
 
 			<div class="row">
@@ -115,7 +115,7 @@
 
 			<div class="footer">
 				<p>
-					♥ from <a href="http://plasma.cs.umass.edu/">PLASMA</a>
+					♥ from {Browsix authors}
 					<span id="timing" class="browsix-hidden" style="float: right;">PDF creation took <span id="perf-out"></span> secs.</span>
 				</p>
 			</div>

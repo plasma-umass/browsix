@@ -79,27 +79,28 @@
 				the browser.</p>
 
 
-				<p>
-				This split-panel editor uses Browsix
-				to run programs from the<a href="https://www.tug.org/texlive/">TeX Live suite</a>
-				in the browser.  When you hit the
-				"Build PDF" button in the
-				upper right, Browsix runs<code>latex main.tex;
-				bibtex main.aux;
-				latex main.tex;
-				latex main.tex</code>
-				in sequence, with each command
-				executed as a process in its
-				own Web Worker, to generate
-				(or regenerate) the PDF shown
-				below on the right.  Running
-				these four commands takes
-				between 40 and 80 seconds.
-				</p>
-
-				<p>
-				    A version of this demo utilizing <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer">Shared Array Buffers</a> for blocking syscalls in asm.js is available <a href="https://browsix.org/latex-demo-sync/">here</a>.
-				</p>
+					<p>This split-panel editor uses
+					Browsix
+					to run programs from the <a href="https://www.tug.org/texlive/">TeX Live suite</a>
+					in the browser.  When you hit
+					the "Build PDF" button in the
+					upper right, Browsix runs <code>latex main.tex;
+						bibtex main.aux;
+						latex main.tex;
+						latex main.tex</code>
+					in sequence, with each command
+					executed as a process in its
+					own Web Worker, to generate
+					(or regenerate) the PDF shown
+					below on the right.  The first
+					run takes between 15 and 30
+					seconds, as every class file
+					and font needs to be
+					downloaded (hundreds of
+					individual files).  After the
+					files have been cached,
+					subsequent runs complete in
+					6 - 10 seconds.</p>
 			</div>
 
 			<div class="row">

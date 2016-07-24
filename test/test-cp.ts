@@ -51,3 +51,70 @@ describe('cp', function(): void {
         }
     });
 });
+
+describe('cp /a', function(): void {
+    this.timeout(10 * MINS);
+
+    const A_CONTENTS = 'contents of a';
+    let kernel: Kernel = null;
+
+    it('should boot', function(done: MochaDone): void {
+        Boot('XmlHttpRequest', ['index.json', ROOT, true], function(err: any, freshKernel: Kernel): void {
+            expect(err).to.be.null;
+            expect(freshKernel).not.to.be.null;
+            kernel = freshKernel;
+            done();
+        });
+    });
+
+    it('should throw error when file doesn\'t and destination is missing `cp /a`', function(done: MochaDone): void {
+        let stdout = '';
+        let stderr = '';
+        kernel.system('cp /a', onExit, onStdout, onStderr);
+        function onStdout(pid: number, out: string): void {
+            stdout += out;
+        }
+        function onStderr(pid: number, out: string): void {
+            stderr += out;
+        }
+        function onExit(pid: number, code: number): void {
+            try {
+                expect(code).to.equal(-1);
+                expect(stdout).to.equal('');
+                expect(stderr).to.equal('cp: missing destination file operand after ‘/a’\n');
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }
+    });
+
+    it('should create /a', function(done: MochaDone): void {
+        kernel.fs.writeFile('/a', A_CONTENTS, function(err: any): void {
+            expect(err).to.be.undefined;
+            done();
+        });
+    });
+
+    it('should throw error when file exist but destination is missing `cp /a`', function (done:MochaDone):void {
+        let stdout = '';
+        let stderr = '';
+        kernel.system('cp /a', onExit, onStdout, onStderr);
+        function onStdout(pid: number, out: string): void {
+            stdout += out;
+        }
+        function onStderr(pid: number, out: string): void {
+            stderr += out;
+        }
+        function onExit(pid: number, code: number): void {
+            try {
+                expect(code).to.equal(-1);
+                expect(stdout).to.equal('');
+                expect(stderr).to.equal('cp: missing destination file operand after ‘/a’\n');
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }
+    });
+});

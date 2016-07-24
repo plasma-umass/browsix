@@ -310,4 +310,50 @@ describe('cp /a /b', function(): void {
             }
         }
     });
+
+    it('should create a directory c/', function (done:MochaDone):void {
+       kernel.fs.mkdir('/c', function(err) {
+           expect(err).not.to.be.undefined;
+           done();
+       });
+    });
+
+    it('should run `cp /a c/`', function (done:MochaDone): void {
+        let stdout = '';
+        let stderr = '';
+        kernel.system('cp /a c/', onExit, onStdout, onStderr);
+        function onStdout(pid: number, out: string): void {
+            stdout += out;
+        }
+        function onStderr(pid: number, out: string): void {
+            stderr += out;
+        }
+        function onExit(pid: number, code: number): void {
+            try {
+                expect(code).to.equal(0);
+                expect(stdout).to.equal('');
+                expect(stderr).to.equal('');
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }
+    });
+
+    it('should have /c/a', function (done:MochaDone):void {
+       kernel.fs.stat('/c/a', function(err: any, stat: any): void {
+           expect(err).to.be.null;
+           expect(stat).not.to.be.null;
+           expect(stat.isFile()).to.be.true;
+           done();
+       });
+    });
+
+    it('contents of /c/a and /a should be same', function (done:MochaDone):void {
+        kernel.fs.readFile('/c/a', 'utf-8', function(err: any, contents: string): void {
+            expect(err).to.be.undefined;
+            expect(contents).to.equal(B_CONTENTS);
+            done();
+        });
+    });
 });

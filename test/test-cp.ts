@@ -244,4 +244,26 @@ describe('cp /a /b', function(): void {
             done();
         });
     });
+
+    it('should throw error when src and dest are same `cp /a /a`', function (done:MochaDone):void {
+        let stdout = '';
+        let stderr = '';
+        kernel.system('cp /a /a', onExit, onStdout, onStderr);
+        function onStdout(pid: number, out: string): void {
+            stdout += out;
+        }
+        function onStderr(pid: number, out: string): void {
+            stderr += out;
+        }
+        function onExit(pid: number, code: number): void {
+            try {
+                expect(code).to.equal(1);
+                expect(stdout).to.equal('');
+                expect(stderr).to.equal('cp: ‘/a’ and ‘/a’ are the same file\n');
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }
+    });
 });

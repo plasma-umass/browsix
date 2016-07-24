@@ -18,4 +18,5 @@ require('./test-sort');
 require('./test-tee');
 require('./test-nice');
 require('./test-xargs');
+require('./test-cp');
 // require('./test-scheduler');

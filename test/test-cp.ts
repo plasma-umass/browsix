@@ -5,6 +5,7 @@
 
 import * as chai from 'chai';
 import { Boot, Kernel } from '../lib/kernel/kernel';
+import {equal} from "assert";
 
 const expect = chai.expect;
 
@@ -116,5 +117,89 @@ describe('cp /a', function(): void {
                 done(e);
             }
         }
+    });
+});
+
+describe('cp /a /b', function(): void {
+    this.timeout(10 * MINS);
+
+    const A_CONTENTS = 'contents of a';
+    let kernel: Kernel = null;
+
+    it('should boot', function(done: MochaDone): void {
+        Boot('XmlHttpRequest', ['index.json', ROOT, true], function(err: any, freshKernel: Kernel): void {
+            expect(err).to.be.null;
+            expect(freshKernel).not.to.be.null;
+            kernel = freshKernel;
+            done();
+        });
+    });
+
+    it('should throw error when file /a doesn\'t exist `cp /a /b`', function(done: MochaDone): void {
+        let stdout = '';
+        let stderr = '';
+        kernel.system('cp /a /b', onExit, onStdout, onStderr);
+        function onStdout(pid: number, out: string): void {
+            stdout += out;
+        }
+        function onStderr(pid: number, out: string): void {
+            stderr += out;
+        }
+        function onExit(pid: number, code: number): void {
+            try {
+                expect(code).to.equal(1);
+                expect(stdout).to.equal('');
+                expect(stderr).not.to.be.empty;
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }
+    });
+
+    it('should create /a', function(done: MochaDone): void {
+        kernel.fs.writeFile('/a', A_CONTENTS, function(err: any): void {
+            expect(err).to.be.undefined;
+            done();
+        });
+    });
+
+    it('should run `cp /a /b`', function (done:MochaDone):void {
+        let stdout = '';
+        let stderr = '';
+        kernel.system('cp /a /b', onExit, onStdout, onStderr);
+        function onStdout(pid: number, out: string): void {
+            stdout += out;
+        }
+        function onStderr(pid: number, out: string): void {
+            stderr += out;
+        }
+        function onExit(pid: number, code: number): void {
+            try {
+                expect(code).to.equal(0);
+                expect(stdout).to.equal('');
+                expect(stderr).to.equal('');
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }
+    });
+
+    it('should have /b', function(done: MochaDone): void {
+        kernel.fs.stat('/b', function(err: any, stat: any): void {
+            expect(err).to.be.null;
+            expect(stat).not.to.be.null;
+            expect(stat.isFile()).to.be.true;
+            done();
+        });
+    });
+
+    it('both files should have same content', function(done: MochaDone): void {
+        kernel.fs.readFile('/b', 'utf-8', function(err: any, contents: string): void {
+            expect(err).to.be.undefined;
+            expect(contents).to.equal(A_CONTENTS);
+            done();
+        });
     });
 });

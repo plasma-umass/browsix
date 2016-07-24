@@ -356,4 +356,26 @@ describe('cp /a /b', function(): void {
             done();
         });
     });
+
+    it('should throw an error when the copying in a directory that does not exists', function (done:MochaDone):void {
+        let stdout = '';
+        let stderr = '';
+        kernel.system('cp /a d/b', onExit, onStdout, onStderr);
+        function onStdout(pid: number, out: string): void {
+            stdout += out;
+        }
+        function onStderr(pid: number, out: string): void {
+            stderr += out;
+        }
+        function onExit(pid: number, code: number): void {
+            try {
+                expect(code).to.equal(1);
+                expect(stdout).to.equal('');
+                expect(stderr).not.to.be.empty;
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }
+    });
 });

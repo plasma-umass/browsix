@@ -266,4 +266,48 @@ describe('cp /a /b', function(): void {
             }
         }
     });
+
+    it('should throw error when trying to copy in a directory that doesn\'t exists', function(done: MochaDone): void {
+        let stdout = '';
+        let stderr = '';
+        kernel.system('cp /a c/', onExit, onStdout, onStderr);
+        function onStdout(pid: number, out: string): void {
+            stdout += out;
+        }
+        function onStderr(pid: number, out: string): void {
+            stderr += out;
+        }
+        function onExit(pid: number, code: number): void {
+            try {
+                expect(code).to.equal(1);
+                expect(stdout).to.equal('');
+                expect(stderr).to.equal('cp: target ‘c/’ is not a directory\n');
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }
+    });
+
+    it('should throw error when trying to copy in a fs which is not a directory', function (done:MochaDone):void {
+        let stdout = '';
+        let stderr = '';
+        kernel.system('cp /a b/', onExit, onStdout, onStderr);
+        function onStdout(pid: number, out: string): void {
+            stdout += out;
+        }
+        function onStderr(pid: number, out: string): void {
+            stderr += out;
+        }
+        function onExit(pid: number, code: number): void {
+            try {
+                expect(code).to.equal(1);
+                expect(stdout).to.equal('');
+                expect(stderr).to.equal('cp: target ‘b/’ is not a directory\n');
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }
+    });
 });

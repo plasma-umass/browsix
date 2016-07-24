@@ -378,4 +378,26 @@ describe('cp /a /b', function(): void {
             }
         }
     });
+
+    it('should throw an error when trying to copy a directory without -r', function (done:MochaDone): void {
+        let stdout = '';
+        let stderr = '';
+        kernel.system('cp /c /d', onExit, onStdout, onStderr);
+        function onStdout(pid: number, out: string): void {
+            stdout += out;
+        }
+        function onStderr(pid: number, out: string): void {
+            stderr += out;
+        }
+        function onExit(pid: number, code: number): void {
+            try {
+                expect(code).to.equal(1);
+                expect(stdout).to.equal('');
+                expect(stderr).to.equal('cp: omitting directory ‘/c’\n');
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }
+    });
 });

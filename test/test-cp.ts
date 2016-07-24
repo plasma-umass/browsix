@@ -401,3 +401,132 @@ describe('cp /a /b', function(): void {
         }
     });
 });
+
+describe('cp /a /b /c', function(): void {
+    this.timeout(10 * MINS);
+
+    const A_CONTENTS = 'contents of a';
+    const B_CONTENTS = 'contents of b';
+    let kernel:Kernel = null;
+
+    it('should boot', function (done:MochaDone):void {
+        Boot('XmlHttpRequest', ['index.json', ROOT, true], function (err:any, freshKernel:Kernel):void {
+            expect(err).to.be.null;
+            expect(freshKernel).not.to.be.null;
+            kernel = freshKernel;
+            done();
+        });
+    });
+
+    it('should create /a', function(done: MochaDone): void {
+        kernel.fs.writeFile('/a', A_CONTENTS, function(err: any): void {
+            expect(err).to.be.undefined;
+            done();
+        });
+    });
+
+    it('should create /b', function(done: MochaDone): void {
+        kernel.fs.writeFile('/b', B_CONTENTS, function(err: any): void {
+            expect(err).to.be.undefined;
+            done();
+        });
+    });
+
+    it('should throw error when copying more than one files to non existing directory', function (done:MochaDone):void {
+        let stdout = '';
+        let stderr = '';
+        kernel.system('cp /a /b /c', onExit, onStdout, onStderr);
+        function onStdout(pid:number, out:string):void {
+            stdout += out;
+        }
+
+        function onStderr(pid:number, out:string):void {
+            stderr += out;
+        }
+
+        function onExit(pid:number, code:number):void {
+            try {
+                expect(code).to.equal(1);
+                expect(stdout).to.equal('');
+                expect(stderr).not.to.be.empty;
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }
+    });
+
+    it('should create a directory c/', function (done:MochaDone):void {
+        kernel.fs.mkdir('/c', function(err) {
+            expect(err).not.to.be.undefined;
+            done();
+        });
+    });
+
+    it('should run `cp /a /b /c` when c is exiting directory', function (done:MochaDone):void {
+        let stdout = '';
+        let stderr = '';
+        kernel.system('cp /a /b /c', onExit, onStdout, onStderr);
+        function onStdout(pid:number, out:string):void {
+            stdout += out;
+        }
+
+        function onStderr(pid:number, out:string):void {
+            stderr += out;
+        }
+
+        function onExit(pid:number, code:number):void {
+            try {
+                expect(code).to.equal(0);
+                expect(stdout).to.equal('');
+                expect(stderr).to.equal('');
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }
+    });
+
+    it('should have /c/a', function(done: MochaDone): void {
+        kernel.fs.stat('/c/a', function(err: any, stat: any): void {
+            expect(err).to.be.null;
+            expect(stat).not.to.be.null;
+            expect(stat.isFile()).to.be.true;
+            done();
+        });
+    });
+
+    it('should have /c/b', function(done: MochaDone): void {
+        kernel.fs.stat('/c/b', function(err: any, stat: any): void {
+            expect(err).to.be.null;
+            expect(stat).not.to.be.null;
+            expect(stat.isFile()).to.be.true;
+            done();
+        });
+    });
+
+    it('should have /b', function(done: MochaDone): void {
+        kernel.fs.stat('/b', function(err: any, stat: any): void {
+            expect(err).to.be.null;
+            expect(stat).not.to.be.null;
+            expect(stat.isFile()).to.be.true;
+            done();
+        });
+    });
+
+    it('/c/a should have same content as /a', function(done: MochaDone): void {
+        kernel.fs.readFile('/c/a', 'utf-8', function(err: any, contents: string): void {
+            expect(err).to.be.undefined;
+            expect(contents).to.equal(A_CONTENTS);
+            done();
+        });
+    });
+
+    it('/c/b should have same content as /b', function(done: MochaDone): void {
+        kernel.fs.readFile('/c/b', 'utf-8', function(err: any, contents: string): void {
+            expect(err).to.be.undefined;
+            expect(contents).to.equal(B_CONTENTS);
+            done();
+        });
+    });
+});

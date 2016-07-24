@@ -124,6 +124,7 @@ describe('cp /a /b', function(): void {
     this.timeout(10 * MINS);
 
     const A_CONTENTS = 'contents of a';
+    const B_CONTENTS = 'contents of b';
     let kernel: Kernel = null;
 
     it('should boot', function(done: MochaDone): void {
@@ -199,6 +200,47 @@ describe('cp /a /b', function(): void {
         kernel.fs.readFile('/b', 'utf-8', function(err: any, contents: string): void {
             expect(err).to.be.undefined;
             expect(contents).to.equal(A_CONTENTS);
+            done();
+        });
+    });
+
+    it('should change the content of /a', function(done: MochaDone): void {
+        kernel.fs.writeFile('/a', B_CONTENTS, function(err: any): void {
+            expect(err).to.be.undefined;
+            kernel.fs.readFile('/a', 'utf-8', function(err: any, contents: string): void {
+               expect(err).to.be.undefined;
+                expect(contents).to.equal(B_CONTENTS);
+                done();
+            });
+        });
+    });
+
+    it('should run `cp /a /b` when /b exists and writable', function (done:MochaDone):void {
+        let stdout = '';
+        let stderr = '';
+        kernel.system('cp /a /b', onExit, onStdout, onStderr);
+        function onStdout(pid: number, out: string): void {
+            stdout += out;
+        }
+        function onStderr(pid: number, out: string): void {
+            stderr += out;
+        }
+        function onExit(pid: number, code: number): void {
+            try {
+                expect(code).to.equal(0);
+                expect(stdout).to.equal('');
+                expect(stderr).to.equal('');
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }
+    });
+
+    it('should overwrite the contents of /b', function (done: MochaDone): void {
+        kernel.fs.readFile('/b', 'utf-8', function(err: any, contents: string): void {
+            expect(err).to.be.undefined;
+            expect(contents).to.equal(B_CONTENTS);
             done();
         });
     });

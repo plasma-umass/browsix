@@ -141,7 +141,7 @@ function main (): void {
 	fs.stat(dest, function (oerr: any, stats: fs.Stats): void {
 		if (dest[dest.length - 1] === '/' && (oerr || (stats && !stats.isDirectory()))) {
 			code = 1;
-			log("target ‘%s’ is not a directory ", dest, finished);
+			log("target ‘%s’ is not a directory", dest, finished);
 		} else if (oerr) {
 			if (outstanding === 1 && oerr.code === "ENOENT") {
 				copy(args[0], dest);
@@ -164,7 +164,7 @@ function main (): void {
 			}
 		} else {
 			code = 1;
-			log("target ‘%s’ is not a directory ", dest, finished);
+			log("target ‘%s’ is not a directory", dest, finished);
 		}
 	});
 }

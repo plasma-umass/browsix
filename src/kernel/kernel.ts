@@ -10,7 +10,7 @@ import * as constants from './constants';
 import { now } from './ipc';
 import { Pipe, PipeFile, isPipe } from './pipe';
 import { SocketFile, isSocket } from './socket';
-import { DirFile, RegularFile } from './file';
+import { DirFile, RegularFile, NullFile } from './file';
 import { ExitCallback, OutputCallback, SyscallContext, SyscallResult,
 	Syscall, ConnectCallback, IKernel, ITask, IFile, Environment } from './types';
 
@@ -1058,25 +1058,32 @@ export class Syscalls {
 	open(task: ITask, path: string, flags: string, mode: number, cb: (err: number, fd: number) => void): void {
 		let fullpath = join(task.cwd, path);
 		// FIXME: support CLOEXEC
-		this.kernel.fs.open(fullpath, flags, mode, (err: any, fd: any) => {
-			let f: IFile;
-			if (err && err.errno === EISDIR) {
-				// TODO: update BrowserFS to open() dirs
-				f = new DirFile(this.kernel, fullpath);
-			} else if (!err) {
-				f = new RegularFile(this.kernel, fd);
-			} else {
-				if (typeof err === 'number')
-					cb(err, -1);
-				else if (err && err.errno)
-					cb(-err.errno, -1);
-				else
-					cb(-1, -1);
-				return;
-			}
-			let n = task.addFile(f);
-			cb(0, n);
-		});
+
+		let f: IFile;
+
+		if (fullpath === "/dev/null" ) {
+			f = new NullFile(this.kernel);
+		} else {
+			this.kernel.fs.open(fullpath, flags, mode, (err: any, fd: any) => {
+				if (err && err.errno === EISDIR) {
+					// TODO: update BrowserFS to open() dirs
+					f = new DirFile(this.kernel, fullpath);
+				} else if (!err) {
+					f = new RegularFile(this.kernel, fd);
+				} else {
+					if (typeof err === 'number')
+						cb(err, -1);
+					else if (err && err.errno)
+						cb(-err.errno, -1);
+					else
+						cb(-1, -1);
+					return;
+				}
+			});
+		}
+
+		let n = task.addFile(f);
+		cb(0, n);
 	}
 
 	dup(task: ITask, fd1: number, cb: (ret: number) => void): void {

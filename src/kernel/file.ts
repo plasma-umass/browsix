@@ -166,3 +166,50 @@ export class DirFile implements IFile {
 		}
 	}
 }
+
+export class NullFile implements IFile {
+	kernel:   IKernel;
+	fd:       number;
+	pos:      number;
+
+	refCount: number;
+
+	constructor(kernel: IKernel) {
+		this.kernel = kernel;
+		this.refCount = 1;
+		this.pos = 0;
+	}
+
+	read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+		cb(null, 0);
+	}
+
+	write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+		cb(null, buf.length);
+	}
+
+	stat(cb: (err: any, stats: any) => void): void {
+		setTimeout(cb, 0, 'cant stat /dev/null');
+	}
+
+	readdir(cb: (err: any, files: string[]) => void): void {
+		setTimeout(cb, 0, 'cant readdir on /dev/null');
+	}
+
+	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void {
+		this.pos = 0;
+		cb(0, this.pos);
+	}
+
+	ref(): void {
+		this.refCount++;
+	}
+
+	unref(): void {
+		this.refCount--;
+		// FIXME: verify this is what we want.
+		if (!this.refCount) {
+			this.fd = undefined;
+		}
+	}
+}

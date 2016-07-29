@@ -168,14 +168,12 @@ export class DirFile implements IFile {
 }
 
 export class NullFile implements IFile {
-	kernel:   IKernel;
 	fd:       number;
 	pos:      number;
 
 	refCount: number;
 
-	constructor(kernel: IKernel) {
-		this.kernel = kernel;
+	constructor() {
 		this.refCount = 1;
 		this.pos = 0;
 	}

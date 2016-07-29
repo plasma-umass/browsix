@@ -1062,7 +1062,7 @@ export class Syscalls {
 		let f: IFile;
 
 		if (fullpath === "/dev/null" ) {
-			f = new NullFile(this.kernel);
+			f = new NullFile();
 		} else {
 			this.kernel.fs.open(fullpath, flags, mode, (err: any, fd: any) => {
 				if (err && err.errno === EISDIR) {

@@ -1061,29 +1061,31 @@ export class Syscalls {
 
 		let f: IFile;
 
-		if (fullpath === "/dev/null" ) {
+		if (fullpath === '/dev/null') {
 			f = new NullFile();
-		} else {
-			this.kernel.fs.open(fullpath, flags, mode, (err: any, fd: any) => {
-				if (err && err.errno === EISDIR) {
-					// TODO: update BrowserFS to open() dirs
-					f = new DirFile(this.kernel, fullpath);
-				} else if (!err) {
-					f = new RegularFile(this.kernel, fd);
-				} else {
-					if (typeof err === 'number')
-						cb(err, -1);
-					else if (err && err.errno)
-						cb(-err.errno, -1);
-					else
-						cb(-1, -1);
-					return;
-				}
-			});
+			let n = task.addFile(f);
+			cb(0, n);
+			return;
 		}
 
-		let n = task.addFile(f);
-		cb(0, n);
+		this.kernel.fs.open(fullpath, flags, mode, (err: any, fd: any) => {
+			if (err && err.errno === EISDIR) {
+				// TODO: update BrowserFS to open() dirs
+				f = new DirFile(this.kernel, fullpath);
+			} else if (!err) {
+				f = new RegularFile(this.kernel, fd);
+			} else {
+				if (typeof err === 'number')
+					cb(err, -1);
+				else if (err && err.errno)
+					cb(-err.errno, -1);
+				else
+					cb(-1, -1);
+				return;
+			}
+			let n = task.addFile(f);
+			cb(0, n);
+		});
 	}
 
 	dup(task: ITask, fd1: number, cb: (ret: number) => void): void {

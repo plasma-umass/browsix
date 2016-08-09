@@ -9,17 +9,8 @@
 import { SyscallContext, IKernel, IFile } from './types';
 import { Marshal, fs } from 'node-binary-marshal';
 import { EFAULT } from './constants';
-
-// FIXME: none of these work
-
-//import { default as Stats, FileType } from 'node_modules/browserfs-browsix-tmp/src/core/node_fs_stats';
-
-//import { default as Stats, FileType } from '../../node_modules/browserfs-browsix-tmp/src/core/node_fs_stats';
-
-//import Stats from 'browserfs-browsix-tmp/src/core/node_fs_stats';
-//import { FileType } from 'browserfs-browsix-tmp/src/core/node_fs_stats';
-
-//import * as st from 'browserfs-browsix-tmp/src/core/node_fs_stats';
+import Stats from 'browserfs-browsix-tmp/dist/node/core/node_fs_stats';
+import { FileType } from 'browserfs-browsix-tmp/dist/node/core/node_fs_stats';
 
 const SEEK_SET = 0;
 const SEEK_CUR = 1;
@@ -198,8 +189,7 @@ export class NullFile implements IFile {
 	}
 
 	stat(cb: (err: any, stats: any) => void): void {
-		setTimeout(cb, 0, 'FIXME NullFile stat');
-		//cb(null, new Stats(FileType.FILE, 0, 0x309));
+		cb(null, new Stats(FileType.FILE, 0, 0x309));
 	}
 
 	readdir(cb: (err: any, files: string[]) => void): void {

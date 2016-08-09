@@ -10,7 +10,7 @@ import * as constants from './constants';
 import { now } from './ipc';
 import { Pipe, PipeFile, isPipe } from './pipe';
 import { SocketFile, isSocket } from './socket';
-import { DirFile, RegularFile } from './file';
+import { DirFile, RegularFile, NullFile } from './file';
 import { ExitCallback, OutputCallback, SyscallContext, SyscallResult,
 	Syscall, ConnectCallback, IKernel, ITask, IFile, Environment } from './types';
 
@@ -1058,8 +1058,17 @@ export class Syscalls {
 	open(task: ITask, path: string, flags: string, mode: number, cb: (err: number, fd: number) => void): void {
 		let fullpath = join(task.cwd, path);
 		// FIXME: support CLOEXEC
+
+		let f: IFile;
+
+		if (fullpath === '/dev/null') {
+			f = new NullFile();
+			let n = task.addFile(f);
+			cb(0, n);
+			return;
+		}
+
 		this.kernel.fs.open(fullpath, flags, mode, (err: any, fd: any) => {
-			let f: IFile;
 			if (err && err.errno === EISDIR) {
 				// TODO: update BrowserFS to open() dirs
 				f = new DirFile(this.kernel, fullpath);

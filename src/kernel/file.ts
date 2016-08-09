@@ -9,6 +9,8 @@
 import { SyscallContext, IKernel, IFile } from './types';
 import { Marshal, fs } from 'node-binary-marshal';
 import { EFAULT } from './constants';
+import Stats from 'browserfs-browsix-tmp/dist/node/core/node_fs_stats';
+import { FileType } from 'browserfs-browsix-tmp/dist/node/core/node_fs_stats';
 
 const SEEK_SET = 0;
 const SEEK_CUR = 1;
@@ -163,6 +165,51 @@ export class DirFile implements IFile {
 		this.refCount--;
 		if (!this.refCount) {
 			this.path = undefined;
+		}
+	}
+}
+
+export class NullFile implements IFile {
+	fd:       number;
+	pos:      number;
+
+	refCount: number;
+
+	constructor() {
+		this.refCount = 1;
+		this.pos = 0;
+	}
+
+	read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+		cb(null, 0);
+	}
+
+	write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+		cb(null, buf.length);
+	}
+
+	stat(cb: (err: any, stats: any) => void): void {
+		cb(null, new Stats(FileType.FILE, 0, 0x309));
+	}
+
+	readdir(cb: (err: any, files: string[]) => void): void {
+		setTimeout(cb, 0, 'cant readdir on /dev/null');
+	}
+
+	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void {
+		this.pos = 0;
+		cb(0, this.pos);
+	}
+
+	ref(): void {
+		this.refCount++;
+	}
+
+	unref(): void {
+		this.refCount--;
+		// FIXME: verify this is what we want.
+		if (!this.refCount) {
+			this.fd = undefined;
 		}
 	}
 }

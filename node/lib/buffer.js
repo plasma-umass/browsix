@@ -40,13 +40,17 @@ function alignPool() {
 }
 
 
-function Buffer(arg) {
+function Buffer(arg, encodingOrOffset, length) {
   // Common case.
   if (typeof arg === 'number') {
     // If less than zero, or NaN.
     if (arg < 0 || arg !== arg)
       arg = 0;
     return allocate(arg);
+  }
+
+  if (arg instanceof ArrayBuffer) {
+    return fromArrayBuffer(arg, encodingOrOffset, length);
   }
 
   // Slightly less common case.
@@ -119,6 +123,35 @@ function fromString(string, encoding) {
   return b;
 }
 
+function fromArrayBuffer(obj, byteOffset, length) {
+  if (!(obj instanceof ArrayBuffer))
+    throw new TypeError('argument is not an ArrayBuffer');
+
+  // signed int conversion
+  byteOffset >>>= 0;
+
+  var maxLength = obj.byteLength - byteOffset;
+
+  if (maxLength < 0)
+    throw new RangeError("'offset' is out of bounds");
+
+  if (length === undefined) {
+    length = maxLength;
+  } else {
+    length >>>= 0;
+    if (length > maxLength)
+      throw new RangeError("'length' is out of bounds");
+  }
+
+  var b = new Uint8Array(length);
+  Object.setPrototypeOf(b, Buffer.prototype);
+  var src = new Uint8Array(obj, byteOffset, length);
+  for (var i = 0; i < length; i++) {
+    b[i] = src[i];
+  }
+
+  return b;
+}
 
 function fromObject(obj) {
   if (obj instanceof Buffer) {
@@ -137,10 +170,6 @@ function fromObject(obj) {
 
   if (obj == null) {
     throw new TypeError('must start with number, buffer, array or string');
-  }
-
-  if (obj instanceof ArrayBuffer) {
-    return binding.createFromArrayBuffer(obj);
   }
 
   if (obj.buffer instanceof ArrayBuffer || obj.length) {

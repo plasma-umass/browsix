@@ -378,8 +378,8 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		42: (pipefd: number, flags: number) => { // pipe2
 			sys.pipe2(flags, (err: number, fd1: number, fd2: number) => {
 				if (!err) {
-					task.heap32[(pipefd >> 2)] = fd1;
-					task.heap32[(pipefd >> 2)+1] = fd2;
+					task.heap32[(pipefd>>2)] = fd1;
+					task.heap32[(pipefd>>2)+1] = fd2;
 				}
 				sysret(err);
 			});
@@ -389,6 +389,16 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		64: (fd: number, op: number): void => { // getppid
 			sysret(sys.getppid(task));
+		},
+		114: (pid: number, wstatus: number, options: number, rusage: number) => { // wait4
+			sys.wait4(task, pid, options, (pid: number, wstatus?: number, rusage: any = null) => {
+				wstatus = wstatus|0;
+				if (wstatus)
+					task.heap32[wstatus>>2] = wstatus;
+				if (rusage)
+					console.log('FIXME: wait4 rusage');
+				sysret(pid);
+			});
 		},
 		140: (fd: number, offhi: number, offlo: number, resultp: number, whence: number): void => { // llseek
 			sys.llseek(task, fd, offhi, offlo, whence, (err: number, off: number) => {
@@ -422,8 +432,18 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 //			console.log('lstat(' + path + ')');
 			let len = marshal.fs.StatDef.length;
 			let buf = arrayAt(bufp, len);
-			sys.lstat(task, path, buf, function(): void {
+			sys.lstat(task, path, buf, () => {
 				// workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1246597
+				if (!dataViewWorks)
+					task.heapu8.subarray(bufp, bufp+len).set(buf);
+				sysret.apply(this, arguments);
+			});
+		},
+		197: (fd: number, bufp: number): void => { // fstat64
+//			console.log('fstat(' + path + ')');
+			let len = marshal.fs.StatDef.length;
+			let buf = arrayAt(bufp);
+			sys.fstat(task, fd, buf, () => {
 				if (!dataViewWorks)
 					task.heapu8.subarray(bufp, bufp+len).set(buf);
 				sysret.apply(this, arguments);

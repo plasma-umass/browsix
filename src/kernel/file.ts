@@ -16,6 +16,72 @@ const SEEK_SET = 0;
 const SEEK_CUR = 1;
 const SEEK_END = 2;
 
+
+// originally from node.js 4.3
+function assertPath(path: any): void {
+	if (typeof path !== 'string') {
+		throw new TypeError('Path must be a string. Received ' + path);
+	}
+}
+
+// originally from node.js 4.3
+// resolves . and .. elements in a path array with directory names there
+// must be no slashes or device names (c:\) in the array
+// (so also no leading and trailing slashes - it does not distinguish
+// relative and absolute paths)
+function normalizeArray(parts: string[], allowAboveRoot: boolean): string[] {
+	let res: string[] = [];
+	for (let i = 0; i < parts.length; i++) {
+		let p = parts[i];
+
+		// ignore empty parts
+		if (!p || p === '.')
+			continue;
+
+		if (p === '..') {
+			if (res.length && res[res.length - 1] !== '..') {
+				res.pop();
+			} else if (allowAboveRoot) {
+				res.push('..');
+			}
+		} else {
+			res.push(p);
+		}
+	}
+
+	return res;
+}
+
+// originally from node.js 4.3
+// path.resolve([from ...], to)
+// posix version
+export function resolve(...args: string[]): string {
+	let resolvedPath = '';
+	let resolvedAbsolute = false;
+
+	for (let i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+		let path = (i >= 0) ? args[i] : '/';
+
+		assertPath(path);
+
+		// Skip empty entries
+		if (path === '')
+			continue;
+
+		resolvedPath = path + '/' + resolvedPath;
+		resolvedAbsolute = path[0] === '/';
+	}
+
+	// At this point the path should be resolved to a full
+	// absolute path, but handle relative paths to be safe (might
+	// happen when process.cwd() fails)
+
+	// Normalize the path
+	resolvedPath = normalizeArray(resolvedPath.split('/'), !resolvedAbsolute).join('/');
+
+	return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
+}
+
 export class RegularFile implements IFile {
 	kernel:   IKernel;
 	fd:       number;
@@ -127,33 +193,89 @@ export class DirFile implements IFile {
 	}
 
 	getdents(buf: Uint8Array, cb: (err: number) => void): void {
-		this.readdir((err: any, files: string[]) => {
-			if (err) {
-				console.log('readdir: ' + err);
+		this.readdir((derr: any, files: string[]) => {
+			if (derr) {
+				console.log('readdir: ' + derr);
 				cb(-EFAULT);
 				return;
 			}
+			files = files.filter((s: string) => s !== '.deletedFiles.log');
+			files.sort();
 			files = files.slice(this.off);
 
-			let dents = files.map((n) => new fs.Dirent(-1, fs.DT.UNKNOWN, n));
+			if (!files.length) {
+				cb(0);
+				return;
+			}
+
+			let dents: fs.Dirent[] = [];
 			let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
 			let voff = 0;
 
-			for (let i = 0; i < dents.length; i++) {
-				let dent = dents[i];
-				if (voff + dent.reclen > buf.byteLength)
-					break;
-				let [len, err] = Marshal(view, voff, dent, fs.DirentDef);
-				if (err) {
-					console.log('dirent marshal failed: ' + err);
-					cb(-EFAULT);
-					return;
-				}
-				voff += len;
-				this.off++;
-			}
+			let getOne = () => {
+				let fname = files.shift();
+				let done = (err: any, stats: Stats) => {
 
-			cb(voff);
+					// FIXME: this could happen if
+					// we have rm or mv operations
+					// interleaved with getdents,
+					// I suppose.  Test this, and
+					// decide if we should
+					// increment this.off.
+					if (err) {
+						console.log('getdents(' + this.path + ') stat error on ' + fname);
+						if (dents.length) {
+							getOne();
+						} else {
+							cb(voff);
+						}
+						return;
+					}
+
+					let type = fs.DT.UNKNOWN;
+					if (stats.isDirectory()) {
+						type = fs.DT.DIR;
+					} else if (stats.isSymbolicLink()) {
+						type = fs.DT.LNK;
+					} else if (stats.isBlockDevice()) {
+						type = fs.DT.BLK;
+					} else if (stats.isCharacterDevice()) {
+						type = fs.DT.CHR;
+					} else if (stats.isFIFO()) {
+						type = fs.DT.FIFO;
+					} else if (stats.isSocket()) {
+						type = fs.DT.SOCK;
+					} else if (stats.isFile()) {
+						type = fs.DT.REG;
+					}
+
+					let dent = new fs.Dirent(stats.ino, type, fname);
+
+					// no space for this dent, exit early.
+					if (voff + dent.reclen > buf.byteLength) {
+						cb(voff);
+						return;
+					}
+
+					let len: number;
+					[len, err] = Marshal(view, voff, dent, fs.DirentDef);
+					if (err) {
+						console.log('dirent marshal failed: ' + err);
+						cb(-EFAULT);
+						return;
+					}
+					voff += len;
+					this.off++;
+
+					if (files.length) {
+						getOne();
+					} else {
+						cb(voff);
+					}
+				};
+				this.kernel.fs.lstat(resolve(this.path, fname), done);
+			};
+			getOne();
 		});
 	}
 

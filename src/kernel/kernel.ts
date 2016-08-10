@@ -10,7 +10,7 @@ import * as constants from './constants';
 import { now } from './ipc';
 import { Pipe, PipeFile, isPipe } from './pipe';
 import { SocketFile, isSocket } from './socket';
-import { DirFile, RegularFile, NullFile } from './file';
+import { DirFile, RegularFile, NullFile, resolve } from './file';
 import { ExitCallback, OutputCallback, SyscallContext, SyscallResult,
 	Syscall, ConnectCallback, IKernel, ITask, IFile, Environment } from './types';
 
@@ -79,71 +79,6 @@ if (true/*typeof setImmediate === 'undefined'*/) {
 			return setTimeout.apply(this, [fn, 0].concat(args));
 		};
 	}
-}
-
-// originally from node.js 4.3
-function assertPath(path: any): void {
-	if (typeof path !== 'string') {
-		throw new TypeError('Path must be a string. Received ' + path);
-	}
-}
-
-// originally from node.js 4.3
-// resolves . and .. elements in a path array with directory names there
-// must be no slashes or device names (c:\) in the array
-// (so also no leading and trailing slashes - it does not distinguish
-// relative and absolute paths)
-function normalizeArray(parts: string[], allowAboveRoot: boolean): string[] {
-	let res: string[] = [];
-	for (let i = 0; i < parts.length; i++) {
-		let p = parts[i];
-
-		// ignore empty parts
-		if (!p || p === '.')
-			continue;
-
-		if (p === '..') {
-			if (res.length && res[res.length - 1] !== '..') {
-				res.pop();
-			} else if (allowAboveRoot) {
-				res.push('..');
-			}
-		} else {
-			res.push(p);
-		}
-	}
-
-	return res;
-}
-
-// originally from node.js 4.3
-// path.resolve([from ...], to)
-// posix version
-function resolve(...args: string[]): string {
-	let resolvedPath = '';
-	let resolvedAbsolute = false;
-
-	for (let i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-		let path = (i >= 0) ? args[i] : '/';
-
-		assertPath(path);
-
-		// Skip empty entries
-		if (path === '')
-			continue;
-
-		resolvedPath = path + '/' + resolvedPath;
-		resolvedAbsolute = path[0] === '/';
-	}
-
-	// At this point the path should be resolved to a full
-	// absolute path, but handle relative paths to be safe (might
-	// happen when process.cwd() fails)
-
-	// Normalize the path
-	resolvedPath = normalizeArray(resolvedPath.split('/'), !resolvedAbsolute).join('/');
-
-	return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
 }
 
 // the following boilerplate allows us to use WebWorkers both in the
@@ -531,7 +466,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 			sysret(-constants.ENOTSUP);
 			return;
 		}
-		// console.log('[' + task.pid + '] \tsys_' + n + '\t' + args[0]);
+		console.log('[' + task.pid + '] \tsys_' + n + '\t' + args[0]);
 
 		table[n].apply(this, args);
 	};
@@ -1699,21 +1634,21 @@ export class Kernel implements IKernel {
 
 	doSyscall(syscall: Syscall): void {
 		if (syscall.name in this.syscalls) {
-			// let argfmt = (arg: any): any => {
-			// 	if (arg instanceof Uint8Array) {
-			// 		let len = arg.length;
-			// 		if (len > 0 && arg[len - 1] === 0)
-			// 			len--;
-			// 		return utf8Slice(arg, 0, len);
-			// 	} else {
-			// 		return arg;
-			// 	}
-			// };
+			let argfmt = (arg: any): any => {
+				if (arg instanceof Uint8Array) {
+					let len = arg.length;
+					if (len > 0 && arg[len - 1] === 0)
+						len--;
+					return utf8Slice(arg, 0, len);
+				} else {
+					return arg;
+				}
+			};
 
-			// let arg = argfmt(syscall.args[0]);
-			// if (syscall.args[1])
-			// 	arg += '\t' + argfmt(syscall.args[1]);
-			// console.log('[' + syscall.ctx.task.pid + '|' + syscall.ctx.id + '] \tsys_' + syscall.name + '\t' + arg);
+			let arg = argfmt(syscall.args[0]);
+			if (syscall.args[1])
+				arg += '\t' + argfmt(syscall.args[1]);
+			console.log('[' + syscall.ctx.task.pid + '|' + syscall.ctx.id + '] \tsys_' + syscall.name + '\t' + arg);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
 			console.log('unknown syscall ' + syscall.name);
@@ -1934,7 +1869,7 @@ export class Task implements ITask {
 			Atomics.store(this.heap32, (this.waitOff >> 2)+1, ret);
 			Atomics.store(this.heap32, this.waitOff >> 2, 1);
 			Atomics.wake(this.heap32, this.waitOff >> 2, 1);
-			//console.log('[' + this.pid + '] \t\tDONE \t' + ret);
+			console.log('[' + this.pid + '] \t\tDONE \t' + ret);
 		});
 
 		cb(null);
@@ -2217,7 +2152,7 @@ export class Task implements ITask {
 
 		this.state = TaskState.Running;
 
-		// console.log('[' + this.pid + '|' + msg.id + '] \tCOMPLETE'); // ' + JSON.stringify(msg));
+		console.log('[' + this.pid + '|' + msg.id + '] \tCOMPLETE'); // ' + JSON.stringify(msg));
 		this.worker.postMessage(msg, transferrable || []);
 	}
 

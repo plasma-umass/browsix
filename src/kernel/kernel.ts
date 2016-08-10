@@ -81,8 +81,69 @@ if (true/*typeof setImmediate === 'undefined'*/) {
 	}
 }
 
-function join(a: string, b: string): string {
-	return a + '/' + b;
+// originally from node.js 4.3
+function assertPath(path: any): void {
+	if (typeof path !== 'string') {
+		throw new TypeError('Path must be a string. Received ' + path);
+	}
+}
+
+// originally from node.js 4.3
+// resolves . and .. elements in a path array with directory names there
+// must be no slashes or device names (c:\) in the array
+// (so also no leading and trailing slashes - it does not distinguish
+// relative and absolute paths)
+function normalizeArray(parts: string[], allowAboveRoot: boolean): string[] {
+	let res: string[] = [];
+	for (let i = 0; i < parts.length; i++) {
+		let p = parts[i];
+
+		// ignore empty parts
+		if (!p || p === '.')
+			continue;
+
+		if (p === '..') {
+			if (res.length && res[res.length - 1] !== '..') {
+				res.pop();
+			} else if (allowAboveRoot) {
+				res.push('..');
+			}
+		} else {
+			res.push(p);
+		}
+	}
+
+	return res;
+}
+
+// originally from node.js 4.3
+// path.resolve([from ...], to)
+// posix version
+function resolve(...args: string[]): string {
+	let resolvedPath = '';
+	let resolvedAbsolute = false;
+
+	for (let i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+		let path = (i >= 0) ? args[i] : '/';
+
+		assertPath(path);
+
+		// Skip empty entries
+		if (path === '')
+			continue;
+
+		resolvedPath = path + '/' + resolvedPath;
+		resolvedAbsolute = path[0] === '/';
+	}
+
+	// At this point the path should be resolved to a full
+	// absolute path, but handle relative paths to be safe (might
+	// happen when process.cwd() fails)
+
+	// Normalize the path
+	resolvedPath = normalizeArray(resolvedPath.split('/'), !resolvedAbsolute).join('/');
+
+	return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
 }
 
 // the following boilerplate allows us to use WebWorkers both in the
@@ -270,6 +331,21 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		return utf8Slice(s, 0, len);
 	}
 
+	function stringArrayAt(ptr: number): string[] {
+		if (!dataViewWorks) {
+			console.log('FIXME: get data view working');
+			return;
+		}
+
+		let arr: string[] = [];
+		let i = 0;
+		for (let i = 0; task.heap32[(ptr + i) >> 2] !== 0; i += 4) {
+			let s = stringAt(task.heap32[(ptr + i) >> 2]);
+			arr.push(s);
+		}
+		return arr;
+	}
+
 	let table: {[n: number]: Function} = {
 		3: (fd: number, bufp: number, len: number): void => { // read
 			let buf = bufferAt(bufp, len);
@@ -298,7 +374,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		5: (pathp: number, flags: number, mode: number): void => { // open
 			let path = stringAt(pathp);
 			let sflags: string = flagsToString(flags);
-//			console.log('open(' + path + ')');
+			console.log('open(' + path + ')');
 
 			sys.open(task, path, sflags, mode, (err: number, fd: number) => {
 				if ((typeof err === 'number') && err < 0)
@@ -320,13 +396,42 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 					sysret(0);
 			});
 		},
+		11: (filenamep: number, argv: number, envp: number): void => { // execve
+			let filename = stringAt(filenamep);
+			let args = stringArrayAt(argv);
+			let env = stringArrayAt(envp);
+			let senv: Environment = {};
+			for (let i = 0; i < env.length; i++) {
+				let pair = env[i];
+				let n = pair.indexOf('=');
+				if (n > 0)
+					senv[pair.slice(0, n)] = pair.slice(n+1);
+			}
+			sys.execve(task, filename, args, senv, sysret);
+		},
+		12: (pathnamep: number): void => { // chdir
+			let pathname = stringAt(pathnamep);
+			sys.chdir(task, pathname, sysret);
+		},
+		20: (fd: number, op: number): void => { // getpid
+			sysret(sys.getpid(task));
+		},
 		33: (pathp: number, amode: number): void => { // access
 			let path = stringAt(pathp);
 //			console.log('access(' + path + ')');
 			sys.access(task, path, amode, sysret);
 		},
+		37: (pid: number, sig: number): void => { // kill
+			sys.kill(task, pid, sig, sysret);
+		},
+		41: (fd1: number): void => { // dup
+			sys.dup(task, fd1, sysret);
+		},
 		54: (fd: number, op: number): void => { // ioctl
 			sys.ioctl(task, fd, op, -1, sysret);
+		},
+		64: (fd: number, op: number): void => { // getppid
+			sysret(sys.getppid(task));
 		},
 		140: (fd: number, offhi: number, offlo: number, resultp: number, whence: number): void => { // llseek
 			sys.llseek(task, fd, offhi, offlo, whence, (err: number, off: number) => {
@@ -345,7 +450,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		195: (pathp: number, bufp: number): void => { // stat64
 			let path = stringAt(pathp);
-//			console.log('stat(' + path + ')');
+			console.log('stat(' + path + ')');
 			let len = marshal.fs.StatDef.length;
 			let buf = arrayAt(bufp, len);
 			sys.stat(task, path, buf, function(): void {
@@ -368,14 +473,14 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 			});
 		},
 		220: (fd: number, dirp: number, count: number): void => { // getdents64
+			console.log('getdents64(' + fd + ')');
 			let buf = arrayAt(dirp, count); // count is the number of bytes
 			sys.getdents(task, fd, buf, sysret);
 		},
 		221: (fd: number, cmd: number, arg: number): void => { // fcntl64
 			switch (cmd) {
 			case F_DUPFD:
-				console.log('TODO: fcntl(DUPFD)');
-				break;
+				return sys.dup3(task, fd, arg, 0, sysret);
 			case F_GETFD:
 				console.log('TODO: fcntl(GETFD)');
 				break;
@@ -415,6 +520,9 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		252: (code: number): void => { // exit_group
 			sys.exit(task, code);
 		},
+		330: (fd1: number, fd2: number, flags: number): void => { // dup3
+			sys.dup3(task, fd1, fd2, flags, sysret);
+		},
 	};
 
 	return (n: number, args: number[]) => {
@@ -423,7 +531,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 			sysret(-constants.ENOTSUP);
 			return;
 		}
-		//console.log('[' + task.pid + '] \tsys_' + n + '\t' + args[0]);
+		// console.log('[' + task.pid + '] \tsys_' + n + '\t' + args[0]);
 
 		table[n].apply(this, args);
 	};
@@ -471,6 +579,47 @@ class AsyncSyscalls {
 		this.sys.execve(ctx.task, file, sargs, senv, ctx.complete.bind(ctx));
 	}
 
+	fcntl64(ctx: SyscallContext, fd: number, cmd: number, arg: number): void {
+		switch (cmd) {
+		case F_DUPFD:
+			return this.sys.dup3(ctx.task, fd, arg, 0, ctx.complete.bind(ctx));
+		case F_GETFD:
+			console.log('TODO: a-fcntl(GETFD)');
+			break;
+		case F_SETFD:
+			console.log('TODO: a-fcntl(SETFD)');
+			break;
+		case F_GETFL:
+			console.log('TODO: a-fcntl(GETFL)');
+			break;
+		case F_SETFL:
+			console.log('TODO: a-fcntl(SETFL)');
+			break;
+		case F_GETLK:
+			console.log('TODO: a-fcntl(GETLK)');
+			break;
+		case F_SETLK:
+			console.log('TODO: a-fcntl(SETLK)');
+			break;
+		case F_SETLKW:
+			console.log('TODO: a-fcntl(SETLKW)');
+			break;
+		case F_GETOWN_EX:
+			console.log('TODO: a-fcntl(GETOWN_EX)');
+			break;
+		case F_SETOWN:
+			console.log('TODO: a-fcntl(SETOWN)');
+			break;
+		case F_GETOWN:
+			console.log('TODO: a-fcntl(GETOWN)');
+			break;
+		default:
+			console.log('TODO: unrecognized fctl64 cmd: ' + cmd);
+		}
+
+		ctx.complete(0);
+	}
+
 	exit(ctx: SyscallContext, code?: number): void {
 		if (!code)
 			code = 0;
@@ -494,11 +643,11 @@ class AsyncSyscalls {
 	}
 
 	getpid(ctx: SyscallContext): void {
-		ctx.complete(null, this.sys.getpid(ctx.task));
+		ctx.complete(0, this.sys.getpid(ctx.task));
 	}
 
 	getppid(ctx: SyscallContext): void {
-		ctx.complete(null, this.sys.getppid(ctx.task));
+		ctx.complete(0, this.sys.getppid(ctx.task));
 	}
 
 	getdents(ctx: SyscallContext, fd: number, length: number): void {
@@ -581,8 +730,11 @@ class AsyncSyscalls {
 		let abuf = new Uint8Array(len);
 		let buf = new Buffer(abuf.buffer);
 		this.sys.pread(ctx.task, fd, buf, pos, (err: any, lenRead?: number) => {
-			if (err)
-				return ctx.complete(-constants.EIO);
+			if (err) {
+				if (typeof err !== 'number')
+					err = -constants.EIO;
+				return ctx.complete(err);
+			}
 			ctx.complete(0, lenRead, abuf.subarray(0, lenRead));
 		});
 	}
@@ -809,6 +961,10 @@ export class Syscalls {
 	exit(task: ITask, code: number): void {
 		code = code|0;
 		this.kernel.exit(<Task>task, code);
+	}
+
+	kill(task: ITask, pid: number, sig: number, cb: (err: number) => void): void {
+		cb(-EINVAL);
 	}
 
 	chdir(task: ITask, path: string, cb: (err: number) => void): void {
@@ -1051,12 +1207,12 @@ export class Syscalls {
 	}
 
 	readdir(task: ITask, path: string, cb: (err: any, files: string[]) => void): void {
-		let fullpath = join(task.cwd, path);
+		let fullpath = resolve(task.cwd, path);
 		this.kernel.fs.readdir(fullpath, cb);
 	}
 
 	open(task: ITask, path: string, flags: string, mode: number, cb: (err: number, fd: number) => void): void {
-		let fullpath = join(task.cwd, path);
+		let fullpath = resolve(task.cwd, path);
 		// FIXME: support CLOEXEC
 
 		let f: IFile;
@@ -1128,12 +1284,12 @@ export class Syscalls {
 	}
 
 	unlink(task: ITask, path: string, cb: (err: any) => void): void {
-		let fullpath = join(task.cwd, path);
+		let fullpath = resolve(task.cwd, path);
 		this.kernel.fs.unlink(fullpath, cb);
 	}
 
 	utimes(task: ITask, path: string, atimets: number, mtimets: number, cb: (err: any) => void): void {
-		let fullpath = join(task.cwd, path);
+		let fullpath = resolve(task.cwd, path);
 		let atime = new Date(atimets*1000);
 		let mtime = new Date(mtimets*1000);
 		this.kernel.fs.utimes(fullpath, atime, mtime, cb);
@@ -1156,12 +1312,12 @@ export class Syscalls {
 	}
 
 	rmdir(task: ITask, path: string, cb: (err: any) => void): void {
-		let fullpath = join(task.cwd, path);
+		let fullpath = resolve(task.cwd, path);
 		this.kernel.fs.rmdir(fullpath, cb);
 	}
 
 	mkdir(task: ITask, path: string, mode: number, cb: (err: any) => void): void {
-		let fullpath = join(task.cwd, path);
+		let fullpath = resolve(task.cwd, path);
 		this.kernel.fs.mkdir(fullpath, mode, cb);
 	}
 
@@ -1185,7 +1341,7 @@ export class Syscalls {
 	}
 
 	access(task: ITask, path: string, flags: number, cb: (err: number) => void): void {
-		let fullpath = join(task.cwd, path);
+		let fullpath = resolve(task.cwd, path);
 		// TODO: the difference between access and stat
 		this.kernel.fs.stat(fullpath, (err: any, stats: any) => {
 			if (err) {
@@ -1234,7 +1390,7 @@ export class Syscalls {
 	}
 
 	lstat(task: ITask, path: string, buf: Uint8Array, cb: (err: number) => void): void {
-		let fullpath = join(task.cwd, path);
+		let fullpath = resolve(task.cwd, path);
 		this.kernel.fs.lstat(fullpath, (err: any, stats: any) => {
 			if (err && err.errno) {
 				cb(-err.errno);
@@ -1251,7 +1407,7 @@ export class Syscalls {
 	}
 
 	stat(task: ITask, path: string, buf: Uint8Array, cb: (err: number) => any): void {
-		let fullpath = join(task.cwd, path);
+		let fullpath = resolve(task.cwd, path);
 		this.kernel.fs.stat(fullpath, (err: any, stats: any) => {
 			if (err && err.errno) {
 				cb(-err.errno);
@@ -1268,7 +1424,7 @@ export class Syscalls {
 	}
 
 	readlink(task: ITask, path: string, cb: (err: number, buf?: Uint8Array) => any): void {
-		let fullpath = join(task.cwd, path);
+		let fullpath = resolve(task.cwd, path);
 		this.kernel.fs.readlink(fullpath, (err: any, linkString: any) => {
 			if (err && err.errno)
 				cb(-err.errno);
@@ -1803,7 +1959,7 @@ export class Task implements ITask {
 			cb(-constants.ENOENT);
 		}
 		if (path[0] !== '/')
-			path = join(this.cwd, path);
+			path = resolve(this.cwd, path);
 		// make sure we are chdir'ing into a (1) directory
 		// that (2) exists
 		this.kernel.fs.stat(path, (err: any, stats: any) => {
@@ -2061,7 +2217,7 @@ export class Task implements ITask {
 
 		this.state = TaskState.Running;
 
-		// console.log('[' + this.pid + '|' + msg.id + '] \tCOMPLETE');
+		// console.log('[' + this.pid + '|' + msg.id + '] \tCOMPLETE'); // ' + JSON.stringify(msg));
 		this.worker.postMessage(msg, transferrable || []);
 	}
 

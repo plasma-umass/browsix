@@ -364,8 +364,25 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 			let newName = stringAt(newNamep);
 			sys.rename(task, oldName, newName, sysret);
 		},
+		39: (pathp: number, mode: number): void => { // mkdir
+			let path = stringAt(pathp);
+			sys.mkdir(task, path, mode, sysret);
+		},
+		40: (pathp: number): void => { // rmdir
+			let path = stringAt(pathp);
+			sys.rmdir(task, path, sysret);
+		},
 		41: (fd1: number): void => { // dup
 			sys.dup(task, fd1, sysret);
+		},
+		42: (pipefd: number, flags: number) => { // pipe2
+			sys.pipe2(flags, (err: number, fd1: number, fd2: number) => {
+				if (!err) {
+					task.heap32[(pipefd >> 2)] = fd1;
+					task.heap32[(pipefd >> 2)+1] = fd2;
+				}
+				sysret(err);
+			});
 		},
 		54: (fd: number, op: number): void => { // ioctl
 			sys.ioctl(task, fd, op, -1, sysret);

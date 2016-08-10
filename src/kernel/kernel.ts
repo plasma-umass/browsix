@@ -359,6 +359,11 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		37: (pid: number, sig: number): void => { // kill
 			sys.kill(task, pid, sig, sysret);
 		},
+		38: (oldNamep: number, newNamep: number): void => { // rename
+			let oldName = stringAt(oldNamep);
+			let newName = stringAt(newNamep);
+			sys.rename(task, oldName, newName, sysret);
+		},
 		41: (fd1: number): void => { // dup
 			sys.dup(task, fd1, sysret);
 		},
@@ -718,6 +723,22 @@ class AsyncSyscalls {
 		else
 			spath = path;
 		this.sys.readdir(ctx.task, spath, ctx.complete.bind(ctx));
+	}
+
+	rename(ctx: SyscallContext, oldName: any, newName: any): void {
+		let sOldName: string;
+		if (oldName instanceof Uint8Array)
+			sOldName = utf8Slice(oldName, 0, oldName.length);
+		else
+			sOldName = oldName;
+
+		let sNewName: string;
+		if (newName instanceof Uint8Array)
+			sNewName = utf8Slice(newName, 0, newName.length);
+		else
+			sNewName = newName;
+
+		this.sys.rename(ctx.task, sOldName, sNewName, ctx.complete.bind(ctx));
 	}
 
 	open(ctx: SyscallContext, path: any, flags: any, mode: number): void {
@@ -1144,6 +1165,22 @@ export class Syscalls {
 	readdir(task: ITask, path: string, cb: (err: any, files: string[]) => void): void {
 		let fullpath = resolve(task.cwd, path);
 		this.kernel.fs.readdir(fullpath, cb);
+	}
+
+	rename(task: ITask, relOldName: string, relNewName: string, cb: (err: number) => void): void {
+		let oldName = resolve(task.cwd, relOldName);
+		let newName = resolve(task.cwd, relNewName);
+
+		this.kernel.fs.rename(oldName, newName, (err: any) => {
+			if (err && err.errno) {
+				cb(-err.errno);
+				return;
+			} else if (err) {
+				cb(-1);
+				return;
+			}
+			cb(0);
+		});
 	}
 
 	open(task: ITask, path: string, flags: string, mode: number, cb: (err: number, fd: number) => void): void {

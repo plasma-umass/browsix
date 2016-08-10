@@ -309,7 +309,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		5: (pathp: number, flags: number, mode: number): void => { // open
 			let path = stringAt(pathp);
 			let sflags: string = flagsToString(flags);
-			console.log('open(' + path + ')');
+//			console.log('open(' + path + ')');
 
 			sys.open(task, path, sflags, mode, (err: number, fd: number) => {
 				if ((typeof err === 'number') && err < 0)
@@ -385,7 +385,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		195: (pathp: number, bufp: number): void => { // stat64
 			let path = stringAt(pathp);
-			console.log('stat(' + path + ')');
+//			console.log('stat(' + path + ')');
 			let len = marshal.fs.StatDef.length;
 			let buf = arrayAt(bufp, len);
 			sys.stat(task, path, buf, function(): void {
@@ -408,7 +408,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 			});
 		},
 		220: (fd: number, dirp: number, count: number): void => { // getdents64
-			console.log('getdents64(' + fd + ')');
+//			console.log('getdents64(' + fd + ')');
 			let buf = arrayAt(dirp, count); // count is the number of bytes
 			sys.getdents(task, fd, buf, sysret);
 		},
@@ -466,7 +466,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 			sysret(-constants.ENOTSUP);
 			return;
 		}
-		console.log('[' + task.pid + '] \tsys_' + n + '\t' + args[0]);
+		// console.log('[' + task.pid + '] \tsys_' + n + '\t' + args[0]);
 
 		table[n].apply(this, args);
 	};
@@ -1634,21 +1634,21 @@ export class Kernel implements IKernel {
 
 	doSyscall(syscall: Syscall): void {
 		if (syscall.name in this.syscalls) {
-			let argfmt = (arg: any): any => {
-				if (arg instanceof Uint8Array) {
-					let len = arg.length;
-					if (len > 0 && arg[len - 1] === 0)
-						len--;
-					return utf8Slice(arg, 0, len);
-				} else {
-					return arg;
-				}
-			};
+			// let argfmt = (arg: any): any => {
+			// 	if (arg instanceof Uint8Array) {
+			// 		let len = arg.length;
+			// 		if (len > 0 && arg[len - 1] === 0)
+			// 			len--;
+			// 		return utf8Slice(arg, 0, len);
+			// 	} else {
+			// 		return arg;
+			// 	}
+			// };
 
-			let arg = argfmt(syscall.args[0]);
-			if (syscall.args[1])
-				arg += '\t' + argfmt(syscall.args[1]);
-			console.log('[' + syscall.ctx.task.pid + '|' + syscall.ctx.id + '] \tsys_' + syscall.name + '\t' + arg);
+			// let arg = argfmt(syscall.args[0]);
+			// if (syscall.args[1])
+			// 	arg += '\t' + argfmt(syscall.args[1]);
+			// console.log('[' + syscall.ctx.task.pid + '|' + syscall.ctx.id + '] \tsys_' + syscall.name + '\t' + arg);
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
 			console.log('unknown syscall ' + syscall.name);
@@ -1869,7 +1869,7 @@ export class Task implements ITask {
 			Atomics.store(this.heap32, (this.waitOff >> 2)+1, ret);
 			Atomics.store(this.heap32, this.waitOff >> 2, 1);
 			Atomics.wake(this.heap32, this.waitOff >> 2, 1);
-			console.log('[' + this.pid + '] \t\tDONE \t' + ret);
+			// console.log('[' + this.pid + '] \t\tDONE \t' + ret);
 		});
 
 		cb(null);
@@ -2152,7 +2152,7 @@ export class Task implements ITask {
 
 		this.state = TaskState.Running;
 
-		console.log('[' + this.pid + '|' + msg.id + '] \tCOMPLETE'); // ' + JSON.stringify(msg));
+		// console.log('[' + this.pid + '|' + msg.id + '] \tCOMPLETE'); // ' + JSON.stringify(msg));
 		this.worker.postMessage(msg, transferrable || []);
 	}
 

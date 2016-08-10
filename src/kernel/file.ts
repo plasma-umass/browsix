@@ -203,79 +203,25 @@ export class DirFile implements IFile {
 			files.sort();
 			files = files.slice(this.off);
 
-			if (!files.length) {
-				cb(0);
-				return;
-			}
-
-			let dents: fs.Dirent[] = [];
+			let dents = files.map((n) => new fs.Dirent(-1, fs.DT.UNKNOWN, n));
 			let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
 			let voff = 0;
 
-			let getOne = () => {
-				let fname = files.shift();
-				let done = (err: any, stats: Stats) => {
+			for (let i = 0; i < dents.length; i++) {
+				let dent = dents[i];
+				if (voff + dent.reclen > buf.byteLength)
+					break;
+				let [len, err] = Marshal(view, voff, dent, fs.DirentDef);
+				if (err) {
+					console.log('dirent marshal failed: ' + err);
+					cb(-EFAULT);
+					return;
+				}
+				voff += len;
+				this.off++;
+			}
 
-					// FIXME: this could happen if
-					// we have rm or mv operations
-					// interleaved with getdents,
-					// I suppose.  Test this, and
-					// decide if we should
-					// increment this.off.
-					if (err) {
-						console.log('getdents(' + this.path + ') stat error on ' + fname);
-						if (dents.length) {
-							getOne();
-						} else {
-							cb(voff);
-						}
-						return;
-					}
-
-					let type = fs.DT.UNKNOWN;
-					if (stats.isDirectory()) {
-						type = fs.DT.DIR;
-					} else if (stats.isSymbolicLink()) {
-						type = fs.DT.LNK;
-					} else if (stats.isBlockDevice()) {
-						type = fs.DT.BLK;
-					} else if (stats.isCharacterDevice()) {
-						type = fs.DT.CHR;
-					} else if (stats.isFIFO()) {
-						type = fs.DT.FIFO;
-					} else if (stats.isSocket()) {
-						type = fs.DT.SOCK;
-					} else if (stats.isFile()) {
-						type = fs.DT.REG;
-					}
-
-					let dent = new fs.Dirent(stats.ino, type, fname);
-
-					// no space for this dent, exit early.
-					if (voff + dent.reclen > buf.byteLength) {
-						cb(voff);
-						return;
-					}
-
-					let len: number;
-					[len, err] = Marshal(view, voff, dent, fs.DirentDef);
-					if (err) {
-						console.log('dirent marshal failed: ' + err);
-						cb(-EFAULT);
-						return;
-					}
-					voff += len;
-					this.off++;
-
-					if (files.length) {
-						getOne();
-					} else {
-						cb(voff);
-					}
-				};
-				this.kernel.fs.lstat(resolve(this.path, fname), done);
-			};
-			getOne();
+			cb(voff);
 		});
 	}
 

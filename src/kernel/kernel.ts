@@ -376,7 +376,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 			sys.dup(task, fd1, sysret);
 		},
 		42: (pipefd: number, flags: number) => { // pipe2
-			sys.pipe2(flags, (err: number, fd1: number, fd2: number) => {
+			sys.pipe2(task, flags, (err: number, fd1: number, fd2: number) => {
 				if (!err) {
 					task.heap32[(pipefd>>2)] = fd1;
 					task.heap32[(pipefd>>2)+1] = fd2;
@@ -432,7 +432,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 //			console.log('lstat(' + path + ')');
 			let len = marshal.fs.StatDef.length;
 			let buf = arrayAt(bufp, len);
-			sys.lstat(task, path, buf, () => {
+			sys.lstat(task, path, buf, function(): void {
 				// workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1246597
 				if (!dataViewWorks)
 					task.heapu8.subarray(bufp, bufp+len).set(buf);
@@ -442,8 +442,8 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		197: (fd: number, bufp: number): void => { // fstat64
 //			console.log('fstat(' + path + ')');
 			let len = marshal.fs.StatDef.length;
-			let buf = arrayAt(bufp);
-			sys.fstat(task, fd, buf, () => {
+			let buf = arrayAt(bufp, len);
+			sys.fstat(task, fd, buf, function(): void {
 				if (!dataViewWorks)
 					task.heapu8.subarray(bufp, bufp+len).set(buf);
 				sysret.apply(this, arguments);
@@ -1504,7 +1504,7 @@ export class Kernel implements IKernel {
 
 	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void {
 		let parts: string[];
-		if (cmd.indexOf('|') > -1 || cmd.indexOf('&') > -1) {
+		if (cmd.match(/[|><&]/)) {
 			parts = ['/usr/bin/sh', cmd];
 		} else {
 			parts = cmd.split(' ').filter((s) => s !== '');
@@ -1719,6 +1719,8 @@ export class Kernel implements IKernel {
 			// 	}
 			// };
 
+			// if (syscall.args === undefined)
+			// 	syscall.args = [undefined];
 			// let arg = argfmt(syscall.args[0]);
 			// if (syscall.args[1])
 			// 	arg += '\t' + argfmt(syscall.args[1]);

@@ -1,8 +1,6 @@
 (() => {
 	'use strict';
 
-	const TEX_FLAGS = '-halt-on-error -interaction nonstopmode --shell-escape ';
-
 	const IS_CHROME = typeof navigator !== 'undefined' &&
 			navigator.userAgent.match(/Chrome/) &&
 			!navigator.userAgent.match(/Edge/);
@@ -75,12 +73,6 @@
 
 		$(button).removeClass('is-active').blur();
 	}
-	let sequence = [
-		'pdflatex ' + TEX_FLAGS + '-draftmode ' + f,
-		'bibtex ' + f,
-//		'pdflatex ' + TEX_FLAGS + '-draftmode ' + f,
-		'pdflatex ' + TEX_FLAGS + f,
-	];
 	function runLatex() {
 		let startTime = performance.now();
 
@@ -92,7 +84,6 @@
 		pdfParent.innerHTML = '<center><b>PDF will appear here when built</b></center>';
 
 		let log = '';
-		let seq = sequence.slice();
 		function onStdout(pid, out) {
 			log += out;
 			//console.log(out);
@@ -119,30 +110,27 @@
 				return;
 			}
 
-			console.log('progress: ' + progress);
-			$('#build-bar').css('width', ''+progress+'%').attr('aria-valuenow', progress);
-			progress += 25;
+			// console.log('progress: ' + progress);
+			// $('#build-bar').css('width', ''+progress+'%').attr('aria-valuenow', progress);
+			// progress += 25;
 
 			//console.log(log);
 			log = '';
-			let cmd = seq.shift();
-			if (!cmd) {
-				showPDF();
-				$('#build-progress').addClass('browsix-hidden');
-				$('#build-bar').css('width', '10%').attr('aria-valuenow', 10);
-				let totalTime = '' + ((performance.now() - startTime) / 1000);
-				let dot = totalTime.indexOf('.');
-				if (dot + 2 < totalTime.length) {
-					totalTime = totalTime.substr(0, dot + 2);
-				}
-				$('#timing').removeClass('browsix-hidden');
-				perfOut.innerHTML = totalTime;
 
-				return;
+			showPDF();
+			$('#build-progress').addClass('browsix-hidden');
+			$('#build-bar').css('width', '10%').attr('aria-valuenow', 10);
+			let totalTime = '' + ((performance.now() - startTime) / 1000);
+			let dot = totalTime.indexOf('.');
+			if (dot + 2 < totalTime.length) {
+				totalTime = totalTime.substr(0, dot + 2);
 			}
-			kernel.system(cmd, runNext, onStdout, onStderr);
+			$('#timing').removeClass('browsix-hidden');
+			perfOut.innerHTML = totalTime;
+
+			return;
 		}
-		runNext(-1, 0);
+		kernel.system('/usr/bin/make', runNext, onStdout, onStderr);
 	}
 	function clicked() {
 		$(button).toggleClass('is-active').blur();

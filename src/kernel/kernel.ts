@@ -1504,8 +1504,8 @@ export class Kernel implements IKernel {
 
 	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void {
 		let parts: string[];
-		if (cmd.match(/[|><&]/)) {
-			parts = ['/usr/bin/sh', cmd];
+		if (cmd.match(/[|><&=]/)) {
+			parts = ['/usr/bin/dash', '-c', cmd];
 		} else {
 			parts = cmd.split(' ').filter((s) => s !== '');
 		}
@@ -1708,23 +1708,25 @@ export class Kernel implements IKernel {
 
 	doSyscall(syscall: Syscall): void {
 		if (syscall.name in this.syscalls) {
-			// let argfmt = (arg: any): any => {
-			// 	if (arg instanceof Uint8Array) {
-			// 		let len = arg.length;
-			// 		if (len > 0 && arg[len - 1] === 0)
-			// 			len--;
-			// 		return utf8Slice(arg, 0, len);
-			// 	} else {
-			// 		return arg;
-			// 	}
-			// };
+			if (DEBUG) {
+				let argfmt = (arg: any): any => {
+					if (arg instanceof Uint8Array) {
+						let len = arg.length;
+						if (len > 0 && arg[len - 1] === 0)
+							len--;
+						return utf8Slice(arg, 0, len);
+					} else {
+						return arg;
+					}
+				};
 
-			// if (syscall.args === undefined)
-			// 	syscall.args = [undefined];
-			// let arg = argfmt(syscall.args[0]);
-			// if (syscall.args[1])
-			// 	arg += '\t' + argfmt(syscall.args[1]);
-			// console.log('[' + syscall.ctx.task.pid + '|' + syscall.ctx.id + '] \tsys_' + syscall.name + '\t' + arg);
+				if (syscall.args === undefined)
+					syscall.args = [undefined];
+				let arg = argfmt(syscall.args[0]);
+				if (syscall.args[1])
+					arg += '\t' + argfmt(syscall.args[1]);
+				console.log('[' + syscall.ctx.task.pid + '|' + syscall.ctx.id + '] \tsys_' + syscall.name + '\t' + arg);
+			}
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
 		} else {
 			console.log('unknown syscall ' + syscall.name);
@@ -1956,6 +1958,8 @@ export class Task implements ITask {
 		this.pendingArgs = args;
 		this.pendingEnv = env;
 
+		// console.log('EXEC: ' + filename + ' -- [' + (args.join(',')) + ']');
+
 		// often, something needs to be done after this task
 		// is ready to go.  Keep track of that callback here.
 		this.onRunnable = cb;
@@ -2109,14 +2113,23 @@ export class Task implements ITask {
 		this.worker = new Worker(blobUrl);
 		this.worker.onmessage = this.syscallHandler.bind(this);
 		this.worker.onerror = (err: ErrorEvent): void => {
+			if (this.state !== TaskState.Zombie) {
+				console.log("onerror arrived before exit() syscall");
+			}
 			if (this.files[2]) {
 				console.log(err);
 				let msg = new Buffer('Error while executing ' + this.pendingExePath + ': ' + err.message + '\n', 'utf8');
 				this.files[2].write(msg, -1, () => {
-					this.kernel.exit(this, -1);
+					// setTimeout on purpose
+					setTimeout(() => {
+						this.kernel.exit(this, -1);
+					});
 				});
 			} else {
-				this.kernel.exit(this, -1);
+				// setTimeout on purpose
+				setTimeout(() => {
+					this.kernel.exit(this, -1);
+				});
 			}
 		};
 
@@ -2176,7 +2189,9 @@ export class Task implements ITask {
 				return;
 			}
 			// at this point, we have a zombie that matches our filter
-			let wstatus = 0; // TODO: fill in wstatus
+			// TODO: fill in rest of wstatus
+			// lowest 8 bits is return value
+			let wstatus = (child.exitCode>>>0) % (1 << 8);
 			cb(child.pid, wstatus, null);
 			// reap the zombie!
 			this.kernel.wait(child.pid);
@@ -2228,7 +2243,8 @@ export class Task implements ITask {
 
 		this.state = TaskState.Running;
 
-		// console.log('[' + this.pid + '|' + msg.id + '] \tCOMPLETE'); // ' + JSON.stringify(msg));
+		if (DEBUG)
+			console.log('[' + this.pid + '|' + msg.id + '] \tCOMPLETE'); // ' + JSON.stringify(msg));
 		this.worker.postMessage(msg, transferrable || []);
 	}
 

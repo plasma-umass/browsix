@@ -67,6 +67,8 @@ export class SocketFile implements IFile {
 
 		let remote = queued.s;
 		let local = new SocketFile(this.task);
+		local.addr = queued.addr;
+		local.port = queued.port;
 
 		let outgoing = new Pipe();
 		let incoming = new Pipe();
@@ -95,6 +97,8 @@ export class SocketFile implements IFile {
 		let acceptCB = this.acceptQueue.shift();
 
 		let local = new SocketFile(this.task);
+		local.addr = remoteAddr;
+		local.port = remotePort;
 
 		let outgoing = new Pipe();
 		let incoming = new Pipe();
@@ -150,7 +154,7 @@ export class SocketFile implements IFile {
 			this.incoming.unref();
 		this.refCount--;
 		if (!this.refCount) {
-			if (this.port && this.addr)
+			if (this.isListening)
 				this.task.kernel.unbind(this, this.addr, this.port);
 		}
 	}

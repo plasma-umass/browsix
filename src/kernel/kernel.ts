@@ -1503,14 +1503,19 @@ export class Kernel implements IKernel {
 	}
 
 	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void {
+		let splitParts: string[] = cmd.split(' ');
 		let parts: string[];
-		if (cmd.match(/[|><&=]/)) {
+		// only check for an = in the first part of a command,
+		// it is fine otherwise (like setting --option=value)
+		if (cmd.match(/[|><&]/) || splitParts[0].match(/[=]/)) {
 			parts = ['/usr/bin/dash', '-c', cmd];
 		} else {
-			parts = cmd.split(' ').filter((s) => s !== '');
+			parts = splitParts.filter((s) => s !== '');
 		}
 		if (parts[0][0] !== '/' && parts[0][0] !== '.')
 			parts[0] = '/usr/bin/'+parts[0];
+
+		splitParts = undefined;
 
 		// FIXME: figure out what else we want in the default
 		// environment
@@ -1583,7 +1588,7 @@ export class Kernel implements IKernel {
 			resp.push(chunk.slice(off, off+len));
 		};
 		p[HTTPParser.kOnMessageComplete] = () => {
-			console.log('TODO: close file object & socket');
+			f.unref();
 
 			let mime = getHeader('Content-Type');
 			if (!mime) {
@@ -1624,7 +1629,7 @@ export class Kernel implements IKernel {
 				console.log('connect failed: ' + err);
 				return;
 			}
-			console.log('connected to ' + port);
+			//console.log('connected to ' + port);
 			f.read(buf, -1, onRead);
 
 			f.write(new Buffer(req, 'utf8'), -1, (ierr: any, len?: number) => {

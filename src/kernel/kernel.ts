@@ -957,7 +957,7 @@ export class Syscalls {
 	}
 
 	kill(task: ITask, pid: number, sig: number, cb: (err: number) => void): void {
-		cb(-EINVAL);
+		this.kernel.signal(pid, sig, cb);
 	}
 
 	chdir(task: ITask, path: string, cb: (err: number) => void): void {
@@ -1664,6 +1664,19 @@ export class Kernel implements IKernel {
 		// short amount of time before killing the worker
 		this.exit(task, -666);
 	}
+
+	signal(pid: number, sig: number, cb: (err: number) => void): void {
+		// TODO: support 'broadcast' signals
+		if (pid === -1)
+			return cb(-constants.EPERM);
+
+		if (!(pid in this.tasks))
+			return cb(-constants.ESRCH);
+
+		this.tasks[pid].signal('signal' + sig, []);
+		cb(0);
+	}
+
 
 	unbind(s: IFile, addr: string, port: number): any {
 		if (!(port in this.ports))

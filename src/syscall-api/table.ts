@@ -238,7 +238,7 @@ function sys_accept4(cb: Function, trap: number, fd: number, buf: Uint8Array, le
 }
 
 function sys_setsockopt(cb: Function, trap: number): void {
-	console.log('FIXME: implement setsockopt');
+	// console.log('FIXME: implement setsockopt');
 	setTimeout(cb, 0, [0, 0, 0]);
 }
 

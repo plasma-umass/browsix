@@ -1781,7 +1781,7 @@ export class Kernel implements IKernel {
 				files[i].ref();
 			}
 		} else {
-			files[0] = new PipeFile();
+			files[0] = new NullFile();
 			files[1] = new PipeFile();
 			files[2] = new PipeFile();
 		}

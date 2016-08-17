@@ -43,15 +43,19 @@ $(EXE): build
 	cp -a $(MAIN) site/
 	cp -a static site/
 
-$(RPM): $(EXE)
+$(RPM): $(EXE) server.service server.spec
 	cp -a site $(PKGNAME)-$(VERSION)
 	mkdir -p package/{RPMS,BUILD,SOURCES,BUILDROOT}
 	tar -czf package/SOURCES/$(PKGNAME)-$(VERSION).tar.gz $(PKGNAME)-$(VERSION)
 	rm -rf $(PKGNAME)-$(VERSION)
-	cat server.service.in | sed "s/%NAME%/$(NAME)/g" >package/SOURCES/server.service
-	cat server.spec.in | sed "s/%NAME%/$(NAME)/g" | sed "s/%VERSION%/$(VERSION)/g" >server.spec
 	rpmbuild --define "_topdir $(PWD)/package" -ba server.spec
 	rm -rf package/{BUILD,BUILDROOT}
+
+server.spec:
+	cat server.spec.in | sed "s/%NAME%/$(NAME)/g" | sed "s/%VERSION%/$(VERSION)/g" >server.spec
+
+server.service:
+	cat server.service.in | sed "s/%NAME%/$(NAME)/g" >server.service
 
 
 .PHONY: $(MAIN).js all dev rpm build

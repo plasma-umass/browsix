@@ -71,8 +71,6 @@
 		kernel.httpRequest(inBrowserHost + url, cb);
 	}
 
-	let requestDuration = 0;
-
 	function memeRequest(url, cb) {
 		let startTime = performance.now();
 		let start = 0;
@@ -81,8 +79,7 @@
 
 		let request = inBrowser ? inBrowserRequest : remoteRequest;
 		request(apiBase + url.substring(start), function() {
-			requestDuration = performance.now() - startTime;
-			// console.log('took ' + requestDuration + ' ms')
+			console.log('took ' + (performance.now() - startTime) + ' ms')
 			cb.apply(this);
 		});
 	}
@@ -190,36 +187,6 @@
 		var html = _.reduce(names, (all, n) => all + '<option>' + n + '</option>\n', '');
 		document.getElementById('bg').innerHTML = html;
 		button.disabled = false;
-
-		setTimeout(timingTest, 1000);
-	}
-
-	let durations = [];
-	let run = 0;
-	let nWarmup = 20;
-	let nTest = 100;
-
-	function timingTest() {
-		memeRequest('/', function(e) {
-			if (this.status === 200) {
-				run++;
-				if (run <= nWarmup) {
-					setTimeout(timingTest, 10);
-				} else {
-					durations.push(requestDuration);
-					if (run <= nTest + nWarmup) {
-						setTimeout(timingTest, 10);
-					} else {
-						console.log(JSON.stringify(durations));
-						remoteId.innerHTML = 'done';
-					}
-				}
-			} else {
-				console.log('bad response: ' + this.status);
-				debugger;
-			}
-		});
-
 	}
 
 	memeRequest('/', function(e) {

@@ -28,6 +28,14 @@ build: $(MAIN).js
 	cp -a frontend/dist static
 	cp -a frontend/fs static/fs
 
+dev: $(MAIN).js
+	cp ../../lib-dist/lib/kernel/kernel.js frontend/app
+	cp $(MAIN).js frontend/fs
+	go build
+	pkill meme-service || true
+	(./meme-service &)
+	cd frontend && gulp serve
+
 rpm: $(RPM)
 
 $(EXE): build
@@ -46,4 +54,4 @@ $(RPM): $(EXE)
 	rm -rf package/{BUILD,BUILDROOT}
 
 
-.PHONY: $(MAIN).js all rpm build
+.PHONY: $(MAIN).js all dev rpm build

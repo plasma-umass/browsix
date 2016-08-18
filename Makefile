@@ -9,8 +9,9 @@ TEX        = pdflatex
 NPM_DEPS   = $(GULP) $(TSLINT) $(MOCHA)
 BUILD_DEPS = $(NPM_DEPS) bower_components
 
-INIT	   = fs/usr/bin/init
 SYSTEMGO   = github.com/rvolosatovs/systemgo
+INIT	   = fs/usr/bin/init
+SYSTEMCTL  = fs/usr/bin/systemctl
 
 # quiet output, but allow us to look at what commands are being
 # executed by passing 'V=1' to make, without requiring temporarily
@@ -80,11 +81,19 @@ bin: $(BUILD_DEPS)
 	@echo "  BIN"
 	node_modules/.bin/gulp index-fs
 
+systemgo: init systemctl
+
 init: $(BUILD_DEPS)
 	@echo "  INIT"
 	browsix-gopherjs build $(SYSTEMGO)/cmd/init -o $(INIT)
 	rm $(INIT).map
 	chmod +x $(INIT)
+
+systemctl: $(BUILD_DEPS)
+	@echo "  SYSTEMCTL"
+	browsix-gopherjs build $(SYSTEMGO)/cmd/systemctl -o $(SYSTEMCTL)
+	rm $(SYSTEMCTL).map
+	chmod +x $(SYSTEMCTL)
 
 test-browser: $(BUILD_DEPS)
 	@echo "  TEST BROWSER"
@@ -103,4 +112,4 @@ clean:
 distclean: clean
 	rm -rf node_modules bower_components
 
-.PHONY: all clean distclean test test-browser test-node report test-once shell serve
+.PHONY: all clean distclean test test-browser test-node report test-once shell serve init systemctl

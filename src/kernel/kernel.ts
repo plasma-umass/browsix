@@ -1508,7 +1508,7 @@ export class Kernel implements IKernel {
 		// only check for an = in the first part of a command,
 		// it is fine otherwise (like setting --option=value)
 		if (cmd.match(/[|><&]/) || splitParts[0].match(/[=]/)) {
-			parts = ['/usr/bin/dash', '-c', cmd];
+			parts = ['/bin/sh', '-c', cmd];
 		} else {
 			parts = splitParts.filter((s) => s !== '');
 		}
@@ -2131,9 +2131,19 @@ export class Task implements ITask {
 		this.worker = new Worker(blobUrl);
 		this.worker.onmessage = this.syscallHandler.bind(this);
 		this.worker.onerror = (err: ErrorEvent): void => {
-			if (this.state !== TaskState.Zombie) {
-				console.log("onerror arrived before exit() syscall");
-			}
+			// if we're already a zombie, we have already
+			// exited the process (according to the
+			// kernel's record keeping) through an explict
+			// exit() call.  Ignore this onerror message.
+			if (this.state === TaskState.Zombie)
+				return;
+
+			// in this case, our onerror handler was
+			// called before we received any explicit exit
+			// message
+
+			// console.log("onerror arrived before exit() syscall");
+
 			if (this.files[2]) {
 				console.log(err);
 				let msg = new Buffer('Error while executing ' + this.pendingExePath + ': ' + err.message + '\n', 'utf8');

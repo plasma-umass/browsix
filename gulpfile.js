@@ -172,7 +172,7 @@ tsTask('hello-sync', {noGlobal: true});
 // then in a sane directory hierarchy.  There is no dist step needed
 // for our binaries - they are self contained and meant to be run
 // directly from node or browser-node.
-gulp.task('build-fs', ['dist-kernel', 'dist-browser-node', 'build-bin', 'dist-syscall-api'], function() {
+gulp.task('build-fs-pre', ['dist-kernel', 'dist-browser-node', 'build-bin', 'dist-syscall-api'], function() {
 
     var copyKernel = gulp.src('lib-dist/lib/kernel/kernel.js')
           .pipe(copy('./fs/boot/', {prefix: 3}));
@@ -195,6 +195,20 @@ gulp.task('build-fs', ['dist-kernel', 'dist-browser-node', 'build-bin', 'dist-sy
     return merge(copyKernel, copyNode, copyBin, copyLd);
 });
 
+gulp.task('build-fs', ['build-fs-pre'], function() {
+
+    var copyDash1 = gulp.src('src/dash.js')
+          .pipe(rename(function(path) { path.basename = 'sh'; path.extname = ''; }))
+          .pipe(gulp.dest('./fs/bin/'));
+
+    // FIXME: we should just look in 2 dirs on the path
+    var copyDash2 = gulp.src('src/dash.js')
+          .pipe(rename(function(path) { path.basename = 'sh'; path.extname = ''; }))
+          .pipe(gulp.dest('./fs/usr/bin/'));
+
+    return merge(copyDash1, copyDash2);
+});
+
 // finally, we create an index.json file so that BrowserFS can see
 // everything in our nice hierarchy
 gulp.task('index-fs', ['build-fs'], function() {
@@ -204,6 +218,10 @@ gulp.task('index-fs', ['build-fs'], function() {
             path.extname = '.json';
         }))
         .pipe(gulp.dest('./fs'));
+});
+
+gulp.task('copy-dash', [], function() {
+
 });
 
 gulp.task('index-benchfs', [], function() {

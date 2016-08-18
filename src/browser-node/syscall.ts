@@ -161,6 +161,12 @@ export class USyscalls {
 		this.post(msgId, 'kill', pid);
 	}
 
+	wait4(pid: number, options: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'wait4', pid, options);
+	}
+
 	socket(domain: AF, type: SOCK, protocol: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;

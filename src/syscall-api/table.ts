@@ -12,7 +12,16 @@ function sys_ni_syscall(cb: Function, trap: number): void {
 	setTimeout(cb, 0, [-1, 0, -ENOSYS]);
 }
 
-let sys_wait4 = sys_ni_syscall;
+// rusage size: 144
+function sys_wait4(cb: Function, trap: number, pid: number, wstatus: any, options: number, rusage: Uint8Array): void {
+	let done = function(pid: number, wstatusIn: number, rusage: any = null): void {
+		if (pid > 0)
+			wstatus.$set(wstatusIn);
+		// TODO: rusage
+		cb([pid, 0, 0]);
+	};
+	syscall.wait4(pid, options, done);
+}
 
 function sys_getpid(cb: Function, trap: number): void {
 	let done = function(err: any, pid: number): void {

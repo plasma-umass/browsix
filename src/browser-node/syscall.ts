@@ -305,6 +305,12 @@ export class USyscalls {
 		this.post(msgId, 'lstat', path);
 	}
 
+	chdir(path: string, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'chdir', path);
+	}
+
 	stat(path: string, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;

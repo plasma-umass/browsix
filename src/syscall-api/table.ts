@@ -79,6 +79,16 @@ function sys_getcwd(cb: Function, trap: number, path: Uint8Array, len: number): 
 	syscall.getcwd(done);
 }
 
+function sys_chdir(cb: Function, trap: number, path: any): void {
+	let done = function(err: number): void {
+		cb([err ? -1 : 0, 0, err ? -err : 0]);
+	};
+	let len = path.length;
+	if (len && path[path.length-1] === 0)
+		len--;
+	syscall.chdir(path.subarray(0, len), done);
+}
+
 function sys_ioctl(cb: Function, trap: number, fd: number, request: any, argp: any): void {
 	let done = function(err: any, buf: Uint8Array): void {
 		if (!err && argp.byteLength !== undefined)
@@ -323,7 +333,7 @@ export var syscallTbl = [
 	sys_ni_syscall, // 77 ftruncate
 	sys_ni_syscall, // 78 getdents
 	sys_getcwd,     // 79 getcwd
-	sys_ni_syscall, // 80 chdir
+	sys_chdir,      // 80 chdir
 	sys_ni_syscall, // 81 fchdir
 	sys_ni_syscall, // 82 rename
 	sys_ni_syscall, // 83 mkdir

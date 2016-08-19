@@ -159,15 +159,17 @@ export class TCP extends StreamWrap {
 	}
 
 	writeBinaryString(req: WriteWrap, data: string): void {
-		syscall.pwrite(this.fd, data, 0, (err: any) => {
-			let status = err ? -1 : 0;
+		syscall.pwrite(this.fd, data, -1, (err: any) => {
+			let status = err < 0 ? -1 : 0;
+			err = err >= 0 ? undefined : err;
 			req.oncomplete(status, this, req, err);
 		});
 	}
 
 	writeUtf8String(req: WriteWrap, data: string): void {
-		syscall.pwrite(this.fd, data, 0, (err: any) => {
-			let status = err ? -1 : 0;
+		syscall.pwrite(this.fd, data, -1, (err: any) => {
+			let status = err < 0 ? -1 : 0;
+			err = err >= 0 ? undefined : err;
 			req.oncomplete(status, this, req, err);
 		});
 	}
@@ -179,7 +181,7 @@ export class TCP extends StreamWrap {
 	private _read(): void {
 		if (this.fd < 0)
 			return;
-		syscall.pread(this.fd, 262144, 0, (err: any, dataLen: number, data: Uint8Array) => {
+		syscall.pread(this.fd, 262144, -1, (err: any, dataLen: number, data: Uint8Array) => {
 			let n = dataLen ? dataLen : uv.UV_EOF;
 			if (this.onread) {
 				let b: Buffer = data ? new Buffer(data): null;

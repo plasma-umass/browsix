@@ -6,7 +6,7 @@
 
 'use strict';
 
-import { EINVAL } from './constants';
+import { EINVAL, ESPIPE } from './constants';
 import { ConnectCallback, SyscallContext, IFile, ITask } from './types';
 import { Pipe } from './pipe';
 
@@ -120,13 +120,13 @@ export class SocketFile implements IFile {
 
 	read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
 		if (pos !== -1)
-			return cb('offset read not supported on socket');
+			return cb(-ESPIPE);
 		this.incoming.read(buf, 0, buf.length, undefined, cb);
 	}
 
 	write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
 		if (pos !== -1)
-			return cb('offset write not supported on socket');
+			return cb(-ESPIPE);
 		this.outgoing.writeBuffer(buf);
 		cb(undefined, buf.length);
 	}

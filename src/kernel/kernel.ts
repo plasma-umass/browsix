@@ -716,9 +716,12 @@ class AsyncSyscalls {
 		});
 	}
 
-	pwrite(ctx: SyscallContext, fd: number, buf: Buffer|Uint8Array, pos: number): void {
+	pwrite(ctx: SyscallContext, fd: number, buf: Buffer|Uint8Array|string, pos: number): void {
 		let bbuf: Buffer = null;
-		if (!(buf instanceof Buffer) && (buf instanceof Uint8Array)) {
+		if (typeof(buf) === 'string') {
+			let ubuf = utf8ToBytes(<string>buf);
+			bbuf = new Buffer(ubuf);
+		} else if (!(buf instanceof Buffer) && (buf instanceof Uint8Array)) {
 			// we need to slice the Uint8Array, because it
 			// may represent a slice that is offset into a
 			// larger parent ArrayBuffer.
@@ -1703,6 +1706,8 @@ export class Kernel implements IKernel {
 	}
 
 	connect(f: IFile, addr: string, port: number, cb: ConnectCallback): void {
+		if (addr === '0.0.0.0')
+			addr = '127.0.0.1';
 		if (addr !== 'localhost' && addr !== '127.0.0.1') {
 			console.log('TODO connect(): only localhost supported for now');
 			cb(-constants.ECONNREFUSED);

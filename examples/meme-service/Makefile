@@ -10,16 +10,16 @@ RPM=package/RPMS/x86_64/$(RPMSHORT)
 MAIN = $(EXE)
 
 
-all: build
+all: build systemgo
 
 $(MAIN).js: *.go Makefile
 #	rm ~/pkg/linux_js -r
-	browsix-gopherjs build
+	browsix-gopherjs build	
 
-build: $(MAIN).js
+build: $(MAIN).js fs
 	go build
 	cp ../../lib-dist/lib/kernel/kernel.js frontend/app
-	cp $(MAIN).js frontend/fs
+	cp $(MAIN).js frontend/fs/$(MAIN).js
 	cd frontend && bower install
 	cd frontend && npm install
 	cd frontend && rm -rf dist
@@ -28,13 +28,20 @@ build: $(MAIN).js
 	cp -a frontend/dist static
 	cp -a frontend/fs static/fs
 
-dev: $(MAIN).js
+systemgo: ../../fs/usr/bin/init ../../fs/usr/bin/systemctl
+	mkdir -p frontend/fs/usr/bin
+	cp ../../fs/usr/bin/init frontend/fs/usr/bin/init
+	cp ../../fs/usr/bin/systemctl frontend/fs/usr/bin/systemctl
+
+dev: $(MAIN).js systemgo
 	cp ../../lib-dist/lib/kernel/kernel.js frontend/app
 	cp $(MAIN).js frontend/fs
+	chmod +x frontend/fs/$(MAIN).js
 	go build
 	pkill meme-service || true
 	(./meme-service &)
 	cd frontend && gulp serve
+
 
 rpm: $(RPM)
 
@@ -58,4 +65,4 @@ server.service:
 	cat server.service.in | sed "s/%NAME%/$(NAME)/g" >server.service
 
 
-.PHONY: $(MAIN).js all dev rpm build
+.PHONY: $(MAIN).js all dev rpm build systemgo fs

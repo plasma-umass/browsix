@@ -117,7 +117,7 @@
 			console.log('exited: ' + pid + ' with code ' + code);
 		}
 		kernel.once('port:8080', onInBrowserReady.bind(this));
-		kernel.system('/meme-service.js -bgdir=img -fontfile=font/impact.ttf', onExit, onStdout, onStderr);
+        kernel.system('/usr/bin/init', onExit, onStdout, onStderr);
 
 		// explicitly leak kernel for debugging purposes
 		window.kernel = kernel;

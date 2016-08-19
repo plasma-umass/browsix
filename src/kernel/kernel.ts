@@ -544,6 +544,10 @@ class AsyncSyscalls {
 		this.sys.fork(ctx.task, heap, args, ctx.complete.bind(ctx));
 	}
 
+	kill(ctx: SyscallContext, pid: number, sig: number): void {
+		this.sys.kill(ctx.task, pid, sig, ctx.complete.bind(ctx));
+	}
+
 	execve(ctx: SyscallContext, filename: Uint8Array, args: Uint8Array[], env: Uint8Array[]): void {
 		// TODO: see if its possible/useful to avoid
 		// converting from uint8array to string here.
@@ -975,7 +979,13 @@ export class Syscalls {
 	}
 
 	kill(task: ITask, pid: number, sig: number, cb: (err: number) => void): void {
-		this.kernel.signal(pid, sig, cb);
+		// FIXME
+		if (sig === constants.SIGKILL || sig === constants.SIGTERM) {
+			this.kernel.kill(pid);
+			cb(0);
+		} else {
+			this.kernel.signal(pid, sig, cb);
+		}
 	}
 
 	chdir(task: ITask, path: string, cb: (err: number) => void): void {

@@ -1,11 +1,11 @@
 package main
 
 import (
-	"net/http"
-	"fmt"
 	"flag"
-	"os"
+	"fmt"
 	"io"
+	"net/http"
+	"os"
 )
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Copy: %s", err)
 	}
-	fmt.Fprintf(os.Stderr, "copied %d bytes", n)
+	fmt.Fprintf(os.Stderr, "copied %d bytes\n", n)
 
 	os.Exit(0)
 }

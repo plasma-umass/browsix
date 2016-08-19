@@ -23,7 +23,7 @@ import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
 
 // controls the default of whether to delay the initialization message
 // to a Worker to aid in debugging.
-let DEBUG = false;
+let DEBUG = true;
 
 let Buffer: any;
 

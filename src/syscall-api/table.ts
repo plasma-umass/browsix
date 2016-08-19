@@ -23,6 +23,13 @@ function sys_wait4(cb: Function, trap: number, pid: number, wstatus: any, option
 	syscall.wait4(pid, options, done);
 }
 
+function sys_kill(cb: Function, trap: number, pid: number, sig: number): void {
+	let done = function(err: any): void {
+		cb([err ? -1 : 0, 0, err ? -err : 0]);
+	};
+	syscall.kill(pid, sig, done);
+}
+
 function sys_getpid(cb: Function, trap: number): void {
 	let done = function(err: any, pid: number): void {
 		cb([pid, 0, 0]);
@@ -343,7 +350,7 @@ export var syscallTbl = [
 	sys_ni_syscall, // 59 execve
 	sys_ni_syscall, // 60 exit
 	sys_wait4,      // 61 wait4
-	sys_ni_syscall, // 62 kill
+	sys_kill,       // 62 kill
 	sys_ni_syscall, // 63 uname
 	sys_ni_syscall, // 64 semget
 	sys_ni_syscall, // 65 semop

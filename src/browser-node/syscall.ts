@@ -155,10 +155,10 @@ export class USyscalls {
 		this.post(msgId, 'fork', heap);
 	}
 
-	kill(pid: number, cb: SyscallCallback): void {
+	kill(pid: number, sig: number, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;
-		this.post(msgId, 'kill', pid);
+		this.post(msgId, 'kill', pid, sig);
 	}
 
 	wait4(pid: number, options: number, cb: SyscallCallback): void {

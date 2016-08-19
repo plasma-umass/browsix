@@ -73,6 +73,7 @@ function tsPipeline(src, dst) {
 // - dist  w/ browserify
 function tsTask(subdir, options) {
     options = options || {};
+    var noBuffer = options.noBuffer;
     var noGlobal = options.noGlobal;
     var buildDeps = options.buildDeps || [];
     var otherSources = options.otherSources || [];
@@ -95,6 +96,10 @@ function tsTask(subdir, options) {
     var globals = extend({}, globalVars);
     if (noGlobal)
         globals['global'] = function() { return ""; };
+    if (noBuffer) {
+        globals['buffer'] = function() { return ""; };
+        globals['Buffer'] = function() { return ""; };
+    }
 
     gulp.task('dist-'+subdir, ['build-'+subdir], function() {
         var b = browserify({
@@ -163,7 +168,7 @@ gulp.task('copy-node', function() {
 // to explicitly exclude tests and the browserify main here to avoid
 // confusing tsc :\
 tsTask('kernel', {buildDeps: ['copy-node-kernel', 'copy-node']});
-tsTask('browser-node', {buildDeps: ['copy-node']});
+tsTask('browser-node', {buildDeps: ['copy-node'], noBuffer: true});
 tsTask('bin');
 tsTask('syscall-api', {buildDeps: ['build-browser-node'], noGlobal: true});
 tsTask('hello-sync', {noGlobal: true});

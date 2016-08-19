@@ -179,6 +179,12 @@ export class USyscalls {
 		this.post(msgId, 'getsockname', fd);
 	}
 
+	getpeername(fd: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'getpeername', fd);
+	}
+
 	bind(fd: number, sockInfo: Uint8Array, cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;

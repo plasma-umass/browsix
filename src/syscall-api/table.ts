@@ -235,6 +235,13 @@ function sys_listen(cb: Function, trap: number, fd: number, backlog: number): vo
 	syscall.listen(fd, backlog, done);
 }
 
+function sys_connect(cb: Function, trap: number, fd: number, buf: Uint8Array, blen: number): void {
+	let done = function(err: any): void {
+		cb([err ? -1 : 0, 0, err ? -1 : 0]);
+	};
+	syscall.connect(fd, buf.subarray(0, blen), done);
+}
+
 function sys_getsockname(cb: Function, trap: number, fd: number, buf: Uint8Array, lenp: any): void {
 	let done = function(err: any, sockInfo: Uint8Array): void {
 		if (!err) {
@@ -245,6 +252,18 @@ function sys_getsockname(cb: Function, trap: number, fd: number, buf: Uint8Array
 	};
 
 	syscall.getsockname(fd, done);
+}
+
+function sys_getpeername(cb: Function, trap: number, fd: number, buf: Uint8Array, lenp: any): void {
+	let done = function(err: any, sockInfo: Uint8Array): void {
+		if (!err) {
+			buf.set(sockInfo);
+			lenp.$set(sockInfo.byteLength);
+		}
+		cb([err ? -1 : 0, 0, err ? -1 : 0]);
+	};
+
+	syscall.getpeername(fd, done);
 }
 
 function sys_accept4(cb: Function, trap: number, fd: number, buf: Uint8Array, lenp: any): void {
@@ -304,7 +323,7 @@ export var syscallTbl = [
 	sys_getpid,     // 39 getpid
 	sys_ni_syscall, // 40 sendfile
 	sys_socket,     // 41 socket
-	sys_ni_syscall, // 42 connect
+	sys_connect,    // 42 connect
 	sys_ni_syscall, // 43 accept
 	sys_ni_syscall, // 44 sendto
 	sys_ni_syscall, // 45 recvfrom
@@ -314,7 +333,7 @@ export var syscallTbl = [
 	sys_bind,       // 49 bind
 	sys_listen,     // 50 listen
 	sys_getsockname, // 51 getsockname
-	sys_ni_syscall, // 52 getpeername
+	sys_getpeername, // 52 getpeername
 	sys_ni_syscall, // 53 socketpair
 	sys_setsockopt, // 54 setsockopt
 	sys_ni_syscall, // 55 getsockopt

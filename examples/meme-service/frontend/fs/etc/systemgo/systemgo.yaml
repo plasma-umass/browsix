@@ -1,0 +1,3 @@
+debug: false
+paths:
+    - /etc/systemd/system

@@ -1,0 +1,13 @@
+[Unit]
+Description=meme service
+After=syslog.target network.target
+
+[Service]
+ExecStart=/meme-service.js -bgdir=img -fontfile=font/impact.ttf
+;WorkingDirectory=/
+;User=meme
+;Restart=always
+;RestartSec=0
+
+[Install]
+WantedBy=default.target

@@ -1,1 +1,1 @@
-{"font":{"impact.ttf":null},"img":{"gopher.png":null,"j-walter-weatherman.jpg":null,"zoidberg.jpg":null},"index.json":null,"meme-service.js":null}
+{"etc":{"systemd":{"system":{"default.target":null,"server.service":null}},"systemgo":{"systemgo.yaml":null}},"font":{"impact.ttf":null},"img":{"gopher.png":null,"j-walter-weatherman.jpg":null,"zoidberg.jpg":null},"index.json":null,"meme-service.js":null,"usr":{"bin":{"init":null,"systemctl":null}}}

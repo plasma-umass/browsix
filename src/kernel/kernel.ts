@@ -37,6 +37,14 @@ if (typeof Atomics !== 'undefined') {
 		Atomics.wake = Atomics.futexWake;
 }
 
+// returns a random, non-reserved port between 1024 and 65
+function getRandomPort(): number {
+	const min = 2<<9;
+	const max = 2<<15;
+	return Math.floor(Math.random() * (max - min)) + min;
+}
+
+
 // from + for John's BrowserFS
 // TODO: don't copy paste code :\
 if (true/*typeof setImmediate === 'undefined'*/) {
@@ -655,6 +663,13 @@ class AsyncSyscalls {
 		});
 	}
 
+	getpeername(ctx: SyscallContext, fd: number): void {
+		let buf = new Uint8Array(marshal.socket.SockAddrInDef.length);
+		this.sys.getpeername(ctx.task, fd, buf, (err: number, len: number): void => {
+			ctx.complete(err, buf);
+		});
+	}
+
 	listen(ctx: SyscallContext, fd: number, backlog: number): void {
 		this.sys.listen(ctx.task, fd, backlog, ctx.complete.bind(ctx));
 	}
@@ -1059,6 +1074,26 @@ export class Syscalls {
 		return cb(-constants.ENOTSOCK, -1);
 	}
 
+	getpeername(task: ITask, fd: number, buf: Uint8Array, cb: (err: number, len: number) => void): void {
+		let file = task.files[fd];
+		if (!file) {
+			cb(-constants.EBADF, -1);
+			return;
+		}
+		if (isSocket(file)) {
+			if (!file.peer) {
+				cb(-constants.ENOTCONN, -1);
+			}
+			let remote = {family: SOCK.STREAM, port: file.peer.port, addr: file.peer.addr};
+			let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+			marshal.Marshal(view, 0, remote, marshal.socket.SockAddrInDef);
+			cb(0, marshal.socket.SockAddrInDef.length);
+			return;
+		}
+
+		return cb(-constants.ENOTSOCK, -1);
+	}
+
 	listen(task: ITask, fd: number, backlog: number, cb: (err: number) => void): void {
 		let file = task.files[fd];
 		if (!file) {
@@ -1132,7 +1167,21 @@ export class Syscalls {
 		}
 
 		if (isSocket(file)) {
-			file.connect(addr, port, cb);
+			file.connect(addr, port, (err: number) => {
+				if (err)
+					cb(err);
+
+				// FIXME: to guarantee termination
+				while (true) {
+					let lPort = getRandomPort();
+					if (this.kernel.ports[lPort])
+						continue;
+					file.port = lPort;
+					file.addr = '127.0.0.1';
+					break;
+				}
+				cb(0);
+			});
 			return;
 		}
 
@@ -1473,7 +1522,7 @@ export class Kernel implements IKernel {
 
 	// TODO: this should be per-protocol, i.e. separate for TCP
 	// and UDP
-	private ports: {[port: number]: SocketFile} = {};
+	ports: {[port: number]: SocketFile} = {};
 
 	private tasks: {[pid: number]: Task} = {};
 	private taskIdSeq: number = 0;

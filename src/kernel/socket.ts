@@ -34,6 +34,8 @@ export class SocketFile implements IFile {
 	port:          number;
 	addr:          string;
 
+	peer:          SocketFile = undefined;
+
 	outgoing:      Pipe = undefined;
 	incoming:      Pipe = undefined;
 
@@ -79,6 +81,9 @@ export class SocketFile implements IFile {
 		local.incoming = incoming;
 		remote.outgoing = incoming;
 
+		local.peer = remote;
+		remote.peer = local;
+
 		cb(0, local, queued.addr, queued.port);
 		queued.cb(null);
 	}
@@ -108,6 +113,9 @@ export class SocketFile implements IFile {
 
 		local.incoming = incoming;
 		remote.outgoing = incoming;
+
+		local.peer = remote;
+		remote.peer = local;
 
 		acceptCB(0, local, remoteAddr, remotePort);
 		cb(null);

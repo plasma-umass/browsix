@@ -61,7 +61,8 @@
     "typescript": "^1.8.10",
     "typings": "^1.3.1",
     "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0"
+    "vinyl-source-stream": "^1.1.0",
+    "xterm": "^1.0.0"
   },
   "dependencies": {
     "node-binary-marshal": "^0.4.2",

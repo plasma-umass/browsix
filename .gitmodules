@@ -9,7 +9,7 @@
 	url = https://github.com/bpowers/BrowserFS
 [submodule "test/hbench-os"]
 	path = bench/hbench-os
-	url = git@github.com:bpowers/HBench-OS.git
+	url = https://github.com/bpowers/HBench-OS
 [submodule "src/init"]
 	path = src/init
-	url = git@github.com:b1101/systemgo.git
+	url = http://github.com/plasma-umass/systemgo

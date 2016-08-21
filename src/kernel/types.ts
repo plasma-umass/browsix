@@ -41,6 +41,13 @@ export interface IKernel {
 	once(event: string, cb: Function): any;
 }
 
+export interface ITTY {
+	close(): void; // deallocate HTML elements, doesn't destroy pty pair
+	kill(): void;  // close() + kill processes associated with tty
+	// TODO: rename one of above to release?
+}
+
+
 export interface Environment {
 	[name: string]: string;
 }

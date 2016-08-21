@@ -45,7 +45,7 @@ namespace Terminal {
 					}
 					this.kernel = k;
 				},
-				{readOnly: false});
+				{readOnly: false, ttyParent: this.$.term});
 		}
 
 		attached(): void {

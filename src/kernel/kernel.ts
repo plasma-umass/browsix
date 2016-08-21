@@ -12,9 +12,11 @@ import { Pipe, PipeFile, isPipe } from './pipe';
 import { SocketFile, isSocket } from './socket';
 import { DirFile, RegularFile, NullFile, resolve } from './file';
 import { ExitCallback, OutputCallback, SyscallContext, SyscallResult,
-	Syscall, ConnectCallback, IKernel, ITask, IFile, Environment } from './types';
+	Syscall, ConnectCallback, IKernel, ITTY, ITask, IFile, Environment } from './types';
 
 import { HTTPParser } from './http_parser';
+
+import Terminal = require('xterm');
 
 import * as bfs from 'browserfs-browsix-tmp';
 import * as marshal from 'node-binary-marshal';
@@ -222,6 +224,63 @@ export enum SOCK {
 	STREAM = 1,
 	DGRAM = 2,
 }
+
+// driver installed on boot, newTTY() calls kernel.driver['ptm'].new()?
+
+// TWO DIFFERENT THINGS HERE?
+
+// true pseudoterminal support w/ just /dev/ptmx and /dev/pts/$X
+// - for processes like bash to use
+// terminal support w/ IO happening to the browser
+
+// 'real tty' has no exposed ptmx master, when it is hotplugged/
+// attached/ allocated it creates /dev/tty1.  We can then just use
+// kernel.system('bash', 'tty1', 'tty1', 'tty1');
+
+class TTY implements ITTY {
+	// *driver (ptm_driver)
+	// *ops (?? shared between driver and tty instances?)
+
+	// index
+
+	// line_discipline (ldisc)
+
+	// terminos
+
+	// process group pid
+	// session pid
+
+	// flags
+	// count
+
+	// link (*TTY)
+
+	// tty_files[]
+	// tty_port
+
+	private term: Terminal;
+
+	constructor(consoleElement: HTMLElement) {
+		this.term = new Terminal({
+			cols: 80,
+			rows: 24,
+			screenKeys: true,
+		});
+		this.term.open(consoleElement);
+
+		this.term.write('\x1b[31mWelcome to the new Browsix term!\x1b[m\r\n');
+	}
+
+	close(): void {
+		// deallocate HTML elements, doesn't destroy pty pair
+		console.log('TODO: TTY.close');
+	}
+	kill(): void {
+		// close() + kill processes associated with tty
+		console.log('TODO: TTY.kill');
+	}
+}
+
 
 // The Browsix kernel supports both async syscalls, necessary for Go
 // and Node and supported by all modern browsers, and sync syscalls
@@ -1539,12 +1598,15 @@ export class Kernel implements IKernel {
 
 	private syscalls: AsyncSyscalls;
 
+	private tty: TTY;
+
 	constructor(fs: any, nCPUs: number, args: BootArgs) {
 		this.outstanding = 0;
 		this.nCPUs = nCPUs;
 		this.fs = fs;
 		this.syscallsCommon = new Syscalls(this);
 		this.syscalls = new AsyncSyscalls(this.syscallsCommon);
+		this.tty = new TTY(args.ttyParent);
 		this.runQueues = [];
 		// initialize all run queues to empty arrays.
 		for (let i = PRIO_MIN; i < PRIO_MAX; i++) {
@@ -2440,7 +2502,7 @@ export interface BootCallback {
 export interface BootArgs {
 	fsType?: string;
 	fsArgs?: any[];
-	ttyParent?: Element;
+	ttyParent?: HTMLElement;
 	readOnly?: boolean;
 };
 

@@ -81,6 +81,38 @@ declare module "xterm" {
 	 * with the exception of EventEmitter.
 	 */
 	class Terminal extends Stream {
+		/**
+		 * Default Terminal options.
+		 */
+		public static defaults: TerminalOptions;
+		/**
+		 * Default Terminal options (alias of Terminal.defaults)
+		 */
+		public static options: TerminalOptions;
+		/**
+		 * The currently focused terminal.
+		 */
+		public static focus: Terminal;
+		/**
+		 * Lookup table from color index to HTML color (e.g. '#000000')
+		 */
+		public static colors: string[];
+		public static tangoColors: string[];
+		public static xtermColors: string[];
+		/**
+		 * Color lookup table, with colors in numerical form.
+		 */
+		public static vcolors: number[];
+
+		public static brokenBold: boolean;
+
+		public static charsets: {[name: string]: {[key: string]: string}};
+
+		public static bindPaste(document: Document): void;
+		public static bindKeys(document: Document): void;
+		public static bindCopy(document: Document): void;
+		public static insertStyle(document: Document, fg: string, bg: string): void;
+
 		public useStyle: boolean;
 		public isMac: boolean;
 		public isIpad: boolean;
@@ -192,36 +224,6 @@ declare module "xterm" {
 		constructor(options: TerminalOptions);
 
 		/**
-		 * Default Terminal options.
-		 */
-		public static defaults: TerminalOptions;
-		/**
-		 * Default Terminal options (alias of Terminal.defaults)
-		 */
-		public static options: TerminalOptions;
-		/**
-		 * The currently focused terminal.
-		 */
-		public static focus: Terminal;
-		/**
-		 * Lookup table from color index to HTML color (e.g. '#000000')
-		 */
-		public static colors: string[];
-		public static tangoColors: string[];
-		public static xtermColors: string[];
-		/**
-		 * Color lookup table, with colors in numerical form.
-		 */
-		public static vcolors: number[];
-
-		public static brokenBold: boolean;
-		public static bindPaste(document: Document): void;
-		public static bindKeys(document: Document): void;
-		public static bindCopy(document: Document): void;
-		public static insertStyle(document: Document, fg: string, bg: string): void;
-		public static charsets: {[name: string]: {[key: string]: string}};
-
-		/**
 		 * Focus this particular terminal.
 		 */
 		public focus(): void;
@@ -289,7 +291,7 @@ declare module "xterm" {
 		public cursorForward(params: number[]): void;
 		public cursorBackward(params: number[]): void;
 		public cursorPos(params: number[]): void;
-		public eraseInDisplay(params: number[]) :void;
+		public eraseInDisplay(params: number[]): void;
 		public eraseInLine(params: number[]): void;
 		public charAttributes(params: number[]): void;
 		public deviceStatus(params: number[]): void;

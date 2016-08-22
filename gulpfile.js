@@ -520,6 +520,7 @@ gulp.task('serve', ['app:build', 'app:styles', 'app:elements', 'app:images'], fu
     gulp.watch(['app/elements/**/*.css'], ['app:elements', reload]);
     gulp.watch(['app/{scripts,elements}/**/*.ts'], ['app:build']);
     gulp.watch(['app/images/**/*'], reload);
+    gulp.watch(['src/kernel/*.ts'], ['build-fs', reload]);
 });
 
 // Build and serve the output from the dist build

@@ -194,6 +194,10 @@ declare module "xterm" {
 		 */
 		public element: HTMLDivElement;
 		/**
+		 * Element containing our screen rows.
+		 */
+		public rowContainer: HTMLDivElement;
+		/**
 		 * Child elements of terminal containing terminal lines.
 		 */
 		public children: HTMLDivElement[];

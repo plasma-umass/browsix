@@ -237,6 +237,43 @@ export enum SOCK {
 // attached/ allocated it creates /dev/tty1.  We can then just use
 // kernel.system('bash', 'tty1', 'tty1', 'tty1');
 
+function proposeGeometry(term: Terminal): {cols: number, rows: number} {
+	function i(pv: string): number {
+		return parseInt(pv, 10);
+	}
+
+	let peS = window.getComputedStyle(term.element.parentElement);
+	let peH = i(peS.getPropertyValue('height'));
+	let peW = i(peS.getPropertyValue('width'));
+	let eS = window.getComputedStyle(term.element);
+	let ePadVer = i(eS.getPropertyValue('padding-top')) + i(eS.getPropertyValue('padding-bottom'));
+	let ePadHor = i(eS.getPropertyValue('padding-right')) + i(eS.getPropertyValue('padding-left'));
+	let aH = peH - ePadVer;
+	let aW = peW - ePadHor;
+	let container = term.rowContainer;
+	let subjectRow: HTMLElement = <any> term.rowContainer.firstElementChild;
+	let contentBuffer = subjectRow.innerHTML;
+
+	subjectRow.style.display = 'inline';
+	subjectRow.innerHTML = 'W'; // Common character for measuring width, although on monospace
+	let cW = subjectRow.getBoundingClientRect().width;
+	subjectRow.style.display = ''; // Revert style before calculating height, since they differ.
+	let cH = subjectRow.offsetHeight|0;
+	subjectRow.innerHTML = contentBuffer;
+
+	console.log('cW: ' + cW);
+	console.log('cH: ' + cH);
+
+	let rows = (aH / cH)|0;
+	let cols = ((aW / cW) - 1)|0;
+
+	console.log('cols: ' + cols + ', rows: ' + rows);
+
+	return {cols: cols - 2, rows: rows - 1};
+};
+
+
+// TODO: rename DivTTY
 class TTY implements ITTY {
 	// *driver (ptm_driver)
 	// *ops (?? shared between driver and tty instances?)
@@ -264,11 +301,45 @@ class TTY implements ITTY {
 		this.term = new Terminal({
 			cols: 80,
 			rows: 24,
+			cursorBlink: true,
 			screenKeys: true,
+			colors: Terminal.tangoColors,
 		});
 		this.term.open(consoleElement);
 
-		this.term.write('\x1b[31mWelcome to the new Browsix term!\x1b[m\r\n');
+		this.resize();
+
+		setTimeout(this.resize.bind(this), 2);
+
+		this.term.write('\x1b[31mWelcome to the new Browsix term!\x1b[0m\r\n');
+
+		this.term.on('key', this.inputHandler.bind(this));
+
+		// local echo?
+
+		// we want to buffer + then send input to an attached
+		// process (through ldisc).  when the process's
+		// stderr/out comes in, we write to the TTY
+	}
+
+	resize(): void {
+		let size = proposeGeometry(this.term);
+
+		this.term.resize(size.cols, size.rows);
+
+		console.log('resizing');
+
+		// for (let r = 0; r < size.rows; r++) {
+		// 	for (let c = 0; c < size.cols; c++) {
+		// 		this.term.write('' + ((r + c)%10));
+		// 	}
+		// 	if (r !== size.rows - 1)
+		// 		this.term.write('\r\n');
+		// }
+	}
+
+	inputHandler(key: string, e: KeyboardEvent): void {
+		console.log('key: ' + key);
 	}
 
 	close(): void {

@@ -54,45 +54,45 @@ namespace Terminal {
 
 		onInput(ev: any): void {
 			// FIXME: be less horrendously inefficient.
-			let txt = this.$.term.value;
-			if (txt[txt.length-1] !== '\n')
-				return;
-			let parts = txt.split('\n');
-			let cmd = parts[parts.length-2].substring(this.ps1.length).trim();
-			if (cmd === '') {
-				this.nextPrompt();
-				return;
-			}
-			this.editable = false;
-			let bg = cmd[cmd.length - 1] === '&';
-			if (bg) {
-				cmd = cmd.slice(0, -1).trim();
-				setTimeout(() => { this.editable = true; }, 0);
-			}
+			// let txt = this.$.term.value;
+			// if (txt[txt.length-1] !== '\n')
+			// 	return;
+			// let parts = txt.split('\n');
+			// let cmd = parts[parts.length-2].substring(this.ps1.length).trim();
+			// if (cmd === '') {
+			// 	this.nextPrompt();
+			// 	return;
+			// }
+			// this.editable = false;
+			// let bg = cmd[cmd.length - 1] === '&';
+			// if (bg) {
+			// 	cmd = cmd.slice(0, -1).trim();
+			// 	setTimeout(() => { this.editable = true; }, 0);
+			// }
 
-			let completed = (pid: number, code: number) => {
-				this.editable = true;
-			}
-			let onInput = (pid: number, out: string) => {
-				let newlinePos = this.$.term.value.lastIndexOf('\n');
-				let lastLine = this.$.term.value.substr(newlinePos+1);
-				if (lastLine[0] === '$') {
+			// let completed = (pid: number, code: number) => {
+			// 	this.editable = true;
+			// }
+			// let onInput = (pid: number, out: string) => {
+			// 	let newlinePos = this.$.term.value.lastIndexOf('\n');
+			// 	let lastLine = this.$.term.value.substr(newlinePos+1);
+			// 	if (lastLine[0] === '$') {
 
-					if (!this.extraNewline && out && out[out.length-1] !== '\n') {
-						out += '\n';
-						this.extraNewline = true;
-					} else if (this.extraNewline && out && out[out.length-1] === '\n') {
-						out = out.slice(0, -1);
-						this.extraNewline = false;
-					}
-					this.$.term.value = this.$.term.value.substr(0, newlinePos+1) + out + lastLine;
-				} else {
-					this.extraNewline = false;
-					this.$.term.value += out;
-				}
+			// 		if (!this.extraNewline && out && out[out.length-1] !== '\n') {
+			// 			out += '\n';
+			// 			this.extraNewline = true;
+			// 		} else if (this.extraNewline && out && out[out.length-1] === '\n') {
+			// 			out = out.slice(0, -1);
+			// 			this.extraNewline = false;
+			// 		}
+			// 		this.$.term.value = this.$.term.value.substr(0, newlinePos+1) + out + lastLine;
+			// 	} else {
+			// 		this.extraNewline = false;
+			// 		this.$.term.value += out;
+			// 	}
 
-			};
-			this.kernel.system(cmd, completed, onInput, onInput);
+			// };
+			// this.kernel.system(cmd, completed, onInput, onInput);
 		}
 
 		@observe('kernel')
@@ -110,14 +110,13 @@ namespace Terminal {
 		editableChanged(editable: boolean): void {
 			if (!editable)
 				return;
-			this.nextPrompt();
+			//this.nextPrompt();
 		}
 
 		nextPrompt(): void {
 			this.$.term.value += this.ps1;
 			let len = this.$.term.value.length;
-			this.$.term.setSelectionRange(len, len);
-			this.$.term.focus();
+			//this.$.term.setSelectionRange(len, len);
 		}
 	}
 

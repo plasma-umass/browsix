@@ -23,7 +23,7 @@ import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
 
 // controls the default of whether to delay the initialization message
 // to a Worker to aid in debugging.
-let DEBUG = true;
+let DEBUG = false;
 
 let Buffer: any;
 
@@ -2101,11 +2101,14 @@ export class Task implements ITask {
 				return;
 			}
 			let buf = new Buffer(stats.size);
-			this.kernel.fs.read(fd, buf, 0, stats.size, 0, this.fileRead.bind(this));
+			this.kernel.fs.read(fd, buf, 0, stats.size, 0, this.fileRead.bind(this, fd));
 		});
 	}
 
-	fileRead(err: any, bytesRead: number, buf: Buffer): void {
+	fileRead(fd: number, err: any, bytesRead: number, buf: Buffer): void {
+		// we don't care about errors, just releasing resources
+		this.kernel.fs.close(fd, function(e?: any): void {});
+
 		if (err) {
 			this.onRunnable(err, undefined);
 			this.exit(-1);

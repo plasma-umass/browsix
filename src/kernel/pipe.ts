@@ -6,7 +6,7 @@
 
 'use strict';
 
-import { EINVAL } from './constants';
+import { EINVAL, ESPIPE } from './constants';
 import { SyscallContext, IFile, OutputCallback } from './types';
 
 declare var Buffer: any;
@@ -119,7 +119,7 @@ export class PipeFile implements IFile {
 	}
 
 	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void {
-		cb(-EINVAL, undefined);
+		cb(-ESPIPE, undefined);
 	}
 
 	readdir(cb: (err: any, files: string[]) => void): void {

@@ -16,6 +16,8 @@ const SEEK_SET = 0;
 const SEEK_CUR = 1;
 const SEEK_END = 2;
 
+const S_IFREG = 0x8000;
+
 
 // originally from node.js 4.3
 function assertPath(path: any): void {
@@ -119,7 +121,14 @@ export class RegularFile implements IFile {
 	}
 
 	stat(cb: (err: any, stats: any) => void): void {
-		this.kernel.fs.fstat(this.fd, cb);
+		this.kernel.fs.fstat(this.fd, function(err: any, stats: any): void {
+			if (!err && stats) {
+				if (!stats.mode)
+					stats.mode = 0o666;
+				stats.mode |= S_IFREG;
+			}
+			cb(err, stats);
+		});
 	}
 
 	readdir(cb: (err: any, files: string[]) => void): void {

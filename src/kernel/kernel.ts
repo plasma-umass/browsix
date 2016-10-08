@@ -24,6 +24,7 @@ import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
 // controls the default of whether to delay the initialization message
 // to a Worker to aid in debugging.
 let DEBUG = false;
+let STRACE = false;
 
 let Buffer: any;
 
@@ -187,13 +188,17 @@ function flagsToString(flag: any): string {
 		return 'r+';
 	case O_RDWR | O_SYNC:
 		return 'rs+';
-	case O_TRUNC | O_CREAT | O_WRONLY:
+	case O_CREAT | O_WRONLY:
+	case O_CREAT | O_WRONLY | O_TRUNC:
 		return 'w';
-	case O_TRUNC | O_CREAT | O_WRONLY | O_EXCL:
+	case O_CREAT | O_WRONLY | O_EXCL:
+	case O_CREAT | O_WRONLY | O_EXCL | O_TRUNC:
 		return 'wx';
-	case O_TRUNC | O_CREAT | O_RDWR:
+	case O_CREAT | O_RDWR:
+	case O_CREAT | O_RDWR | O_TRUNC:
 		return 'w+';
-	case O_TRUNC | O_CREAT | O_RDWR | O_EXCL:
+	case O_CREAT | O_RDWR | O_EXCL:
+	case O_CREAT | O_RDWR | O_EXCL | O_TRUNC:
 		return 'wx+';
 	case O_APPEND | O_CREAT | O_WRONLY:
 		return 'a';
@@ -330,6 +335,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		10: (pathp: number): void => { // unlink
 			let path = stringAt(pathp);
+			console.log('unlink(' + path + ')');
 			sys.unlink(task, path, (err: any) => {
 				if (err && err.errno)
 					sysret(-err.errno);
@@ -361,7 +367,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		33: (pathp: number, amode: number): void => { // access
 			let path = stringAt(pathp);
-//			console.log('access(' + path + ')');
+			console.log('access(' + path + ')');
 			sys.access(task, path, amode, sysret);
 		},
 		37: (pid: number, sig: number): void => { // kill
@@ -416,6 +422,10 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 				sysret(err);
 			});
 		},
+		174: (act: number, oldact: number): void => { //rt_sigaction
+//			console.log('TODO: rt_sigaction');
+			sysret(0);
+		},
 		183: (bufp: number, size: number): void => { // getcwd
 			let cwd = utf8ToBytes(sys.getcwd(task));
 			if (cwd.byteLength > size)
@@ -437,7 +447,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		196: (pathp: number, bufp: number): void => { // lstat64
 			let path = stringAt(pathp);
-//			console.log('lstat(' + path + ')');
+			console.log('lstat(' + path + ')');
 			let len = marshal.fs.StatDef.length;
 			let buf = arrayAt(bufp, len);
 			sys.lstat(task, path, buf, function(): void {
@@ -516,7 +526,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 			sysret(-constants.ENOTSUP);
 			return;
 		}
-		// console.log('[' + task.pid + '] \tsys_' + n + '\t' + args[0]);
+		//console.log('[' + task.pid + '] \tsys_' + n + '\t' + args[0]);
 
 		table[n].apply(this, args);
 	};
@@ -1584,6 +1594,7 @@ export class Kernel implements IKernel {
 		let env: string[] = [
 			'PWD=/',
 			'GOPATH=/',
+			'PERL_DESTRUCT_LEVEL=2',
 			'USER=browsix',
 			'PATH=/usr/bin',
 			'LANG=en_US.UTF-8',
@@ -1790,7 +1801,7 @@ export class Kernel implements IKernel {
 
 	doSyscall(syscall: Syscall): void {
 		if (syscall.name in this.syscalls) {
-			if (DEBUG) {
+			if (STRACE) {
 				let argfmt = (arg: any): any => {
 					if (arg instanceof Uint8Array) {
 						let len = arg.length;
@@ -2338,7 +2349,7 @@ export class Task implements ITask {
 
 		this.state = TaskState.Running;
 
-		if (DEBUG)
+		if (STRACE)
 			console.log('[' + this.pid + '|' + msg.id + '] \tCOMPLETE'); // ' + JSON.stringify(msg));
 		this.worker.postMessage(msg, transferrable || []);
 	}

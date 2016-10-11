@@ -1413,12 +1413,6 @@ export class Syscalls {
 			return;
 		}
 
-		// FIXME: remove this hack
-		if (fd <= 2) {
-			cb(0);
-			return;
-		}
-
 		task.files[fd] = undefined;
 
 		file.unref();

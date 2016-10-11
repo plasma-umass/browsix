@@ -24,7 +24,7 @@ import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
 // controls the default of whether to delay the initialization message
 // to a Worker to aid in debugging.
 let DEBUG = false;
-let STRACE = false;
+let STRACE = true;
 
 let Buffer: any;
 
@@ -526,7 +526,8 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 			sysret(-constants.ENOTSUP);
 			return;
 		}
-		//console.log('[' + task.pid + '] \tsys_' + n + '\t' + args[0]);
+		if (STRACE)
+			console.log('[' + task.pid + '] \tsys_' + n + '\t' + args[0]);
 
 		table[n].apply(this, args);
 	};
@@ -966,11 +967,13 @@ export class Syscalls {
 	}
 
 	execve(task: ITask, path: string, args: string[], env: Environment, cb: (pid: number) => void): void {
+		let fullpath = resolve(task.cwd, path);
+
 		// FIXME: hack to work around unidentified GNU make issue
 		if (!env['PATH'])
 			env['PATH'] = '/usr/bin';
 
-		task.exec(path, args, env, (err: any, pid: number) => {
+		task.exec(fullpath, args, env, (err: any, pid: number) => {
 			let nerr = -EACCES;
 			if (err && err.errno)
 				nerr = -err.errno;
@@ -1217,7 +1220,8 @@ export class Syscalls {
 		files: number[],
 		cb: (err: number, pid: number) => void): void {
 
-		this.kernel.spawn(<Task>task, cwd, path, args, env, files, cb);
+		let fullpath = resolve(task.cwd, path);
+		this.kernel.spawn(<Task>task, cwd, fullpath, args, env, files, cb);
 	}
 
 	pread(task: ITask, fd: number, buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
@@ -2323,8 +2327,8 @@ export class Task implements ITask {
 			this.wait4.apply(this, queue[i]);
 		}
 
-		// TODO: when does sigchild get sent?
-		this.signal('child', [pid, code, 0]);
+		// TODO: sigchld is IGN by default.
+		//this.signal('child', [pid, code, 0]);
 	}
 
 	signal(name: string, args: any[], transferrable?: any[]): void {

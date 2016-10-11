@@ -2105,14 +2105,20 @@ export class Task implements ITask {
 	fileOpened(err: any, fd: any): void {
 		if (err) {
 			this.onRunnable(err, undefined);
-			this.exit(-1);
+			let code = -1;
+			if (err.errno)
+				code = -err.errno;
+			this.exit(code);
 			return;
 		}
 		this.exeFd = fd;
 		this.kernel.fs.fstat(fd, (serr: any, stats: any) => {
 			if (serr) {
 				this.onRunnable(serr, undefined);
-				this.exit(-1);
+				let code = -1;
+				if (serr.errno)
+					code = -serr.errno;
+				this.exit(code);
 				return;
 			}
 			let buf = new Buffer(stats.size);

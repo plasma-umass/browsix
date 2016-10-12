@@ -24,7 +24,7 @@ import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
 // controls the default of whether to delay the initialization message
 // to a Worker to aid in debugging.
 let DEBUG = false;
-let STRACE = true;
+let STRACE = false;
 
 let Buffer: any;
 
@@ -322,11 +322,11 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		5: (pathp: number, flags: number, mode: number): void => { // open
 			let path = stringAt(pathp);
 			let sflags: string = flagsToString(flags);
-//			console.log('open(' + path + ')');
 
 			sys.open(task, path, sflags, mode, (err: number, fd: number) => {
 				if ((typeof err === 'number') && err < 0)
 					fd = err;
+//				console.log('open(' + path + ') = ' + fd);
 				sysret(fd|0);
 			});
 		},
@@ -335,7 +335,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		10: (pathp: number): void => { // unlink
 			let path = stringAt(pathp);
-			console.log('unlink(' + path + ')');
+//			console.log('unlink(' + path + ')');
 			sys.unlink(task, path, (err: any) => {
 				if (err && err.errno)
 					sysret(-err.errno);
@@ -367,7 +367,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		33: (pathp: number, amode: number): void => { // access
 			let path = stringAt(pathp);
-			console.log('access(' + path + ')');
+//			console.log('access(' + path + ')');
 			sys.access(task, path, amode, sysret);
 		},
 		37: (pid: number, sig: number): void => { // kill
@@ -447,7 +447,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		196: (pathp: number, bufp: number): void => { // lstat64
 			let path = stringAt(pathp);
-			console.log('lstat(' + path + ')');
+//			console.log('lstat(' + path + ')');
 			let len = marshal.fs.StatDef.length;
 			let buf = arrayAt(bufp, len);
 			sys.lstat(task, path, buf, function(): void {

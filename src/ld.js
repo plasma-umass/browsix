@@ -29,6 +29,7 @@ function integrateWasmJS(Module) {
   // inputs
 
   var method = Module['wasmJSMethod'] || (Module['wasmJSMethod'] || "native-wasm") || 'native-wasm,interpret-s-expr'; // by default, try native and then .wast
+  Module['wasmJSMethod'] = method;
 
   var wasmTextFile = Module['wasmTextFile'] || undefined;
   var wasmBinaryFile = Module['wasmBinaryFile'] || undefined;
@@ -100,19 +101,15 @@ function integrateWasmJS(Module) {
     }
     var oldView = new Int8Array(oldBuffer);
     var newView = new Int8Array(newBuffer);
-    if (1) {
-      // memory segments arrived in the wast, do not trample them
+
+    // If we have a mem init file, do not trample it
+    if (!memoryInitializer) {
       oldView.set(newView.subarray(STATIC_BASE, STATIC_BASE + STATIC_BUMP), STATIC_BASE);
     }
+
     newView.set(oldView);
     updateGlobalBuffer(newBuffer);
     updateGlobalBufferViews();
-    Module['reallocBuffer'] = function(size) {
-      size = Math.ceil(size / wasmPageSize) * wasmPageSize; // round up to wasm page size
-      var old = Module['buffer'];
-      exports['__growWasmMemory'](size / wasmPageSize); // tiny wasm method that just does grow_memory
-      return Module['buffer'] !== old ? Module['buffer'] : null; // if it was reallocated, it changed
-    };
   }
 
   var WasmTypes = {
@@ -122,26 +119,6 @@ function integrateWasmJS(Module) {
     f32: 3,
     f64: 4
   };
-
-  // wasm lacks globals, so asm2wasm maps them into locations in memory. that information cannot
-  // be present in the wasm output of asm2wasm, so we store it in a side file. If we load asm2wasm
-  // output, either generated ahead of time or on the client, we need to apply those mapped
-  // globals after loading the module.
-  function applyMappedGlobals(globalsFileBase) {
-    var mappedGlobals = JSON.parse(Module['read'](globalsFileBase + '.mappedGlobals'));
-    for (var name in mappedGlobals) {
-      var global = mappedGlobals[name];
-      if (!global.import) continue; // non-imports are initialized to zero in the typed array anyhow, so nothing to do here
-      var value = lookupImport(global.module, global.base);
-      var address = global.address;
-      switch (global.type) {
-        case WasmTypes.i32: Module['HEAP32'][address >> 2] = value; break;
-        case WasmTypes.f32: Module['HEAPF32'][address >> 2] = value; break;
-        case WasmTypes.f64: Module['HEAPF64'][address >> 3] = value; break;
-        default: abort();
-      }
-    }
-  }
 
   function fixImports(imports) {
     if (!1) return imports;
@@ -187,10 +164,16 @@ function integrateWasmJS(Module) {
   }
 
   function doNativeWasm(global, env, providedBuffer) {
-    if (typeof Wasm !== 'object') {
+    if (typeof WebAssembly !== 'object') {
       Module['printErr']('no native wasm support detected');
       return false;
     }
+    // prepare memory import
+    if (!(Module['wasmMemory'] instanceof WebAssembly.Memory)) {
+      Module['printErr']('no native wasm Memory in use');
+      return false;
+    }
+    env['memory'] = Module['wasmMemory'];
     // Load the wasm module and create an instance of using native support in the JS engine.
     info['global'] = {
       'NaN': NaN,
@@ -200,12 +183,13 @@ function integrateWasmJS(Module) {
     info['env'] = env;
     var instance;
     try {
-      instance = Wasm['instantiateModule'](getBinary(), info, providedBuffer);
+      instance = new WebAssembly.Instance(new WebAssembly.Module(getBinary()), info, providedBuffer)
     } catch (e) {
       Module['printErr']('failed to compile wasm module: ' + e);
       return false;
     }
     exports = instance.exports;
+    if (exports.memory) mergeMemory(exports.memory);
 
     Module["usingWasm"] = true;
 
@@ -233,6 +217,11 @@ function integrateWasmJS(Module) {
 
     info.global = global;
     info.env = env;
+
+    // polyfill interpreter expects an ArrayBuffer
+    assert(providedBuffer === Module['buffer']);
+    env['memory'] = providedBuffer;
+    assert(env['memory'] instanceof ArrayBuffer);
 
     wasmJS['providedTotalMemory'] = Module['buffer'].byteLength;
 
@@ -268,12 +257,6 @@ function integrateWasmJS(Module) {
       Module['newBuffer'] = null;
     }
 
-    if (method == 'interpret-s-expr') {
-      applyMappedGlobals(wasmTextFile);
-    } else if (method == 'interpret-binary') {
-      applyMappedGlobals(wasmBinaryFile);
-    }
-
     exports = wasmJS['asmExports'];
 
     return exports;
@@ -282,6 +265,24 @@ function integrateWasmJS(Module) {
   // We may have a preloaded value in Module.asm, save it
   Module['asmPreload'] = Module['asm'];
 
+  // Memory growth integration code
+  Module['reallocBuffer'] = function(size) {
+    size = Math.ceil(size / wasmPageSize) * wasmPageSize; // round up to wasm page size
+    var old = Module['buffer'];
+    var result = exports['__growWasmMemory'](size / wasmPageSize); // tiny wasm method that just does grow_memory
+    if (Module["usingWasm"]) {
+      if (result !== (-1 | 0)) {
+        // success in native wasm memory growth, get the buffer from the memory
+        return Module['buffer'] = Module['wasmMemory'].buffer;
+      } else {
+        return null;
+      }
+    } else {
+      // in interpreter, we replace Module.buffer if we allocate
+      return Module['buffer'] !== old ? Module['buffer'] : null; // if it was reallocated, it changed
+    }
+  };
+
   // Provide an "asm.js function" for the application, called to "link" the asm.js module. We instantiate
   // the wasm module at that time, and it receives imports and provides exports and so forth, the app
   // doesn't need to care that it is wasm or olyfilled wasm or asm.js.
@@ -289,6 +290,17 @@ function integrateWasmJS(Module) {
   Module['asm'] = function(global, env, providedBuffer) {
     global = fixImports(global);
     env = fixImports(env);
+
+    // import table
+    if (!env['table']) {
+      var TABLE_SIZE = Module['wasmTableSize'];
+      if (TABLE_SIZE === undefined) TABLE_SIZE = 1024; // works in binaryen interpreter at least
+      if (typeof WebAssembly === 'object' && typeof WebAssembly.Table === 'function') {
+        env['table'] = new WebAssembly.Table({ initial: TABLE_SIZE, maximum: TABLE_SIZE, element: 'anyfunc' });
+      } else {
+        env['table'] = new Array(TABLE_SIZE); // works in binaryen interpreter at least
+      }
+    }
 
     // try the methods. each should return the exports if it succeeded
 
@@ -446,7 +458,7 @@ else if (ENVIRONMENT_IS_SHELL) {
   if (typeof read != 'undefined') {
     Module['read'] = read;
   } else {
-    Module['read'] = function read() { throw 'no read() available (jsc?)' };
+    Module['read'] = function read() { throw 'no read() available' };
   }
 
   Module['readBinary'] = function readBinary(f) {
@@ -497,6 +509,8 @@ else if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER | ENVIRONMENT_IS_BROWSIX) {
       console.log(x);
     };
     if (!Module['printErr']) Module['printErr'] = function printErr(x) {
+      if (ENVIRONMENT_IS_BROWSIX)
+        debugger;
       console.warn(x);
     };
   } else {
@@ -696,9 +710,9 @@ var Runtime = {
   },
   stackAlloc: function (size) { var ret = STACKTOP;STACKTOP = (STACKTOP + size)|0;STACKTOP = (((STACKTOP)+15)&-16); return ret; },
   staticAlloc: function (size) { var ret = STATICTOP;STATICTOP = (STATICTOP + size)|0;STATICTOP = (((STATICTOP)+15)&-16); return ret; },
-  dynamicAlloc: function (size) { var ret = DYNAMICTOP;DYNAMICTOP = (DYNAMICTOP + size)|0;DYNAMICTOP = (((DYNAMICTOP)+15)&-16); if (DYNAMICTOP >= TOTAL_MEMORY) { var success = enlargeMemory(); if (!success) { DYNAMICTOP = ret;  return 0; } }; return ret; },
+  dynamicAlloc: function (size) { var ret = HEAP32[DYNAMICTOP_PTR>>2];var end = (((ret + size + 15)|0) & -16);HEAP32[DYNAMICTOP_PTR>>2] = end;if (end >= TOTAL_MEMORY) {var success = enlargeMemory();if (!success) {HEAP32[DYNAMICTOP_PTR>>2] = ret;return 0;}}return ret;},
   alignMemory: function (size,quantum) { var ret = size = Math.ceil((size)/(quantum ? quantum : 16))*(quantum ? quantum : 16); return ret; },
-  makeBigInt: function (low,high,unsigned) { var ret = (unsigned ? ((+((low>>>0)))+((+((high>>>0)))*(+4294967296))) : ((+((low>>>0)))+((+((high|0)))*(+4294967296)))); return ret; },
+  makeBigInt: function (low,high,unsigned) { var ret = (unsigned ? ((+((low>>>0)))+((+((high>>>0)))*4294967296.0)) : ((+((low>>>0)))+((+((high|0)))*4294967296.0))); return ret; },
   GLOBAL_BASE: 1024,
   QUANTUM_SIZE: 4,
   __dummy__: 0
@@ -771,7 +785,7 @@ if (ENVIRONMENT_IS_BROWSIX) {
 // Runtime essentials
 //========================================
 
-var ABORT = false; // whether we are quitting the application. no code should run after this. set in exit() and abort()
+var ABORT = 0; // whether we are quitting the application. no code should run after this. set in exit() and abort()
 var EXITSTATUS = 0;
 
 function assert(condition, text) {
@@ -814,8 +828,9 @@ var cwrap, ccall;
       var ret = 0;
       if (str !== null && str !== undefined && str !== 0) { // null string
         // at most 4 bytes per UTF-8 code point, +1 for the trailing '\0'
-        ret = Runtime.stackAlloc((str.length << 2) + 1);
-        writeStringToMemory(str, ret);
+        var len = (str.length << 2) + 1;
+        ret = Runtime.stackAlloc(len);
+        stringToUTF8(str, ret, len);
       }
       return ret;
     }
@@ -933,7 +948,7 @@ function setValue(ptr, value, type, noSafe) {
       case 'i8': HEAP8[((ptr)>>0)]=value; break;
       case 'i16': HEAP16[((ptr)>>1)]=value; break;
       case 'i32': HEAP32[((ptr)>>2)]=value; break;
-      case 'i64': (tempI64 = [value>>>0,(tempDouble=value,(+(Math_abs(tempDouble))) >= (+1) ? (tempDouble > (+0) ? ((Math_min((+(Math_floor((tempDouble)/(+4294967296)))), (+4294967295)))|0)>>>0 : (~~((+(Math_ceil((tempDouble - +(((~~(tempDouble)))>>>0))/(+4294967296))))))>>>0) : 0)],HEAP32[((ptr)>>2)]=tempI64[0],HEAP32[(((ptr)+(4))>>2)]=tempI64[1]); break;
+      case 'i64': (tempI64 = [value>>>0,(tempDouble=value,(+(Math_abs(tempDouble))) >= 1.0 ? (tempDouble > 0.0 ? ((Math_min((+(Math_floor((tempDouble)/4294967296.0))), 4294967295.0))|0)>>>0 : (~~((+(Math_ceil((tempDouble - +(((~~(tempDouble)))>>>0))/4294967296.0)))))>>>0) : 0)],HEAP32[((ptr)>>2)]=tempI64[0],HEAP32[(((ptr)+(4))>>2)]=tempI64[1]); break;
       case 'float': HEAPF32[((ptr)>>2)]=value; break;
       case 'double': HEAPF64[((ptr)>>3)]=value; break;
       default: abort('invalid type for setValue: ' + type);
@@ -1058,7 +1073,7 @@ Module["allocate"] = allocate;
 // Allocate memory during any stage of startup - static memory early on, dynamic memory later, malloc when ready
 function getMemory(size) {
   if (!staticSealed) return Runtime.staticAlloc(size);
-  if ((typeof _sbrk !== 'undefined' && !_sbrk.called) || !runtimeInitialized) return Runtime.dynamicAlloc(size);
+  if (!runtimeInitialized) return Runtime.dynamicAlloc(size);
   return _malloc(size);
 }
 Module["getMemory"] = getMemory;
@@ -1424,8 +1439,10 @@ function demangle(func) {
   var hasLibcxxabi = !!Module['___cxa_demangle'];
   if (hasLibcxxabi) {
     try {
-      var buf = _malloc(func.length);
-      writeStringToMemory(func.substr(1), buf);
+      var s = func.substr(1);
+      var len = lengthBytesUTF8(s)+1;
+      var buf = _malloc(len);
+      stringToUTF8(s, buf, len);
       var status = _malloc(4);
       var ret = Module['___cxa_demangle'](buf, 0, 0, status);
       if (getValue(status, 'i32') === 0 && ret) {
@@ -1517,85 +1534,38 @@ function updateGlobalBufferViews() {
   }
 }
 
-var STATIC_BASE = 0, STATICTOP = 0, staticSealed = false; // static area
-var STACK_BASE = 0, STACKTOP = 0, STACK_MAX = 0; // stack area
-var DYNAMIC_BASE = 0, DYNAMICTOP = 0; // dynamic area handled by sbrk
+var STATIC_BASE, STATICTOP, staticSealed; // static area
+var STACK_BASE, STACKTOP, STACK_MAX; // stack area
+var DYNAMIC_BASE, DYNAMICTOP_PTR; // dynamic area handled by sbrk
+
+  STATIC_BASE = STATICTOP = STACK_BASE = STACKTOP = STACK_MAX = DYNAMIC_BASE = DYNAMICTOP_PTR = 0;
+  staticSealed = false;
 
 
 
-if (!Module['reallocBuffer']) Module['reallocBuffer'] = function(size) {
-  abort('Will not enlarge memory arrays');
-  var ret;
-  try {
-    if (ArrayBuffer.transfer) {
-      ret = ArrayBuffer.transfer(buffer, size);
-    } else {
-      var oldHEAP8 = HEAP8;
-      ret = new ArrayBuffer(size);
-      var temp = new Int8Array(ret);
-      temp.set(oldHEAP8);
-    }
-  } catch(e) {
-    return false;
-  }
-  var success = _emscripten_replace_memory(ret);
-  if (!success) return false;
-  return ret;
-};
-
-function enlargeMemory() {
-  // TOTAL_MEMORY is the current size of the actual array, and DYNAMICTOP is the new top.
-
-  var OLD_TOTAL_MEMORY = TOTAL_MEMORY;
-
-
-  var LIMIT = Math.pow(2, 31); // 2GB is a practical maximum, as we use signed ints as pointers
-                               // and JS engines seem unhappy to give us 2GB arrays currently
-  if (DYNAMICTOP >= LIMIT) return false;
-
-  while (TOTAL_MEMORY <= DYNAMICTOP) { // Simple heuristic.
-    if (TOTAL_MEMORY < LIMIT/2) {
-      TOTAL_MEMORY = alignMemoryPage(2*TOTAL_MEMORY); // double until 1GB
-    } else {
-      var last = TOTAL_MEMORY;
-      TOTAL_MEMORY = alignMemoryPage((3*TOTAL_MEMORY + LIMIT)/4); // add smaller increments towards 2GB, which we cannot reach
-      if (TOTAL_MEMORY <= last) return false;
-    }
-  }
-
-  TOTAL_MEMORY = Math.max(TOTAL_MEMORY, 16*1024*1024);
-
-  if (TOTAL_MEMORY >= LIMIT) return false;
-
-
-
-
-  var replacement = Module['reallocBuffer'](TOTAL_MEMORY);
-  if (!replacement) return false;
-
-  // everything worked
-
-  updateGlobalBuffer(replacement);
-  updateGlobalBufferViews();
-
-
-  return true;
+function abortOnCannotGrowMemory() {
+  abort('Cannot enlarge memory arrays. Either (1) compile with  -s TOTAL_MEMORY=X  with X higher than the current value ' + TOTAL_MEMORY + ', (2) compile with  -s ALLOW_MEMORY_GROWTH=1  which adjusts the size at runtime but prevents some optimizations, (3) set Module.TOTAL_MEMORY to a higher value before the program runs, or if you want malloc to return NULL (0) instead of this abort, compile with  -s ABORTING_MALLOC=0 ');
 }
 
-var byteLength = function(buffer) { return buffer.byteLength; };
+
+function enlargeMemory() {
+  abortOnCannotGrowMemory();
+}
+
 
 var TOTAL_STACK = Module['TOTAL_STACK'] || 5242880;
 var TOTAL_MEMORY = Module['TOTAL_MEMORY'] || 134217728;
 
-var totalMemory = 64*1024;
+var WASM_PAGE_SIZE = 64 * 1024;
+
+var totalMemory = WASM_PAGE_SIZE;
 while (totalMemory < TOTAL_MEMORY || totalMemory < 2*TOTAL_STACK) {
   if (totalMemory < 16*1024*1024) {
     totalMemory *= 2;
   } else {
-    totalMemory += 16*1024*1024
+    totalMemory += 16*1024*1024;
   }
 }
-totalMemory = Math.max(totalMemory, 16*1024*1024);
 if (totalMemory !== TOTAL_MEMORY) {
   TOTAL_MEMORY = totalMemory;
 }
@@ -1608,10 +1578,21 @@ if (totalMemory !== TOTAL_MEMORY) {
 if (Module['buffer']) {
   buffer = Module['buffer'];
 } else {
-  buffer = new ArrayBuffer(TOTAL_MEMORY);
+  // Use a WebAssembly memory where available
+  if (typeof WebAssembly === 'object' && typeof WebAssembly.Memory === 'function') {
+    Module['wasmMemory'] = new WebAssembly.Memory({ initial: TOTAL_MEMORY / WASM_PAGE_SIZE, maximum: TOTAL_MEMORY / WASM_PAGE_SIZE });
+    buffer = Module['wasmMemory'].buffer;
+  } else
+  {
+    buffer = new ArrayBuffer(TOTAL_MEMORY);
+  }
 }
 updateGlobalBufferViews();
 
+
+function getTotalMemory() {
+  return TOTAL_MEMORY;
+}
 
 // Endianness check (note: assumes compiler arch was little-endian)
   HEAP32[0] = 0x63736d65; /* 'emsc' */
@@ -1746,21 +1727,28 @@ function intArrayToString(array) {
 }
 Module["intArrayToString"] = intArrayToString;
 
+// Deprecated: This function should not be called because it is unsafe and does not provide
+// a maximum length limit of how many bytes it is allowed to write. Prefer calling the
+// function stringToUTF8Array() instead, which takes in a maximum length that can be used
+// to be secure from out of bounds writes.
 function writeStringToMemory(string, buffer, dontAddNull) {
-  var array = intArrayFromString(string, dontAddNull);
-  var i = 0;
-  while (i < array.length) {
-    var chr = array[i];
-    HEAP8[(((buffer)+(i))>>0)]=chr;
-    i = i + 1;
+  Runtime.warnOnce('writeStringToMemory is deprecated and should not be called! Use stringToUTF8() instead!');
+
+  var lastChar, end;
+  if (dontAddNull) {
+    // stringToUTF8Array always appends null. If we don't want to do that, remember the
+    // character that existed at the location where the null will be placed, and restore
+    // that after the write (below).
+    end = buffer + lengthBytesUTF8(string);
+    lastChar = HEAP8[end];
   }
+  stringToUTF8(string, buffer, Infinity);
+  if (dontAddNull) HEAP8[end] = lastChar; // Restore the value under the null character.
 }
 Module["writeStringToMemory"] = writeStringToMemory;
 
 function writeArrayToMemory(array, buffer) {
-  for (var i = 0; i < array.length; i++) {
-    HEAP8[((buffer++)>>0)]=array[i];
-  }
+  HEAP8.set(array, buffer);    
 }
 Module["writeArrayToMemory"] = writeArrayToMemory;
 
@@ -1805,6 +1793,11 @@ if (!Math['imul'] || Math['imul'](0xffffffff, 5) !== -5) Math['imul'] = function
 };
 Math.imul = Math['imul'];
 
+if (!Math['fround']) {
+  var froundBuffer = new Float32Array(1);
+  Math['fround'] = function(x) { froundBuffer[0] = x; return froundBuffer[0] };
+}
+Math.fround = Math['fround'];
 
 if (!Math['clz32']) Math['clz32'] = function(x) {
   x = x >>> 0;
@@ -1902,11 +1895,11 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = 1024;
 
-STATICTOP = STATIC_BASE + 53616;
+STATICTOP = STATIC_BASE + 8816;
 /* global initializers */  __ATINIT__.push();
 
 
-var STATIC_BUMP = 53616;
+var STATIC_BUMP = 8816;
 
 /* no memory initializer */
 var tempDoublePtr = STATICTOP; STATICTOP += 16;
@@ -2157,15 +2150,26 @@ function copyTempDouble(ptr) {
               var buf = new Buffer(BUFSIZE);
               var bytesRead = 0;
   
-              var fd = process.stdin.fd;
-              // Linux and Mac cannot use process.stdin.fd (which isn't set up as sync)
-              var usingDevice = false;
-              try {
-                fd = fs.openSync('/dev/stdin', 'r');
-                usingDevice = true;
-              } catch (e) {}
+              var isPosixPlatform = (process.platform != 'win32'); // Node doesn't offer a direct check, so test by exclusion
   
-              bytesRead = fs.readSync(fd, buf, 0, BUFSIZE, null);
+              var fd = process.stdin.fd;
+              if (isPosixPlatform) {
+                // Linux and Mac cannot use process.stdin.fd (which isn't set up as sync)
+                var usingDevice = false;
+                try {
+                  fd = fs.openSync('/dev/stdin', 'r');
+                  usingDevice = true;
+                } catch (e) {}
+              }
+  
+              try {
+                bytesRead = fs.readSync(fd, buf, 0, BUFSIZE, null);
+              } catch(e) {
+                // Cross-platform differences: on Windows, reading EOF throws an exception, but on other OSes,
+                // reading EOF returns 0. Uniformize behavior by treating the EOF exception to return 0.
+                if (e.toString().indexOf('EOF') != -1) bytesRead = 0;
+                else throw e;
+              }
   
               if (usingDevice) { fs.closeSync(fd); }
               if (bytesRead > 0) {
@@ -2861,8 +2865,10 @@ function copyTempDouble(ptr) {
         parts.reverse();
         return PATH.join.apply(null, parts);
       },flagsToPermissionStringMap:{0:"r",1:"r+",2:"r+",64:"r",65:"r+",66:"r+",129:"rx+",193:"rx+",514:"w+",577:"w",578:"w+",705:"wx",706:"wx+",1024:"a",1025:"a",1026:"a+",1089:"a",1090:"a+",1153:"ax",1154:"ax+",1217:"ax",1218:"ax+",4096:"rs",4098:"rs+"},flagsToPermissionString:function (flags) {
-        flags &= ~0100000 /*O_LARGEFILE*/; // Ignore this flag from musl, otherwise node.js fails to open the file.
-        flags &= ~02000000 /*O_CLOEXEC*/; // Some applications may pass it; it makes no sense for a single process.
+        flags &= ~0x200000 /*O_PATH*/; // Ignore this flag from musl, otherwise node.js fails to open the file.
+        flags &= ~0x800 /*O_NONBLOCK*/; // Ignore this flag from musl, otherwise node.js fails to open the file.
+        flags &= ~0x8000 /*O_LARGEFILE*/; // Ignore this flag from musl, otherwise node.js fails to open the file.
+        flags &= ~0x80000 /*O_CLOEXEC*/; // Some applications may pass it; it makes no sense for a single process.
         if (flags in NODEFS.flagsToPermissionStringMap) {
           return NODEFS.flagsToPermissionStringMap[flags];
         } else {
@@ -4273,7 +4279,7 @@ function copyTempDouble(ptr) {
         FS.mkdir('/proc/self/fd');
         FS.mount({
           mount: function() {
-            var node = FS.createNode('/proc/self', 'fd', 16384 | 0777, 73);
+            var node = FS.createNode('/proc/self', 'fd', 16384 | 511 /* 0777 */, 73);
             node.node_ops = {
               lookup: function(parent, name) {
                 var fd = +name;
@@ -4953,9 +4959,15 @@ function copyTempDouble(ptr) {
       },doReadlink:function (path, buf, bufsize) {
         if (bufsize <= 0) return -ERRNO_CODES.EINVAL;
         var ret = FS.readlink(path);
-        ret = ret.slice(0, Math.max(0, bufsize));
-        writeStringToMemory(ret, buf, true);
-        return ret.length;
+  
+        var len = Math.min(bufsize, lengthBytesUTF8(ret));
+        var endChar = HEAP8[buf+len];
+        stringToUTF8(ret, buf, bufsize+1);
+        // readlink is one of the rare functions that write out a C string, but does never append a null to the output buffer(!)
+        // stringToUTF8() always appends a null byte, so restore the character under the null byte after the write.
+        HEAP8[buf+len] = endChar;
+  
+        return len;
       },doAccess:function (path, amode) {
         if (amode & ~7) {
           // need a valid mode
@@ -5079,17 +5091,28 @@ function copyTempDouble(ptr) {
           Runtime.process.env = environ;
   
           if (typeof SharedArrayBuffer !== 'function') {
+            var done = function() {
+              SYSCALLS.browsix.syscall.exit(-1);
+            };
+            var msg = 'ERROR: requires SharedArrayBuffer support, exiting\n';
+            var buf = new Uint8Array(msg.length);
+            for (var i = 0; i < msg.length; i++)
+              buf[i] = msg.charCodeAt(i);
+  
+            SYSCALLS.browsix.syscall.syscallAsync(done, 'pwrite', [2, buf, -1]);
             console.log('Embrowsix: shared array buffers required');
-            SYSCALLS.browsix.syscall.exit(-1);
             return;
           }
   
           var oldHEAP8 = HEAP8;
-          var ret = new SharedArrayBuffer(TOTAL_MEMORY);
-          var temp = new Int8Array(ret);
-          temp.set(oldHEAP8);
-          updateGlobalBuffer(ret);
+          var b = new SharedArrayBuffer(TOTAL_MEMORY);
+          // copy whatever was in the old guy to here
+          new Int8Array(b).set(oldHEAP8);
+          updateGlobalBuffer(b);
           updateGlobalBufferViews();
+          asm = asmModule(Module.asmGlobalArg, Module.asmLibraryArg, buffer);
+          initReceiving();
+          initRuntimeFuncs();
   
           var PER_BLOCKING = 0x80;
           // it seems malloc overflows into our static allocation, so
@@ -5157,6 +5180,22 @@ function copyTempDouble(ptr) {
             }
             SYSCALLS.browsix.async = false;
   
+            if (!Module.asmLibraryArg['exit']) {
+              Module.asmLibraryArg['exit'] = function(code) {
+                console.log('FIXME: this exit() should never be called');
+                Module.asmLibraryArg['_Exit'](code);
+              }
+            }
+            if (!Module.asmLibraryArg['putenv']) {
+              Module.asmLibraryArg['putenv'] = function() {
+                Module.asmLibraryArg['putenv'] = _putenv;
+              }
+            }
+            if (!Module.asmLibraryArg['setjmp']) {
+              Module.asmLibraryArg['setjmp'] = function() {
+                abort('setjmp called');
+              }
+            }
             asm = Module['asm'](Module.asmGlobalArg, Module.asmLibraryArg, buffer);
             updateAsmExports();
             updateAsmMemoryExports();
@@ -5193,12 +5232,14 @@ function copyTempDouble(ptr) {
             Atomics.store(HEAP32, waitOff >> 2, 0);
             return Atomics.load(HEAP32, (waitOff >> 2) + 1);
           },exit:function (code) {
+            // FIXME: this will only work in sync mode.
+            Module['_fflush'](0);
             if (SYSCALLS.browsix.async) {
               this.syscallAsync(null, 'exit', [code]);
-              while (true) {}
             } else {
               this.sync(252 /* SYS_exit_group */, code);
             }
+            close();
           },addEventListener:function (type, handler) {
             if (!handler)
               return;
@@ -5254,6 +5295,10 @@ function copyTempDouble(ptr) {
   function ___syscall193(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // truncate64
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: truncate64');
+        abort('unsupported syscall truncate64');
+      }
       var path = SYSCALLS.getStr(), zero = SYSCALLS.getZero(), length = SYSCALLS.get64();
       FS.truncate(path, length);
       return 0;
@@ -5266,6 +5311,10 @@ function copyTempDouble(ptr) {
   function ___syscall192(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // mmap2
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: mmap2');
+        abort('unsupported syscall mmap2');
+      }
       var addr = SYSCALLS.get(), len = SYSCALLS.get(), prot = SYSCALLS.get(), flags = SYSCALLS.get(), fd = SYSCALLS.get(), off = SYSCALLS.get()
       off <<= 12; // undo pgoffset
       var ptr;
@@ -5309,6 +5358,10 @@ function copyTempDouble(ptr) {
   function ___syscall194(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // ftruncate64
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: ftruncate64');
+        abort('unsupported syscall ftruncate64');
+      }
       var fd = SYSCALLS.get(), zero = SYSCALLS.getZero(), length = SYSCALLS.get64();
       FS.ftruncate(fd, length);
       return 0;
@@ -5322,8 +5375,9 @@ function copyTempDouble(ptr) {
   try {
    // SYS_fstat64
       if (ENVIRONMENT_IS_BROWSIX) {
+        var SYS_FSTAT64 = 197;
         var fd = SYSCALLS.get(), buf = SYSCALLS.get();
-        return -ERRNO_CODES.EIO;
+        return SYSCALLS.browsix.syscall.sync(SYS_FSTAT64, fd, buf);
       }
       var stream = SYSCALLS.getStreamFromFD(), buf = SYSCALLS.get();
       return SYSCALLS.doStat(FS.stat, stream.path, buf);
@@ -5377,6 +5431,10 @@ function copyTempDouble(ptr) {
   function ___syscall118(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // fsync
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: fsync');
+        return 0;
+      }
       var stream = SYSCALLS.getStreamFromFD();
       return 0; // we can't do anything synchronously; the in-memory FS is already synced to
     } catch (e) {
@@ -5388,6 +5446,10 @@ function copyTempDouble(ptr) {
   function ___syscall296(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // mkdirat
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: mkdirat');
+        abort('unsupported syscall mkdirat');
+      }
       var dirfd = SYSCALLS.get(), path = SYSCALLS.getStr(), mode = SYSCALLS.get();
       path = SYSCALLS.calculateAt(dirfd, path);
       return SYSCALLS.doMkdir(path, mode);
@@ -5400,6 +5462,10 @@ function copyTempDouble(ptr) {
   function ___syscall297(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // mknodat
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: mknodat');
+        abort('unsupported syscall mknodat');
+      }
       var dirfd = SYSCALLS.get(), path = SYSCALLS.getStr(), mode = SYSCALLS.get(), dev = SYSCALLS.get();
       path = SYSCALLS.calculateAt(dirfd, path);
       return SYSCALLS.doMknod(path, mode, dev);
@@ -5412,6 +5478,10 @@ function copyTempDouble(ptr) {
   function ___syscall295(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // openat
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: openat');
+        abort('unsupported syscall openat');
+      }
       var dirfd = SYSCALLS.get(), path = SYSCALLS.getStr(), flags = SYSCALLS.get(), mode = SYSCALLS.get();
       path = SYSCALLS.calculateAt(dirfd, path);
       return FS.open(path, flags, mode).fd;
@@ -5424,6 +5494,10 @@ function copyTempDouble(ptr) {
   function ___syscall298(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // fchownat
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: fchownat');
+        abort('unsupported syscall fchownat');
+      }
       var dirfd = SYSCALLS.get(), path = SYSCALLS.getStr(), owner = SYSCALLS.get(), group = SYSCALLS.get(), flags = SYSCALLS.get();
       assert(flags === 0);
       path = SYSCALLS.calculateAt(dirfd, path);
@@ -5448,6 +5522,11 @@ function copyTempDouble(ptr) {
   function ___syscall114(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // wait4
+      if (ENVIRONMENT_IS_BROWSIX) {
+        var SYS_WAIT4 = 114;
+        var pid = SYSCALLS.get(), wstatus = SYSCALLS.get(), options = SYSCALLS.get(), rusage = SYSCALLS.get();
+        return SYSCALLS.browsix.syscall.sync(SYS_WAIT4, pid, wstatus, options, rusage);
+      }
       abort('cannot wait on child processes');
     } catch (e) {
     if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
@@ -5570,6 +5649,11 @@ function copyTempDouble(ptr) {
   function ___syscall39(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // mkdir
+      if (ENVIRONMENT_IS_BROWSIX) {
+        var SYS_MKDIR = 39;
+        var path = SYSCALLS.get(), mode = SYSCALLS.get();
+        return SYSCALLS.browsix.syscall.sync(SYS_MKDIR, path, mode);
+      }
       var path = SYSCALLS.getStr(), mode = SYSCALLS.get();
       return SYSCALLS.doMkdir(path, mode);
     } catch (e) {
@@ -5581,6 +5665,11 @@ function copyTempDouble(ptr) {
   function ___syscall38(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // rename
+      if (ENVIRONMENT_IS_BROWSIX) {
+        var SYS_RENAME = 38;
+        var old_path = SYSCALLS.get(), new_path = SYSCALLS.get();
+        return SYSCALLS.browsix.syscall.sync(SYS_RENAME, old_path, new_path);
+      }
       var old_path = SYSCALLS.getStr(), new_path = SYSCALLS.getStr();
       FS.rename(old_path, new_path);
       return 0;
@@ -5614,6 +5703,7 @@ function copyTempDouble(ptr) {
   function ___syscall36(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // sync
+      console.log('TODO: sync');
       return 0;
     } catch (e) {
     if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
@@ -5624,6 +5714,7 @@ function copyTempDouble(ptr) {
   function ___syscall34(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // nice
+      console.log('TODO: nice');
       var inc = SYSCALLS.get();
       return -ERRNO_CODES.EPERM; // no meaning to nice for our single-process environment
     } catch (e) {
@@ -5631,11 +5722,6 @@ function copyTempDouble(ptr) {
     return -e.errno;
   }
   }
-
-  function _getpwnam() {
-      ___setErrNo(ERRNO_CODES.ENOENT);
-      return 0;
-    }
 
   
   function _emscripten_memcpy_big(dest, src, num) {
@@ -5713,8 +5799,19 @@ function copyTempDouble(ptr) {
   }
 
 
-  function ___syscall42() {
-  return ___syscall51.apply(null, arguments)
+  function ___syscall42(which, varargs) {SYSCALLS.varargs = varargs;
+  try {
+   // pipe
+      if (ENVIRONMENT_IS_BROWSIX) {
+        var SYS_PIPE2 = 41;
+        var pipefd = SYSCALLS.get();
+        return SYSCALLS.browsix.syscall.sync(SYS_PIPE2, pipefd, 0);
+      }
+      return -ERRNO_CODES.ENOSYS; // unsupported features
+    } catch (e) {
+    if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
+    return -e.errno;
+  }
   }
 
   function ___syscall208() {
@@ -5724,6 +5821,11 @@ function copyTempDouble(ptr) {
   function ___syscall40(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // rmdir
+      if (ENVIRONMENT_IS_BROWSIX) {
+        var SYS_RMDIR = 39;
+        var path = SYSCALLS.get();
+        return SYSCALLS.browsix.syscall.sync(SYS_RMDIR, path);
+      }
       var path = SYSCALLS.getStr();
       FS.rmdir(path);
       return 0;
@@ -5746,6 +5848,7 @@ function copyTempDouble(ptr) {
   function ___syscall29(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // pause
+      console.log('TODO: pause');
       return -ERRNO_CODES.EINTR; // we can't pause
     } catch (e) {
     if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
@@ -5753,10 +5856,18 @@ function copyTempDouble(ptr) {
   }
   }
 
+  function _pthread_self() {
+      return 0;
+    }
+
   
   var PROCINFO={ppid:1,pid:42,sid:42,pgid:42};function ___syscall20(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // getpid
+      if (ENVIRONMENT_IS_BROWSIX) {
+        var SYS_GETPID = 20;
+        return SYSCALLS.browsix.syscall.sync(SYS_GETPID);
+      }
       return PROCINFO.pid;
     } catch (e) {
     if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
@@ -5806,9 +5917,22 @@ function copyTempDouble(ptr) {
   }
   }
 
+  
+  function __exit(status) {
+      // void _exit(int status);
+      // http://pubs.opengroup.org/onlinepubs/000095399/functions/exit.html
+      Module['exit'](status);
+    }function _exit(status) {
+      __exit(status);
+    }
+
   function ___syscall168(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // poll
+      if (ENVIRONMENT_IS_BROWSIX) {
+        abort('poll not implemented');
+        return;
+      }
       var fds = SYSCALLS.get(), nfds = SYSCALLS.get(), timeout = SYSCALLS.get();
       var nonzero = 0;
       for (var i = 0; i < nfds; i++) {
@@ -5834,19 +5958,13 @@ function copyTempDouble(ptr) {
   }
   }
 
-  function ___syscall175(which, varargs) {SYSCALLS.varargs = varargs;
-  try {
-   // rt_sigprocmask
-      return 0;
-    } catch (e) {
-    if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
-    return -e.errno;
-  }
-  }
-
   function ___syscall15(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // chmod
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: chmod');
+        return 0;
+      }
       var path = SYSCALLS.getStr(), mode = SYSCALLS.get();
       FS.chmod(path, mode);
       return 0;
@@ -5859,18 +5977,12 @@ function copyTempDouble(ptr) {
   function ___syscall14(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // mknod
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: mknod');
+        abort('unsupported syscall mknod');
+      }
       var path = SYSCALLS.getStr(), mode = SYSCALLS.get(), dev = SYSCALLS.get();
       return SYSCALLS.doMknod(path, mode, dev);
-    } catch (e) {
-    if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
-    return -e.errno;
-  }
-  }
-
-  function ___syscall11(which, varargs) {SYSCALLS.varargs = varargs;
-  try {
-   // execve
-      abort('execve not supported without Browsix');
     } catch (e) {
     if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
     return -e.errno;
@@ -5901,6 +6013,11 @@ function copyTempDouble(ptr) {
   function ___syscall12(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // chdir
+      if (ENVIRONMENT_IS_BROWSIX) {
+        var SYS_CHDIR = 12;
+        var pathname = SYSCALLS.get();
+        return SYSCALLS.browsix.syscall.sync(SYS_CHDIR, pathname);
+      }
       var path = SYSCALLS.getStr();
       FS.chdir(path);
       return 0;
@@ -5943,16 +6060,6 @@ function copyTempDouble(ptr) {
       }
       var stream = SYSCALLS.getStreamFromFD(), buf = SYSCALLS.get(), count = SYSCALLS.get();
       return FS.read(stream, HEAP8,buf, count);
-    } catch (e) {
-    if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
-    return -e.errno;
-  }
-  }
-
-  function ___syscall2(which, varargs) {SYSCALLS.varargs = varargs;
-  try {
-   // fork
-      abort('fork not supported without Browsix');
     } catch (e) {
     if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
     return -e.errno;
@@ -6027,6 +6134,10 @@ function copyTempDouble(ptr) {
   function ___syscall308(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // pselect
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: pselect');
+        abort('unsupported syscall pselect');
+      }
       return -ERRNO_CODES.ENOSYS; // unsupported feature
     } catch (e) {
     if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
@@ -6047,6 +6158,10 @@ function copyTempDouble(ptr) {
   function ___syscall142(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // newselect
+      if (ENVIRONMENT_IS_BROWSIX) {
+        abort('newselect not implemented');
+        return;
+      }
       // readfds are supported,
       // writefds checks socket open status
       // exceptfds not supported
@@ -6135,6 +6250,10 @@ function copyTempDouble(ptr) {
   function ___syscall305(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // readlinkat
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: readlinkat');
+        abort('unsupported syscall readlinkat');
+      }
       var dirfd = SYSCALLS.get(), path = SYSCALLS.getStr(), buf = SYSCALLS.get(), bufsize = SYSCALLS.get();
       path = SYSCALLS.calculateAt(dirfd, path);
       return SYSCALLS.doReadlink(path, buf, bufsize);
@@ -6144,23 +6263,14 @@ function copyTempDouble(ptr) {
   }
   }
 
-  function ___syscall306(which, varargs) {SYSCALLS.varargs = varargs;
-  try {
-   // fchmodat
-      var dirfd = SYSCALLS.get(), path = SYSCALLS.getStr(), mode = SYSCALLS.get(), flags = SYSCALLS.get();
-      assert(flags === 0);
-      path = SYSCALLS.calculateAt(dirfd, path);
-      FS.chmod(path, mode);
-      return 0;
-    } catch (e) {
-    if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
-    return -e.errno;
-  }
-  }
 
   function ___syscall307(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // faccessat
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: faccessat');
+        abort('unsupported syscall faccessat');
+      }
       var dirfd = SYSCALLS.get(), path = SYSCALLS.getStr(), amode = SYSCALLS.get(), flags = SYSCALLS.get();
       assert(flags === 0);
       path = SYSCALLS.calculateAt(dirfd, path);
@@ -6251,6 +6361,17 @@ function copyTempDouble(ptr) {
   }
   }
 
+  function _malloc(bytes) {
+      /* Over-allocate to make sure it is byte-aligned by 8.
+       * This will leak memory, but this is only the dummy
+       * implementation (replaced by dlmalloc normally) so
+       * not an issue.
+       */
+      var ptr = Runtime.dynamicAlloc(bytes + 8);
+      return (ptr+8) & 0xFFFFFFF8;
+    }
+  Module["_malloc"] = _malloc;
+
   function _putenv(string) {
       // int putenv(char *string);
       // http://pubs.opengroup.org/onlinepubs/009695399/functions/putenv.html
@@ -6279,6 +6400,11 @@ function copyTempDouble(ptr) {
   function ___syscall94(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // fchmod
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: fchmod');
+        //abort('unsupported syscall fchmod');
+        return 0;
+      }
       var fd = SYSCALLS.get(), mode = SYSCALLS.get();
       FS.fchmod(fd, mode);
       return 0;
@@ -6311,6 +6437,10 @@ function copyTempDouble(ptr) {
   function ___syscall91(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // munmap
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: munmap');
+        abort('unsupported syscall munmap');
+      }
       var addr = SYSCALLS.get(), len = SYSCALLS.get();
       // TODO: support unmmap'ing parts of allocations
       var info = SYSCALLS.mappings[addr];
@@ -6379,6 +6509,10 @@ function copyTempDouble(ptr) {
   }
   }
 
+  function _memory() {
+  Module['printErr']('missing function: memory'); abort(-1);
+  }
+
   function _getenv(name) {
       // char *getenv(const char *name);
       // http://pubs.opengroup.org/onlinepubs/009695399/functions/getenv.html
@@ -6409,42 +6543,43 @@ function copyTempDouble(ptr) {
       _pthread_cleanup_push.level = __ATEXIT__.length;
     }
 
+  function _sbrk(increment) {
+      increment = increment|0;
+      var oldDynamicTop = 0;
+      var oldDynamicTopOnChange = 0;
+      var newDynamicTop = 0;
+      var totalMemory = 0;
+      increment = ((increment + 15) & -16)|0;
+      oldDynamicTop = HEAP32[DYNAMICTOP_PTR>>2]|0;
+      newDynamicTop = oldDynamicTop + increment | 0;
   
+      if (((increment|0) > 0 & (newDynamicTop|0) < (oldDynamicTop|0)) // Detect and fail if we would wrap around signed 32-bit int.
+        | (newDynamicTop|0) < 0) { // Also underflow, sbrk() should be able to be used to subtract.
+        abortOnCannotGrowMemory()|0;
+        ___setErrNo(12);
+        return -1;
+      }
   
-  function __exit(status) {
-      // void _exit(int status);
-      // http://pubs.opengroup.org/onlinepubs/000095399/functions/exit.html
-      Module['exit'](status);
-    }function _exit(status) {
-      __exit(status);
-    }function __Exit(status) {
-      __exit(status);
-    }
-
-  function _sbrk(bytes) {
-      // Implement a Linux-like 'memory area' for our 'process'.
-      // Changes the size of the memory area by |bytes|; returns the
-      // address of the previous top ('break') of the memory area
-      // We control the "dynamic" memory - DYNAMIC_BASE to DYNAMICTOP
-      var self = _sbrk;
-      if (!self.called) {
-        DYNAMICTOP = alignMemoryPage(DYNAMICTOP); // make sure we start out aligned
-        self.called = true;
-        assert(Runtime.dynamicAlloc);
-        self.alloc = Runtime.dynamicAlloc;
-        Runtime.dynamicAlloc = function() { abort('cannot dynamically allocate, sbrk now has control') };
+      HEAP32[DYNAMICTOP_PTR>>2] = newDynamicTop;
+      totalMemory = getTotalMemory()|0;
+      if ((newDynamicTop|0) > (totalMemory|0)) {
+        if ((enlargeMemory()|0) == 0) {
+          ___setErrNo(12);
+          HEAP32[DYNAMICTOP_PTR>>2] = oldDynamicTop;
+          return -1;
+        }
       }
-      var ret = DYNAMICTOP;
-      if (bytes != 0) {
-        var success = self.alloc(bytes);
-        if (!success) return -1 >>> 0; // sbrk failure code
-      }
-      return ret;  // Previous break location.
+      return oldDynamicTop|0;
     }
 
   function ___syscall83(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // symlink
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: symlink');
+        abort('unsupported syscall symlink');
+        return 0;
+      }
       var target = SYSCALLS.getStr(), linkpath = SYSCALLS.getStr();
       FS.symlink(target, linkpath);
       return 0;
@@ -6457,6 +6592,11 @@ function copyTempDouble(ptr) {
   function ___syscall85(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // readlink
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: readlink');
+        abort('unsupported syscall readlink');
+        return 0;
+      }
       var path = SYSCALLS.getStr(), buf = SYSCALLS.get(), bufsize = SYSCALLS.get();
       return SYSCALLS.doReadlink(path, buf, bufsize);
     } catch (e) {
@@ -6521,6 +6661,10 @@ function copyTempDouble(ptr) {
   function ___syscall320(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // utimensat
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: utimensat');
+        abort('unsupported syscall utimensat');
+      }
       var dirfd = SYSCALLS.get(), path = SYSCALLS.getStr(), times = SYSCALLS.get(), flags = SYSCALLS.get();
       assert(flags === 0);
       path = SYSCALLS.calculateAt(dirfd, path);
@@ -6542,6 +6686,10 @@ function copyTempDouble(ptr) {
   function ___syscall324(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // fallocate
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: fallocate');
+        abort('unsupported syscall fallocate');
+      }
       var stream = SYSCALLS.getStreamFromFD(), mode = SYSCALLS.get(), offset = SYSCALLS.get64(), len = SYSCALLS.get64();
       assert(mode === 0);
       FS.allocate(stream, offset, len);
@@ -6555,6 +6703,10 @@ function copyTempDouble(ptr) {
   function ___syscall64(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // getppid
+      if (ENVIRONMENT_IS_BROWSIX) {
+        var SYS_GETPPID = 64;
+        return SYSCALLS.browsix.syscall.sync(SYS_GETPPID);
+      }
       return PROCINFO.ppid;
     } catch (e) {
     if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
@@ -6595,14 +6747,14 @@ function copyTempDouble(ptr) {
   }
   }
 
-  function ___assert_fail(condition, filename, line, func) {
-      ABORT = true;
-      throw 'Assertion failed: ' + Pointer_stringify(condition) + ', at: ' + [filename ? Pointer_stringify(filename) : 'unknown filename', line, func ? Pointer_stringify(func) : 'unknown function'] + ' at ' + stackTrace();
-    }
-
   function ___syscall63(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // dup2
+      if (ENVIRONMENT_IS_BROWSIX) {
+        var SYS_DUP3 = 330;
+        var fd1 = SYSCALLS.get(), fd2 = SYSCALLS.get();
+        return SYSCALLS.browsix.syscall.sync(SYS_DUP3, fd1, fd2, 0);
+      }
       var old = SYSCALLS.getStreamFromFD(), suggestFD = SYSCALLS.get();
       if (old.fd === suggestFD) return suggestFD;
       return SYSCALLS.doDup(old.path, old.flags, suggestFD);
@@ -6612,10 +6764,6 @@ function copyTempDouble(ptr) {
   }
   }
 
-  function ___wait() {
-  Module['printErr']('missing function: __wait'); abort(-1);
-  }
-
   function _abort() {
       Module['abort']();
     }
@@ -6623,6 +6771,11 @@ function copyTempDouble(ptr) {
   function ___syscall41(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // dup
+      if (ENVIRONMENT_IS_BROWSIX) {
+        var SYS_DUP = 41;
+        var fd1 = SYSCALLS.get();
+        return SYSCALLS.browsix.syscall.sync(SYS_DUP, fd1);
+      }
       var old = SYSCALLS.getStreamFromFD();
       return FS.open(old.path, old.flags, 0).fd;
     } catch (e) {
@@ -6671,6 +6824,11 @@ function copyTempDouble(ptr) {
   function ___syscall331(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // pipe2
+      if (ENVIRONMENT_IS_BROWSIX) {
+        var SYS_PIPE2 = 41;
+        var pipefd = SYSCALLS.get(), flags = SYSCALLS.get();
+        return SYSCALLS.browsix.syscall.sync(SYS_PIPE2, pipefd, flags);
+      }
       return -ERRNO_CODES.ENOSYS; // unsupported feature
     } catch (e) {
     if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
@@ -6681,6 +6839,11 @@ function copyTempDouble(ptr) {
   function ___syscall330(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // dup3
+      if (ENVIRONMENT_IS_BROWSIX) {
+        var SYS_DUP3 = 330;
+        var fd1 = SYSCALLS.get(), fd2 = SYSCALLS.get(), flags = SYSCALLS.get();
+        return SYSCALLS.browsix.syscall.sync(SYS_DUP3, fd1, fd2, flags);
+      }
       var old = SYSCALLS.getStreamFromFD(), suggestFD = SYSCALLS.get(), flags = SYSCALLS.get();
       assert(!flags);
       if (old.fd === suggestFD) return -ERRNO_CODES.EINVAL;
@@ -6702,63 +6865,13 @@ function copyTempDouble(ptr) {
   }
   }
 
-  
-  
-  function _realloc() { throw 'bad' }
-  Module["_realloc"] = _realloc;function _saveSetjmp(env, label, table, size) {
-      // Not particularly fast: slow table lookup of setjmpId to label. But setjmp
-      // prevents relooping anyhow, so slowness is to be expected. And typical case
-      // is 1 setjmp per invocation, or less.
-      env = env|0;
-      label = label|0;
-      table = table|0;
-      size = size|0;
-      var i = 0;
-      setjmpId = (setjmpId+1)|0;
-      HEAP32[((env)>>2)]=setjmpId;
-      while ((i|0) < (size|0)) {
-        if (((HEAP32[(((table)+((i<<3)))>>2)])|0) == 0) {
-          HEAP32[(((table)+((i<<3)))>>2)]=setjmpId;
-          HEAP32[(((table)+((i<<3)+4))>>2)]=label;
-          // prepare next slot
-          HEAP32[(((table)+((i<<3)+8))>>2)]=0;
-          tempRet0 = size;
-          return table | 0;
-        }
-        i = i+1|0;
-      }
-      // grow the table
-      size = (size*2)|0;
-      table = _realloc(table|0, 8*(size+1|0)|0) | 0;
-      table = _saveSetjmp(env|0, label|0, table|0, size|0) | 0;
-      tempRet0 = size;
-      return table | 0;
-    }
-  
-  function _testSetjmp(id, table, size) {
-      id = id|0;
-      table = table|0;
-      size = size|0;
-      var i = 0, curr = 0;
-      while ((i|0) < (size|0)) {
-        curr = ((HEAP32[(((table)+((i<<3)))>>2)])|0);
-        if ((curr|0) == 0) break;
-        if ((curr|0) == (id|0)) {
-          return ((HEAP32[(((table)+((i<<3)+4))>>2)])|0);
-        }
-        i = i+1|0;
-      }
-      return 0;
-    }function _longjmp(env, value) {
-      asm['setThrew'](env, value || 1);
-      throw 'longjmp';
-    }
-
-  var _setjmp=undefined;
-
   function ___syscall304(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // symlinkat
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: symlinkat');
+        abort('unsupported syscall symlinkat');
+      }
       var target = SYSCALLS.get(), newdirfd = SYSCALLS.get(), linkpath = SYSCALLS.get();
       linkpath = SYSCALLS.calculateAt(newdirfd, linkpath);
       FS.symlink(target, linkpath);
@@ -6792,6 +6905,10 @@ function copyTempDouble(ptr) {
   function ___syscall180(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // pread64
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: pread64');
+        abort('unsupported syscall pread64');
+      }
       var stream = SYSCALLS.getStreamFromFD(), buf = SYSCALLS.get(), count = SYSCALLS.get(), zero = SYSCALLS.getZero(), offset = SYSCALLS.get64();
       return FS.read(stream, HEAP8,buf, count, offset);
     } catch (e) {
@@ -6803,6 +6920,10 @@ function copyTempDouble(ptr) {
   function ___syscall181(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // pwrite64
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: pwrite64');
+        abort('unsupported syscall pwrite64');
+      }
       var stream = SYSCALLS.getStreamFromFD(), buf = SYSCALLS.get(), count = SYSCALLS.get(), zero = SYSCALLS.getZero(), offset = SYSCALLS.get64();
       return FS.write(stream, HEAP8,buf, nbyte, offset);
     } catch (e) {
@@ -6811,20 +6932,17 @@ function copyTempDouble(ptr) {
   }
   }
 
-  function ___syscall140(which, varargs) {SYSCALLS.varargs = varargs;
+  function ___syscall306(which, varargs) {SYSCALLS.varargs = varargs;
   try {
-   // llseek
+   // fchmodat
       if (ENVIRONMENT_IS_BROWSIX) {
-        var SYS_LLSEEK = 140;
-        var fd = SYSCALLS.get(), offhi = SYSCALLS.get(), offlo = SYSCALLS.get(), result = SYSCALLS.get(), whence = SYSCALLS.get();
-        return SYSCALLS.browsix.syscall.sync(SYS_LLSEEK, fd, offhi, offlo, result, whence);
+        console.log('TODO: fchmodat');
+        abort('unsupported syscall fchmodat');
       }
-      var stream = SYSCALLS.getStreamFromFD(), offset_high = SYSCALLS.get(), offset_low = SYSCALLS.get(), result = SYSCALLS.get(), whence = SYSCALLS.get();
-      var offset = offset_low;
-      assert(offset_high === 0);
-      FS.llseek(stream, offset, whence);
-      HEAP32[((result)>>2)]=stream.position;
-      if (stream.getdents && offset === 0 && whence === 0) stream.getdents = null; // reset readdir state
+      var dirfd = SYSCALLS.get(), path = SYSCALLS.getStr(), mode = SYSCALLS.get(), flags = SYSCALLS.get();
+      assert(flags === 0);
+      path = SYSCALLS.calculateAt(dirfd, path);
+      FS.chmod(path, mode);
       return 0;
     } catch (e) {
     if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
@@ -7754,6 +7872,9 @@ function copyTempDouble(ptr) {
     }function ___syscall102(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // socketcall
+      if (ENVIRONMENT_IS_BROWSIX) {
+        abort('TODO: socket calls not yet supported in sync mode');
+      }
       var call = SYSCALLS.get(), socketvararg = SYSCALLS.get();
       // socketcalls pass the rest of the arguments in a struct
       SYSCALLS.varargs = socketvararg;
@@ -7938,6 +8059,10 @@ function copyTempDouble(ptr) {
   function ___syscall301(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // unlinkat
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: unlinkat');
+        abort('unsupported syscall unlinkat');
+      }
       var dirfd = SYSCALLS.get(), path = SYSCALLS.getStr(), flags = SYSCALLS.get();
       assert(flags === 0);
       path = SYSCALLS.calculateAt(dirfd, path);
@@ -7969,6 +8094,10 @@ function copyTempDouble(ptr) {
   function ___syscall302(which, varargs) {SYSCALLS.varargs = varargs;
   try {
    // renameat
+      if (ENVIRONMENT_IS_BROWSIX) {
+        console.log('TODO: renameat');
+        abort('unsupported syscall renameat');
+      }
       var olddirfd = SYSCALLS.get(), oldpath = SYSCALLS.getStr(), newdirfd = SYSCALLS.get(), newpath = SYSCALLS.getStr();
       oldpath = SYSCALLS.calculateAt(olddirfd, oldpath);
       newpath = SYSCALLS.calculateAt(newdirfd, newpath);
@@ -7980,17 +8109,26 @@ function copyTempDouble(ptr) {
   }
   }
 
-  function _time(ptr) {
-      var ret = (Date.now()/1000)|0;
-      if (ptr) {
-        HEAP32[((ptr)>>2)]=ret;
+  function ___syscall140(which, varargs) {SYSCALLS.varargs = varargs;
+  try {
+   // llseek
+      if (ENVIRONMENT_IS_BROWSIX) {
+        var SYS_LLSEEK = 140;
+        var fd = SYSCALLS.get(), offhi = SYSCALLS.get(), offlo = SYSCALLS.get(), result = SYSCALLS.get(), whence = SYSCALLS.get();
+        return SYSCALLS.browsix.syscall.sync(SYS_LLSEEK, fd, offhi, offlo, result, whence);
       }
-      return ret;
-    }
-
-  function _pthread_self() {
+      var stream = SYSCALLS.getStreamFromFD(), offset_high = SYSCALLS.get(), offset_low = SYSCALLS.get(), result = SYSCALLS.get(), whence = SYSCALLS.get();
+      var offset = offset_low;
+      assert(offset_high === 0);
+      FS.llseek(stream, offset, whence);
+      HEAP32[((result)>>2)]=stream.position;
+      if (stream.getdents && offset === 0 && whence === 0) stream.getdents = null; // reset readdir state
       return 0;
-    }
+    } catch (e) {
+    if (typeof FS === 'undefined' || !(e instanceof FS.ErrnoError)) abort(e);
+    return -e.errno;
+  }
+  }
 
   function ___syscall303(which, varargs) {SYSCALLS.varargs = varargs;
   try {
@@ -8006,7 +8144,7 @@ function copyTempDouble(ptr) {
   try {
    // fcntl64
       if (ENVIRONMENT_IS_BROWSIX) {
-        var SYS_FCNTL64 = 220;
+        var SYS_FCNTL64 = 221;
         var fd = SYSCALLS.get(), cmd = SYSCALLS.get();
         var arg = 0;
   
@@ -8122,78 +8260,48 @@ __ATINIT__.unshift(function() { TTY.init() });__ATEXIT__.push(function() { TTY.s
 if (ENVIRONMENT_IS_NODE) { var fs = require("fs"); var NODEJS_PATH = require("path"); NODEFS.staticInit(); };
 if (!ENVIRONMENT_IS_BROWSIX) ___buildEnvironment(ENV);;
 __ATINIT__.push(function() { if (!ENVIRONMENT_IS_BROWSIX) SOCKFS.root = FS.mount(SOCKFS, {}, null); });;
-STACK_BASE = STACKTOP = Runtime.alignMemory(STATICTOP);
+DYNAMICTOP_PTR = allocate(1, "i32", ALLOC_STATIC);
 
-staticSealed = true; // seal the static portion of memory
+STACK_BASE = STACKTOP = Runtime.alignMemory(STATICTOP);
 
 STACK_MAX = STACK_BASE + TOTAL_STACK;
 
-DYNAMIC_BASE = DYNAMICTOP = Runtime.alignMemory(STACK_MAX);
+DYNAMIC_BASE = Runtime.alignMemory(STACK_MAX);
+
+HEAP32[DYNAMICTOP_PTR>>2] = DYNAMIC_BASE;
+
+staticSealed = true; // seal the static portion of memory
 
 
 Module.asmGlobalArg = {};
 
-Module.asmLibraryArg = { "abort": abort, "assert": assert, "___syscall221": ___syscall221, "___syscall220": ___syscall220, "__inet_ntop6_raw": __inet_ntop6_raw, "___syscall66": ___syscall66, "___syscall64": ___syscall64, "___syscall65": ___syscall65, "___syscall63": ___syscall63, "___syscall60": ___syscall60, "_putenv": _putenv, "___assert_fail": ___assert_fail, "_longjmp": _longjmp, "___syscall38": ___syscall38, "_sbrk": _sbrk, "_memcpy": _memcpy, "_emscripten_memcpy_big": _emscripten_memcpy_big, "___syscall153": ___syscall153, "___syscall152": ___syscall152, "___syscall151": ___syscall151, "___syscall150": ___syscall150, "_abort": _abort, "___syscall75": ___syscall75, "___syscall77": ___syscall77, "___syscall132": ___syscall132, "__write_sockaddr": __write_sockaddr, "_free": _free, "_pthread_cleanup_push": _pthread_cleanup_push, "___syscall306": ___syscall306, "___syscall307": ___syscall307, "___syscall304": ___syscall304, "___syscall305": ___syscall305, "___syscall302": ___syscall302, "___syscall303": ___syscall303, "___syscall300": ___syscall300, "___syscall301": ___syscall301, "___syscall140": ___syscall140, "___syscall142": ___syscall142, "___syscall144": ___syscall144, "___syscall145": ___syscall145, "___syscall308": ___syscall308, "___syscall147": ___syscall147, "_pthread_cleanup_pop": _pthread_cleanup_pop, "___syscall85": ___syscall85, "___syscall83": ___syscall83, "___syscall125": ___syscall125, "___syscall122": ___syscall122, "___syscall121": ___syscall121, "___syscall94": ___syscall94, "___syscall148": ___syscall148, "___setErrNo": ___setErrNo, "___syscall333": ___syscall333, "___syscall331": ___syscall331, "___syscall330": ___syscall330, "___syscall334": ___syscall334, "___syscall97": ___syscall97, "___syscall96": ___syscall96, "___syscall118": ___syscall118, "___syscall91": ___syscall91, "___syscall114": ___syscall114, "___syscall15": ___syscall15, "___syscall14": ___syscall14, "___syscall12": ___syscall12, "___syscall11": ___syscall11, "___syscall10": ___syscall10, "___syscall9": ___syscall9, "_getpwnam": _getpwnam, "___syscall3": ___syscall3, "___syscall2": ___syscall2, "___syscall1": ___syscall1, "___lock": ___lock, "___syscall320": ___syscall320, "___syscall6": ___syscall6, "___syscall5": ___syscall5, "___syscall4": ___syscall4, "_time": _time, "___syscall146": ___syscall146, "___syscall209": ___syscall209, "___syscall208": ___syscall208, "___syscall207": ___syscall207, "___syscall205": ___syscall205, "___syscall204": ___syscall204, "___syscall203": ___syscall203, "___syscall202": ___syscall202, "___syscall201": ___syscall201, "___syscall200": ___syscall200, "___syscall104": ___syscall104, "__inet_pton4_raw": __inet_pton4_raw, "___syscall269": ___syscall269, "___syscall268": ___syscall268, "___syscall102": ___syscall102, "___syscall265": ___syscall265, "___syscall29": ___syscall29, "___syscall20": ___syscall20, "__Exit": __Exit, "___buildEnvironment": ___buildEnvironment, "___syscall295": ___syscall295, "___syscall296": ___syscall296, "___syscall297": ___syscall297, "___syscall298": ___syscall298, "___syscall299": ___syscall299, "_memset": _memset, "___syscall218": ___syscall218, "___syscall219": ___syscall219, "___syscall191": ___syscall191, "___syscall197": ___syscall197, "___syscall196": ___syscall196, "___syscall195": ___syscall195, "___syscall194": ___syscall194, "___syscall210": ___syscall210, "___syscall211": ___syscall211, "___syscall199": ___syscall199, "___syscall198": ___syscall198, "___syscall214": ___syscall214, "___syscall175": ___syscall175, "___syscall272": ___syscall272, "___syscall34": ___syscall34, "___syscall36": ___syscall36, "___syscall33": ___syscall33, "__inet_ntop4_raw": __inet_ntop4_raw, "___syscall39": ___syscall39, "___syscall212": ___syscall212, "_testSetjmp": _testSetjmp, "___syscall213": ___syscall213, "___syscall340": ___syscall340, "___syscall180": ___syscall180, "___syscall181": ___syscall181, "___syscall183": ___syscall183, "___syscall324": ___syscall324, "___syscall163": ___syscall163, "___syscall168": ___syscall168, "___syscall40": ___syscall40, "___syscall41": ___syscall41, "___syscall42": ___syscall42, "__inet_pton6_raw": __inet_pton6_raw, "__read_sockaddr": __read_sockaddr, "___syscall193": ___syscall193, "__exit": __exit, "___syscall192": ___syscall192, "_realloc": _realloc, "_pthread_self": _pthread_self, "___syscall51": ___syscall51, "___syscall57": ___syscall57, "___syscall133": ___syscall133, "___syscall54": ___syscall54, "___unlock": ___unlock, "_saveSetjmp": _saveSetjmp, "_getenv": _getenv, "___wait": ___wait, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX, "ABORT": ABORT };
+Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "___syscall221": ___syscall221, "___syscall220": ___syscall220, "__inet_ntop6_raw": __inet_ntop6_raw, "___syscall66": ___syscall66, "___syscall64": ___syscall64, "___syscall65": ___syscall65, "___syscall63": ___syscall63, "___syscall60": ___syscall60, "_putenv": _putenv, "___syscall38": ___syscall38, "_sbrk": _sbrk, "_memcpy": _memcpy, "_emscripten_memcpy_big": _emscripten_memcpy_big, "___syscall153": ___syscall153, "___syscall152": ___syscall152, "___syscall151": ___syscall151, "___syscall150": ___syscall150, "_abort": _abort, "___syscall75": ___syscall75, "___syscall77": ___syscall77, "___syscall132": ___syscall132, "__write_sockaddr": __write_sockaddr, "_free": _free, "_pthread_cleanup_push": _pthread_cleanup_push, "___syscall306": ___syscall306, "___syscall307": ___syscall307, "___syscall304": ___syscall304, "___syscall305": ___syscall305, "___syscall302": ___syscall302, "___syscall303": ___syscall303, "___syscall300": ___syscall300, "___syscall301": ___syscall301, "___syscall140": ___syscall140, "___syscall142": ___syscall142, "___syscall144": ___syscall144, "___syscall145": ___syscall145, "___syscall308": ___syscall308, "___syscall147": ___syscall147, "_pthread_cleanup_pop": _pthread_cleanup_pop, "___syscall85": ___syscall85, "___syscall83": ___syscall83, "___syscall125": ___syscall125, "___syscall122": ___syscall122, "___syscall121": ___syscall121, "___syscall94": ___syscall94, "___syscall148": ___syscall148, "___setErrNo": ___setErrNo, "___syscall333": ___syscall333, "___syscall331": ___syscall331, "___syscall330": ___syscall330, "___syscall334": ___syscall334, "___syscall97": ___syscall97, "___syscall96": ___syscall96, "___syscall118": ___syscall118, "___syscall91": ___syscall91, "___syscall114": ___syscall114, "___syscall15": ___syscall15, "___syscall14": ___syscall14, "___syscall12": ___syscall12, "___syscall10": ___syscall10, "___syscall9": ___syscall9, "___syscall3": ___syscall3, "___syscall1": ___syscall1, "___lock": ___lock, "___syscall320": ___syscall320, "___syscall6": ___syscall6, "___syscall5": ___syscall5, "___syscall4": ___syscall4, "___syscall146": ___syscall146, "___syscall209": ___syscall209, "___syscall208": ___syscall208, "___syscall207": ___syscall207, "_exit": _exit, "___syscall204": ___syscall204, "___syscall203": ___syscall203, "___syscall202": ___syscall202, "___syscall201": ___syscall201, "___syscall200": ___syscall200, "___syscall104": ___syscall104, "__inet_pton4_raw": __inet_pton4_raw, "___syscall269": ___syscall269, "___syscall268": ___syscall268, "___syscall102": ___syscall102, "___syscall265": ___syscall265, "___syscall29": ___syscall29, "___syscall20": ___syscall20, "___buildEnvironment": ___buildEnvironment, "___syscall295": ___syscall295, "___syscall296": ___syscall296, "___syscall297": ___syscall297, "___syscall298": ___syscall298, "___syscall299": ___syscall299, "_memset": _memset, "___syscall218": ___syscall218, "___syscall219": ___syscall219, "___syscall191": ___syscall191, "___syscall197": ___syscall197, "___syscall196": ___syscall196, "___syscall195": ___syscall195, "___syscall194": ___syscall194, "___syscall210": ___syscall210, "___syscall211": ___syscall211, "___syscall199": ___syscall199, "___syscall198": ___syscall198, "___syscall214": ___syscall214, "___syscall272": ___syscall272, "___syscall34": ___syscall34, "___syscall36": ___syscall36, "___syscall33": ___syscall33, "__inet_ntop4_raw": __inet_ntop4_raw, "___syscall39": ___syscall39, "___syscall212": ___syscall212, "___syscall213": ___syscall213, "___syscall340": ___syscall340, "___syscall180": ___syscall180, "___syscall181": ___syscall181, "___syscall183": ___syscall183, "_malloc": _malloc, "___syscall324": ___syscall324, "___syscall163": ___syscall163, "___syscall168": ___syscall168, "___syscall40": ___syscall40, "___syscall41": ___syscall41, "___syscall42": ___syscall42, "__inet_pton6_raw": __inet_pton6_raw, "__read_sockaddr": __read_sockaddr, "___syscall193": ___syscall193, "__exit": __exit, "___syscall192": ___syscall192, "_pthread_self": _pthread_self, "___syscall51": ___syscall51, "___syscall57": ___syscall57, "___syscall133": ___syscall133, "___syscall54": ___syscall54, "___unlock": ___unlock, "___syscall205": ___syscall205, "_getenv": _getenv, "_memory": _memory, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "ABORT": ABORT };
 
 //var asm = Module['asm'](Module.asmGlobalArg, Module.asmLibraryArg, buffer);
-var _memset;
-var ___floatunsitf;
-var ___netf2;
-var _fflush;
-var dynCall_iiii;
-var ___addtf3;
-var ___floatsitf;
-var ___gttf2;
-var ___letf2;
-var ___multi3;
-var dynCall_vi;
-var _memory;
-var _main;
-var ___fixtfsi;
-var ___eqtf2;
-var ___ashlti3;
-var ___getf2;
-var ___lshrti3;
-var _memcpy;
+var _malloc;
 var dynCall_ii;
-var ___multf3;
 var _memmove;
-var ___subtf3;
+var dynCall_iiii;
+var _memset;
 var ___errno_location;
-var ___extenddftf2;
-var ___unordtf2;
-var ___lttf2;
-var ___fixunstfsi;
+var _free;
+var dynCall_vi;
+var _fflush;
+var _main;
+var _memcpy;
 ;
 function updateAsmExports() {
-  _memset = Module["_memset"] = asm["memset"];
-  ___floatunsitf = Module["___floatunsitf"] = asm["__floatunsitf"];
-  ___netf2 = Module["___netf2"] = asm["__netf2"];
-  _fflush = Module["_fflush"] = asm["fflush"];
-  dynCall_iiii = Module["dynCall_iiii"] = asm["dynCall_iiii"];
-  ___addtf3 = Module["___addtf3"] = asm["__addtf3"];
-  ___floatsitf = Module["___floatsitf"] = asm["__floatsitf"];
-  ___gttf2 = Module["___gttf2"] = asm["__gttf2"];
-  ___letf2 = Module["___letf2"] = asm["__letf2"];
-  ___multi3 = Module["___multi3"] = asm["__multi3"];
-  dynCall_vi = Module["dynCall_vi"] = asm["dynCall_vi"];
-  _memory = Module["_memory"] = asm["memory"];
-  _main = Module["_main"] = asm["main"];
-  ___fixtfsi = Module["___fixtfsi"] = asm["__fixtfsi"];
-  ___eqtf2 = Module["___eqtf2"] = asm["__eqtf2"];
-  ___ashlti3 = Module["___ashlti3"] = asm["__ashlti3"];
-  ___getf2 = Module["___getf2"] = asm["__getf2"];
-  ___lshrti3 = Module["___lshrti3"] = asm["__lshrti3"];
-  _memcpy = Module["_memcpy"] = asm["memcpy"];
+  _malloc = Module["_malloc"] = asm["malloc"];
   dynCall_ii = Module["dynCall_ii"] = asm["dynCall_ii"];
-  ___multf3 = Module["___multf3"] = asm["__multf3"];
   _memmove = Module["_memmove"] = asm["memmove"];
-  ___subtf3 = Module["___subtf3"] = asm["__subtf3"];
+  dynCall_iiii = Module["dynCall_iiii"] = asm["dynCall_iiii"];
+  _memset = Module["_memset"] = asm["memset"];
   ___errno_location = Module["___errno_location"] = asm["__errno_location"];
-  ___extenddftf2 = Module["___extenddftf2"] = asm["__extenddftf2"];
-  ___unordtf2 = Module["___unordtf2"] = asm["__unordtf2"];
-  ___lttf2 = Module["___lttf2"] = asm["__lttf2"];
-  ___fixunstfsi = Module["___fixunstfsi"] = asm["__fixunstfsi"];
+  _free = Module["_free"] = asm["free"];
+  dynCall_vi = Module["dynCall_vi"] = asm["dynCall_vi"];
+  _fflush = Module["_fflush"] = asm["fflush"];
+  _main = Module["_main"] = asm["main"];
+  _memcpy = Module["_memcpy"] = asm["memcpy"];
 
 }
 
@@ -8216,6 +8324,56 @@ function updateAsmMemoryExports() {
 
 
 
+if (memoryInitializer) {
+  if (typeof Module['locateFile'] === 'function') {
+    memoryInitializer = Module['locateFile'](memoryInitializer);
+  } else if (Module['memoryInitializerPrefixURL']) {
+    memoryInitializer = Module['memoryInitializerPrefixURL'] + memoryInitializer;
+  }
+  if (ENVIRONMENT_IS_NODE || ENVIRONMENT_IS_SHELL) {
+    var data = Module['readBinary'](memoryInitializer);
+    HEAPU8.set(data, Runtime.GLOBAL_BASE);
+  } else {
+    addRunDependency('memory initializer');
+    var applyMemoryInitializer = function(data) {
+      if (data.byteLength) data = new Uint8Array(data);
+      HEAPU8.set(data, Runtime.GLOBAL_BASE);
+      // Delete the typed array that contains the large blob of the memory initializer request response so that
+      // we won't keep unnecessary memory lying around. However, keep the XHR object itself alive so that e.g.
+      // its .status field can still be accessed later.
+      if (Module['memoryInitializerRequest']) delete Module['memoryInitializerRequest'].response;
+      removeRunDependency('memory initializer');
+    }
+    function doBrowserLoad() {
+      Module['readAsync'](memoryInitializer, applyMemoryInitializer, function() {
+        throw 'could not load memory initializer ' + memoryInitializer;
+      });
+    }
+    if (Module['memoryInitializerRequest']) {
+      // a network request has already been created, just use that
+      function useRequest() {
+        var request = Module['memoryInitializerRequest'];
+        if (request.status !== 200 && request.status !== 0) {
+          // If you see this warning, the issue may be that you are using locateFile or memoryInitializerPrefixURL, and defining them in JS. That
+          // means that the HTML file doesn't know about them, and when it tries to create the mem init request early, does it to the wrong place.
+          // Look in your browser's devtools network console to see what's going on.
+          console.warn('a problem seems to have happened with Module.memoryInitializerRequest, status: ' + request.status + ', retrying ' + memoryInitializer);
+          doBrowserLoad();
+          return;
+        }
+        applyMemoryInitializer(request.response);
+      }
+      if (Module['memoryInitializerRequest'].response) {
+        setTimeout(useRequest, 0); // it's already here; but, apply it asynchronously
+      } else {
+        Module['memoryInitializerRequest'].addEventListener('load', useRequest); // wait for it
+      }
+    } else {
+      // fetch it from the network ourselves
+      doBrowserLoad();
+    }
+  }
+}
 
 
 function ExitStatus(status) {
@@ -8264,7 +8422,7 @@ Module['callMain'] = Module.callMain = function callMain(args) {
 
   try {
 
-    var ret = Module['_main'](argc, argv, 0);
+    var ret = Module['_main'](argc, argv, HEAP32[_environ>>2]);
 
 
     // if we're not running an evented main loop, it's time to exit
@@ -8343,6 +8501,15 @@ function exit(status, implicit) {
     return;
   }
 
+  // we don't care about noExitRuntime for explicit exit calls in Browsix()
+  if (ENVIRONMENT_IS_BROWSIX) {
+    EXITSTATUS = status;
+    Runtime.process.exit(status);
+    // this will terminate the worker's execution as an uncaught
+    // Exception, which is what we want.
+    throw new ExitStatus(status);
+  }
+
   if (Module['noExitRuntime']) {
   } else {
 
@@ -8357,8 +8524,6 @@ function exit(status, implicit) {
 
   if (ENVIRONMENT_IS_NODE) {
     process['exit'](status);
-  } else if (ENVIRONMENT_IS_BROWSIX) {
-    Runtime.process.exit(status);
   } else if (ENVIRONMENT_IS_SHELL && typeof quit === 'function') {
     quit(status);
   }
@@ -8448,7 +8613,5 @@ if (!ENVIRONMENT_IS_BROWSIX) {
 
 // {{MODULE_ADDITIONS}}
 
-
-// EMSCRIPTEN_GENERATED_FUNCTIONS: []
 
 

@@ -579,7 +579,8 @@ moduleOverrides = undefined;
 
 
 
-integrateWasmJS(Module);
+if (!ENVIRONMENT_IS_BROWSIX)
+  integrateWasmJS(Module);
 // {{PREAMBLE_ADDITIONS}}
 
 // === Preamble library stuff ===
@@ -1580,7 +1581,11 @@ if (Module['buffer']) {
 } else {
   // Use a WebAssembly memory where available
   if (typeof WebAssembly === 'object' && typeof WebAssembly.Memory === 'function') {
-    Module['wasmMemory'] = new WebAssembly.Memory({ initial: TOTAL_MEMORY / WASM_PAGE_SIZE, maximum: TOTAL_MEMORY / WASM_PAGE_SIZE });
+    Module['wasmMemory'] = new WebAssembly.Memory({
+      initial: TOTAL_MEMORY / WASM_PAGE_SIZE,
+      maximum: TOTAL_MEMORY / WASM_PAGE_SIZE,
+      isShared: true,
+    });
     buffer = Module['wasmMemory'].buffer;
   } else
   {
@@ -5104,15 +5109,6 @@ function copyTempDouble(ptr) {
             return;
           }
   
-          var oldHEAP8 = HEAP8;
-          var b = new SharedArrayBuffer(TOTAL_MEMORY);
-          // copy whatever was in the old guy to here
-          new Int8Array(b).set(oldHEAP8);
-          updateGlobalBuffer(b);
-          updateGlobalBufferViews();
-          asm = asmModule(Module.asmGlobalArg, Module.asmLibraryArg, buffer);
-          initReceiving();
-          initRuntimeFuncs();
   
           var PER_BLOCKING = 0x80;
           // it seems malloc overflows into our static allocation, so
@@ -5196,6 +5192,7 @@ function copyTempDouble(ptr) {
                 abort('setjmp called');
               }
             }
+            integrateWasmJS(Module);
             asm = Module['asm'](Module.asmGlobalArg, Module.asmLibraryArg, buffer);
             updateAsmExports();
             updateAsmMemoryExports();

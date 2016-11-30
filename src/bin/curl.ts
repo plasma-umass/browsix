@@ -16,6 +16,7 @@ function main(): void {
 		process.stderr.write('usage:\n curl URL\n', () => {
 			process.exit(1);
 		});
+		return;
 	}
 
 	let url = args[0];

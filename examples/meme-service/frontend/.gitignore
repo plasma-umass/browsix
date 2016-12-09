@@ -5,3 +5,6 @@ dist
 bower_components
 test/bower_components
 *~
+/fs/index.json
+/fs/usr
+/app/kernel.js

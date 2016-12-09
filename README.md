@@ -76,8 +76,10 @@ network connectivity.
 
 Browsix currently supports running node.js, Go, and C/C++ programs.
 It supports Go with a [modified GopherJS
-compiler](https://github.com/bpowers/browsix-gopherjs), and C/C++ with
-[modifications to
+compiler](https://github.com/bpowers/browsix-gopherjs) (requires a
+host [Go 1.6 install for
+now](https://github.com/bpowers/browsix-gopherjs/issues/2)), and C/C++
+with [modifications to
 Emscripten](https://github.com/bpowers/emscripten/tree/_browsix).
 
 

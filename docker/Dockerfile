@@ -59,7 +59,7 @@ RUN apt-get install -qq -y \
   bzr \
   git-core
 
-ENV GOLANG_VERSION 1.7.4
+ENV GOLANG_VERSION 1.6.4
 ENV GOLANG_DOWNLOAD_URL https://storage.googleapis.com/golang/go$GOLANG_VERSION.linux-amd64.tar.gz
 
 RUN curl -s $GOLANG_DOWNLOAD_URL | tar -C /usr/local -xz
@@ -68,14 +68,14 @@ ENV GOPATH /go
 ENV GOROOT /usr/local/go
 ENV PATH /usr/local/go/bin:/go/bin:/usr/local/bin:$PATH
 
-RUN go get -u -x -v -a github.com/gopherjs/gopherjs
+RUN go get -u -x -v -a github.com/bpowers/browsix-gopherjs
 
 RUN \
   source $NVM_DIR/nvm.sh; \
   echo "nvm: " `nvm --version` && \
   echo "node: " `node --version` && \
   echo "npm: " `npm --version` && \
-  npm install -g \ 
+  npm install -g \
     gulp@"^3.9.1" \
     bower@"^1.7.9" \
     source-map-support

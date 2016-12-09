@@ -5,6 +5,6 @@ all: $(MAIN).js
 $(MAIN).js:
 #	rm ~/pkg/linux_js -r
 	browsix-gopherjs build
-	cp hello-world-http.js ../fs/usr/bin/go-hello
+	cp hello-world-http.js ../../fs/usr/bin/go-hello
 
 .PHONY: $(MAIN).js

@@ -2366,11 +2366,11 @@ export class Task implements ITask {
 		this.blobUrl = undefined;
 
 		// only show perf information for emscripten programs for now
-		if (this.timeFirstMsg) {
+		if (this.timeFirstMsg && false) {
 			let exit = performance.now();
-			console.log('' + this.pid + ' real: ' + (exit - this.timeWorkerStart));
-			console.log('' + this.pid + ' init: ' + (this.timeFirstMsg - this.timeWorkerStart));
-			console.log('' + this.pid + ' sys:  ' + this.timeSyscallTotal);
+			// console.log('' + this.pid + ' real: ' + (exit - this.timeWorkerStart));
+			// console.log('' + this.pid + ' init: ' + (this.timeFirstMsg - this.timeWorkerStart));
+			// console.log('' + this.pid + ' sys:  ' + this.timeSyscallTotal);
 		}
 
 		for (let n in this.files) {

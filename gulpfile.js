@@ -244,6 +244,12 @@ gulp.task('build-test', ['index-fs'], function() {
         .pipe(gulp.dest('test'));
 });
 
+gulp.task('build-bench', ['index-benchfs'], function() {
+    return gulp.src('bench/*.ts')
+        .pipe(ts(project())).js
+        .pipe(gulp.dest('bench'));
+});
+
 // we compile all our tests into a single javascript file because
 // that is how browserify likes to work :\
 gulp.task('dist-test', ['build-test'], function() {
@@ -262,7 +268,7 @@ gulp.task('dist-test', ['build-test'], function() {
         .pipe(gulp.dest('./lib-dist/'));
 });
 
-gulp.task('dist-bench', ['build-test', 'index-benchfs'], function() {
+gulp.task('dist-bench', ['build-bench', 'index-benchfs'], function() {
     var testMain = './bench/bench.js';
     var b = browserify({
         entries: [testMain],

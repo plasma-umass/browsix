@@ -7,6 +7,7 @@ HBENCH="./bench/hbench-os"
 SHROOT="./fs"
 RESULTDIRB="results/browsix"
 
+export FIREFOX_BIN='/opt/firefox-nightly/firefox'
 export CHROME_BIN='google-chrome-beta'
 
 export EMCC_BROWSIX_ASYNC=1
@@ -19,9 +20,7 @@ export EMFLAGS='-Os'
 # benchmarks to run
 BENCHMARKS='lat_syscall lat_pipe lat_tcp lat_proc hello lat_fs lat_fslayer'
 
-mkdir -p "$FSROOT/dev"
-# fixme: this is a hack
-touch "$FSROOT/dev/null"
+mkdir -p "$FSROOT/tmp"
 mkdir -p "$BIN"
 
 for b in $BENCHMARKS; do

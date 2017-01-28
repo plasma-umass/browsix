@@ -59,7 +59,7 @@ const BENCHMARKS = [
 	},
 	{
 		name: 'lat_fs_create_1024',
-		cmd: 'lat_fs %d create 1024 /',
+		cmd: 'lat_fs %d create 1024 /tmp',
 	},
 	{
 		name: 'lat_tcp_localhost',

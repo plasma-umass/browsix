@@ -3,18 +3,21 @@ set -e
 
 FSROOT="./benchfs"
 BIN="$FSROOT/usr/bin"
-HBENCH="./test/hbench-os"
+HBENCH="./bench/hbench-os"
 SHROOT="./fs"
 RESULTDIRB="results/browsix"
 
 export CHROME_BIN='google-chrome-beta'
 
-export EMFLAGS='--memory-init-file 0 -s EMTERPRETIFY=1 -s EMTERPRETIFY_ASYNC=1 -s EMTERPRETIFY_BROWSIX=1 -O1'
+export EMCC_BROWSIX_ASYNC=1
+export EMFLAGS='-Os'
 
-(cd $HBENCH && make PLATFORM=js-pc-browsix EXT=.js CC="emcc $EMFLAGS")
+#rm -rf "$HBENCH/bin/browsix-js"
+
+(cd $HBENCH && emmake make PLATFORM=js-pc-browsix EXT=.js CC="emcc $EMFLAGS" CFLAGS="-static -DNO_PORTMAPPER")
 
 # benchmarks to run
-BENCHMARKS='lat_syscall lat_pipe lat_tcp lat_proc hello'
+BENCHMARKS='lat_syscall lat_pipe lat_tcp lat_proc hello lat_fs lat_fslayer'
 
 mkdir -p "$FSROOT/dev"
 # fixme: this is a hack

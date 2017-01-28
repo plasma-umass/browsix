@@ -1,5 +1,6 @@
-/// <reference path="../typings/chai/chai.d.ts" />
-/// <reference path="../typings/mocha/mocha.d.ts" />
+/// <reference path="../typings/index.d.ts" />
+/// <reference path="../typings/globals/chai/index.d.ts" />
+/// <reference path="../typings/globals/mocha/index.d.ts" />
 
 'use strict';
 
@@ -49,6 +50,18 @@ function nullOut(pid: number, out: string): void {}
 
 const BENCHMARKS = [
 	{
+		name: 'lat_syscall_getpid',
+		cmd: 'lat_syscall %d getpid',
+	},
+	{
+		name: 'lat_fslayer',
+		cmd: 'lat_fslayer %d',
+	},
+	{
+		name: 'lat_fs_create_1024',
+		cmd: 'lat_fs %d create 1024 /',
+	},
+	{
 		name: 'lat_tcp_localhost',
 		cmd: 'lat_tcp %d 127.0.0.1',
 		remote_cmd: 'lat_tcp 0 -s',
@@ -57,14 +70,10 @@ const BENCHMARKS = [
 		name: 'lat_proc_null_static',
 		cmd: 'lat_proc %d null static',
 	},
-	{
-		name: 'lat_syscall_getpid',
-		cmd: 'lat_syscall %d getpid',
-	},
-	{
-		name: 'lat_pipe',
-		cmd: 'lat_pipe %d',
-	},
+	// {
+	// 	name: 'lat_pipe',
+	// 	cmd: 'lat_pipe %d',
+	// },
 ];
 
 let kernel: Kernel = null;

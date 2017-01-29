@@ -7,7 +7,7 @@
 'use strict';
 
 import { EINVAL, ESPIPE } from './constants';
-import { ConnectCallback, SyscallContext, IFile, ITask } from './types';
+import { ConnectCallback, RWCallback, SyscallContext, IFile, ITask } from './types';
 import { Pipe } from './pipe';
 
 export interface AcceptCallback {
@@ -126,17 +126,16 @@ export class SocketFile implements IFile {
 	}
 
 
-	read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+	read(buf: Buffer, pos: number, cb: RWCallback): void {
 		if (pos !== -1)
 			return cb(-ESPIPE);
 		this.incoming.read(buf, 0, buf.length, undefined, cb);
 	}
 
-	write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+	write(buf: Buffer, pos: number, cb: RWCallback): void {
 		if (pos !== -1)
 			return cb(-ESPIPE);
-		this.outgoing.writeBuffer(buf);
-		cb(undefined, buf.length);
+		this.outgoing.writeBuffer(buf, cb);
 	}
 
 	readSync(): Buffer {

@@ -15,6 +15,10 @@ export interface OutputCallback {
 	(pid: number, output: string): void;
 }
 
+export interface RWCallback {
+	(err: number, len?: number): void;
+}
+
 export interface SyscallResult {
 	id: number;
 	name: string;

@@ -7,32 +7,44 @@
 'use strict';
 
 import { EINVAL, ESPIPE } from './constants';
-import { SyscallContext, IFile, OutputCallback } from './types';
+import { SyscallContext, IFile, OutputCallback, RWCallback } from './types';
 
 declare var Buffer: any;
+
+const CUTOFF = 8192;
 
 export class Pipe {
 	buf: Buffer = new Buffer(0);
 	refcount: number = 1; // maybe more accurately a reader count
-	waiter: Function = undefined;
+	readWaiter: Function = undefined;
+	writeWaiter: Function = undefined;
 	closed: boolean = false;
 
-	write(s: string): number {
+	write(s: string): void {
 		let b = new Buffer(s);
-		return this.writeBuffer(b);
+		this.writeBuffer(b, (err: number, len?: number) => {});
 	}
 
-	writeBuffer(b: Buffer): number {
+	writeBuffer(b: Buffer, cb: RWCallback): void {
 		this.buf = Buffer.concat([this.buf, b]);
-		if (this.waiter) {
-			let waiter = this.waiter;
-			this.waiter = undefined;
+		if (this.readWaiter) {
+			let waiter = this.readWaiter;
+			this.readWaiter = undefined;
 			waiter();
 		}
-		return b.length;
+		if (this.buf.length <= CUTOFF) {
+			cb(0, b.length);
+		} else {
+			if (this.writeWaiter) {
+				console.log('ERROR: expected no other write waiter');
+			}
+			this.writeWaiter = () => {
+				cb(0, b.length);
+			};
+		}
 	}
 
-	read(buf: Buffer, off: number, len: number, pos: number, cb: (err: any, len?: number) => void): void {
+	read(buf: Buffer, off: number, len: number, pos: number, cb: RWCallback): void {
 		if (this.buf.length || this.closed) {
 			let n = this.buf.copy(buf, pos, off, off+len);
 			if (this.buf.length === off + n)
@@ -42,13 +54,18 @@ export class Pipe {
 			return cb(undefined, n);
 		}
 		// at this point, we're waiting on more data or an EOF.
-		this.waiter = () => {
+		this.readWaiter = () => {
 			let n = this.buf.copy(buf, pos, off, off+len);
 			if (this.buf.length === off + n)
 				this.buf = new Buffer(0);
 			else
 				this.buf = this.buf.slice(off + n);
 			cb(undefined, n);
+			if (this.writeWaiter) {
+				let waiter = this.writeWaiter;
+				this.writeWaiter = undefined;
+				waiter();
+			}
 		};
 	}
 
@@ -67,11 +84,11 @@ export class Pipe {
 			return;
 
 		this.closed = true;
-		if (!this.waiter)
+		if (!this.readWaiter)
 			return;
 
-		this.waiter();
-		this.waiter = undefined;
+		this.readWaiter();
+		this.readWaiter = undefined;
 	}
 }
 
@@ -98,17 +115,16 @@ export class PipeFile implements IFile {
 		this.writeListener = cb;
 	}
 
-	read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+	read(buf: Buffer, pos: number, cb: RWCallback): void {
 		if (pos !== -1)
-			return cb('offset read not supported on pipe');
+			return cb(-ESPIPE);
 		this.pipe.read(buf, 0, buf.length, 0, cb);
 	}
 
-	write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+	write(buf: Buffer, pos: number, cb: RWCallback): void {
 		if (pos !== -1)
-			return cb('offset write not supported on pipe');
-		this.pipe.writeBuffer(buf);
-		cb(undefined, buf.length);
+			return cb(-ESPIPE);
+		this.pipe.writeBuffer(buf, cb);
 
 		if (this.writeListener)
 			this.writeListener(-1, buf.toString('utf-8'));

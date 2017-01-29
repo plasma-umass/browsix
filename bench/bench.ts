@@ -61,15 +61,15 @@ const BENCHMARKS = [
 		name: 'lat_fs_create_1024',
 		cmd: 'lat_fs %d create 1024 /tmp',
 	},
-	{
-		name: 'lat_tcp_localhost',
-		cmd: 'lat_tcp %d 127.0.0.1',
-		remote_cmd: 'lat_tcp 0 -s',
-	},
-	{
-		name: 'lat_proc_null_static',
-		cmd: 'lat_proc %d null static',
-	},
+	// {
+	// 	name: 'lat_tcp_localhost',
+	// 	cmd: 'lat_tcp %d 127.0.0.1',
+	// 	remote_cmd: 'lat_tcp 0 -s',
+	// },
+	// {
+	// 	name: 'lat_proc_null_static',
+	// 	cmd: 'lat_proc %d null static',
+	// },
 	// {
 	// 	name: 'lat_pipe',
 	// 	cmd: 'lat_pipe %d',

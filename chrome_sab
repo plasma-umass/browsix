@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+
+exec google-chrome-beta --js-flags=--harmony-sharedarraybuffer --enable-blink-feature=SharedArrayBuffer "$@"

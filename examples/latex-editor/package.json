@@ -44,7 +44,7 @@
     }
   },
   "dependencies": {
-    "browsix": "^0.1.0",
+    "browsix": "^0.9.0",
     "mobile-detect": "^1.3.2"
   }
 }

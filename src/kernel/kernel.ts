@@ -2499,12 +2499,12 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 					cb(err, undefined);
 					return;
 				}
-				let writable = new bfs.FileSystem['InMemory']();
+				let writable = new bfs.FileSystem['LocalStorage']();
 				let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
 				overlaid.initialize(finishInit.bind(this, overlaid));
 			});
 		} else {
-			let writable = new bfs.FileSystem['InMemory']();
+			let writable = new bfs.FileSystem['LocalStorage']();
 			let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
 			overlaid.initialize(finishInit.bind(this, overlaid));
 		}

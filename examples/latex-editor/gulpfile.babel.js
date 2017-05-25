@@ -52,6 +52,10 @@ const testLintOptions = {
   }
 };
 
+gulp.task('copy-kernel', () => {
+  return gulp.src(['../../lib-dist/lib/kernel/kernel.js']).pipe(gulp.dest('app/'));
+});
+
 gulp.task('copy-fs', ['index-fs'], () => {
   return gulp.src(['fs/**/*']).pipe(gulp.dest('dist/fs'));
 });
@@ -112,7 +116,7 @@ gulp.task('index-fs', /*['build-fs'],*/ function() {
         // .pipe(gulp.dest('./fs'));
 });
 
-gulp.task('serve', ['styles', 'scripts', 'fonts', 'index-fs'], () => {
+gulp.task('serve', ['styles', 'scripts', 'fonts', 'index-fs', 'copy-kernel'], () => {
   let proxyOptions = url.parse('http://localhost:8080/api');
   proxyOptions.route = '/api';
 
@@ -168,6 +172,7 @@ gulp.task('serve:test', ['scripts'], () => {
     }
   });
 
+  gulp.watch('../../lib-dist/lib/kernel/kernel.js', ['copy-kernel']);
   gulp.watch('app/scripts/**/*.js', ['scripts']);
   gulp.watch('test/spec/**/*.js').on('change', reload);
   gulp.watch('test/spec/**/*.js', ['lint:test']);

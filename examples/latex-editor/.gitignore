@@ -5,3 +5,15 @@ dist
 bower_components
 test/bower_components
 *~
+/app/kernel.js
+/fs/Makefile
+/fs/img/
+/fs/index.json
+/fs/main.bib
+/fs/main.tex
+/fs/plots/
+/fs/redis.conf
+/fs/test.sh
+/fs/test1.dot
+/fs/texmf/
+

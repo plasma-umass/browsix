@@ -1,25 +1,97 @@
-(() => {
+(function () {
 	'use strict';
 
-	const TEX_FLAGS = '-halt-on-error -interaction nonstopmode --shell-escape ';
+	var CLIENT_ID = 'nb7o6r06mf5qux7';
+	var REDIRECT_URL = "http://localhost:9000";
 
-	const IS_CHROME = typeof navigator !== 'undefined' &&
-			navigator.userAgent.match(/Chrome/) &&
-			!navigator.userAgent.match(/Edge/);
+	var dropboxClient = new Dropbox.Client({ key: CLIENT_ID})
+	dropboxClient.authDriver(new Dropbox.AuthDriver.Popup({receiverUrl: REDIRECT_URL}));
 
-	const IS_FIREFOX = typeof navigator !== 'undefined' &&
-			navigator.userAgent.match(/Firefox/);
+	dropboxClient.authenticate({interactive: false}, function(error, dropboxClient) {
+	  if (error) {
+	    return handleError(error);
+	  }
+	  if (dropboxClient.isAuthenticated()) {
+	    // Cached credentials are available, make Dropbox API calls.
+	    doSomethingCool();
+	  } else {
+	    // show and set up the "Sign into Dropbox" button
+	    var button = document.querySelector("#login-button");
+	    button.setAttribute("class", "visible");
+	    button.addEventListener("click", function() {
+	      // The user will have to click an 'Authorize' button.
+	      dropboxClient.authenticate(function(error, dropboxClient) {
+	        if (error) {
+	          return handleError(error);
+	        }
+	        doSomethingCool();
+	      });
+	    });
+	  }
+	});
 
-	let f = 'main';
-	let texFile = f + '.tex';
-	let bibFile = 'main.bib';
-	let edTex = document.getElementById('ed-tex');
-	let edBib = document.getElementById('ed-bib');
-	let button = document.getElementById('create-button');
-	let loading = document.getElementById('loading');
-	let pdfParent = document.getElementById('pdf-parent');
-	let perfOut = document.getElementById('perf-out');
-	let kernel = null;
+	function doSomethingCool(){
+		console.log('connected');
+	}
+
+	// // Try to use cached credentials.
+	// dropboxClient.authenticate({interactive: false}, function(error, dropboxClient) {
+	// 	var loginButton = document.querySelector("#login-button");
+
+	// 	debugger
+	// 	  if (error) {
+	// 	    return handleError(error);
+	// 	  }
+	// 	  if (dropboxClient.isAuthenticated()) {
+	// 	    // Cached credentials are available, make Dropbox API calls.
+	// 	 //    dropboxClient.getAccountInfo(function(error, accountInfo) {
+	// 		//   if (error) {
+	// 		// 	console.log(error);
+	// 		//   } else{
+	// 		//   	debugger
+	// 		//   	// document.getElementById('user-name').innerHTML = "Hi, " + accountInfo.name + "!";
+	// 		//   }
+	// 		// });
+
+	// 	    loginButton.setAttribute("class", "hidden");
+	// 	  } else {
+	// 	    // show and set up the "Sign into Dropbox" button
+		    
+	// 	    loginButton.setAttribute("class", "visible");
+	// 	    loginButton.addEventListener("click", function() {
+	// 	      // The user will have to click an 'Authorize' button.
+	// 	      console.log('here');
+	// 	      dropboxClient.authenticate(function(error, dropboxClient) {
+	// 	        if (error) {
+	// 	          return handleError(error);
+	// 	        }
+	// 	        debugger
+	// 	        loginButton.setAttribute("class", "hidden");
+	// 	      });
+	// 	    });
+	// 	  }
+	// 	});
+
+	function handleError(error){
+		console.log(error);
+	}
+
+	var TEX_FLAGS = '-halt-on-error -interaction nonstopmode --shell-escape ';
+
+	var IS_CHROME = typeof navigator !== 'undefined' && navigator.userAgent.match(/Chrome/) && !navigator.userAgent.match(/Edge/);
+
+	var IS_FIREFOX = typeof navigator !== 'undefined' && navigator.userAgent.match(/Firefox/);
+
+	var f = 'main';
+	var texFile = f + '.tex';
+	var bibFile = 'main.bib';
+	var edTex = document.getElementById('ed-tex');
+	var edBib = document.getElementById('ed-bib');
+	var button = document.getElementById('create-button');
+	var loading = document.getElementById('loading');
+	var pdfParent = document.getElementById('pdf-parent');
+	var perfOut = document.getElementById('perf-out');
+	var kernel = null;
 
 	function replaceAll(target, search, replacement) {
 		return target.replace(new RegExp(search, 'g'), replacement);
@@ -33,17 +105,14 @@
 
 		$('#loading').removeClass('browsix-hidden');
 
-		window.Boot(
-			'XmlHttpRequest',
-			['index.json', 'fs', true],
-			(err, k) => {
-				if (err) {
-					console.log(err);
-					throw new Error(err);
-				}
-				kernel = k;
-				loadFiles();
-			});
+		window.Boot('XmlHttpRequest', ['index.json', 'fs', true], function (err, k) {
+			if (err) {
+				console.log(err);
+				throw new Error(err);
+			}
+			kernel = k;
+			loadFiles();
+		});
 	}
 	function loadFiles() {
 		edTex.value = kernel.fs.readFileSync(texFile).toString();
@@ -53,18 +122,18 @@
 		button.disabled = false;
 	}
 	function saveFiles(next) {
-		kernel.fs.writeFile(texFile, edTex.value, () => {
-			kernel.fs.writeFile(bibFile, edBib.value, () => {
+		kernel.fs.writeFile(texFile, edTex.value, function () {
+			kernel.fs.writeFile(bibFile, edBib.value, function () {
 				next();
 			});
 		});
 	}
 	function showPDF() {
-		let fName = f + '.pdf';
-		let buf = new Uint8Array(kernel.fs.readFileSync(fName).data.buff.buffer);
-		let blob = new Blob([buf], {type: 'application/pdf'});
+		var fName = f + '.pdf';
+		var buf = new Uint8Array(kernel.fs.readFileSync(fName).data.buff.buffer);
+		var blob = new Blob([buf], { type: 'application/pdf' });
 
-		let pdfEmbed = document.createElement('embed');
+		var pdfEmbed = document.createElement('embed');
 		pdfEmbed.className = 'pdf';
 		pdfEmbed['src'] = window.URL.createObjectURL(blob);
 		pdfEmbed.setAttribute('alt', 'main.pdf');
@@ -75,24 +144,21 @@
 
 		$(button).removeClass('is-active').blur();
 	}
-	let sequence = [
-		'pdflatex ' + TEX_FLAGS + '-draftmode ' + f,
-		'bibtex ' + f,
-//		'pdflatex ' + TEX_FLAGS + '-draftmode ' + f,
-		'pdflatex ' + TEX_FLAGS + f,
-	];
+	var sequence = ['pdflatex ' + TEX_FLAGS + '-draftmode ' + f, 'bibtex ' + f,
+	//		'pdflatex ' + TEX_FLAGS + '-draftmode ' + f,
+	'pdflatex ' + TEX_FLAGS + f];
 	function runLatex() {
-		let startTime = performance.now();
+		var startTime = performance.now();
 
-		let progress = 10;
+		var progress = 10;
 
 		$('#timing').addClass('browsix-hidden');
 		perfOut.innerHTML = '';
 		$('#build-progress').removeClass('browsix-hidden');
 		pdfParent.innerHTML = '<center><b>PDF will appear here when built</b></center>';
 
-		let log = '';
-		let seq = sequence.slice();
+		var log = '';
+		var seq = sequence.slice();
 		function onStdout(pid, out) {
 			log += out;
 			//console.log(out);
@@ -105,7 +171,7 @@
 			if (code !== 0) {
 				//console.log(log);
 
-				let errEmbed = document.createElement('code');
+				var errEmbed = document.createElement('code');
 				errEmbed.innerHTML = replaceAll(log, '\n', '<br>\n');
 
 				pdfParent.innerHTML = '<h2>Error:</h2><br>';
@@ -120,18 +186,18 @@
 			}
 
 			console.log('progress: ' + progress);
-			$('#build-bar').css('width', ''+progress+'%').attr('aria-valuenow', progress);
+			$('#build-bar').css('width', '' + progress + '%').attr('aria-valuenow', progress);
 			progress += 25;
 
 			//console.log(log);
 			log = '';
-			let cmd = seq.shift();
+			var cmd = seq.shift();
 			if (!cmd) {
 				showPDF();
 				$('#build-progress').addClass('browsix-hidden');
 				$('#build-bar').css('width', '10%').attr('aria-valuenow', 10);
-				let totalTime = '' + ((performance.now() - startTime) / 1000);
-				let dot = totalTime.indexOf('.');
+				var totalTime = '' + (performance.now() - startTime) / 1000;
+				var dot = totalTime.indexOf('.');
 				if (dot + 2 < totalTime.length) {
 					totalTime = totalTime.substr(0, dot + 2);
 				}
@@ -151,3 +217,4 @@
 	button.addEventListener('click', clicked);
 	startBrowsix();
 })();
+//# sourceMappingURL=main.js.map

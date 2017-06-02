@@ -2462,7 +2462,7 @@ export interface BootArgs {
 	readOnly?: boolean;
 };
 
-export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: BootArgs = {}): void {
+export function Boot(fsType: string, fsArgs: any[], dropboxClient: Dropbox.Client, cb: BootCallback, args: BootArgs = {}): void {
 	let browserfs: any = {};
 	bfs.install(browserfs);
 	// this is the 'Buffer' in the file-level/module scope above.
@@ -2499,14 +2499,29 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 					cb(err, undefined);
 					return;
 				}
+
+				if (dropboxClient.isAuthenticated()) {
+					let writable = new bfs.FileSystem['Dropbox'](dropboxClient)
+					let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
+                	overlaid.initialize(finishInit.bind(_this, overlaid));
+				} else {
+					let writable = new bfs.FileSystem['LocalStorage']();
+					let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
+                	overlaid.initialize(finishInit.bind(_this, overlaid));
+				}
+                
+            });
+        }
+        else {
+        	if (dropboxClient.isAuthenticated()) {
+				let writable = new bfs.FileSystem['Dropbox'](dropboxClient)
+				let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
+            	overlaid.initialize(finishInit.bind(this, overlaid));
+			} else {
 				let writable = new bfs.FileSystem['LocalStorage']();
 				let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
-				overlaid.initialize(finishInit.bind(this, overlaid));
-			});
-		} else {
-			let writable = new bfs.FileSystem['LocalStorage']();
-			let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
-			overlaid.initialize(finishInit.bind(this, overlaid));
+            	overlaid.initialize(finishInit.bind(this, overlaid));
+			}
 		}
 	}
 }

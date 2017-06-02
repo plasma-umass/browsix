@@ -26,7 +26,6 @@
 		<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
 		<![endif]-->
 
-
 		<nav class="navbar navbar-default navbar-fixed-top">
 			<div class="container">
 				<div class="navbar-header">
@@ -48,6 +47,11 @@
 							<button type="button" class="btn btn-primary has-spinner" id="create-button" disabled>
 								Build PDF
 							</button>
+							<!-- <span href='#' id='user-name'></span> -->
+							<button type="button" class="btn btn-primary" id="login-button">
+								Login
+							</button>
+							<!-- <button type="button" class="btn btn-primary" id="logout-button">Logout</button> -->
 						</li>
 					</ul>
 				</div>
@@ -127,6 +131,9 @@
 		<!-- endbower -->
 		<script src="/node_modules/mobile-detect/mobile-detect.min.js"></script>
 		<!-- endbuild -->
+
+		<!-- <script src="/node_modules/dropbox/dist/Dropbox-sdk.min.js"></script> -->
+		<script src="//cdnjs.cloudflare.com/ajax/libs/dropbox.js/0.10.2/dropbox.min.js"></script>
 
 		<script src="kernel.js"></script>
 

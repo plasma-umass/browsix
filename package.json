@@ -64,6 +64,7 @@
     "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
+    "dropbox": "^0.10.3",
     "node-binary-marshal": "^0.4.2",
     "term.js": "github:bpowers/term.js"
   },

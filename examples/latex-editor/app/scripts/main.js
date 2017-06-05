@@ -1,76 +1,48 @@
 (function () {
 	'use strict';
 
-	var CLIENT_ID = 'nb7o6r06mf5qux7';
+	var CLIENT_ID = '0kysxqvtimwp0zv';
+	var SECRET_ID = '03fdtv6adj77snd';
 	var REDIRECT_URL = "http://localhost:9000";
 
-	var dropboxClient = new Dropbox.Client({ key: CLIENT_ID})
-	dropboxClient.authDriver(new Dropbox.AuthDriver.Popup({receiverUrl: REDIRECT_URL}));
+	var client = new Dropbox.Client({ key: CLIENT_ID})
+	client.authDriver(new Dropbox.AuthDriver.Redirect({redirectUrl: REDIRECT_URL}))
 
-	dropboxClient.authenticate({interactive: false}, function(error, dropboxClient) {
+	// Try to use cached credentials.
+	client.authenticate({interactive: false}, function(error, client) {
 	  if (error) {
 	    return handleError(error);
 	  }
-	  if (dropboxClient.isAuthenticated()) {
-	    // Cached credentials are available, make Dropbox API calls.
-	    doSomethingCool();
+
+	  if (client.isAuthenticated()) {
+	    displayLoggedInContent(client);
 	  } else {
-	    // show and set up the "Sign into Dropbox" button
-	    var button = document.querySelector("#login-button");
-	    button.setAttribute("class", "visible");
-	    button.addEventListener("click", function() {
-	      // The user will have to click an 'Authorize' button.
-	      dropboxClient.authenticate(function(error, dropboxClient) {
-	        if (error) {
-	          return handleError(error);
-	        }
-	        doSomethingCool();
-	      });
-	    });
+	    displayLoggedOutContent(client); 
 	  }
 	});
 
-	function doSomethingCool(){
-		console.log('connected');
+	function displayLoggedInContent(client) {
+		client.getAccountInfo(function(error, accountInfo) {
+			if (error) {
+				return handleError(error); 
+			};
+			document.getElementById('user-name').innerHTML = "Hello, " + accountInfo.name + "!";
+		})
 	}
 
-	// // Try to use cached credentials.
-	// dropboxClient.authenticate({interactive: false}, function(error, dropboxClient) {
-	// 	var loginButton = document.querySelector("#login-button");
-
-	// 	debugger
-	// 	  if (error) {
-	// 	    return handleError(error);
-	// 	  }
-	// 	  if (dropboxClient.isAuthenticated()) {
-	// 	    // Cached credentials are available, make Dropbox API calls.
-	// 	 //    dropboxClient.getAccountInfo(function(error, accountInfo) {
-	// 		//   if (error) {
-	// 		// 	console.log(error);
-	// 		//   } else{
-	// 		//   	debugger
-	// 		//   	// document.getElementById('user-name').innerHTML = "Hi, " + accountInfo.name + "!";
-	// 		//   }
-	// 		// });
-
-	// 	    loginButton.setAttribute("class", "hidden");
-	// 	  } else {
-	// 	    // show and set up the "Sign into Dropbox" button
-		    
-	// 	    loginButton.setAttribute("class", "visible");
-	// 	    loginButton.addEventListener("click", function() {
-	// 	      // The user will have to click an 'Authorize' button.
-	// 	      console.log('here');
-	// 	      dropboxClient.authenticate(function(error, dropboxClient) {
-	// 	        if (error) {
-	// 	          return handleError(error);
-	// 	        }
-	// 	        debugger
-	// 	        loginButton.setAttribute("class", "hidden");
-	// 	      });
-	// 	    });
-	// 	  }
-	// 	});
+	function displayLoggedOutContent(client) {
+		var button = document.querySelector("#login-button");
+	    button.setAttribute("class", "btn btn-primary");
+	    button.addEventListener("click", function() {
+	      // The user will have to click an 'Authorize' button.
+	      client.authenticate(function(error, client) {
+	        if (error) {
+	          return handleError(error);
+	        }
+	        displayLoggedInContent(client);
+	      });
+	    });
+	}
 
 	function handleError(error){
 		console.log(error);
@@ -105,7 +77,7 @@
 
 		$('#loading').removeClass('browsix-hidden');
 
-		window.Boot('XmlHttpRequest', ['index.json', 'fs', true], function (err, k) {
+		window.Boot('XmlHttpRequest', ['index.json', 'fs', true, client], function (err, k) {
 			if (err) {
 				console.log(err);
 				throw new Error(err);

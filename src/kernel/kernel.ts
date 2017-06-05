@@ -2462,7 +2462,7 @@ export interface BootArgs {
 	readOnly?: boolean;
 };
 
-export function Boot(fsType: string, fsArgs: any[], dropboxClient: Dropbox.Client, cb: BootCallback, args: BootArgs = {}): void {
+export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: BootArgs = {}): void {
 	let browserfs: any = {};
 	bfs.install(browserfs);
 	// this is the 'Buffer' in the file-level/module scope above.
@@ -2477,6 +2477,8 @@ export function Boot(fsType: string, fsArgs: any[], dropboxClient: Dropbox.Clien
 	}
 	let asyncRoot = new (Function.prototype.bind.apply(rootConstructor, [null].concat(fsArgs)));
 	asyncRoot.supportsSynch = function(): boolean { return false; };
+
+	let dropboxClient: Dropbox.Client = fsArgs[3];
 
 	function finishInit(root: any, err: any): void {
 		if (err) {
@@ -2493,6 +2495,7 @@ export function Boot(fsType: string, fsArgs: any[], dropboxClient: Dropbox.Clien
 			finishInit(asyncRoot, null);
 		}
 	} else {
+
 		if (asyncRoot.initialize) {
 			asyncRoot.initialize((err: any) => {
 				if (err) {

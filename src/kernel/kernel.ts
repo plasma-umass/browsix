@@ -2503,27 +2503,78 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 					return;
 				}
 
-				if (dropboxClient.isAuthenticated()) {
-					let writable = new bfs.FileSystem['Dropbox'](dropboxClient)
-					let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
-                	overlaid.initialize(finishInit.bind(_this, overlaid));
+				if (dropboxClient && dropboxClient.isAuthenticated()) {
+
+					// Initialize the root File System
+					let rootForMfs = new bfs.FileSystem['LocalStorage']();
+					bfs.initialize(rootForMfs);
+
+					// Create mount directories
+					let fs = bfs.BFSRequire('fs');
+
+					if (!fs.existsSync('/root')) {
+						fs.mkdirSync('/root');
+					}
+
+					if (!fs.existsSync('/root/dropbox')) {
+						fs.mkdirSync('/root/dropbox');
+					}
+
+					// Create Dropbox File System
+					let writable = new bfs.FileSystem['Dropbox'](dropboxClient);
+
+					// Create mountable File System
+					let newmfs = new bfs.FileSystem.MountableFileSystem();
+					
+					// Mount root File System
+					newmfs.mount('/root', rootForMfs);
+
+					// Mount Dropbox File System
+					newmfs.mount('/root/dropbox', writable);
+
+					finishInit.bind(this, newmfs);
 				} else {
 					let writable = new bfs.FileSystem['LocalStorage']();
 					let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
-                	overlaid.initialize(finishInit.bind(_this, overlaid));
+					overlaid.initialize(finishInit.bind(this, overlaid));
 				}
-                
-            });
-        }
-        else {
-        	if (dropboxClient.isAuthenticated()) {
-				let writable = new bfs.FileSystem['Dropbox'](dropboxClient)
-				let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
-            	overlaid.initialize(finishInit.bind(this, overlaid));
+			});
+		}
+		else {
+			if (dropboxClient && dropboxClient.isAuthenticated()) {
+
+				// Initialize the root File System
+					let rootForMfs = new bfs.FileSystem['LocalStorage']();
+					bfs.initialize(rootForMfs);
+
+					// Create mount directories
+					let fs = bfs.BFSRequire('fs');
+
+					if (!fs.existsSync('/root')) {
+						fs.mkdirSync('/root');
+					}
+
+					if (!fs.existsSync('/root/dropbox')) {
+						fs.mkdirSync('/root/dropbox');
+					}
+
+					// Create Dropbox File System
+					let writable = new bfs.FileSystem['Dropbox'](dropboxClient);
+					
+					// Create mountable File System
+					let newmfs = new bfs.FileSystem.MountableFileSystem();
+
+					// Mount root File System
+					newmfs.mount('/root', rootForMfs);
+
+					// Mount Dropbox File System
+					newmfs.mount('/root/dropbox', writable);
+
+					finishInit.bind(this, newmfs);
 			} else {
 				let writable = new bfs.FileSystem['LocalStorage']();
 				let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
-            	overlaid.initialize(finishInit.bind(this, overlaid));
+				overlaid.initialize(finishInit.bind(this, overlaid));
 			}
 		}
 	}

@@ -284,14 +284,6 @@ gulp.task('dist-bench', ['build-bench', 'index-benchfs'], function() {
         .pipe(gulp.dest('./lib-dist/'));
 });
 
-// XXX: this doesn't work due to the tight integration of the kernel
-// with BrowserFS.  Potentially this could be changed by using a
-// different BrowserFS backend (like zipfs?) that doesn't do
-// XMLHttpRequest.
-gulp.task('test-node', ['dist-test'], function() {
-    return gulp.src('test/*.js').pipe(mocha());
-});
-
 // this starts karma & rebuild everything on change
 gulp.task('test-browser', ['dist-test'], function(done) {
     new karma.Server({
@@ -521,6 +513,7 @@ gulp.task('serve', ['app:build', 'app:styles', 'app:elements', 'app:images'], fu
         }
     });
 
+    gulp.watch(['src/kernel/*.ts'], ['dist-kernel', reload]);
     gulp.watch(['app/**/*.html'], reload);
     gulp.watch(['app/styles/**/*.css'], ['app:styles', reload]);
     gulp.watch(['app/elements/**/*.css'], ['app:elements', reload]);

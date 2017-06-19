@@ -56,7 +56,7 @@
 
 	var f = 'main';
 	var texFile = f + '.tex';
-	var bibFile = 'main.bib';
+	var bibFile = f + '.bib';
 	var edTex = document.getElementById('ed-tex');
 	var edBib = document.getElementById('ed-bib');
 	var button = document.getElementById('create-button');
@@ -101,20 +101,22 @@
 		});
 	}
 	function showPDF() {
-		var fName = f + '.pdf';
-		var buf = new Uint8Array(kernel.fs.readFileSync(fName).data.buff.buffer);
-		var blob = new Blob([buf], { type: 'application/pdf' });
+		var fName = '/workspace/dropbox/' + f + '.pdf';
+		kernel.fs.readFile(fName, function(err, data) {
+			var buf = new Uint8Array(data);
+			var blob = new Blob([buf], { type: 'application/pdf' });
 
-		var pdfEmbed = document.createElement('embed');
-		pdfEmbed.className = 'pdf';
-		pdfEmbed['src'] = window.URL.createObjectURL(blob);
-		pdfEmbed.setAttribute('alt', 'main.pdf');
-		pdfEmbed.setAttribute('pluginspage', 'http://www.adobe.com/products/acrobat/readstep2.html');
+			var pdfEmbed = document.createElement('embed');
+			pdfEmbed.className = 'pdf';
+			pdfEmbed['src'] = window.URL.createObjectURL(blob);
+			pdfEmbed.setAttribute('alt', fName);
+			pdfEmbed.setAttribute('pluginspage', 'http://www.adobe.com/products/acrobat/readstep2.html');
 
-		pdfParent.innerHTML = '';
-		pdfParent.appendChild(pdfEmbed);
+			pdfParent.innerHTML = '';
+			pdfParent.appendChild(pdfEmbed);
 
-		$(button).removeClass('is-active').blur();
+			$(button).removeClass('is-active').blur();
+		});
 	}
 	var sequence = ['pdflatex ' + TEX_FLAGS + '-draftmode ' + f, 'bibtex ' + f,
 	//		'pdflatex ' + TEX_FLAGS + '-draftmode ' + f,

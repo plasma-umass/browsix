@@ -1599,7 +1599,7 @@ export class Kernel implements IKernel {
 			'LC_ALL=en_US.UTF-8',
 			'HOME=/',
 		];
-		this.spawn(null, '/', parts[0], parts, env, null, (err: any, pid: number) => {
+		this.spawn(null, '/workspace/dropbox', parts[0], parts, env, null, (err: any, pid: number) => {
 			if (err) {
 				let code = -666;
 				if (err.errno === ENOENT) {
@@ -1864,7 +1864,7 @@ export class Kernel implements IKernel {
 			files[2] = new PipeFile();
 		}
 
-		let task = new Task(this, parent, pid, '/', name, args, env, files, null, null, null, cb);
+		let task = new Task(this, parent, pid, cwd, name, args, env, files, null, null, null, cb);
 		this.tasks[pid] = task;
 	}
 
@@ -2509,30 +2509,18 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 					let rootForMfs = new bfs.FileSystem['LocalStorage']();
 					bfs.initialize(rootForMfs);
 
-					// Create mount directories
-					let fs = bfs.BFSRequire('fs');
-
-					if (!fs.existsSync('/root')) {
-						fs.mkdirSync('/root');
-					}
-
-					if (!fs.existsSync('/root/dropbox')) {
-						fs.mkdirSync('/root/dropbox');
-					}
-
 					// Create Dropbox File System
 					let writable = new bfs.FileSystem['Dropbox'](dropboxClient);
 
 					// Create mountable File System
 					let newmfs = new bfs.FileSystem.MountableFileSystem();
-					
-					// Mount root File System
-					newmfs.mount('/root', rootForMfs);
 
-					// Mount Dropbox File System
-					newmfs.mount('/root/dropbox', writable);
+					// Mount File Systems
+					newmfs.mount('/', asyncRoot);
+					// newmfs.mount('/workspace', rootForMfs);
+					newmfs.mount('/workspace/dropbox', writable);
 
-					finishInit.bind(this, newmfs);
+					finishInit(newmfs);
 				} else {
 					let writable = new bfs.FileSystem['LocalStorage']();
 					let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
@@ -2544,33 +2532,21 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 			if (dropboxClient && dropboxClient.isAuthenticated()) {
 
 				// Initialize the root File System
-					let rootForMfs = new bfs.FileSystem['LocalStorage']();
-					bfs.initialize(rootForMfs);
+				let rootForMfs = new bfs.FileSystem['LocalStorage']();
+				bfs.initialize(rootForMfs);
 
-					// Create mount directories
-					let fs = bfs.BFSRequire('fs');
+				// Create Dropbox File System
+				let writable = new bfs.FileSystem['Dropbox'](dropboxClient);
 
-					if (!fs.existsSync('/root')) {
-						fs.mkdirSync('/root');
-					}
+				// Create mountable File System
+				let newmfs = new bfs.FileSystem.MountableFileSystem();
 
-					if (!fs.existsSync('/root/dropbox')) {
-						fs.mkdirSync('/root/dropbox');
-					}
+				// Mount File Systems
+				newmfs.mount('/', asyncRoot);
+				// newmfs.mount('/workspace', rootForMfs);
+				newmfs.mount('/workspace/dropbox', writable);
 
-					// Create Dropbox File System
-					let writable = new bfs.FileSystem['Dropbox'](dropboxClient);
-					
-					// Create mountable File System
-					let newmfs = new bfs.FileSystem.MountableFileSystem();
-
-					// Mount root File System
-					newmfs.mount('/root', rootForMfs);
-
-					// Mount Dropbox File System
-					newmfs.mount('/root/dropbox', writable);
-
-					finishInit.bind(this, newmfs);
+				finishInit(newmfs);
 			} else {
 				let writable = new bfs.FileSystem['LocalStorage']();
 				let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);

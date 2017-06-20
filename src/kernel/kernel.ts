@@ -28,6 +28,8 @@ let STRACE = false;
 
 let Buffer: any;
 
+let dropboxClient: Dropbox.Client;
+
 // Polyfill.  Previously, Atomics.wait was called Atomics.futexWait and
 // Atomics.wake was called Atomics.futexWake.
 declare var Atomics: any;
@@ -1599,7 +1601,10 @@ export class Kernel implements IKernel {
 			'LC_ALL=en_US.UTF-8',
 			'HOME=/',
 		];
-		this.spawn(null, '/workspace/dropbox', parts[0], parts, env, null, (err: any, pid: number) => {
+
+		let cwd: string = dropboxClient.isAuthenticated() ? '/workspace/dropbox/' : '/';
+
+		this.spawn(null, cwd, parts[0], parts, env, null, (err: any, pid: number) => {
 			if (err) {
 				let code = -666;
 				if (err.errno === ENOENT) {
@@ -2478,7 +2483,7 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 	let asyncRoot = new (Function.prototype.bind.apply(rootConstructor, [null].concat(fsArgs)));
 	asyncRoot.supportsSynch = function(): boolean { return false; };
 
-	let dropboxClient: Dropbox.Client = fsArgs[3];
+	dropboxClient = fsArgs[3];
 
 	function finishInit(root: any, err: any): void {
 		if (err) {
@@ -2517,7 +2522,7 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 
 					// Mount File Systems
 					newmfs.mount('/', asyncRoot);
-					// newmfs.mount('/workspace', rootForMfs);
+
 					newmfs.mount('/workspace/dropbox', writable);
 
 					finishInit(newmfs);
@@ -2543,7 +2548,7 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 
 				// Mount File Systems
 				newmfs.mount('/', asyncRoot);
-				// newmfs.mount('/workspace', rootForMfs);
+
 				newmfs.mount('/workspace/dropbox', writable);
 
 				finishInit(newmfs);

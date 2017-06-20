@@ -5,8 +5,8 @@
 	var SECRET_ID = '03fdtv6adj77snd';
 	var REDIRECT_URL = "http://localhost:9000";
 
-	var client = new Dropbox.Client({ key: CLIENT_ID})
-	client.authDriver(new Dropbox.AuthDriver.Redirect({redirectUrl: REDIRECT_URL}))
+	var client = new Dropbox.Client({ key: CLIENT_ID});
+	client.authDriver(new Dropbox.AuthDriver.Redirect({redirectUrl: REDIRECT_URL}));
 
 	// Try to use cached credentials.
 	client.authenticate({interactive: false}, function(error, client) {
@@ -57,6 +57,7 @@
 	var f = 'main';
 	var texFile = f + '.tex';
 	var bibFile = f + '.bib';
+	var cwd = client.isAuthenticated() ? '/workspace/dropbox/' : '/'; 
 	var edTex = document.getElementById('ed-tex');
 	var edBib = document.getElementById('ed-bib');
 	var button = document.getElementById('create-button');
@@ -94,18 +95,22 @@
 		button.disabled = false;
 	}
 	function saveFiles(next) {
-		kernel.fs.writeFile(texFile, edTex.value, function () {
-			kernel.fs.writeFile(bibFile, edBib.value, function () {
+		kernel.fs.writeFile(cwd + texFile, edTex.value, function () {
+			kernel.fs.writeFile(cwd + bibFile, edBib.value, function () {
 				next();
 			});
 		});
 	}
 	function showPDF() {
-		var fName = '/workspace/dropbox/' + f + '.pdf';
+		var fName = cwd + f + '.pdf';
 		kernel.fs.readFile(fName, function(err, data) {
-			var buf = new Uint8Array(data);
-			var blob = new Blob([buf], { type: 'application/pdf' });
+			if (err) {
+				console.log(err);
+				throw new Error(err);
+			}
 
+			var buf = new Uint8Array(data.toArrayBuffer());
+			var blob = new Blob([buf], { type: 'application/pdf' });
 			var pdfEmbed = document.createElement('embed');
 			pdfEmbed.className = 'pdf';
 			pdfEmbed['src'] = window.URL.createObjectURL(blob);

@@ -52,6 +52,8 @@ var builtins = {
 // ground for mutable state.
 function project() {
     return ts.createProject('tsconfig.json', {
+        sortOutput: true,
+        declaration: true,
     });
 }
 

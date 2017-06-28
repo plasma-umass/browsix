@@ -2470,20 +2470,54 @@ export interface BootArgs {
 export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: BootArgs = {}): void {
 	let browserfs: any = {};
 	bfs.install(browserfs);
+
 	// this is the 'Buffer' in the file-level/module scope above.
 	Buffer = browserfs.Buffer;
 	if (typeof window !== 'undefined' && !(<any>window).Buffer) {
 		(<any>window).Buffer = browserfs.Buffer;
 	}
-	let rootConstructor: any = (<any>bfs).FileSystem[fsType];
+
+	// Initialise the async root file system
+	let rootConstructor: any;
+	let rootConstructorArgs: any = [];
+
+	/*
+		If the zipped data buffer is present, 
+		create an OverlayFS with ZipFS as the readable file system 
+		and LocalStorage as the writable file system  the zipped data,
+	*/
+	if (fsArgs.length > 4) {
+		let zippedData = new Buffer(new DataView(fsArgs[4]));
+
+		// FIXME: ZipFS not working
+		// let readable = new bfs.FileSystem['ZipFS'](zippedData);
+		let readable = new bfs.FileSystem['XmlHttpRequest']('index.json', 'fs');
+
+		// FIXME: err XmlHttpRequest ain't writable FS. Use different async FS
+		// let writable = new bfs.FileSystem['XmlHttpRequest']('index.json', 'fs');
+		let writable = new bfs.FileSystem['InMemory']();
+		
+		rootConstructor = (<any> bfs).FileSystem['OverlayFS'];
+		rootConstructorArgs = [null, writable, readable].concat(fsArgs);
+	} else {
+		rootConstructor = (<any>bfs).FileSystem[fsType];
+		rootConstructorArgs = [null].concat(fsArgs);
+	}
+
 	if (!rootConstructor) {
 		setImmediate(cb, 'unknown FileSystem type: ' + fsType);
 		return;
 	}
-	let asyncRoot = new (Function.prototype.bind.apply(rootConstructor, [null].concat(fsArgs)));
+
+	let asyncRoot = new (Function.prototype.bind.apply(rootConstructor, rootConstructorArgs));
 	asyncRoot.supportsSynch = function(): boolean { return false; };
 
-	dropboxClient = fsArgs[3];
+	// Initialize dropboxClient
+	if (fsArgs.length > 3) {
+		dropboxClient = fsArgs[3];
+	} else {
+		dropboxClient = null;
+	}
 
 	function finishInit(root: any, err: any): void {
 		if (err) {
@@ -2510,10 +2544,6 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 
 				if (dropboxClient && dropboxClient.isAuthenticated()) {
 
-					// Initialize the root File System
-					let rootForMfs = new bfs.FileSystem['LocalStorage']();
-					bfs.initialize(rootForMfs);
-
 					// Create Dropbox File System
 					let writable = new bfs.FileSystem['Dropbox'](dropboxClient);
 
@@ -2525,7 +2555,7 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 
 					newmfs.mount('/workspace/dropbox', writable);
 
-					finishInit(newmfs);
+					finishInit(newmfs, null);
 				} else {
 					let writable = new bfs.FileSystem['LocalStorage']();
 					let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
@@ -2535,10 +2565,6 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 		}
 		else {
 			if (dropboxClient && dropboxClient.isAuthenticated()) {
-
-				// Initialize the root File System
-				let rootForMfs = new bfs.FileSystem['LocalStorage']();
-				bfs.initialize(rootForMfs);
 
 				// Create Dropbox File System
 				let writable = new bfs.FileSystem['Dropbox'](dropboxClient);
@@ -2551,7 +2577,7 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 
 				newmfs.mount('/workspace/dropbox', writable);
 
-				finishInit(newmfs);
+				finishInit(newmfs, null);
 			} else {
 				let writable = new bfs.FileSystem['LocalStorage']();
 				let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);

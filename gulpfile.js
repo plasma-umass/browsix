@@ -17,7 +17,6 @@ var uglify = require('gulp-uglify');
 var karma = require('karma');
 var run = require('gulp-run');
 var chmod = require('gulp-chmod');
-var proxy = require('proxy-middleware');
 var url = require('url');
 var extend = require('util')._extend;
 
@@ -482,9 +481,6 @@ gulp.task('app:build', ['index-fs'], function (cb) {
 
 // Watch files for changes & reload
 gulp.task('serve', ['app:build', 'app:styles', 'app:elements', 'app:images'], function () {
-    var proxyOptions = url.parse('http://localhost:8080/api');
-    proxyOptions.route = '/api';
-
     browserSync({
         port: 5000,
         notify: false,
@@ -509,7 +505,7 @@ gulp.task('serve', ['app:build', 'app:styles', 'app:elements', 'app:images'], fu
                 '/fs': 'fs',
                 '/benchfs': 'benchfs',
             },
-            middleware: [proxy(proxyOptions)],
+            middleware: [],
         }
     });
 

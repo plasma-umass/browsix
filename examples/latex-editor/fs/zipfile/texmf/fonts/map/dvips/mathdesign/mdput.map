@@ -1,0 +1,36 @@
+md-utb8y Utopia-Bold "TeXnANSIEncoding ReEncodeFont" <texnansi.enc <putb8a.pfb
+md-utbo8y  Utopia-Bold "0.231 SlantFont TeXnANSIEncoding ReEncodeFont" <texnansi.enc <putb8a.pfb
+md-utbi8y Utopia-BoldItalic "TeXnANSIEncoding ReEncodeFont" <texnansi.enc <putbi8a.pfb
+md-utr8y Utopia-Regular "TeXnANSIEncoding ReEncodeFont" <texnansi.enc <putr8a.pfb
+md-utro8y  Utopia-Regular "0.231 SlantFont TeXnANSIEncoding ReEncodeFont" <texnansi.enc <putr8a.pfb
+md-utri8y Utopia-Italic "TeXnANSIEncoding ReEncodeFont" <texnansi.enc <putri8a.pfb
+md-utr7m MathDesign-UT-Regular-MathItalic-10  <md-utr7m.pfb
+md-utri7m MathDesign-UT-Regular-Italic-MathItalic-10  <md-utri7m.pfb
+md-utrmb MathDesign-UT-Regular-MathDesignSymbolB-10  <md-utrmb.pfb
+md-utrma MathDesign-UT-Regular-MathDesignSymbolA-10  <md-utrma.pfb
+md-utr8t MathDesign-UT-Regular-T1-10  <md-utr8t.pfb
+md-utri8t MathDesign-UT-Regular-Italic-T1-10  <md-utri8t.pfb
+md-utro8t MathDesign-UT-Regular-Slanted-T1-10 "0.231 SlantFont "<md-utr8t.pfb
+md-utr7y MathDesign-UT-Regular-Symbol-10  <md-utr7y.pfb
+md-utr7t MathDesign-UT-Regular-OT1-10  <md-utr7t.pfb
+md-utri7t MathDesign-UT-Regular-Italic-OT1-10  <md-utri7t.pfb
+md-utro7t MathDesign-UT-Regular-Slanted-OT1-10 "0.231 SlantFont "<md-utr7t.pfb
+md-utr7v MathDesign-UT-Regular-Extension-10  <md-utr7v.pfb
+md-utr8c MathDesign-UT-Regular-TS1-10  <md-utr8c.pfb
+md-utri8c MathDesign-UT-Regular-Italic-TS1-10  <md-utri8c.pfb
+md-utro8c MathDesign-UT-Regular-Slanted-TS1-10 "0.231 SlantFont "<md-utr8c.pfb
+md-utb7m MathDesign-UT-Bold-MathItalic-10  <md-utb7m.pfb
+md-utbi7m MathDesign-UT-Bold-Italic-MathItalic-10  <md-utbi7m.pfb
+md-utbmb MathDesign-UT-Bold-MathDesignSymbolB-10  <md-utbmb.pfb
+md-utbma MathDesign-UT-Bold-MathDesignSymbolA-10  <md-utbma.pfb
+md-utb8t MathDesign-UT-Bold-T1-10  <md-utb8t.pfb
+md-utbi8t MathDesign-UT-Bold-Italic-T1-10  <md-utbi8t.pfb
+md-utbo8t MathDesign-UT-Bold-Slanted-T1-10 "0.231 SlantFont "<md-utb8t.pfb
+md-utb7y MathDesign-UT-Bold-Symbol-10  <md-utb7y.pfb
+md-utb7t MathDesign-UT-Bold-OT1-10  <md-utb7t.pfb
+md-utbi7t MathDesign-UT-Bold-Italic-OT1-10  <md-utbi7t.pfb
+md-utbo7t MathDesign-UT-Bold-Slanted-OT1-10 "0.231 SlantFont "<md-utb7t.pfb
+md-utb7v MathDesign-UT-Bold-Extension-10  <md-utb7v.pfb
+md-utb8c MathDesign-UT-Bold-TS1-10  <md-utb8c.pfb
+md-utbi8c MathDesign-UT-Bold-Italic-TS1-10  <md-utbi8c.pfb
+md-utbo8c MathDesign-UT-Bold-Slanted-TS1-10 "0.231 SlantFont "<md-utb8c.pfb

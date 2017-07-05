@@ -1,0 +1,87 @@
+% This file belongs to the Antykwa Poltawskiego collection of fonts. The work is released
+% under the GUST Font License. See the MANIFEST-Antykwa-Poltawskiego.txt
+% and README-Antykwa-Poltawskiego.txt files for the details.
+% For the most recent version of this license see
+% http://www.gust.org.pl/fonts/licenses/GUST-FONT-LICENSE.txt or
+% http://tug.org/fonts/licenses/GUST-FONT-LICENSE.txt
+% 
+t5-antpl6 AntPoltLtExpd-Regular "encapt5 ReEncodeFont" <ap-t5.enc <antpl6.pfb
+t5-antpl8 AntPoltLtSemiExpd-Regular "encapt5 ReEncodeFont" <ap-t5.enc <antpl8.pfb
+t5-antpl10 AntPoltLt-Regular "encapt5 ReEncodeFont" <ap-t5.enc <antpl10.pfb
+t5-antpl12 AntPoltLtSemiCond-Regular "encapt5 ReEncodeFont" <ap-t5.enc <antpl12.pfb
+t5-antpl17 AntPoltLtCond-Regular "encapt5 ReEncodeFont" <ap-t5.enc <antpl17.pfb
+t5-antpli6 AntPoltLtExpd-Italic "encapt5 ReEncodeFont" <ap-t5.enc <antpli6.pfb
+t5-antpli8 AntPoltLtSemiExpd-Italic "encapt5 ReEncodeFont" <ap-t5.enc <antpli8.pfb
+t5-antpli10 AntPoltLt-Italic "encapt5 ReEncodeFont" <ap-t5.enc <antpli10.pfb
+t5-antpli12 AntPoltLtSemiCond-Italic "encapt5 ReEncodeFont" <ap-t5.enc <antpli12.pfb
+t5-antpli17 AntPoltLtCond-Italic "encapt5 ReEncodeFont" <ap-t5.enc <antpli17.pfb
+t5-antpr6 AntPoltExpd-Regular "encapt5 ReEncodeFont" <ap-t5.enc <antpr6.pfb
+t5-antpr8 AntPoltSemiExpd-Regular "encapt5 ReEncodeFont" <ap-t5.enc <antpr8.pfb
+t5-antpr10 AntPolt-Regular "encapt5 ReEncodeFont" <ap-t5.enc <antpr10.pfb
+t5-antpr12 AntPoltSemiCond-Regular "encapt5 ReEncodeFont" <ap-t5.enc <antpr12.pfb
+t5-antpr17 AntPoltCond-Regular "encapt5 ReEncodeFont" <ap-t5.enc <antpr17.pfb
+t5-antpri6 AntPoltExpd-Italic "encapt5 ReEncodeFont" <ap-t5.enc <antpri6.pfb
+t5-antpri8 AntPoltSemiExpd-Italic "encapt5 ReEncodeFont" <ap-t5.enc <antpri8.pfb
+t5-antpri10 AntPolt-Italic "encapt5 ReEncodeFont" <ap-t5.enc <antpri10.pfb
+t5-antpri12 AntPoltSemiCond-Italic "encapt5 ReEncodeFont" <ap-t5.enc <antpri12.pfb
+t5-antpri17 AntPoltCond-Italic "encapt5 ReEncodeFont" <ap-t5.enc <antpri17.pfb
+t5-antpm6 AntPoltLtExpd-Bold "encapt5 ReEncodeFont" <ap-t5.enc <antpm6.pfb
+t5-antpm8 AntPoltLtSemiExpd-Bold "encapt5 ReEncodeFont" <ap-t5.enc <antpm8.pfb
+t5-antpm10 AntPoltLt-Bold "encapt5 ReEncodeFont" <ap-t5.enc <antpm10.pfb
+t5-antpm12 AntPoltLtSemiCond-Bold "encapt5 ReEncodeFont" <ap-t5.enc <antpm12.pfb
+t5-antpm17 AntPoltLtCond-Bold "encapt5 ReEncodeFont" <ap-t5.enc <antpm17.pfb
+t5-antpmi6 AntPoltLtExpd-BoldItalic "encapt5 ReEncodeFont" <ap-t5.enc <antpmi6.pfb
+t5-antpmi8 AntPoltLtSemiExpd-BoldItalic "encapt5 ReEncodeFont" <ap-t5.enc <antpmi8.pfb
+t5-antpmi10 AntPoltLt-BoldItalic "encapt5 ReEncodeFont" <ap-t5.enc <antpmi10.pfb
+t5-antpmi12 AntPoltLtSemiCond-BoldItalic "encapt5 ReEncodeFont" <ap-t5.enc <antpmi12.pfb
+t5-antpmi17 AntPoltLtCond-BoldItalic "encapt5 ReEncodeFont" <ap-t5.enc <antpmi17.pfb
+t5-antpb6 AntPoltExpd-Bold "encapt5 ReEncodeFont" <ap-t5.enc <antpb6.pfb
+t5-antpb8 AntPoltSemiExpd-Bold "encapt5 ReEncodeFont" <ap-t5.enc <antpb8.pfb
+t5-antpb10 AntPolt-Bold "encapt5 ReEncodeFont" <ap-t5.enc <antpb10.pfb
+t5-antpb12 AntPoltSemiCond-Bold "encapt5 ReEncodeFont" <ap-t5.enc <antpb12.pfb
+t5-antpb17 AntPoltCond-Bold "encapt5 ReEncodeFont" <ap-t5.enc <antpb17.pfb
+t5-antpbi6 AntPoltExpd-BoldItalic "encapt5 ReEncodeFont" <ap-t5.enc <antpbi6.pfb
+t5-antpbi8 AntPoltSemiExpd-BoldItalic "encapt5 ReEncodeFont" <ap-t5.enc <antpbi8.pfb
+t5-antpbi10 AntPolt-BoldItalic "encapt5 ReEncodeFont" <ap-t5.enc <antpbi10.pfb
+t5-antpbi12 AntPoltSemiCond-BoldItalic "encapt5 ReEncodeFont" <ap-t5.enc <antpbi12.pfb
+t5-antpbi17 AntPoltCond-BoldItalic "encapt5 ReEncodeFont" <ap-t5.enc <antpbi17.pfb
+t5-antpl6-sc AntPoltLtExpd-Regular "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpl6.pfb
+t5-antpl8-sc AntPoltLtSemiExpd-Regular "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpl8.pfb
+t5-antpl10-sc AntPoltLt-Regular "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpl10.pfb
+t5-antpl12-sc AntPoltLtSemiCond-Regular "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpl12.pfb
+t5-antpl17-sc AntPoltLtCond-Regular "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpl17.pfb
+t5-antpli6-sc AntPoltLtExpd-Italic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpli6.pfb
+t5-antpli8-sc AntPoltLtSemiExpd-Italic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpli8.pfb
+t5-antpli10-sc AntPoltLt-Italic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpli10.pfb
+t5-antpli12-sc AntPoltLtSemiCond-Italic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpli12.pfb
+t5-antpli17-sc AntPoltLtCond-Italic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpli17.pfb
+t5-antpr6-sc AntPoltExpd-Regular "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpr6.pfb
+t5-antpr8-sc AntPoltSemiExpd-Regular "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpr8.pfb
+t5-antpr10-sc AntPolt-Regular "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpr10.pfb
+t5-antpr12-sc AntPoltSemiCond-Regular "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpr12.pfb
+t5-antpr17-sc AntPoltCond-Regular "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpr17.pfb
+t5-antpri6-sc AntPoltExpd-Italic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpri6.pfb
+t5-antpri8-sc AntPoltSemiExpd-Italic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpri8.pfb
+t5-antpri10-sc AntPolt-Italic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpri10.pfb
+t5-antpri12-sc AntPoltSemiCond-Italic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpri12.pfb
+t5-antpri17-sc AntPoltCond-Italic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpri17.pfb
+t5-antpm6-sc AntPoltLtExpd-Bold "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpm6.pfb
+t5-antpm8-sc AntPoltLtSemiExpd-Bold "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpm8.pfb
+t5-antpm10-sc AntPoltLt-Bold "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpm10.pfb
+t5-antpm12-sc AntPoltLtSemiCond-Bold "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpm12.pfb
+t5-antpm17-sc AntPoltLtCond-Bold "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpm17.pfb
+t5-antpmi6-sc AntPoltLtExpd-BoldItalic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpmi6.pfb
+t5-antpmi8-sc AntPoltLtSemiExpd-BoldItalic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpmi8.pfb
+t5-antpmi10-sc AntPoltLt-BoldItalic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpmi10.pfb
+t5-antpmi12-sc AntPoltLtSemiCond-BoldItalic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpmi12.pfb
+t5-antpmi17-sc AntPoltLtCond-BoldItalic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpmi17.pfb
+t5-antpb6-sc AntPoltExpd-Bold "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpb6.pfb
+t5-antpb8-sc AntPoltSemiExpd-Bold "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpb8.pfb
+t5-antpb10-sc AntPolt-Bold "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpb10.pfb
+t5-antpb12-sc AntPoltSemiCond-Bold "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpb12.pfb
+t5-antpb17-sc AntPoltCond-Bold "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpb17.pfb
+t5-antpbi6-sc AntPoltExpd-BoldItalic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpbi6.pfb
+t5-antpbi8-sc AntPoltSemiExpd-BoldItalic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpbi8.pfb
+t5-antpbi10-sc AntPolt-BoldItalic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpbi10.pfb
+t5-antpbi12-sc AntPoltSemiCond-BoldItalic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpbi12.pfb
+t5-antpbi17-sc AntPoltCond-BoldItalic "encapt5sc ReEncodeFont" <ap-t5-sc.enc <antpbi17.pfb

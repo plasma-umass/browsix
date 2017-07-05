@@ -1,0 +1,10 @@
+% This file is part of the cjhebrew package
+%
+% cjhebrew is subject to the LaTeX Project Public License (LPPL).
+% A copy of the LPPL can be found in lppl.txt.
+% For the most recent version of this license have a look at
+%
+%    http://www.latex-project.org/lppl.txt
+%
+rcjhbltx CJHebLtx " CJHebrewEncoding ReEncodeFont " <cjhebltx.enc <cjhebltx.pfb
+rcjhblsm CJHebLSm " CJHebrewEncoding ReEncodeFont " <cjhebltx.enc <cjheblsm.pfb

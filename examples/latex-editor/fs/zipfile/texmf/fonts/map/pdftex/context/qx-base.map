@@ -1,0 +1,55 @@
+% courier / urw
+
+qcrb  <qcr.enc <qcrb.pfb
+qcrbi <qcr.enc <qcrbi.pfb
+qcrr  <qcr.enc <qcrr.pfb
+qcrri <qcr.enc <qcrri.pfb
+
+% helvetica / urw
+
+qhvb   <qhv.enc <qhvb.pfb
+qhvbi  <qhv.enc <qhvbi.pfb
+qhvcb  <qhv.enc <qhvcb.pfb
+qhvcbi <qhv.enc <qhvcbi.pfb
+qhvcr  <qhv.enc <qhvcr.pfb
+qhvcri <qhv.enc <qhvcri.pfb
+qhvr   <qhv.enc <qhvr.pfb
+qhvri  <qhv.enc <qhvri.pfb
+
+% times / urw
+
+qtmb  <qtm.enc <qtmb.pfb
+qtmbi <qtm.enc <qtmbi.pfb
+qtmr  <qtm.enc <qtmr.pfb
+qtmri <qtm.enc <qtmri.pfb
+
+% palatino / urw
+
+qplb  <qpl.enc <qplb.pfb
+qplbi <qpl.enc <qplbi.pfb
+qplr  <qpl.enc <qplr.pfb
+qplri <qpl.enc <qplri.pfb
+
+% bookman / urw
+
+qbkb  <qbk.enc <qbkb.pfb
+qbkbi <qbk.enc <qbkbi.pfb
+qbkr  <qbk.enc <qbkr.pfb
+qbkri <qbk.enc <qbkri.pfb
+
+% chancery / urw
+
+qzcmi <qzc.enc <qzcmi.pfb
+
+% schoolbook / urw
+%
+% not available
+
+% utopia
+%
+% not available
+
+% charter
+%
+% not available
+

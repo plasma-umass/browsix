@@ -1,0 +1,71 @@
+
+%%%%%%%% The Kerkis Font Family %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+k8r Kerkis " kerkis ReEncodeFont " <kerkis.enc <Kerkis.pfb
+ki8r Kerkis-Italic " kerkis ReEncodeFont " <kerkis.enc <Kerkis-Italic.pfb
+ko8r Kerkis " 0.167 SlantFont kerkis ReEncodeFont " <kerkis.enc <Kerkis.pfb
+ksc8r Kerkis-SmallCaps " kerkis ReEncodeFont " <kerkis.enc <Kerkis-SmallCaps.pfb
+ksco8r Kerkis-SmallCaps " 0.167 SlantFont kerkis ReEncodeFont " <kerkis.enc <Kerkis-SmallCaps.pfb
+kb8r Kerkis-Bold " kerkis ReEncodeFont " <kerkis.enc <Kerkis-Bold.pfb
+kbi8r Kerkis-BoldItalic " kerkis ReEncodeFont " <kerkis.enc <Kerkis-BoldItalic.pfb
+kbo8r Kerkis-Bold " 0.167 SlantFont kerkis ReEncodeFont " <kerkis.enc <Kerkis-Bold.pfb
+kbsc8r Kerkis-BoldSmallCaps " kerkis ReEncodeFont " <kerkis.enc <Kerkis-BoldSmallCaps.pfb
+kbsco8r Kerkis-BoldSmallCaps " 0.167 SlantFont kerkis ReEncodeFont " <kerkis.enc <Kerkis-BoldSmallCaps.pfb
+kbui8r Kerkis-BoldItalic " -0.168 SlantFont kerkis ReEncodeFont " <kerkis.enc <Kerkis-BoldItalic.pfb
+ksb8r Kerkis-SemiBold " kerkis ReEncodeFont " <kerkis.enc <Kerkis-SemiBold.pfb
+ksbi8r Kerkis-SemiBold-Italic " kerkis ReEncodeFont " <kerkis.enc <Kerkis-SemiBold-Italic.pfb
+ksbo8r Kerkis-SemiBold " 0.167 SlantFont kerkis ReEncodeFont " <kerkis.enc <Kerkis-SemiBold.pfb
+ksbui8r Kerkis-SemiBold-Italic " -0.168 SlantFont kerkis ReEncodeFont " <kerkis.enc <Kerkis-SemiBold-Italic.pfb
+kui8r Kerkis-Italic " -0.168 SlantFont kerkis ReEncodeFont " <kerkis.enc <Kerkis-Italic.pfb
+kcal8r Kerkis-Calligraphic " kerkis ReEncodeFont " <kerkis.enc <Kerkis-Calligraphic.pfb
+kmath8r Kerkis-Italic " kmath ReEncodeFont " <kmath.enc <Kerkis-Italic.pfb
+ek8r Kerkis " kerkisec ReEncodeFont " <kerkisec.enc <Kerkis.pfb
+eki8r Kerkis-Italic " kerkisec ReEncodeFont " <kerkisec.enc <Kerkis-Italic.pfb
+eko8r Kerkis " 0.167 SlantFont kerkisec ReEncodeFont " <kerkisec.enc <Kerkis.pfb
+eksc8r Kerkis-SmallCaps " kerkisecsc ReEncodeFont " <kerkisecsc.enc <Kerkis-SmallCaps.pfb
+eksco8r Kerkis-SmallCaps " 0.167 SlantFont kerkisecsc ReEncodeFont " <kerkisecsc.enc <Kerkis-SmallCaps.pfb
+ekb8r Kerkis-Bold " kerkisec ReEncodeFont " <kerkisec.enc <Kerkis-Bold.pfb
+ekbi8r Kerkis-BoldItalic " kerkisec ReEncodeFont " <kerkisec.enc <Kerkis-BoldItalic.pfb
+ekbo8r Kerkis-Bold " 0.167 SlantFont kerkisec ReEncodeFont " <kerkisec.enc <Kerkis-Bold.pfb
+ekbsc8r Kerkis-BoldSmallCaps " kerkisec ReEncodeFont " <kerkisec.enc <Kerkis-BoldSmallCaps.pfb
+ekbsco8r Kerkis-BoldSmallCaps " 0.167 SlantFont kerkisec ReEncodeFont " <kerkisec.enc <Kerkis-BoldSmallCaps.pfb
+ekbui8r Kerkis-BoldItalic " -0.168 SlantFont kerkisec ReEncodeFont " <kerkisec.enc <Kerkis-BoldItalic.pfb
+eksb8r Kerkis-SemiBold " kerkisec ReEncodeFont " <kerkisec.enc <Kerkis-SemiBold.pfb
+eksbi8r Kerkis-SemiBold-Italic " kerkisec ReEncodeFont " <kerkisec.enc <Kerkis-SemiBold-Italic.pfb
+eksbo8r Kerkis-SemiBold " 0.167 SlantFont kerkisec ReEncodeFont " <kerkisec.enc <Kerkis-SemiBold.pfb
+eksbui8r Kerkis-SemiBold-Italic " -0.168 SlantFont kerkisec ReEncodeFont " <kerkisec.enc <Kerkis-SemiBoldItalic.pfb
+ekui8r Kerkis-Italic " -0.168 SlantFont kerkisec ReEncodeFont " <kerkisec.enc <Kerkis-Italic.pfb
+ekcal8r Kerkis-Calligraphic " kerkisec ReEncodeFont " <kerkisec.enc <Kerkis-Calligraphic.pfb
+gk7a Kerkis " gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis.pfb
+gki7a Kerkis-Italic " gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis-Italic.pfb
+gko7a Kerkis " 0.167 SlantFont gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis.pfb
+gksc7a Kerkis-SmallCaps " gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis-SmallCaps.pfb
+gksco7a Kerkis-SmallCaps " 0.167 SlantFont gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis-SmallCaps.pfb
+gkb7a Kerkis-Bold " gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis-Bold.pfb
+gkbi7a Kerkis-BoldItalic " gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis-BoldItalic.pfb
+gkbo7a Kerkis-Bold " 0.167 SlantFont gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis-Bold.pfb
+gkbsc8r Kerkis-BoldSmallCaps " gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis-BoldSmallCaps.pfb
+gkbsco8r Kerkis-BoldSmallCaps " 0.167 SlantFont gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis-BoldSmallCaps.pfb
+gkbui7a Kerkis-BoldItalic " -0.168 SlantFont gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis-BoldItalic.pfb
+gksb7a Kerkis-SemiBold " gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis-SemiBold.pfb
+gksbi7a Kerkis-SemiBold-Italic " gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis-SemiBold-Italic.pfb
+gksbo7a Kerkis-SemiBold " 0.167 SlantFont gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis-SemiBold.pfb
+gksbui7a Kerkis-SemiBold-Italic " -0.168 SlantFont gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis-SemiBold-Italic.pfb
+gkui7a Kerkis-Italic " -0.168 SlantFont gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis-Italic.pfb
+gkcal7a Kerkis-Calligraphic " gpkerkis ReEncodeFont " <gpkerkis.enc <Kerkis-Calligraphic.pfb
+ktsy8r Ktsy " TeXMathSymbolEncoding ReEncodeFont " <kmsym.enc <ktsy.pfb
+ksf8a KerkisSans " kerkis ReEncodeFont " <kerkis.enc <KerkisSans.pfb
+ksfi8a KerkisSans-Italic " kerkis ReEncodeFont " <kerkis.enc <KerkisSans-Italic.pfb
+ksfsc8a KerkisSans-SmallCaps " kerkis ReEncodeFont " <kerkis.enc <KerkisSans-SmallCaps.pfb
+ksfb8a KerkisSans-Bold " kerkis ReEncodeFont " <kerkis.enc <KerkisSans-Bold.pfb
+ksfbi8a KerkisSans-BoldItalic " kerkis ReEncodeFont " <kerkis.enc <KerkisSans-BoldItalic.pfb
+eksf8a KerkisSans " kerkisec ReEncodeFont " <kerkisec.enc <KerkisSans.pfb
+eksfi8a KerkisSans-Italic " kerkisec ReEncodeFont " <kerkisec.enc <KerkisSans-Italic.pfb
+eksfsc8a KerkisSans-SmallCaps " kerkisec ReEncodeFont " <kerkisec.enc <KerkisSans-SmallCaps.pfb
+eksfb8a KerkisSans-Bold " kerkisec ReEncodeFont " <kerkisec.enc <KerkisSans-Bold.pfb
+eksfbi8a KerkisSans-BoldItalic " kerkisec ReEncodeFont " <kerkisec.enc <KerkisSans-BoldItalic.pfb
+gksf7a KerkisSans " gpkerkis ReEncodeFont " <gpkerkis.enc <KerkisSans.pfb
+gksfi7a KerkisSans-Italic " gpkerkis ReEncodeFont " <gpkerkis.enc <KerkisSans-Italic.pfb
+gksfsc7a KerkisSans-SmallCaps " gpkerkis ReEncodeFont " <gpkerkis.enc <KerkisSans-SmallCaps.pfb
+gksfb7a KerkisSans-Bold " gpkerkis ReEncodeFont " <gpkerkis.enc <KerkisSans-Bold.pfb
+gksfbi7a KerkisSans-BoldItalic " gpkerkis ReEncodeFont " <gpkerkis.enc <KerkisSans-BoldItalic.pfb
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

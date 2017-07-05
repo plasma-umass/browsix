@@ -1,0 +1,32 @@
+% Thomas Esser, 2002, public domain.
+% Purpose: set up type 1 fonts of pxfonts collection.
+pxbex Pxbex <pxbex.pfb
+pxbexa Pxbexa <pxbexa.pfb
+pxbmia Pxbmia <pxbmia.pfb
+pxbsy Pxbsy <pxbsy.pfb
+pxbsya Pxbsya <pxbsya.pfb
+pxbsyb Pxbsyb <pxbsyb.pfb
+pxbsyc Pxbsyc <pxbsyc.pfb
+pxex Pxex <pxex.pfb
+pxexa Pxexa <pxexa.pfb
+pxmia Pxmia <pxmia.pfb
+pxsy Pxsy <pxsy.pfb
+pxsya Pxsya <pxsya.pfb
+pxsyb Pxsyb <pxsyb.pfb
+pxsyc Pxsyc <pxsyc.pfb
+rpcxb Rpcxb <rpcxb.pfb
+rpcxbi Rpcxbi <rpcxbi.pfb
+rpcxbsl Rpcxb ".167 SlantFont" <rpcxb.pfb
+rpcxi Rpcxi <rpcxi.pfb
+rpcxr Rpcxr <rpcxr.pfb
+rpcxsl Rpcxr ".167 SlantFont" <rpcxr.pfb
+rpxb Rpxb <rpxb.pfb
+rpxbi Rpxbi <rpxbi.pfb
+rpxbmi Rpxbmi <rpxbmi.pfb
+rpxbsc Rpxbsc <rpxbsc.pfb
+rpxbsl Rpxb ".167 SlantFont" <rpxb.pfb
+rpxi Rpxi <rpxi.pfb
+rpxmi Rpxmi <rpxmi.pfb
+rpxr Rpxr <rpxr.pfb
+rpxsc Rpxsc <rpxsc.pfb
+rpxsl Rpxr ".167 SlantFont" <rpxr.pfb

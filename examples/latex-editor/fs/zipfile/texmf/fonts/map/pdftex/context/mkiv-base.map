@@ -1,0 +1,224 @@
+% some left-overs
+
+% context
+
+contnav ContextNavigation          <contnav.pfb
+hans    Hans-Regular               <hans.pfb
+hans-sh Hans-sh-Regular            <hans-sh.pfb
+
+% dingbats
+
+uzdr Dingbats                      <uzdr.pfb
+pzdr Dingbats                      <pzdr.pfb
+
+% symbols
+
+usyr StandardSymL                  <usyr.pfb
+
+% ralph
+
+rsfs7  rsfs5                       <rsfs7.pfb
+rsfs5  rsfs7                       <rsfs5.pfb
+rsfs10 rsfs10                      <rsfs10.pfb
+
+% marvosym
+
+fmvr8x  MarVoSym                   <marvosym.pfb
+fmvri8x MarVoSym ".167 SlantFont"  <marvosym.pfb
+
+% xypic
+
+xyatip10 XYATIP10                  <xyatip10.pfb
+xybsql10 XYBSQL10                  <xybsql10.pfb
+xybtip10 XYBTIP10                  <xybtip10.pfb
+xycirc10 XYCIRC10                  <xycirc10.pfb
+xydash10 XYDASH10                  <xydash10.pfb
+
+xycmat10 XYCMAT10                  <xycmat10.pfb
+xycmbt10 XYCMBT10                  <xycmbt10.pfb
+xyeuat10 XYEUAT10                  <xyeuat10.pfb
+xyeubt10 XYEUBT10                  <xyeubt10.pfb
+
+xycmat11 XYCMAT10 "1.1 ExtendFont" <xycmat10.pfb
+xycmbt11 XYCMBT10 "1.1 ExtendFont" <xycmbt10.pfb
+xyeuat11 XYEUAT10 "1.1 ExtendFont" <xyeuat10.pfb
+xyeubt11 XYEUBT10 "1.1 ExtendFont" <xyeubt10.pfb
+
+xycmat12 XYCMAT10 "1.2 ExtendFont" <xycmat10.pfb
+xycmbt12 XYCMBT10 "1.2 ExtendFont" <xycmbt10.pfb
+xyeuat12 XYEUAT10 "1.2 ExtendFont" <xyeuat10.pfb
+xyeubt12 XYEUBT10 "1.2 ExtendFont" <xyeubt10.pfb
+
+% euro
+
+zpeub   EuroSerif-Bold             <zpeub.pfb
+zpeubi  EuroSerif-BoldItalic       <zpeubi.pfb
+zpeubis EuroSans-BoldItalic        <zpeubis.pfb
+zpeubit EuroMono-BoldItalic        <zpeubit.pfb
+zpeubs  EuroSans-Bold              <zpeubs.pfb
+zpeubt  EuroMono-Bold              <zpeubt.pfb
+zpeur   EuroSerif-Regular          <zpeur.pfb
+zpeuri  EuroSerif-Italic           <zpeuri.pfb
+zpeuris EuroSans-Italic            <zpeuris.pfb
+zpeurit EuroMono-Italic            <zpeurit.pfb
+zpeurs  EuroSans-Regular           <zpeurs.pfb
+zpeurt  EuroMono-Regular           <zpeurt.pfb
+
+% not used i think
+
+lasy5      LASY5      <lasy5.pfb
+lasy6      LASY6      <lasy6.pfb
+lasy7      LASY7      <lasy7.pfb
+lasy8      LASY8      <lasy8.pfb
+lasy9      LASY9      <lasy9.pfb
+lasy10     LASY10     <lasy10.pfb
+
+lasyb10    LASYB10    <lasyb10.pfb
+lcircle10  LCIRCLE10  <lcircle1.pfb
+lcirclew10 LCIRCLEW10 <lcirclew.pfb
+lcmss8     LCMSS8     <lcmss8.pfb
+lcmssb8    LCMSSB8    <lcmssb8.pfb
+lcmssi8    LCMSSI8    <lcmssi8.pfb
+line10     LINE10     <line10.pfb
+linew10    LINEW10    <linew10.pfb
+
+wncyb10    WNCYB10    <wncyb10.pfb
+wncyi10    WNCYI10    <wncyi10.pfb
+wncyr10    WNCYR10    <wncyr10.pfb
+wncysc10   WNCYSC10   <wncysc10.pfb
+wncyss10   WNCYSS10   <wncyss10.pfb
+
+manfnt     MANFNT     <manfnt.pfb
+
+% ams
+
+msam5      MSAM5      <msam5.pfb
+msam7      MSAM7      <msam7.pfb
+msam10     MSAM10     <msam10.pfb
+msbm5      MSBM5      <msbm5.pfb
+msbm7      MSBM7      <msbm7.pfb
+msbm10     MSBM10     <msbm10.pfb
+
+% metapost
+
+logo8      LOGO8      <logo8.pfb
+logo9      LOGO9      <logo9.pfb
+logo10     LOGO10     <logo10.pfb
+logobf10   LOGOBF10   <logobf10.pfb
+logosl10   LOGOSL10   <logosl10.pfb
+
+% euler .. used for manuals
+
+euex10 EUEX10 <euex10.pfb
+
+eufb5  EUFB5  <eufb5.pfb
+eufb7  EUFB7  <eufb7.pfb
+eufb10 EUFB10 <eufb10.pfb
+
+eufm5  EUFM5  <eufm5.pfb
+eufm7  EUFM7  <eufm7.pfb
+eufm10 EUFM10 <eufm10.pfb
+
+eurb5  EURB5  <eurb5.pfb
+eurb7  EURB7  <eurb7.pfb
+eurb10 EURB10 <eurb10.pfb
+
+eurm5  EURM5  <eurm5.pfb
+eurm7  EURM7  <eurm7.pfb
+eurm10 EURM10 <eurm10.pfb
+
+eusb5  EUSB5  <eusb5.pfb
+eusb7  EUSB7  <eusb7.pfb
+eusb10 EUSB10 <eusb10.pfb
+
+eusm5  EUSM5  <eusm5.pfb
+eusm7  EUSM7  <eusm7.pfb
+eusm10 EUSM10 <eusm10.pfb
+
+% original
+
+cmtex10   CMTEX10  <cmtex10.pfb
+cmtex8    CMTEX8   <cmtex8.pfb
+cmtex9    CMTEX9   <cmtex9.pfb
+
+cmff10    CMFF10   <cmff10.pfb
+cmfi10    CMFI10   <cmfi10.pfb
+cmfib8    CMFIB8   <cmfib8.pfb
+
+% the latest gust list
+
+cmb10     LMRomanDemi10-Regular     "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmb10.pfb
+cmbx10    LMRoman10-Bold            "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmbx10.pfb
+cmbx5     LMRoman5-Bold             "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmbx5.pfb
+cmbx6     LMRoman6-Bold             "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmbx6.pfb
+cmbx7     LMRoman7-Bold             "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmbx7.pfb
+cmbx8     LMRoman8-Bold             "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmbx8.pfb
+cmbx9     LMRoman9-Bold             "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmbx9.pfb
+cmbxsl10  LMRomanSlant10-Bold       "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmbxo10.pfb
+cmbxti10  LMRoman10-BoldItalic      "enclmrepcmit ReEncodeFont"  <lm-rep-cmit.enc  <lmbxi10.pfb
+cmcsc10   LMRomanCaps10-Regular     "enclmrepcmsc ReEncodeFont"  <lm-rep-cmsc.enc  <lmcsc10.pfb
+cmcscsl10 LMRomanCaps10-Oblique     "enclmrepcmsc ReEncodeFont"  <lm-rep-cmsc.enc  <lmcsco10.pfb
+cmdunh10  LMRomanDunh10-Regular     "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmdunh10.pfb
+cminch    LMSans10-Bold             "enclmrepcmin ReEncodeFont"  <lm-rep-cmin.enc  <lmssbx10.pfb
+cmitt10   LMMono10-Italic           "enclmrepcmitt ReEncodeFont" <lm-rep-cmitt.enc <lmtti10.pfb
+cmr10     LMRoman10-Regular         "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmr10.pfb
+cmr12     LMRoman12-Regular         "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmr12.pfb
+cmr17     LMRoman17-Regular         "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmr17.pfb
+cmr5      LMRoman5-Regular          "enclmrepcmsc ReEncodeFont"  <lm-rep-cmsc.enc  <lmr5.pfb
+cmr6      LMRoman6-Regular          "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmr6.pfb
+cmr7      LMRoman7-Regular          "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmr7.pfb
+cmr8      LMRoman8-Regular          "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmr8.pfb
+cmr9      LMRoman9-Regular          "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmr9.pfb
+cmsl10    LMRomanSlant10-Regular    "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmro10.pfb
+cmsl12    LMRomanSlant12-Regular    "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmro12.pfb
+cmsl8     LMRomanSlant8-Regular     "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmro8.pfb
+cmsl9     LMRomanSlant9-Regular     "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmro9.pfb
+cmsltt10  LMMonoSlant10-Regular     "enclmrepcmtt ReEncodeFont"  <lm-rep-cmtt.enc  <lmtto10.pfb
+cmss10    LMSans10-Regular          "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmss10.pfb
+cmss12    LMSans12-Regular          "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmss12.pfb
+cmss17    LMSans17-Regular          "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmss17.pfb
+cmss8     LMSans8-Regular           "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmss8.pfb
+cmss9     LMSans9-Regular           "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmss9.pfb
+cmssbx10  LMSans10-Bold             "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmssbx10.pfb
+cmssbxo10 LMSans10-BoldOblique      "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmssbo10.pfb
+cmssdc10  LMSansDemiCond10-Regular  "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmssdc10.pfb
+cmssi10   LMSans10-Oblique          "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmsso10.pfb
+cmssi12   LMSans12-Oblique          "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmsso12.pfb
+cmssi17   LMSans17-Oblique          "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmsso17.pfb
+cmssi8    LMSans8-Oblique           "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmsso8.pfb
+cmssi9    LMSans9-Oblique           "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmsso9.pfb
+cmssq8    LMSansQuot8-Regular       "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmssq8.pfb
+cmssqi8   LMSansQuot8-Oblique       "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmssqo8.pfb
+cmtcsc10  LMMonoCaps10-Regular      "enclmrepcmtt ReEncodeFont"  <lm-rep-cmtt.enc  <lmtcsc10.pfb
+cmti10    LMRoman10-Italic          "enclmrepcmit ReEncodeFont"  <lm-rep-cmit.enc  <lmri10.pfb
+cmti12    LMRoman12-Italic          "enclmrepcmit ReEncodeFont"  <lm-rep-cmit.enc  <lmri12.pfb
+cmti7     LMRoman7-Italic           "enclmrepcmit ReEncodeFont"  <lm-rep-cmit.enc  <lmri7.pfb
+cmti8     LMRoman8-Italic           "enclmrepcmit ReEncodeFont"  <lm-rep-cmit.enc  <lmri8.pfb
+cmti9     LMRoman9-Italic           "enclmrepcmit ReEncodeFont"  <lm-rep-cmit.enc  <lmri9.pfb
+cmtt10    LMMono10-Regular          "enclmrepcmtt ReEncodeFont"  <lm-rep-cmtt.enc  <lmtt10.pfb
+cmtt12    LMMono12-Regular          "enclmrepcmtt ReEncodeFont"  <lm-rep-cmtt.enc  <lmtt12.pfb
+cmtt8     LMMono8-Regular           "enclmrepcmtt ReEncodeFont"  <lm-rep-cmtt.enc  <lmtt8.pfb
+cmtt9     LMMono9-Regular           "enclmrepcmtt ReEncodeFont"  <lm-rep-cmtt.enc  <lmtt9.pfb
+cmu10     LMRomanUnsl10-Regular     "enclmrepcmit ReEncodeFont"  <lm-rep-cmit.enc  <lmu10.pfb
+cmvtt10   LMMonoProp10-Regular      "enclmrepcmrm ReEncodeFont"  <lm-rep-cmrm.enc  <lmvtt10.pfb
+
+cmbsy5    LMMathSymbols5-Bold       "enclmmathsy ReEncodeFont"   <lm-mathsy.enc    <lmbsy5.pfb
+cmbsy7    LMMathSymbols7-Bold       "enclmmathsy ReEncodeFont"   <lm-mathsy.enc    <lmbsy7.pfb
+cmbsy10   LMMathSymbols10-Bold      "enclmmathsy ReEncodeFont"   <lm-mathsy.enc    <lmbsy10.pfb
+cmsy5     LMMathSymbols5-Regular    "enclmmathsy ReEncodeFont"   <lm-mathsy.enc    <lmsy5.pfb
+cmsy6     LMMathSymbols6-Regular    "enclmmathsy ReEncodeFont"   <lm-mathsy.enc    <lmsy6.pfb
+cmsy7     LMMathSymbols7-Regular    "enclmmathsy ReEncodeFont"   <lm-mathsy.enc    <lmsy7.pfb
+cmsy8     LMMathSymbols8-Regular    "enclmmathsy ReEncodeFont"   <lm-mathsy.enc    <lmsy8.pfb
+cmsy9     LMMathSymbols9-Regular    "enclmmathsy ReEncodeFont"   <lm-mathsy.enc    <lmsy9.pfb
+cmsy10    LMMathSymbols10-Regular   "enclmmathsy ReEncodeFont"   <lm-mathsy.enc    <lmsy10.pfb
+cmex10    LMMathExtension10-Regular "enclmmathex ReEncodeFont"   <lm-mathex.enc    <lmex10.pfb
+cmmi5     LMMathItalic5-Regular     "enclmmathit ReEncodeFont"   <lm-mathit.enc    <lmmi5.pfb
+cmmi6     LMMathItalic6-Regular     "enclmmathit ReEncodeFont"   <lm-mathit.enc    <lmmi6.pfb
+cmmi7     LMMathItalic7-Regular     "enclmmathit ReEncodeFont"   <lm-mathit.enc    <lmmi7.pfb
+cmmi8     LMMathItalic8-Regular     "enclmmathit ReEncodeFont"   <lm-mathit.enc    <lmmi8.pfb
+cmmi9     LMMathItalic9-Regular     "enclmmathit ReEncodeFont"   <lm-mathit.enc    <lmmi9.pfb
+cmmi10    LMMathItalic10-Regular    "enclmmathit ReEncodeFont"   <lm-mathit.enc    <lmmi10.pfb
+cmmi12    LMMathItalic12-Regular    "enclmmathit ReEncodeFont"   <lm-mathit.enc    <lmmi12.pfb
+cmmib5    LMMathItalic5-Bold        "enclmmathit ReEncodeFont"   <lm-mathit.enc    <lmmib5.pfb
+cmmib7    LMMathItalic7-Bold        "enclmmathit ReEncodeFont"   <lm-mathit.enc    <lmmib7.pfb
+cmmib10   LMMathItalic10-Bold       "enclmmathit ReEncodeFont"   <lm-mathit.enc    <lmmib10.pfb

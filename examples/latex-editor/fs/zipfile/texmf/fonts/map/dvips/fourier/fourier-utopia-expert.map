@@ -1,0 +1,23 @@
+%%
+%% Here is utopia-expert (commercial)
+%%
+futb8x UtopiaExp-Bold <putb8x.pfb
+futbi8x UtopiaExp-BoldItalic <putbi8x.pfb
+futbo8x UtopiaExp-Bold " .167 SlantFont " <putb8x.pfb
+futr8x UtopiaExp-Regular <putr8x.pfb
+futri8x UtopiaExp-Italic <putri8x.pfb
+futro8x UtopiaExp-Regular " .167 SlantFont " <putr8x.pfb
+futs8r Utopia-Semibold "TeXBase1Encoding ReEncodeFont " <8r.enc <puts8a.pfb
+futs8x UtopiaExp-Semibold <puts8x.pfb
+futsi8r Utopia-SemiboldItalic "TeXBase1Encoding ReEncodeFont " <8r.enc <putsi8a.pfb
+futsi8x UtopiaExp-SemiboldItalic <putsi8x.pfb
+futso8r Utopia-Semibold " .167 SlantFont TeXBase1Encoding ReEncodeFont " <8r.enc <puts8a.pfb
+futso8x UtopiaExp-Semibold " .167 SlantFont " <puts8x.pfb
+futrc8r Utopia-RegularSC "TeXBase1Encoding ReEncodeFont " <8r.enc <putrc8a.pfb
+futsc8r Utopia-SemiboldSC "TeXBase1Encoding ReEncodeFont " <8r.enc <putsc8a.pfb
+futrd8r Utopia-Titling "TeXBase1Encoding ReEncodeFont " <8r.enc <putrd8a.pfb
+futc8r Utopia-Black "TeXBase1Encoding ReEncodeFont " <8r.enc <putc8a.pfb
+futc8x UtopiaExp-Black <putc8x.pfb
+futco8r Utopia-Black " .167 SlantFont TeXBase1Encoding ReEncodeFont " <8r.enc <putc8a.pfb
+futco8x UtopiaExp-Black " .167 SlantFont " <putc8x.pfb
+

@@ -1,0 +1,135 @@
+% courier / urw
+
+ucrb8t  NimbusMonL-Bold          <ec.enc <ucrb8a.pfb
+ucrbo8t NimbusMonL-BoldObli      <ec.enc <ucrbo8a.pfb
+ucrr8t  NimbusMonL-Regu          <ec.enc <ucrr8a.pfb
+ucrro8t NimbusMonL-ReguObli      <ec.enc <ucrro8a.pfb
+
+% courier / adobe
+
+pcrb8t  NimbusMonL-Bold          <ec.enc <ucrb8a.pfb
+pcrbo8t NimbusMonL-BoldObli      <ec.enc <ucrbo8a.pfb
+pcrr8t  NimbusMonL-Regu          <ec.enc <ucrr8a.pfb
+pcrro8t NimbusMonL-ReguObli      <ec.enc <ucrro8a.pfb
+
+% helvetica / urw
+
+uhvb8t  NimbusSanL-Bold          <ec.enc <uhvb8a.pfb
+uhvbo8t NimbusSanL-BoldItal      <ec.enc <uhvbo8a.pfb
+uhvr8t  NimbusSanL-Regu          <ec.enc <uhvr8a.pfb
+uhvro8t NimbusSanL-ReguItal      <ec.enc <uhvro8a.pfb
+
+% helvetica / adobe
+
+phvb8t  NimbusSanL-Bold          <ec.enc <uhvb8a.pfb
+phvbo8t NimbusSanL-BoldItal      <ec.enc <uhvbo8a.pfb
+phvr8t  NimbusSanL-Regu          <ec.enc <uhvr8a.pfb
+phvro8t NimbusSanL-ReguItal      <ec.enc <uhvro8a.pfb
+
+% times / urw
+
+utmb8t  NimbusRomNo9L-Medi       <ec.enc <utmb8a.pfb
+utmbi8t NimbusRomNo9L-MediItal   <ec.enc <utmbi8a.pfb
+utmr8t  NimbusRomNo9L-Regu       <ec.enc <utmr8a.pfb
+utmri8t NimbusRomNo9L-ReguItal   <ec.enc <utmri8a.pfb
+
+utmbo8t NimbusRomNo9L-Medi       ".167 SlantFont" <ec.enc <utmb8a.pfb
+utmro8t NimbusRomNo9L-Regu       ".167 SlantFont" <ec.enc <utmr8a.pfb
+
+% times / adobe
+
+ptmb8t  NimbusRomNo9L-Medi       <ec.enc <utmb8a.pfb
+ptmbi8t NimbusRomNo9L-MediItal   <ec.enc <utmbi8a.pfb
+ptmr8t  NimbusRomNo9L-Regu       <ec.enc <utmr8a.pfb
+ptmri8t NimbusRomNo9L-ReguItal   <ec.enc <utmri8a.pfb
+
+ptmbo8t NimbusRomNo9L-Medi       ".167 SlantFont" <ec.enc <utmb8a.pfb
+ptmro8t NimbusRomNo9L-Regu       ".167 SlantFont" <ec.enc <utmr8a.pfb
+
+% palatino / urw
+
+uplb8t  URWPalladioL-Bold        <ec.enc <uplb8a.pfb
+uplbi8t URWPalladioL-BoldItal    <ec.enc <uplbi8a.pfb
+uplr8t  URWPalladioL-Roma        <ec.enc <uplr8a.pfb
+uplri8t URWPalladioL-Ital        <ec.enc <uplri8a.pfb
+
+uplbo8t URWPalladioL-Bold        ".167 SlantFont" <ec.enc <uplb8a.pfb
+uplro8t URWPalladioL-Roma        ".167 SlantFont" <ec.enc <uplr8a.pfb
+
+% palatino / adobe
+
+pplb8t  URWPalladioL-Bold        <ec.enc <uplb8a.pfb
+pplbi8t URWPalladioL-BoldItal    <ec.enc <uplbi8a.pfb
+pplr8t  URWPalladioL-Roma        <ec.enc <uplr8a.pfb
+pplri8t URWPalladioL-Ital        <ec.enc <uplri8a.pfb
+
+pplbo8t URWPalladioL-Bold        ".167 SlantFont" <ec.enc <uplb8a.pfb
+pplro8t URWPalladioL-Roma        ".167 SlantFont" <ec.enc <upplr8a.pfb
+
+% bookman / urw
+
+ubkd8t  URWBookmanL-DemiBold     <ec.enc <ubkd8a.pfb
+ubkdi8t URWBookmanL-DemiBoldItal <ec.enc <ubkdi8a.pfb
+ubkl8t  URWBookmanL-Ligh         <ec.enc <ubkl8a.pfb
+ubkli8t URWBookmanL-LighItal     <ec.enc <ubkli8a.pfb
+
+ubkdo8t URWBookmanL-DemiBold     ".167 SlantFont" <ec.enc <ubkd8a.pfb
+ubklo8t URWBookmanL-Ligh         ".167 SlantFont" <ec.enc <ubkl8a.pfb
+
+% bookman / adobe
+
+pbkd8t  URWBookmanL-DemiBold     <ec.enc <ubkd8a.pfb
+pbkdi8t URWBookmanL-DemiBoldItal <ec.enc <ubkdi8a.pfb
+pbkl8t  URWBookmanL-Ligh         <ec.enc <ubkl8a.pfb
+pbkli8t URWBookmanL-LighItal     <ec.enc <ubkli8a.pfb
+
+pbkdo8t URWBookmanL-DemiBold     ".167 SlantFont" <ec.enc <ubkd8a.pfb
+pbklo8t URWBookmanL-Ligh         ".167 SlantFont" <ec.enc <ubkl8a.pfb
+
+% chancery / urw
+
+uzcmi8t URWChanceryL-MediItal    <ec.enc <uzcmi8a.pfb
+
+% chancery / adobe
+
+pzcmi8t URWChanceryL-MediItal    <ec.enc <uzcmi8a.pfb
+
+% schoolbook / urw
+
+uncb8t  CenturySchL-Bold         <ec.enc <uncb8a.pfb
+uncbi8t CenturySchL-BoldItal     <ec.enc <uncbi8a.pfb
+uncr8t  CenturySchL-Roma         <ec.enc <uncr8a.pfb
+uncri8t CenturySchL-Ital         <ec.enc <uncri8a.pfb
+
+uncbo8t CenturySchL-Bold         ".167 SlantFont" <ec.enc <uncb8a.pfb
+uncro8t CenturySchL-Roma         ".167 SlantFont" <ec.enc <uncr8a.pfb
+
+% schoolbook / adobe
+
+pncb8t  CenturySchL-Bold         <ec.enc <uncb8a.pfb
+pncbi8t CenturySchL-BoldItal     <ec.enc <uncbi8a.pfb
+pncr8t  CenturySchL-Roma         <ec.enc <uncr8a.pfb
+pncri8t CenturySchL-Ital         <ec.enc <uncri8a.pfb
+
+pncbo8t CenturySchL-Bold         ".167 SlantFont" <ec.enc <uncb8a.pfb
+pncro8t CenturySchL-Roma         ".167 SlantFont" <ec.enc <uncr8a.pfb
+
+% utopia
+
+putb8t  Utopia-Bold              <ec.enc <putb8a.pfb
+putbi8t Utopia-BoldItalic        <ec.enc <putbi8a.pfb
+putr8t  Utopia-Regular           <ec.enc <putr8a.pfb
+putri8t Utopia-Italic            <ec.enc <putri8a.pfb
+
+putbo8t Utopia-Bold              ".167 SlantFont" <ec.enc <putb8a.pfb
+putro8t Utopia-Regular           ".167 SlantFont" <ec.enc <putr8a.pfb
+
+% charter
+
+bchb8t  CharterBT-Bold           <ec.enc <bchb8a.pfb
+bchbi8t CharterBT-BoldItalic     <ec.enc <bchbi8a.pfb
+bchr8t  CharterBT-Roman          <ec.enc <bchr8a.pfb
+bchri8t CharterBT-Italic         <ec.enc <bchri8a.pfb
+
+bchbo8t CharterBT-Bold           ".167 SlantFont" <ec.enc <bchb8a.pfb
+bchro8t CharterBT-Roman          ".167 SlantFont" <ec.enc <bchr8a.pfb

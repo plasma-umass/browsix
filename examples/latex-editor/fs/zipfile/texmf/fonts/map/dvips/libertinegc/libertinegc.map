@@ -1,0 +1,54 @@
+LinLibertineT-tlf-lgr LinLibertineT " libtlfLGRenc ReEncodeFont " <[libtlf-lgr.enc <LinLibertineT.pfb
+LinLibertineTB-tlf-lgr LinLibertineTB " libtlfLGRenc ReEncodeFont " <[libtlf-lgr.enc <LinLibertineTB.pfb
+LinLibertineTZ-tlf-lgr LinLibertineTZ " libtlfLGRenc ReEncodeFont " <[libtlf-lgr.enc <LinLibertineTZ.pfb
+LinLibertineTI-tlf-lgr LinLibertineTI " libtlfLGRenc ReEncodeFont " <[libtlf-lgr.enc <LinLibertineTI.pfb
+LinLibertineTZI-tlf-lgr LinLibertineTZI " libtlfLGRenc ReEncodeFont " <[libtlf-lgr.enc <LinLibertineTZI.pfb
+LinLibertineTBI-tlf-lgr LinLibertineTB " .2125 SlantFont libtlfLGRenc ReEncodeFont " <[libtlf-lgr.enc <LinLibertineTB.pfb
+LinLibertineTO-tlf-lgr LinLibertineT " .2125 SlantFont libtlfLGRenc ReEncodeFont " <[libtlf-lgr.enc <LinLibertineT.pfb
+LinLibertineTZO-tlf-lgr LinLibertineTZ " .2125 SlantFont libtlfLGRenc ReEncodeFont " <[libtlf-lgr.enc <LinLibertineTZ.pfb
+LinLibertineTBO-tlf-lgr LinLibertineTB " .2125 SlantFont libtlfLGRenc ReEncodeFont " <[libtlf-lgr.enc <LinLibertineTB.pfb
+LinLibertineT-osf-lgr LinLibertineT " libosfLGRenc ReEncodeFont " <[libosf-lgr.enc <LinLibertineT.pfb
+LinLibertineTB-osf-lgr LinLibertineTB " libosfLGRenc ReEncodeFont " <[libosf-lgr.enc <LinLibertineTB.pfb
+LinLibertineTZ-osf-lgr LinLibertineTZ " libosfLGRenc ReEncodeFont " <[libosf-lgr.enc <LinLibertineTZ.pfb
+LinLibertineTI-osf-lgr LinLibertineTI " libosfLGRenc ReEncodeFont " <[libosf-lgr.enc <LinLibertineTI.pfb
+LinLibertineTZI-osf-lgr LinLibertineTZI " libosfLGRenc ReEncodeFont " <[libosf-lgr.enc <LinLibertineTZI.pfb
+LinLibertineTBI-osf-lgr LinLibertineTB " .2125 SlantFont libosfLGRenc ReEncodeFont " <[libosf-lgr.enc <LinLibertineTB.pfb
+LinLibertineTO-osf-lgr LinLibertineT " .2125 SlantFont libosfLGRenc ReEncodeFont " <[libosf-lgr.enc <LinLibertineT.pfb
+LinLibertineTZO-osf-lgr LinLibertineTZ " .2125 SlantFont libosfLGRenc ReEncodeFont " <[libosf-lgr.enc <LinLibertineTZ.pfb
+LinLibertineTBO-osf-lgr LinLibertineTB " .2125 SlantFont libosfLGRenc ReEncodeFont " <[libosf-lgr.enc <LinLibertineTB.pfb
+LinLibertineT-t2a LinLibertineT " libT2AEnc ReEncodeFont " <[lib-t2a.enc <LinLibertineT.pfb
+LinLibertineTB-t2a LinLibertineTB " libT2AEnc1 ReEncodeFont " <[lib-t2a1.enc <LinLibertineTB.pfb
+LinLibertineTZ-t2a LinLibertineTZ " libT2AEnc2 ReEncodeFont " <[lib-t2a2.enc <LinLibertineTZ.pfb
+LinLibertineTI-t2a LinLibertineTI " libT2AEnc2 ReEncodeFont " <[lib-t2a2.enc <LinLibertineTI.pfb
+LinLibertineTZI-t2a LinLibertineTZI " libT2AEnc2 ReEncodeFont " <[lib-t2a2.enc <LinLibertineTZI.pfb
+LinLibertineTBI-t2a LinLibertineTB " .2125 SlantFont libT2AEnc1 ReEncodeFont " <[lib-t2a1.enc <LinLibertineTB.pfb
+LinLibertineT-t2b LinLibertineT " libT2Benc ReEncodeFont " <[lib-t2b.enc <LinLibertineT.pfb
+LinLibertineTB-t2b LinLibertineTB " libT2Benc1 ReEncodeFont " <[lib-t2b1.enc <LinLibertineTB.pfb
+LinLibertineTZ-t2b LinLibertineTZ " libT2Benc2 ReEncodeFont " <[lib-t2b2.enc <LinLibertineTZ.pfb
+LinLibertineTI-t2b LinLibertineTI " libT2Benc2 ReEncodeFont " <[lib-t2b2.enc <LinLibertineTI.pfb
+LinLibertineTZI-t2b LinLibertineTZI " libT2Benc2 ReEncodeFont " <[lib-t2b2.enc <LinLibertineTZI.pfb
+LinLibertineTBI-t2b LinLibertineTB " .2125 SlantFont libT2Benc1 ReEncodeFont " <[lib-t2b1.enc <LinLibertineTB.pfb
+LinLibertineT-t2c LinLibertineT " libT2CEnc ReEncodeFont " <[lib-t2c.enc <LinLibertineT.pfb
+LinLibertineTB-t2c LinLibertineTB " libT2CEnc1 ReEncodeFont " <[lib-t2c1.enc <LinLibertineTB.pfb
+LinLibertineTZ-t2c LinLibertineTZ " libT2CEnc2 ReEncodeFont " <[lib-t2c2.enc <LinLibertineTZ.pfb
+LinLibertineTI-t2c LinLibertineTI " libT2CEnc2 ReEncodeFont " <[lib-t2c2.enc <LinLibertineTI.pfb
+LinLibertineTZI-t2c LinLibertineTZI " libT2CEnc2 ReEncodeFont " <[lib-t2c2.enc <LinLibertineTZI.pfb
+LinLibertineTBI-t2c LinLibertineTB " .2125 SlantFont libT2CEnc1 ReEncodeFont " <[lib-t2c1.enc <LinLibertineTB.pfb
+LinLibertineTO-t2a LinLibertineT " .2125 SlantFont libT2AEnc ReEncodeFont " <[lib-t2a.enc <LinLibertineT.pfb
+LinLibertineTZO-t2a LinLibertineTZ " .2125 SlantFont libT2AEnc2 ReEncodeFont " <[lib-t2a2.enc <LinLibertineTZ.pfb
+LinLibertineTBO-t2a LinLibertineTB " .2125 SlantFont libT2AEnc1 ReEncodeFont " <[lib-t2a1.enc <LinLibertineTB.pfb
+LinLibertineTO-t2b LinLibertineT " .2125 SlantFont libT2Benc ReEncodeFont " <[lib-t2b.enc <LinLibertineT.pfb
+LinLibertineTZO-t2b LinLibertineTZ " .2125 SlantFont libT2Benc2 ReEncodeFont " <[lib-t2b2.enc <LinLibertineTZ.pfb
+LinLibertineTBO-t2b LinLibertineTB " .2125 SlantFont libT2Benc1 ReEncodeFont " <[lib-t2b1.enc <LinLibertineTB.pfb
+LinLibertineTO-t2c LinLibertineT " .2125 SlantFont libT2CEnc ReEncodeFont " <[lib-t2c.enc <LinLibertineT.pfb
+LinLibertineTZO-t2c LinLibertineTZ " .2125 SlantFont libT2CEnc2 ReEncodeFont " <[lib-t2c2.enc <LinLibertineTZ.pfb
+LinLibertineTBO-t2c LinLibertineTB " .2125 SlantFont libT2CEnc1 ReEncodeFont " <[lib-t2c1.enc <LinLibertineTB.pfb
+LinLibertineT-ot2 LinLibertineT " libertineot2Enc ReEncodeFont " <[lib-ot2.enc <LinLibertineT.pfb
+LinLibertineTB-ot2 LinLibertineTB " libertineot2Enc ReEncodeFont " <[lib-ot2.enc <LinLibertineTB.pfb
+LinLibertineTZ-ot2 LinLibertineTZ " libertine1ot2Enc ReEncodeFont " <[lib1-ot2.enc <LinLibertineTZ.pfb
+LinLibertineTI-ot2 LinLibertineTI " libertine1ot2Enc ReEncodeFont " <[lib1-ot2.enc <LinLibertineTI.pfb
+LinLibertineTZI-ot2 LinLibertineTZI " libertine1ot2Enc ReEncodeFont " <[lib1-ot2.enc <LinLibertineTZI.pfb
+LinLibertineTBI-ot2 LinLibertineTB " .2125 SlantFont libertineot2Enc ReEncodeFont " <[lib-ot2.enc <LinLibertineTB.pfb
+LinLibertineTO-ot2 LinLibertineT " .2125 SlantFont libertineot2Enc ReEncodeFont " <lib-ot2.enc <LinLibertineT.pfb
+LinLibertineTZO-ot2 LinLibertineTZ " .2125 SlantFont libertine1ot2Enc ReEncodeFont " <lib1-ot2.enc <LinLibertineTZ.pfb
+LinLibertineTBO-ot2 LinLibertineTB " .2125 SlantFont libertineot2Enc ReEncodeFont " <lib-ot2.enc <LinLibertineTB.pfb

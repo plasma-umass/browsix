@@ -1,0 +1,31 @@
+### Map file for GFS Artemisia ###
+### Public domain.
+artemisiarg9r GFSArtemisia-Regular " artemisiaec ReEncodeFont " <artemisiaec.enc <GFSArtemisia-Regular.pfb
+artemisiarg8r GFSArtemisia-Regular " artemisia ReEncodeFont " <artemisia.enc <GFSArtemisia-Regular.pfb
+artemisiao9r GFSArtemisia-Regular " 0.168 SlantFont artemisiaec ReEncodeFont " <artemisiaec.enc <GFSArtemisia-Regular.pfb
+artemisiao8r GFSArtemisia-Regular " 0.168 SlantFont artemisia ReEncodeFont " <artemisia.enc <GFSArtemisia-Regular.pfb
+artemisiab9r GFSArtemisia-Bold " artemisiaec ReEncodeFont " <artemisiaec.enc <GFSArtemisia-Bold.pfb
+artemisiab8r GFSArtemisia-Bold " artemisia ReEncodeFont " <artemisia.enc <GFSArtemisia-Bold.pfb
+artemisiabo9r GFSArtemisia-Bold " 0.168 SlantFont artemisiaec ReEncodeFont " <artemisiaec.enc <GFSArtemisia-Bold.pfb
+artemisiabo8r GFSArtemisia-Bold " 0.168 SlantFont artemisia ReEncodeFont " <artemisia.enc <GFSArtemisia-Bold.pfb
+artemisiai9r GFSArtemisia-Italic " artemisiaec ReEncodeFont " <artemisiaec.enc <GFSArtemisia-Italic.pfb
+artemisiai8r GFSArtemisia-Italic " artemisia ReEncodeFont " <artemisia.enc <GFSArtemisia-Italic.pfb
+artemisiabi9r GFSArtemisia-BoldItalic " artemisiaec ReEncodeFont " <artemisiaec.enc <GFSArtemisia-BoldItalic.pfb
+artemisiabi8r GFSArtemisia-BoldItalic " artemisia ReEncodeFont " <artemisia.enc <GFSArtemisia-BoldItalic.pfb
+artemisiasc8r GFSArtemisia-Regular " artemisiasc ReEncodeFont " <artemisiasc.enc <GFSArtemisia-Regular.pfb
+artemisiasc9r GFSArtemisia-Regular " artemisiaecsc ReEncodeFont " <artemisiaecsc.enc <GFSArtemisia-Regular.pfb
+artemisiasco8r GFSArtemisia-Regular " 0.168 SlantFont artemisiasc ReEncodeFont " <artemisiasc.enc <GFSArtemisia-Regular.pfb
+artemisiasco9r GFSArtemisia-Regular " 0.168 SlantFont artemisiaecsc ReEncodeFont " <artemisiaecsc.enc <GFSArtemisia-Regular.pfb
+artemisiatabnums8r GFSArtemisia-Regular " artemisiatabnums ReEncodeFont " <artemisiatabnums.enc <GFSArtemisia-Regular.pfb
+artemisianumnums8r GFSArtemisia-Regular " artemisianumnums ReEncodeFont " <artemisianumnums.enc <GFSArtemisia-Regular.pfb
+artemisiadenomnums8r GFSArtemisia-Regular " artemisiadenomnums ReEncodeFont " <artemisiadenomnums.enc <GFSArtemisia-Regular.pfb
+gartemisiarg6r GFSArtemisia-Regular " artemisiael ReEncodeFont " <artemisiael.enc <GFSArtemisia-Regular.pfb
+gartemisiab6r GFSArtemisia-Bold " artemisiael ReEncodeFont " <artemisiael.enc <GFSArtemisia-Bold.pfb
+gartemisiabo6r GFSArtemisia-Bold " 0.168 SlantFont artemisiael ReEncodeFont " <artemisiael.enc <GFSArtemisia-Bold.pfb
+gartemisiai6r GFSArtemisia-Italic " artemisiael ReEncodeFont " <artemisiael.enc <GFSArtemisia-Italic.pfb
+gartemisiabi6r GFSArtemisia-BoldItalic " artemisiael ReEncodeFont " <artemisiael.enc <GFSArtemisia-BoldItalic.pfb
+gartemisiao6r GFSArtemisia-Regular " 0.168 SlantFont artemisiael ReEncodeFont " <artemisiael.enc <GFSArtemisia-Regular.pfb
+gartemisiasc6r GFSArtemisia-Regular " artemisiaelsc ReEncodeFont " <artemisiaelsc.enc <GFSArtemisia-Regular.pfb
+gartemisiasco6r GFSArtemisia-Regular " 0.168 SlantFont artemisiaelsc ReEncodeFont " <artemisiaelsc.enc <GFSArtemisia-Regular.pfb
+artemisiamath8r GFSArtemisia-Italic " artemisiamath ReEncodeFont " <artemisiamath.enc <GFSArtemisia-Italic.pfb
+###

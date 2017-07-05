@@ -1,0 +1,11 @@
+% Thomas Esser, 2000, public domain.
+% 
+% mt-belleek.map: map file entries for the old MathTime tfm names using
+% the belleek drop-in replacement Type 1 files.
+%
+% For the proprietary MathTime Pro fonts currently available, you are on
+% your own.
+% 
+mtex   BLEX   "TeXMathExtensionEncoding ReEncodeFont"  <blex.pfb  <texmext.enc
+mtsy   BLSY   <blsy.pfb
+rmtmi  RBLMI  <rblmi.pfb

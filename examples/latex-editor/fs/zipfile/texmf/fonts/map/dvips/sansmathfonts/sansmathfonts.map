@@ -1,0 +1,168 @@
+% Unslanted italic for pounds symbol
+cmssu10 cmssu10 <cmssu10.pfb
+
+% Math italic
+cmssmi5 cmssmi5 <cmssmi5.pfb
+cmssmi6 cmssmi6 <cmssmi6.pfb
+cmssmi7 cmssmi7 <cmssmi7.pfb
+cmssmi8 cmssmi8 <cmssmi8.pfb
+cmssmi9 cmssmi9 <cmssmi9.pfb
+cmssmi10 cmssmi10 <cmssmi10.pfb
+cmssmib5 cmssmib5 <cmssmib5.pfb
+cmssmib6 cmssmib6 <cmssmib6.pfb
+cmssmib7 cmssmib7 <cmssmib7.pfb
+cmssmib8 cmssmib8 <cmssmib8.pfb
+cmssmib9 cmssmib9 <cmssmib9.pfb
+cmssmib10 cmssmib10 <cmssmib10.pfb
+
+% Math symbol
+cmsssy5 cmsssy5 <cmsssy5.pfb
+cmsssy6 cmsssy6 <cmsssy6.pfb
+cmsssy7 cmsssy7 <cmsssy7.pfb
+cmsssy8 cmsssy8 <cmsssy8.pfb
+cmsssy9 cmsssy9 <cmsssy9.pfb
+cmsssy10 cmsssy10 <cmsssy10.pfb
+cmssbsy5 cmssbsy5 <cmssbsy5.pfb
+cmssbsy6 cmssbsy6 <cmssbsy6.pfb
+cmssbsy7 cmssbsy7 <cmssbsy7.pfb
+cmssbsy8 cmssbsy8 <cmssbsy8.pfb
+cmssbsy9 cmssbsy9 <cmssbsy9.pfb
+cmssbsy10 cmssbsy10 <cmssbsy10.pfb
+
+% Math Extended
+cmssex7 cmssex7 <cmssex7.pfb
+cmssex8 cmssex8 <cmssex8.pfb
+cmssex9 cmssex9 <cmssex9.pfb
+cmssex10 cmssex10 <cmssex10.pfb
+
+% AMS
+ssmsam5 ssmsam5 <ssmsam5.pfb
+ssmsam6 ssmsam6 <ssmsam6.pfb
+ssmsam7 ssmsam7 <ssmsam7.pfb
+ssmsam8 ssmsam8 <ssmsam8.pfb
+ssmsam9 ssmsam9 <ssmsam9.pfb
+ssmsam10 ssmsam10 <ssmsam10.pfb
+ssmsbm5 ssmsbm5 <ssmsbm5.pfb
+ssmsbm6 ssmsbm6 <ssmsbm6.pfb
+ssmsbm7 ssmsbm7 <ssmsbm7.pfb
+ssmsbm8 ssmsbm8 <ssmsbm8.pfb
+ssmsbm9 ssmsbm9 <ssmsbm9.pfb
+ssmsbm10 ssmsbm10 <ssmsbm10.pfb
+
+% Esint
+ssesint7 ssesint7 <ssesint7.pfb
+ssesint8 ssesint8 <ssesint8.pfb
+ssesint9 ssesint9 <ssesint9.pfb
+ssesint10 ssesint10 <ssesint10.pfb
+
+% Caps and small caps
+cmssbxcsc10 cmssbxcsc10 <cmssbxcsc10.pfb
+cmsscsc8 cmsscsc8 <cmsscsc8.pfb
+cmsscsc9 cmsscsc9 <cmsscsc9.pfb
+cmsscsc10 cmsscsc10 <cmsscsc10.pfb
+cmssxicsc10 cmssxicsc10 <cmssxicsc10.pfb
+cmsscsci8 cmsscsci8 <cmsscsci8.pfb
+cmsscsci9 cmsscsci9 <cmsscsci9.pfb
+cmsscsci10 cmsscsci10 <cmsscsci10.pfb
+
+% Bold and bold slanted (Sauter versions)
+cmssbx8 cmssbx8 <cmssbx8.pfb
+cmssbx9 cmssbx9 <cmssbx9.pfb
+cmssbx12 cmssbx12 <cmssbx12.pfb
+cmssbx17 cmssbx17 <cmssbx17.pfb
+cmssxi8 cmssxi8 <cmssxi8.pfb
+cmssxi9 cmssxi9 <cmssxi9.pfb
+cmssxi10 cmssxi10 <cmssxi10.pfb
+cmssxi12 cmssxi12 <cmssxi12.pfb
+cmssxi17 cmssxi17 <cmssxi17.pfb
+
+% Sans serif with serifed I
+cmsmfIPiXi8 cmsmfIPiXi8 <cmsmfIPiXi8.pfb
+cmsmfIPiXi9 cmsmfIPiXi9 <cmsmfIPiXi9.pfb
+cmsmfIPiXi10 cmsmfIPiXi10 <cmsmfIPiXi10.pfb
+cmsmfIPiXi12 cmsmfIPiXi12 <cmsmfIPiXi12.pfb
+cmsmfIPiXi17 cmsmfIPiXi17 <cmsmfIPiXi17.pfb
+cmsmfIPiXibx8 cmsmfIPiXibx8 <cmsmfIPiXibx8.pfb
+cmsmfIPiXibx9 cmsmfIPiXibx9 <cmsmfIPiXibx9.pfb
+cmsmfIPiXibx10 cmsmfIPiXibx10 <cmsmfIPiXibx10.pfb
+cmsmfIPiXibx12 cmsmfIPiXibx12 <cmsmfIPiXibx12.pfb
+cmsmfIPiXibx17 cmsmfIPiXibx17 <cmsmfIPiXibx17.pfb
+cmsmfIPiXii8 cmsmfIPiXii8 <cmsmfIPiXii8.pfb
+cmsmfIPiXii9 cmsmfIPiXii9 <cmsmfIPiXii9.pfb
+cmsmfIPiXii10 cmsmfIPiXii10 <cmsmfIPiXii10.pfb
+cmsmfIPiXii12 cmsmfIPiXii12 <cmsmfIPiXii12.pfb
+cmsmfIPiXii17 cmsmfIPiXii17 <cmsmfIPiXii17.pfb
+cmsmfIPiXixi8 cmsmfIPiXixi8 <cmsmfIPiXixi8.pfb
+cmsmfIPiXixi9 cmsmfIPiXixi9 <cmsmfIPiXixi9.pfb
+cmsmfIPiXixi10 cmsmfIPiXixi10 <cmsmfIPiXixi10.pfb
+cmsmfIPiXixi12 cmsmfIPiXixi12 <cmsmfIPiXixi12.pfb
+cmsmfIPiXixi17 cmsmfIPiXixi17 <cmsmfIPiXixi17.pfb
+cmsmfIPiXibxcsc10 cmsmfIPiXibxcsc10 <cmsmfIPiXibxcsc10.pfb
+cmsmfIPiXicsc8 cmsmfIPiXicsc8 <cmsmfIPiXicsc8.pfb
+cmsmfIPiXicsc9 cmsmfIPiXicsc9 <cmsmfIPiXicsc9.pfb
+cmsmfIPiXicsc10 cmsmfIPiXicsc10 <cmsmfIPiXicsc10.pfb
+cmsmfIPiXixicsc10 cmsmfIPiXixicsc10 <cmsmfIPiXixicsc10.pfb
+cmsmfIPiXicsci8 cmsmfIPiXicsci8 <cmsmfIPiXicsci8.pfb
+cmsmfIPiXicsci9 cmsmfIPiXicsci9 <cmsmfIPiXicsci9.pfb
+cmsmfIPiXicsci10 cmsmfIPiXicsci10 <cmsmfIPiXicsci10.pfb
+
+% T1 encoded caps and small caps
+eczi0500 eczi0500 <eczi0500.pfb
+eczi0600 eczi0600 <eczi0600.pfb
+eczi0700 eczi0700 <eczi0700.pfb
+eczi0800 eczi0800 <eczi0800.pfb
+eczi0900 eczi0900 <eczi0900.pfb
+eczi1000 eczi1000 <eczi1000.pfb
+eczi1095 eczi1095 <eczi1095.pfb
+eczi1200 eczi1200 <eczi1200.pfb
+eczi1440 eczi1440 <eczi1440.pfb
+eczi1728 eczi1728 <eczi1728.pfb
+eczi2074 eczi2074 <eczi2074.pfb
+eczi2488 eczi2488 <eczi2488.pfb
+eczi2986 eczi2986 <eczi2986.pfb
+eczi3583 eczi3583 <eczi3583.pfb
+
+eczo0500 eczo0500 <eczo0500.pfb
+eczo0600 eczo0600 <eczo0600.pfb
+eczo0700 eczo0700 <eczo0700.pfb
+eczo0800 eczo0800 <eczo0800.pfb
+eczo0900 eczo0900 <eczo0900.pfb
+eczo1000 eczo1000 <eczo1000.pfb
+eczo1095 eczo1095 <eczo1095.pfb
+eczo1200 eczo1200 <eczo1200.pfb
+eczo1440 eczo1440 <eczo1440.pfb
+eczo1728 eczo1728 <eczo1728.pfb
+eczo2074 eczo2074 <eczo2074.pfb
+eczo2488 eczo2488 <eczo2488.pfb
+eczo2986 eczo2986 <eczo2986.pfb
+eczo3583 eczo3583 <eczo3583.pfb
+
+eczx0500 eczx0500 <eczx0500.pfb
+eczx0600 eczx0600 <eczx0600.pfb
+eczx0700 eczx0700 <eczx0700.pfb
+eczx0800 eczx0800 <eczx0800.pfb
+eczx0900 eczx0900 <eczx0900.pfb
+eczx1000 eczx1000 <eczx1000.pfb
+eczx1095 eczx1095 <eczx1095.pfb
+eczx1200 eczx1200 <eczx1200.pfb
+eczx1440 eczx1440 <eczx1440.pfb
+eczx1728 eczx1728 <eczx1728.pfb
+eczx2074 eczx2074 <eczx2074.pfb
+eczx2488 eczx2488 <eczx2488.pfb
+eczx2986 eczx2986 <eczx2986.pfb
+eczx3583 eczx3583 <eczx3583.pfb
+
+eczz0500 eczz0500 <eczz0500.pfb
+eczz0600 eczz0600 <eczz0600.pfb
+eczz0700 eczz0700 <eczz0700.pfb
+eczz0800 eczz0800 <eczz0800.pfb
+eczz0900 eczz0900 <eczz0900.pfb
+eczz1000 eczz1000 <eczz1000.pfb
+eczz1095 eczz1095 <eczz1095.pfb
+eczz1200 eczz1200 <eczz1200.pfb
+eczz1440 eczz1440 <eczz1440.pfb
+eczz1728 eczz1728 <eczz1728.pfb
+eczz2074 eczz2074 <eczz2074.pfb
+eczz2488 eczz2488 <eczz2488.pfb
+eczz2986 eczz2986 <eczz2986.pfb
+eczz3583 eczz3583 <eczz3583.pfb

@@ -1,0 +1,58 @@
+% Thomas Esser, 2002, public domain.
+% Purpose: set up type 1 fonts of txfonts collection.
+rtcxb rtcxb <rtcxb.pfb
+rtcxbi rtcxbi <rtcxbi.pfb
+rtcxbsl rtcxb ".167 SlantFont" <rtcxb.pfb
+rtcxbss rtcxbss <rtcxbss.pfb
+rtcxbsso rtcxbss ".167 SlantFont" <rtcxbss.pfb
+rtcxi rtcxi <rtcxi.pfb
+rtcxr rtcxr <rtcxr.pfb
+rtcxsl rtcxr ".167 SlantFont" <rtcxr.pfb
+rtcxss rtcxss <rtcxss.pfb
+rtcxsssl rtcxss ".167 SlantFont" <rtcxss.pfb
+rtxb rtxb <rtxb.pfb
+rtxbi rtxbi <rtxbi.pfb
+rtxbmi rtxbmi <rtxbmi.pfb
+rtxbsc rtxbsc <rtxbsc.pfb
+rtxbsl rtxb ".167 SlantFont" <rtxb.pfb
+rtxbss rtxbss <rtxbss.pfb
+rtxbsssc rtxbsssc <rtxbsssc.pfb
+rtxbsssl rtxbss ".167 SlantFont" <rtxbss.pfb
+rtxi rtxi <rtxi.pfb
+rtxmi rtxmi <rtxmi.pfb
+rtxr rtxr <rtxr.pfb
+rtxsc rtxsc <rtxsc.pfb
+rtxsl rtxr ".167 SlantFont" <rtxr.pfb
+rtxss rtxss <rtxss.pfb
+rtxsssc rtxsssc <rtxsssc.pfb
+rtxsssl rtxss ".167 SlantFont" <rtxss.pfb
+t1xbtt t1xbtt <t1xbtt.pfb
+t1xbttsc t1xbttsc <t1xbttsc.pfb
+t1xbttsl t1xbtt ".167 SlantFont" <t1xbtt.pfb
+t1xtt t1xtt <t1xtt.pfb
+t1xttsc t1xttsc <t1xttsc.pfb
+t1xttsl t1xtt ".167 SlantFont" <t1xtt.pfb
+tcxbtt tcxbtt <tcxbtt.pfb
+tcxbttsl tcxbtt ".167 SlantFont" <tcxbtt.pfb
+tcxtt tcxtt <tcxtt.pfb
+tcxttsl tcxtt ".167 SlantFont" <tcxtt.pfb
+txbex txbex <txbex.pfb
+txbexa txbexa <txbexa.pfb
+txbmia txbmia <txbmia.pfb
+txbsy txbsy <txbsy.pfb
+txbsya txbsya <txbsya.pfb
+txbsyb txbsyb <txbsyb.pfb
+txbsyc txbsyc <txbsyc.pfb
+txbtt txbtt <txbtt.pfb
+txbttsc txbttsc <txbttsc.pfb
+txbttsl txbtt ".167 SlantFont" <txbtt.pfb
+txex txex <txex.pfb
+txexa txexa <txexa.pfb
+txmia txmia <txmia.pfb
+txsy txsy <txsy.pfb
+txsya txsya <txsya.pfb
+txsyb txsyb <txsyb.pfb
+txsyc txsyc <txsyc.pfb
+txtt txtt <txtt.pfb
+txttsc txttsc <txttsc.pfb
+txttsl txtt ".167 SlantFont" <txtt.pfb

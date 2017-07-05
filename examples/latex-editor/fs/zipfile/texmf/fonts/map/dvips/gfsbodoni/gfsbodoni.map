@@ -1,0 +1,31 @@
+
+########### GFS Bodoni ############################################
+bodonirg9r GFSBodoni-Regular " bodoniec ReEncodeFont " <bodoniec.enc <GFSBodoni-Regular.pfb
+bodonirg8r GFSBodoni-Regular " bodoni ReEncodeFont " <bodoni.enc <GFSBodoni-Regular.pfb
+bodonio9r GFSBodoni-Regular " 0.168 SlantFont bodoniec ReEncodeFont " <bodoniec.enc <GFSBodoni-Regular.pfb
+bodonio8r GFSBodoni-Regular " 0.168 SlantFont bodoni ReEncodeFont " <bodoni.enc <GFSBodoni-Regular.pfb
+bodonib9r GFSBodoni-Bold " bodoniec ReEncodeFont " <bodoniec.enc <GFSBodoni-Bold.pfb
+bodonib8r GFSBodoni-Bold " bodoni ReEncodeFont " <bodoni.enc <GFSBodoni-Bold.pfb
+bodonibo9r GFSBodoni-Bold " 0.168 SlantFont bodoniec ReEncodeFont " <bodoniec.enc <GFSBodoni-Bold.pfb
+bodonibo8r GFSBodoni-Bold " 0.168 SlantFont bodoni ReEncodeFont " <bodoni.enc <GFSBodoni-Bold.pfb
+bodonii9r GFSBodoni-Italic " bodoniec ReEncodeFont " <bodoniec.enc <GFSBodoni-Italic.pfb
+bodonii8r GFSBodoni-Italic " bodoni ReEncodeFont " <bodoni.enc <GFSBodoni-Italic.pfb
+bodonibi9r GFSBodoni-BoldItalic " bodoniec ReEncodeFont " <bodoniec.enc <GFSBodoni-BoldItalic.pfb
+bodonibi8r GFSBodoni-BoldItalic " bodoni ReEncodeFont " <bodoni.enc <GFSBodoni-BoldItalic.pfb
+bodonisc8r GFSBodoni-Regular " bodonisc ReEncodeFont " <bodonisc.enc <GFSBodoni-Regular.pfb
+bodonisc9r GFSBodoni-Regular " bodoniecsc ReEncodeFont " <bodoniecsc.enc <GFSBodoni-Regular.pfb
+bodonisco8r GFSBodoni-Regular " 0.168 SlantFont bodonisc ReEncodeFont " <bodonisc.enc <GFSBodoni-Regular.pfb
+bodonisco9r GFSBodoni-Regular " 0.168 SlantFont bodoniecsc ReEncodeFont " <bodoniecsc.enc <GFSBodoni-Regular.pfb
+bodonitabnums8r GFSBodoni-Regular " bodonitabnums ReEncodeFont " <bodonitabnums.enc <GFSBodoni-Regular.pfb
+bodoninumnums8r GFSBodoni-Regular " bodoninumnums ReEncodeFont " <bodoninumnums.enc <GFSBodoni-Regular.pfb
+bodonidenomnums8r GFSBodoni-Regular " bodonidenomnums ReEncodeFont " <bodonidenomnums.enc <GFSBodoni-Regular.pfb
+gbodonirg6r GFSBodoni-Regular " bodoniel ReEncodeFont " <bodoniel.enc <GFSBodoni-Regular.pfb
+gbodonib6r GFSBodoni-Bold " bodoniel ReEncodeFont " <bodoniel.enc <GFSBodoni-Bold.pfb
+gbodonii6r GFSBodoni-Italic " bodoniel ReEncodeFont " <bodoniel.enc <GFSBodoni-Italic.pfb
+gbodonibi6r GFSBodoni-BoldItalic " bodoniel ReEncodeFont " <bodoniel.enc <GFSBodoni-BoldItalic.pfb
+gbodonio6r GFSBodoni-Regular " 0.168 SlantFont bodoniel ReEncodeFont " <bodoniel.enc <GFSBodoni-Regular.pfb
+gbodonibo6r GFSBodoni-Bold " 0.168 SlantFont bodoniel ReEncodeFont " <bodoniel.enc <GFSBodoni-Bold.pfb
+gbodonisc6r GFSBodoni-Regular " bodonielsc ReEncodeFont " <bodonielsc.enc <GFSBodoni-Regular.pfb
+gbodonisco6r GFSBodoni-Regular " 0.168 SlantFont bodonielsc ReEncodeFont " <bodonielsc.enc <GFSBodoni-Regular.pfb
+######################################################################
+

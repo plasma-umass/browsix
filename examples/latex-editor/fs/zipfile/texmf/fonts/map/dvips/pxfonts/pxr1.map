@@ -1,0 +1,39 @@
+% Adobe Palatino
+rpxpplb Palatino-Bold "TeXBase1Encoding ReEncodeFont" <tx8r.enc <pob_____.pfb
+rpxpplbo Palatino-Bold ".167 SlantFont TeXBase1Encoding ReEncodeFont" <tx8r.enc <pob_____.pfb
+rpxpplbi Palatino-BoldItalic "TeXBase1Encoding ReEncodeFont" <tx8r.enc <pobi____.pfb
+rpxpplr Palatino-Roman "TeXBase1Encoding ReEncodeFont" <tx8r.enc <por_____.pfb
+rpxpplro Palatino-Roman ".167 SlantFont TeXBase1Encoding ReEncodeFont" <tx8r.enc <por_____.pfb
+rpxpplri Palatino-Italic "TeXBase1Encoding ReEncodeFont" <tx8r.enc <poi_____.pfb
+% PX Text
+rpxr Rpxr <rpxr.pfb
+rpxsl Rpxr ".167 SlantFont" <rpxr.pfb
+rpxi Rpxi <rpxi.pfb
+rpxsc Rpxsc <rpxsc.pfb
+rpxb Rpxb <rpxb.pfb
+rpxbsl Rpxb ".167 SlantFont" <rpxb.pfb
+rpxbi Rpxbi <rpxbi.pfb
+rpxbsc Rpxbsc <rpxbsc.pfb
+rpcxb Rpcxb <rpcxb.pfb
+rpcxbsl Rpcxb ".167 SlantFont" <rpcxb.pfb
+rpcxbi Rpcxbi <rpcxbi.pfb
+rpcxi Rpcxi <rpcxi.pfb
+rpcxr Rpcxr <rpcxr.pfb
+rpcxsl Rpcxr ".167 SlantFont" <rpcxr.pfb
+% PX Math
+rpxbmi Rpxbmi <rpxbmi.pfb
+rpxmi Rpxmi <rpxmi.pfb
+pxbex Pxbex <pxbex.pfb
+pxbexa Pxbexa <pxbexa.pfb
+pxbmia Pxbmia <pxbmia.pfb
+pxbsy Pxbsy <pxbsy.pfb
+pxbsya Pxbsya <pxbsya.pfb
+pxbsyb Pxbsyb <pxbsyb.pfb
+pxbsyc Pxbsyc <pxbsyc.pfb
+pxex Pxex <pxex.pfb
+pxexa Pxexa <pxexa.pfb
+pxmia Pxmia <pxmia.pfb
+pxsy Pxsy <pxsy.pfb
+pxsya Pxsya <pxsya.pfb
+pxsyb Pxsyb <pxsyb.pfb
+pxsyc Pxsyc <pxsyc.pfb

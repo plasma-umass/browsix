@@ -1,0 +1,70 @@
+% MixedMap for Devanagari fonts v2.14
+% See http://www-hep.fzu.cz/~piska/indic.html for other indic fonts
+
+% Devanagari Standard
+dvng10 Velthuis-dvng10 <dvng10.pfb
+dvng8 Velthuis-dvng8 <dvng8.pfb
+dvng9 Velthuis-dvng9 <dvng9.pfb
+dvngb10 Velthuis-dvngb10 <dvngb10.pfb
+dvngb8 Velthuis-dvngb8 <dvngb8.pfb
+dvngb9 Velthuis-dvngb9 <dvngb9.pfb
+dvngbi10 Velthuis-dvngbi10 <dvngbi10.pfb
+dvngbi8 Velthuis-dvngbi8 <dvngbi8.pfb
+dvngbi9 Velthuis-dvngbi9 <dvngbi9.pfb
+dvngi10 Velthuis-dvngi10 <dvngi10.pfb
+dvngi8 Velthuis-dvngi8 <dvngi8.pfb
+dvngi9 Velthuis-dvngi9 <dvngi9.pfb
+dvpn10 Velthuis-dvpn10 <dvpn10.pfb
+dvpn8 Velthuis-dvpn8 <dvpn8.pfb
+dvpn9 Velthuis-dvpn9 <dvpn9.pfb
+
+% Devanagari Bombay
+dvnb10 VelthuisBombay-dvnb10 <dvnb10.pfb
+dvnb8 VelthuisBombay-dvnb8 <dvnb8.pfb
+dvnb9 VelthuisBombay-dvnb9 <dvnb9.pfb
+dvnbb10 VelthuisBombay-dvnbb10 <dvnbb10.pfb
+dvnbb8 VelthuisBombay-dvnbb8 <dvnbb8.pfb
+dvnbb9 VelthuisBombay-dvnbb9 <dvnbb9.pfb
+dvnbbi10 VelthuisBombay-dvnbbi10 <dvnbbi10.pfb
+dvnbbi8 VelthuisBombay-dvnbbi8 <dvnbbi8.pfb
+dvnbbi9 VelthuisBombay-dvnbbi9 <dvnbbi9.pfb
+dvnbi10 VelthuisBombay-dvnbi10 <dvnbi10.pfb
+dvnbi8 VelthuisBombay-dvnbi8 <dvnbi8.pfb
+dvnbi9 VelthuisBombay-dvnbi9 <dvnbi9.pfb
+dvpb10 VelthuisBombay-dvpb10 <dvpb10.pfb
+dvpb8 VelthuisBombay-dvpb8 <dvpb8.pfb
+dvpb9 VelthuisBombay-dvpb9 <dvpb9.pfb
+
+% Devanagari Calcutta
+dvnc10 VelthuisCalcutta-dvnc10 <dvnc10.pfb
+dvnc8 VelthuisCalcutta-dvnc8 <dvnc8.pfb
+dvnc9 VelthuisCalcutta-dvnc9 <dvnc9.pfb
+dvncb10 VelthuisCalcutta-dvncb10 <dvncb10.pfb
+dvncb8 VelthuisCalcutta-dvncb8 <dvncb8.pfb
+dvncb9 VelthuisCalcutta-dvncb9 <dvncb9.pfb
+dvncbi10 VelthuisCalcutta-dvncbi10 <dvncbi10.pfb
+dvncbi8 VelthuisCalcutta-dvncbi8 <dvncbi8.pfb
+dvncbi9 VelthuisCalcutta-dvncbi9 <dvncbi9.pfb
+dvnci10 VelthuisCalcutta-dvnci10 <dvnci10.pfb
+dvnci8 VelthuisCalcutta-dvnci8 <dvnci8.pfb
+dvpc10 VelthuisCalcutta-dvpc10 <dvpc10.pfb
+dvpc8 VelthuisCalcutta-dvpc8 <dvpc8.pfb
+dvpc9 VelthuisCalcutta-dvpc9 <dvpc9.pfb
+dvnci9 VelthuisCalcutta-dvnci9 <dvnci9.pfb
+
+% Devanagari Nepali
+dvnn10 VelthuisNepali-dvnn10 <dvnn10.pfb
+dvnn8 VelthuisNepali-dvnn8 <dvnn8.pfb
+dvnn9 VelthuisNepali-dvnn9 <dvnn9.pfb
+dvnnb10 VelthuisNepali-dvnnb10 <dvnnb10.pfb
+dvnnb8 VelthuisNepali-dvnnb8 <dvnnb8.pfb
+dvnnb9 VelthuisNepali-dvnnb9 <dvnnb9.pfb
+dvnnbi10 VelthuisNepali-dvnnbi10 <dvnnbi10.pfb
+dvnnbi8 VelthuisNepali-dvnnbi8 <dvnnbi8.pfb
+dvnnbi9 VelthuisNepali-dvnnbi9 <dvnnbi9.pfb
+dvnni10 VelthuisNepali-dvnni10 <dvnni10.pfb
+dvnni8 VelthuisNepali-dvnni8 <dvnni8.pfb
+dvnni9 VelthuisNepali-dvnni9 <dvnni9.pfb
+dvpnn10 VelthuisNepali-dvpnn10 <dvpnn10.pfb
+dvpnn8 VelthuisNepali-dvpnn8 <dvpnn8.pfb
+dvpnn9 VelthuisNepali-dvpnn9 <dvpnn9.pfb

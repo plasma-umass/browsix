@@ -1,0 +1,10 @@
+libertinust1-mathit LibertinusT1Math " libMIenc ReEncodeFont " <[libusMI.enc <LibertinusT1Math.pfb
+libertinust1-mathit-bold LibertinusT1Math " libBMIenc ReEncodeFont " <[libusBMI.enc <LibertinusT1Math.pfb
+libertinust1-mathex LibertinusT1Math " libEXenc ReEncodeFont " <[libusEX.enc <LibertinusT1Math.pfb
+libertinust1-mathrm LibertinusT1Math " libMRenc ReEncodeFont " <[libusMR.enc <LibertinusT1Math.pfb
+libertinust1-mathrm-bold LibertinusT1Math " libBMRenc ReEncodeFont " <[libusBMR.enc <LibertinusT1Math.pfb
+libertinust1-mathbb LibertinusT1Math " libusBBenc ReEncodeFont " <[libusBB.enc <LibertinusT1Math.pfb
+libertinust1-mathsf LibertinusT1Math " libusSFenc ReEncodeFont " <[libusSF.enc <LibertinusT1Math.pfb
+libertinust1-mathsfi LibertinusT1Math " libusSFIenc ReEncodeFont " <[libusSFI.enc <LibertinusT1Math.pfb
+libertinust1-mathsfb LibertinusT1Math " libusSFBenc ReEncodeFont " <[libusSFB.enc <LibertinusT1Math.pfb
+libertinust1-mathsym LibertinusT1Math " libSYMenc ReEncodeFont " <[libusSYM.enc <LibertinusT1Math.pfb

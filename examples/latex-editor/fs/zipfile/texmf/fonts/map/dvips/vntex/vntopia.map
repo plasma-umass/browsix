@@ -1,0 +1,6 @@
+putr8v Vntopia-Regular "T5Encoding ReEncodeFont" <t5.enc <putr8v.pfb
+putri8v Vntopia-Italic "T5Encoding ReEncodeFont" <t5.enc <putri8v.pfb
+putro8v Vntopia-Regular "0.194 SlantFont T5Encoding ReEncodeFont" <t5.enc <putr8v.pfb
+putb8v Vntopia-Bold "T5Encoding ReEncodeFont" <t5.enc <putb8v.pfb
+putbi8v Vntopia-BoldItalic "T5Encoding ReEncodeFont" <t5.enc <putbi8v.pfb
+putbo8v Vntopia-Bold "0.194 SlantFont T5Encoding ReEncodeFont" <t5.enc <putb8v.pfb

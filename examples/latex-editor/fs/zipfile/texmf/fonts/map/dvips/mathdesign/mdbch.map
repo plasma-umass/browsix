@@ -1,0 +1,40 @@
+md-chr8y CharterBT-Roman "TeXnANSIEncoding ReEncodeFont" <texnansi.enc <bchr8a.pfb
+md-chro8y  CharterBT-Roman "0.194 SlantFont TeXnANSIEncoding ReEncodeFont" <texnansi.enc <bchr8a.pfb
+md-chb8y CharterBT-Bold "TeXnANSIEncoding ReEncodeFont" <texnansi.enc <bchb8a.pfb
+md-chbo8y  CharterBT-Bold "0.194 SlantFont TeXnANSIEncoding ReEncodeFont" <texnansi.enc <bchb8a.pfb
+md-chrc8y CharterBT-SmallCap "TeXnANSIEncoding ReEncodeFont" <texnansi.enc <bchrc8a.pfb
+md-chroc8y  CharterBT-SmallCap "0.194 SlantFont TeXnANSIEncoding ReEncodeFont" <texnansi.enc <bchrc8a.pfb
+md-chbc8y CharterBT-BoldSmallCap "TeXnANSIEncoding ReEncodeFont" <texnansi.enc <bchbc8a.pfb
+md-chboc8y  CharterBT-BoldSmallCap "0.194 SlantFont TeXnANSIEncoding ReEncodeFont" <texnansi.enc <bchbc8a.pfb
+md-chri8y CharterBT-Italic "TeXnANSIEncoding ReEncodeFont" <texnansi.enc <bchri8a.pfb
+md-chbi8y CharterBT-BoldItalic "TeXnANSIEncoding ReEncodeFont" <texnansi.enc <bchbi8a.pfb
+md-chr7m MathDesign-CH-Regular-MathItalic-10  <md-chr7m.pfb
+md-chri7m MathDesign-CH-Regular-Italic-MathItalic-10  <md-chri7m.pfb
+md-chrmb MathDesign-CH-Regular-MathDesignSymbolB-10  <md-chrmb.pfb
+md-chrma MathDesign-CH-Regular-MathDesignSymbolA-10  <md-chrma.pfb
+md-chr8t MathDesign-CH-Regular-T1-10  <md-chr8t.pfb
+md-chri8t MathDesign-CH-Regular-Italic-T1-10  <md-chri8t.pfb
+md-chro8t MathDesign-CH-Regular-Slanted-T1-10 "0.194 SlantFont "<md-chr8t.pfb
+md-chr7y MathDesign-CH-Regular-Symbol-10  <md-chr7y.pfb
+md-chr7t MathDesign-CH-Regular-OT1-10  <md-chr7t.pfb
+md-chri7t MathDesign-CH-Regular-Italic-OT1-10  <md-chri7t.pfb
+md-chro7t MathDesign-CH-Regular-Slanted-OT1-10 "0.194 SlantFont "<md-chr7t.pfb
+md-chr7v MathDesign-CH-Regular-Extension-10  <md-chr7v.pfb
+md-chr8c MathDesign-CH-Regular-TS1-10  <md-chr8c.pfb
+md-chri8c MathDesign-CH-Regular-Italic-TS1-10  <md-chri8c.pfb
+md-chro8c MathDesign-CH-Regular-Slanted-TS1-10 "0.194 SlantFont "<md-chr8c.pfb
+md-chb7m MathDesign-CH-Bold-MathItalic-10  <md-chb7m.pfb
+md-chbi7m MathDesign-CH-Bold-Italic-MathItalic-10  <md-chbi7m.pfb
+md-chbmb MathDesign-CH-Bold-MathDesignSymbolB-10  <md-chbmb.pfb
+md-chbma MathDesign-CH-Bold-MathDesignSymbolA-10  <md-chbma.pfb
+md-chb8t MathDesign-CH-Bold-T1-10  <md-chb8t.pfb
+md-chbi8t MathDesign-CH-Bold-Italic-T1-10  <md-chbi8t.pfb
+md-chbo8t MathDesign-CH-Bold-Slanted-T1-10 "0.194 SlantFont "<md-chb8t.pfb
+md-chb7y MathDesign-CH-Bold-Symbol-10  <md-chb7y.pfb
+md-chb7t MathDesign-CH-Bold-OT1-10  <md-chb7t.pfb
+md-chbi7t MathDesign-CH-Bold-Italic-OT1-10  <md-chbi7t.pfb
+md-chbo7t MathDesign-CH-Bold-Slanted-OT1-10 "0.194 SlantFont "<md-chb7t.pfb
+md-chb7v MathDesign-CH-Bold-Extension-10  <md-chb7v.pfb
+md-chb8c MathDesign-CH-Bold-TS1-10  <md-chb8c.pfb
+md-chbi8c MathDesign-CH-Bold-Italic-TS1-10  <md-chbi8c.pfb
+md-chbo8c MathDesign-CH-Bold-Slanted-TS1-10 "0.194 SlantFont "<md-chb8c.pfb

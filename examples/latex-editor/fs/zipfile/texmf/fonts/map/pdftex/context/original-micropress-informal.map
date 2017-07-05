@@ -1,0 +1,7 @@
+ifrm10cm   Informal Regular            <cm.enc <ifrg.pfb
+ifrb10cm   InformalBold                <cm.enc <ifb.pfb
+ifro10cm   InformalOblique             <cm.enc <ifo.pfb
+ifbo10cm   InformalBoldOblique         <cm.enc <ifbo.pfb
+ifex10     InformalExtendedMathSymbols         <ifex10.pfb
+ifmi10     InformalMathItalics                 <ifmi10.pfb
+ifsy10     InformalMathSymbols                 <ifsy10.pfb

@@ -1,0 +1,54 @@
+% For dvipdfm by Dan Luecking
+% Uses the file names for URW fonts as delivered with MiKTeX
+% 1. place them where dvipdfm will look for .map files (normally
+%    a subdirectory of localtexmf/dvipdfm/ will do).
+% 2. Add the line
+%     f txr3.map
+%    to dvipdfm's config file (normally texmf/dvipdfm/config/config).
+% 3. Refresh the filename database.
+%
+% These can be translated to the Ghostscript file names as follows:
+% utmb8a  = n021004l
+% utmbi8a = n021024l
+% utmr8a  = n021003l
+% utmri8a = n021023l
+% uhvb8a  = n019004l
+% uhvr8a  = n019003l
+%
+% These can be translated to the original Adobe file names as follows:
+% utmb8a  = tib_____
+% utmbi8a = tibi____
+% utmr8a  = tir_____
+% utmri8a = tii_____
+% uhvb8a  = hvb_____
+% uhvr8a  = hv______
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Times
+rtxptmb     tx8r.enc    utmb8a
+rtxptmbo    tx8r.enc    utmb8a          -s 0.167
+rtxptmbi    tx8r.enc    utmbi8a
+rtxptmr     tx8r.enc    utmr8a
+rtxptmro    tx8r.enc    utmr8a          -s 0.167
+rtxptmri    tx8r.enc    utmri8a
+% Helvetica
+rtxphvr     tx8r.enc    uhvr8a
+rtxphvro    tx8r.enc    uhvr8a          -s 0.167
+rtxphvb     tx8r.enc    uhvb8a
+rtxphvbo    tx8r.enc    uhvb8a          -s 0.167
+% TX Text Roman
+rtxsl       default     rtxr.pfb        -s 0.167
+rtxbsl      default     rtxb.pfb        -s 0.167
+rtcxbsl     default     rtcxb.pfb       -s 0.167
+rtcxsl      default     rtcxr.pfb       -s 0.167
+% TX Text Typewriter
+txttsl      default     txtt.pfb        -s 0.167
+txbttsl     default     txbtt.pfb       -s 0.167
+t1xttsl     default     t1xtt.pfb       -s 0.167
+t1xbttsl    default     t1xbtt.pfb      -s 0.167
+tcxttsl     default     tcxtt.pfb       -s 0.167
+tcxbttsl    default     tcxbtt.pfb      -s 0.167
+% TX Text Sans Serif
+rtxsssl     default     rtxss.pfb       -s 0.167
+rtxbsssl    default     rtxbss.pfb      -s 0.167
+rtcxsssl    default     rtcxss.pfb      -s 0.167
+rtcxbsso    default     rtcxbss.pfb     -s 0.167

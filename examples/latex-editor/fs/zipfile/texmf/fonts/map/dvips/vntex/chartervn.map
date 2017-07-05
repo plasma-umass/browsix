@@ -1,0 +1,9 @@
+% Copyright 2003-2005 Han The Thanh <hanthethanh@gmx.net>.
+% This file is part of vntex.  Public domain.
+
+bchr8v VnBitstreamCharter " T5Encoding ReEncodeFont " <t5.enc <bchr8v.pfb
+bchri8v VnCharterBT-Italic " T5Encoding ReEncodeFont " <t5.enc <bchri8v.pfb
+bchro8v VnBitstreamCharter " 0.194 SlantFont T5Encoding ReEncodeFont " <t5.enc <bchr8v.pfb
+bchb8v VnCharterBT-Bold " T5Encoding ReEncodeFont " <t5.enc <bchb8v.pfb
+bchbi8v VnCharterBT-BoldItalic " T5Encoding ReEncodeFont " <t5.enc <bchbi8v.pfb
+bchbo8v VnCharterBT-Bold " 0.194 SlantFont T5Encoding ReEncodeFont " <t5.enc <bchb8v.pfb

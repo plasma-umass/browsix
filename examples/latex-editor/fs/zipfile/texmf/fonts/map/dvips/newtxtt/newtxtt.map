@@ -1,0 +1,124 @@
+newtxtta newtxtt " txttECEncodingA ReEncodeFont " <[txttAec.enc <newtxtt.pfb
+newtxttb newtxtt " txttECEncodingB ReEncodeFont " <[txttBec.enc <newtxtt.pfb
+newtxttc newtxtt " txttECEncodingC ReEncodeFont " <[txttCec.enc <newtxtt.pfb
+newtxttd newtxtt " txttECEncodingD ReEncodeFont " <[txttDec.enc <newtxtt.pfb
+newtxtte newtxtt " txttECEncodingE ReEncodeFont " <[txttEec.enc <newtxtt.pfb
+newtxbtta newtxbtt " txttECEncodingA ReEncodeFont " <[txttAec.enc <newtxbtt.pfb
+newtxbttb newtxbtt " txttECEncodingB ReEncodeFont " <[txttBec.enc <newtxbtt.pfb
+newtxbttc newtxbtt " txttECEncodingC ReEncodeFont " <[txttCec.enc <newtxbtt.pfb
+newtxbttd newtxbtt " txttECEncodingD ReEncodeFont " <[txttDec.enc <newtxbtt.pfb
+newtxbtte newtxbtt " txttECEncodingE ReEncodeFont " <[txttEec.enc <newtxbtt.pfb
+newtxttsca newtxttsc " txttECEncodingA ReEncodeFont " <[txttAec.enc <newtxttsc.pfb
+newtxttscb newtxttsc " txttECEncodingB ReEncodeFont " <[txttBec.enc <newtxttsc.pfb
+newtxttscc newtxttsc " txttECEncodingC ReEncodeFont " <[txttCec.enc <newtxttsc.pfb
+newtxttscd newtxttsc " txttECEncodingD ReEncodeFont " <[txttDec.enc <newtxttsc.pfb
+newtxttsce newtxttsc " txttECEncodingE ReEncodeFont " <[txttEec.enc <newtxttsc.pfb
+newtxbttsca newtxbttsc " txttECEncodingA ReEncodeFont " <[txttAec.enc <newtxbttsc.pfb
+newtxbttscb newtxbttsc " txttECEncodingB ReEncodeFont " <[txttBec.enc <newtxbttsc.pfb
+newtxbttscc newtxbttsc " txttECEncodingC ReEncodeFont " <[txttCec.enc <newtxbttsc.pfb
+newtxbttscd newtxbttsc " txttECEncodingD ReEncodeFont " <[txttDec.enc <newtxbttsc.pfb
+newtxbttsce newtxbttsc " txttECEncodingE ReEncodeFont " <[txttEec.enc <newtxbttsc.pfb
+newtxttsla newtxtt " .167 SlantFont txttECEncodingA ReEncodeFont " <[txttAec.enc <newtxtt.pfb
+newtxttslb newtxtt " .167 SlantFont txttECEncodingB ReEncodeFont " <[txttBec.enc <newtxtt.pfb
+newtxttslc newtxtt " .167 SlantFont txttECEncodingC ReEncodeFont " <[txttCec.enc <newtxtt.pfb
+newtxttsld newtxtt " .167 SlantFont txttECEncodingD ReEncodeFont " <[txttDec.enc <newtxtt.pfb
+newtxttsle newtxtt " .167 SlantFont txttECEncodingE ReEncodeFont " <[txttEec.enc <newtxtt.pfb
+newtxbttsla newtxbtt " .167 SlantFont txttECEncodingA ReEncodeFont " <[txttAec.enc <newtxbtt.pfb
+newtxbttslb newtxbtt " .167 SlantFont txttECEncodingB ReEncodeFont " <[txttBec.enc <newtxbtt.pfb
+newtxbttslc newtxbtt " .167 SlantFont txttECEncodingC ReEncodeFont " <[txttCec.enc <newtxbtt.pfb
+newtxbttsld newtxbtt " .167 SlantFont txttECEncodingD ReEncodeFont " <[txttDec.enc <newtxbtt.pfb
+newtxbttsle newtxbtt " .167 SlantFont txttECEncodingE ReEncodeFont " <[txttEec.enc <newtxbtt.pfb
+newtxttza newtxtt " txttECEncodingA ReEncodeFont " <[txttAec.enc <newtxtt.pfb
+newtxttzb newtxtt " txttECEncodingB ReEncodeFont " <[txttBec.enc <newtxtt.pfb
+newtxttzc newtxtt " txttECEncodingC ReEncodeFont " <[txttCec.enc <newtxtt.pfb
+newtxttzd newtxtt " txttECEncodingD ReEncodeFont " <[txttDec.enc <newtxtt.pfb
+newtxttze newtxtt " txttECEncodingE ReEncodeFont " <[txttEec.enc <newtxtt.pfb
+newtxbttza newtxbtt " txttECEncodingA ReEncodeFont " <[txttAec.enc <newtxbtt.pfb
+newtxbttzb newtxbtt " txttECEncodingB ReEncodeFont " <[txttBec.enc <newtxbtt.pfb
+newtxbttzc newtxbtt " txttECEncodingC ReEncodeFont " <[txttCec.enc <newtxbtt.pfb
+newtxbttzd newtxbtt " txttECEncodingD ReEncodeFont " <[txttDec.enc <newtxbtt.pfb
+newtxbttze newtxbtt " txttECEncodingE ReEncodeFont " <[txttEec.enc <newtxbtt.pfb
+newtxttzsca newtxttsc " txttECEncodingA ReEncodeFont " <[txttAec.enc <newtxttsc.pfb
+newtxttzscb newtxttsc " txttECEncodingB ReEncodeFont " <[txttBec.enc <newtxttsc.pfb
+newtxttzscc newtxttsc " txttECEncodingC ReEncodeFont " <[txttCec.enc <newtxttsc.pfb
+newtxttzscd newtxttsc " txttECEncodingD ReEncodeFont " <[txttDec.enc <newtxttsc.pfb
+newtxttzsce newtxttsc " txttECEncodingE ReEncodeFont " <[txttEec.enc <newtxttsc.pfb
+newtxbttzsca newtxbttsc " txttECEncodingA ReEncodeFont " <[txttAec.enc <newtxbttsc.pfb
+newtxbttzscb newtxbttsc " txttECEncodingB ReEncodeFont " <[txttBec.enc <newtxbttsc.pfb
+newtxbttzscc newtxbttsc " txttECEncodingC ReEncodeFont " <[txttCec.enc <newtxbttsc.pfb
+newtxbttzscd newtxbttsc " txttECEncodingD ReEncodeFont " <[txttDec.enc <newtxbttsc.pfb
+newtxbttzsce newtxbttsc " txttECEncodingE ReEncodeFont " <[txttEec.enc <newtxbttsc.pfb
+newtxttzsla newtxtt " .167 SlantFont txttECEncodingA ReEncodeFont " <[txttAec.enc <newtxtt.pfb
+newtxttzslb newtxtt " .167 SlantFont txttECEncodingB ReEncodeFont " <[txttBec.enc <newtxtt.pfb
+newtxttzslc newtxtt " .167 SlantFont txttECEncodingC ReEncodeFont " <[txttCec.enc <newtxtt.pfb
+newtxttzsld newtxtt " .167 SlantFont txttECEncodingD ReEncodeFont " <[txttDec.enc <newtxtt.pfb
+newtxttzsle newtxtt " .167 SlantFont txttECEncodingE ReEncodeFont " <[txttEec.enc <newtxtt.pfb
+newtxbttzsla newtxbtt " .167 SlantFont txttECEncodingA ReEncodeFont " <[txttAec.enc <newtxbtt.pfb
+newtxbttzslb newtxbtt " .167 SlantFont txttECEncodingB ReEncodeFont " <[txttBec.enc <newtxbtt.pfb
+newtxbttzslc newtxbtt " .167 SlantFont txttECEncodingC ReEncodeFont " <[txttCec.enc <newtxbtt.pfb
+newtxbttzsld newtxbtt " .167 SlantFont txttECEncodingD ReEncodeFont " <[txttDec.enc <newtxbtt.pfb
+newtxbttzsle newtxbtt " .167 SlantFont txttECEncodingE ReEncodeFont " <[txttEec.enc <newtxbtt.pfb
+tcxbttzsl tcxbtt ".167 SlantFont" <tcxbtt.pfb
+tcxbttz tcxbtt <tcxbtt.pfb
+tcxttz tcxtt <tcxtt.pfb
+tcxttzsl tcxtt ".167 SlantFont" <tcxtt.pfb
+newtxttaq newtxtt " txttECEncodingAq ReEncodeFont " <[txttAqec.enc <newtxtt.pfb
+newtxttbq newtxtt " txttECEncodingBq ReEncodeFont " <[txttBqec.enc <newtxtt.pfb
+newtxttcq newtxtt " txttECEncodingCq ReEncodeFont " <[txttCqec.enc <newtxtt.pfb
+newtxttdq newtxtt " txttECEncodingDq ReEncodeFont " <[txttDqec.enc <newtxtt.pfb
+newtxtteq newtxtt " txttECEncodingEq ReEncodeFont " <[txttEqec.enc <newtxtt.pfb
+newtxbttaq newtxbtt " txttECEncodingAq ReEncodeFont " <[txttAqec.enc <newtxbtt.pfb
+newtxbttbq newtxbtt " txttECEncodingBq ReEncodeFont " <[txttBqec.enc <newtxbtt.pfb
+newtxbttcq newtxbtt " txttECEncodingCq ReEncodeFont " <[txttCqec.enc <newtxbtt.pfb
+newtxbttdq newtxbtt " txttECEncodingDq ReEncodeFont " <[txttDqec.enc <newtxbtt.pfb
+newtxbtteq newtxbtt " txttECEncodingEq ReEncodeFont " <[txttEqec.enc <newtxbtt.pfb
+newtxttscaq newtxttsc " txttECEncodingAq ReEncodeFont " <[txttAqec.enc <newtxttsc.pfb
+newtxttscbq newtxttsc " txttECEncodingBq ReEncodeFont " <[txttBqec.enc <newtxttsc.pfb
+newtxttsccq newtxttsc " txttECEncodingCq ReEncodeFont " <[txttCqec.enc <newtxttsc.pfb
+newtxttscdq newtxttsc " txttECEncodingDq ReEncodeFont " <[txttDqec.enc <newtxttsc.pfb
+newtxttsceq newtxttsc " txttECEncodingEq ReEncodeFont " <[txttEqec.enc <newtxttsc.pfb
+newtxbttscaq newtxbttsc " txttECEncodingAq ReEncodeFont " <[txttAqec.enc <newtxbttsc.pfb
+newtxbttscbq newtxbttsc " txttECEncodingBq ReEncodeFont " <[txttBqec.enc <newtxbttsc.pfb
+newtxbttsccq newtxbttsc " txttECEncodingCq ReEncodeFont " <[txttCqec.enc <newtxbttsc.pfb
+newtxbttscdq newtxbttsc " txttECEncodingDq ReEncodeFont " <[txttDqec.enc <newtxbttsc.pfb
+newtxbttsceq newtxbttsc " txttECEncodingEq ReEncodeFont " <[txttEqec.enc <newtxbttsc.pfb
+newtxttslaq newtxtt " .167 SlantFont txttECEncodingAq ReEncodeFont " <[txttAqec.enc <newtxtt.pfb
+newtxttslbq newtxtt " .167 SlantFont txttECEncodingBq ReEncodeFont " <[txttBqec.enc <newtxtt.pfb
+newtxttslcq newtxtt " .167 SlantFont txttECEncodingCq ReEncodeFont " <[txttCqec.enc <newtxtt.pfb
+newtxttsldq newtxtt " .167 SlantFont txttECEncodingDq ReEncodeFont " <[txttDqec.enc <newtxtt.pfb
+newtxttsleq newtxtt " .167 SlantFont txttECEncodingEq ReEncodeFont " <[txttEqec.enc <newtxtt.pfb
+newtxbttslaq newtxbtt " .167 SlantFont txttECEncodingAq ReEncodeFont " <[txttAqec.enc <newtxbtt.pfb
+newtxbttslbq newtxbtt " .167 SlantFont txttECEncodingBq ReEncodeFont " <[txttBqec.enc <newtxbtt.pfb
+newtxbttslcq newtxbtt " .167 SlantFont txttECEncodingCq ReEncodeFont " <[txttCqec.enc <newtxbtt.pfb
+newtxbttsldq newtxbtt " .167 SlantFont txttECEncodingDq ReEncodeFont " <[txttDqec.enc <newtxbtt.pfb
+newtxbttsleq newtxbtt " .167 SlantFont txttECEncodingEq ReEncodeFont " <[txttEqec.enc <newtxbtt.pfb
+newtxttzaq newtxtt " txttECEncodingAq ReEncodeFont " <[txttAqec.enc <newtxtt.pfb
+newtxttzbq newtxtt " txttECEncodingBq ReEncodeFont " <[txttBqec.enc <newtxtt.pfb
+newtxttzcq newtxtt " txttECEncodingCq ReEncodeFont " <[txttCqec.enc <newtxtt.pfb
+newtxttzdq newtxtt " txttECEncodingDq ReEncodeFont " <[txttDqec.enc <newtxtt.pfb
+newtxttzeq newtxtt " txttECEncodingEq ReEncodeFont " <[txttEqec.enc <newtxtt.pfb
+newtxbttzaq newtxbtt " txttECEncodingAq ReEncodeFont " <[txttAqec.enc <newtxbtt.pfb
+newtxbttzbq newtxbtt " txttECEncodingBq ReEncodeFont " <[txttBqec.enc <newtxbtt.pfb
+newtxbttzcq newtxbtt " txttECEncodingCq ReEncodeFont " <[txttCqec.enc <newtxbtt.pfb
+newtxbttzdq newtxbtt " txttECEncodingDq ReEncodeFont " <[txttDqec.enc <newtxbtt.pfb
+newtxbttzeq newtxbtt " txttECEncodingEq ReEncodeFont " <[txttEqec.enc <newtxbtt.pfb
+newtxttzscaq newtxttsc " txttECEncodingAq ReEncodeFont " <[txttAqec.enc <newtxttsc.pfb
+newtxttzscbq newtxttsc " txttECEncodingBq ReEncodeFont " <[txttBqec.enc <newtxttsc.pfb
+newtxttzsccq newtxttsc " txttECEncodingCq ReEncodeFont " <[txttCqec.enc <newtxttsc.pfb
+newtxttzscdq newtxttsc " txttECEncodingDq ReEncodeFont " <[txttDqec.enc <newtxttsc.pfb
+newtxttzsceq newtxttsc " txttECEncodingEq ReEncodeFont " <[txttEqec.enc <newtxttsc.pfb
+newtxbttzscaq newtxbttsc " txttECEncodingAq ReEncodeFont " <[txttAqec.enc <newtxbttsc.pfb
+newtxbttzscbq newtxbttsc " txttECEncodingBq ReEncodeFont " <[txttBqec.enc <newtxbttsc.pfb
+newtxbttzsccq newtxbttsc " txttECEncodingCq ReEncodeFont " <[txttCqec.enc <newtxbttsc.pfb
+newtxbttzscdq newtxbttsc " txttECEncodingDq ReEncodeFont " <[txttDqec.enc <newtxbttsc.pfb
+newtxbttzsceq newtxbttsc " txttECEncodingEq ReEncodeFont " <[txttEqec.enc <newtxbttsc.pfb
+newtxttzslaq newtxtt " .167 SlantFont txttECEncodingAq ReEncodeFont " <[txttAqec.enc <newtxtt.pfb
+newtxttzslbq newtxtt " .167 SlantFont txttECEncodingBq ReEncodeFont " <[txttBqec.enc <newtxtt.pfb
+newtxttzslcq newtxtt " .167 SlantFont txttECEncodingCq ReEncodeFont " <[txttCqec.enc <newtxtt.pfb
+newtxttzsldq newtxtt " .167 SlantFont txttECEncodingDq ReEncodeFont " <[txttDqec.enc <newtxtt.pfb
+newtxttzsleq newtxtt " .167 SlantFont txttECEncodingEq ReEncodeFont " <[txttEqec.enc <newtxtt.pfb
+newtxbttzslaq newtxbtt " .167 SlantFont txttECEncodingAq ReEncodeFont " <[txttAqec.enc <newtxbtt.pfb
+newtxbttzslbq newtxbtt " .167 SlantFont txttECEncodingBq ReEncodeFont " <[txttBqec.enc <newtxbtt.pfb
+newtxbttzslcq newtxbtt " .167 SlantFont txttECEncodingCq ReEncodeFont " <[txttCqec.enc <newtxbtt.pfb
+newtxbttzsldq newtxbtt " .167 SlantFont txttECEncodingDq ReEncodeFont " <[txttDqec.enc <newtxbtt.pfb
+newtxbttzsleq newtxbtt " .167 SlantFont txttECEncodingEq ReEncodeFont " <[txttEqec.enc <newtxbtt.pfb

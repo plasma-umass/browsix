@@ -1,0 +1,39 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%% The GFS Didot font family %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+didotrg9r GFSDidot " didotec ReEncodeFont " <didotec.enc                           <GFSDidot.pfb
+didotrg8r GFSDidot " didot ReEncodeFont " <didot.enc                               <GFSDidot.pfb
+didotb9r GFSDidot-Bold " didotec ReEncodeFont " <didotec.enc                              <GFSDidot-Bold.pfb
+didotb8r GFSDidot-Bold " didot ReEncodeFont " <didot.enc                                  <GFSDidot-Bold.pfb
+didotbi9r GFSDidot-BoldItalic " didotec ReEncodeFont " <didotec.enc                       <GFSDidot-BoldItalic.pfb
+didotbi8r GFSDidot-BoldItalic " didot ReEncodeFont " <didot.enc                           <GFSDidot-BoldItalic.pfb
+didotbo9r GFSDidot-Bold " 0.167 SlantFont didotec ReEncodeFont " <didotec.enc <GFSDidot-Bold.pfb
+didotbo8r GFSDidot-Bold " 0.167 SlantFont didot ReEncodeFont " <didot.enc <GFSDidot-Bold.pfb
+didoti9r GFSDidot-Italic " didotec ReEncodeFont " <didotec.enc                            <GFSDidot-Italic.pfb
+didoti8r GFSDidot-Italic " didot ReEncodeFont " <didot.enc                                <GFSDidot-Italic.pfb
+didoto9r GFSDidot " 0.167 SlantFont didotec ReEncodeFont " <didotec.enc <GFSDidot.pfb
+didoto8r GFSDidot " 0.167 SlantFont didot ReEncodeFont " <didot.enc <GFSDidot.pfb
+didotui9r GFSDidot-Italic " -0.168 SlantFont didotec ReEncodeFont " <didotec.enc	  <GFSDidot-Italic.pfb
+didotui8r GFSDidot-Italic " -0.168 SlantFont didot ReEncodeFont " <didot.enc		  <GFSDidot-Italic.pfb
+
+didotsc8r GFSDidot " didotusc ReEncodeFont " <didotusc.enc                      <GFSDidot.pfb
+didotsc9r GFSDidot " didotuecsc ReEncodeFont " <didotuecsc.enc                  <GFSDidot.pfb
+didotsco8r GFSDidot " 0.167 SlantFont didotusc ReEncodeFont " <didotusc.enc     <GFSDidot.pfb
+didotsco9r GFSDidot " 0.167 SlantFont didotuecsc ReEncodeFont " <didotuecsc.enc <GFSDidot.pfb
+
+gdidotrg6r GFSDidot " gpdidot ReEncodeFont " <gpdidot.enc                                        <GFSDidot.pfb
+gdidotb6r GFSDidot-Bold " gpdidot ReEncodeFont " <gpdidot.enc                                           <GFSDidot-Bold.pfb
+gdidotbi6r GFSDidot-BoldItalic " gpdidot ReEncodeFont " <gpdidot.enc                                    <GFSDidot-BoldItalic.pfb
+gdidoti6r GFSDidot-Italic " gpdidoti ReEncodeFont " <gpdidoti.enc                                       <GFSDidot-Italic.pfb
+golgai6r GFSOlga " gpolga ReEncodeFont " <gpolga.enc                                             <GFSOlga.pfb
+golgaui6r GFSOlga " -0.220 SlantFont gpolga ReEncodeFont " <gpolga.enc                           <GFSOlga.pfb
+gdidotsc6r GFSDidot " gpdidotusc ReEncodeFont " <gpdidotusc.enc                   <GFSDidot.pfb
+gdidotsco6r GFSDidot " 0.167 SlantFont gpdidotusc ReEncodeFont " <gpdidotusc.enc  <GFSDidot.pfb
+gfsudidotmath8r GFSOlga " gfsudidotmath ReEncodeFont " <gfsudidotmath.enc  <GFSOlga.pfb
+didottabnums8r GFSDidot " didottabnums ReEncodeFont " <didottabnums.enc <GFSDidot.pfb
+didotnumnums8r GFSDidot " didotnumnums ReEncodeFont " <didotnumnums.enc <GFSDidot.pfb
+didotdenomnums8r GFSDidot " didotdenomnums ReEncodeFont " <didotdenomnums.enc <GFSDidot.pfb
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+

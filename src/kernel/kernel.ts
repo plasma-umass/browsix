@@ -1602,7 +1602,7 @@ export class Kernel implements IKernel {
 			'HOME=/',
 		];
 
-		let cwd: string = dropboxClient.isAuthenticated() ? '/workspace/dropbox/' : '/';
+		let cwd: string = dropboxClient && dropboxClient.isAuthenticated() ? '/workspace/dropbox/' : '/';
 
 		this.spawn(null, cwd, parts[0], parts, env, null, (err: any, pid: number) => {
 			if (err) {
@@ -2490,13 +2490,13 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 		let zippedData = new Buffer(new DataView(fsArgs[4]));
 
 		// FIXME: ZipFS not working
-		// let readable = new bfs.FileSystem['ZipFS'](zippedData);
-		let readable = new bfs.FileSystem['XmlHttpRequest']('index.json', 'fs');
+		let readable = new bfs.FileSystem['ZipFS'](zippedData);
+		// let readable = new bfs.FileSystem['XmlHttpRequest']('index.json', 'fs');
 
 		// FIXME: err XmlHttpRequest ain't writable FS. Use different async FS
 		// let writable = new bfs.FileSystem['XmlHttpRequest']('index.json', 'fs');
 		let writable = new bfs.FileSystem['InMemory']();
-		
+
 		rootConstructor = (<any> bfs).FileSystem['OverlayFS'];
 		rootConstructorArgs = [null, writable, readable].concat(fsArgs);
 	} else {

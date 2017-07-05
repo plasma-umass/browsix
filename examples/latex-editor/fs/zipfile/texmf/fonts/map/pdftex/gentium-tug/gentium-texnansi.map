@@ -1,0 +1,6 @@
+texnansi-gentiumplus-regular      GentiumPlus-Regular      <GentiumPlus-R.ttf  gentium-texnansi.enc
+texnansi-gentiumplus-regular-sc   GentiumPlus-Regular      <GentiumPlus-R.ttf  gentium-texnansi-sc.enc
+texnansi-gentiumplus-italic       GentiumPlus-Italic       <GentiumPlus-I.ttf  gentium-texnansi.enc
+texnansi-gentiumplus-italic-sc    GentiumPlus-Italic       <GentiumPlus-I.ttf  gentium-texnansi-sc.enc
+texnansi-gentiumbasic-bold        GentiumBasic-Bold        <GenBasB.ttf        gentium-texnansi.enc
+texnansi-gentiumbasic-bolditalic  GentiumBasic-BoldItalic  <GenBasBI.ttf       gentium-texnansi.enc

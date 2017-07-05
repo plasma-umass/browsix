@@ -1,0 +1,6 @@
+txtt8v VnTXTT-Medium " T5Encoding ReEncodeFont " <t5.enc <txtt8v.pfb
+txttsc8v VnTXTTSC-Medium " T5Encoding ReEncodeFont " <t5.enc <txttsc8v.pfb
+txttsl8v VnTXTT-Medium " 0.167 SlantFont T5Encoding ReEncodeFont " <t5.enc <txtt8v.pfb
+txbtt8v VnTXTT-Bold " T5Encoding ReEncodeFont " <t5.enc <txbtt8v.pfb
+txbttsc8v VnTXTTSC-Bold " T5Encoding ReEncodeFont " <t5.enc <txbttsc8v.pfb
+txbttsl8v VnTXTT-Bold " 0.167 SlantFont T5Encoding ReEncodeFont " <t5.enc <txbtt8v.pfb

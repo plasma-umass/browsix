@@ -1,0 +1,27 @@
+% (Public domain) Support for PL fonts (based on CM fonts) in Type1 format 
+% available from CTAN:language/polish/plpsfont
+% this is the supplemental set of "other and non-text" fonts
+plbsy10 PLMathSymbols10-BoldItalic "encplms ReEncodeFont" <plms.enc <plbsy10.pfb
+pldunh10 PLDunhill10-Regular "encplrm ReEncodeFont" <plrm.enc <pldunh10.pfb
+plex10 PLMathExtension10-Regular "encplme ReEncodeFont" <plme.enc <plex10.pfb
+plex9 PLMathExtension9-Regular "encplme ReEncodeFont" <plme.enc <plex9.pfb
+plff10 PLFunny10-Regular "encplrm ReEncodeFont" <plrm.enc <plff10.pfb
+plfi10 PLFunny10-Italic "encplit ReEncodeFont" <plit.enc <plfi10.pfb
+plfib8 PLFibonacci8-Regular "encplrm ReEncodeFont" <plrm.enc <plfib8.pfb
+plmi10 PLMathItalic10-Italic "encplmi ReEncodeFont" <plmi.enc <plmi10.pfb
+plmi12 PLMathItalic12-Italic "encplmi ReEncodeFont" <plmi.enc <plmi12.pfb
+plmi5 PLMathItalic5-Italic "encplmi ReEncodeFont" <plmi.enc <plmi5.pfb
+plmi6 PLMathItalic6-Italic "encplmi ReEncodeFont" <plmi.enc <plmi6.pfb
+plmi7 PLMathItalic7-Italic "encplmi ReEncodeFont" <plmi.enc <plmi7.pfb
+plmi8 PLMathItalic8-Italic "encplmi ReEncodeFont" <plmi.enc <plmi8.pfb
+plmi9 PLMathItalic9-Italic "encplmi ReEncodeFont" <plmi.enc <plmi9.pfb
+plmib10 PLMathItalic10-BoldItalic "encplmi ReEncodeFont" <plmi.enc <plmib10.pfb
+plsy10 PLMathSymbols10-Italic "encplms ReEncodeFont" <plms.enc <plsy10.pfb
+plsy5 PLMathSymbols5-Italic "encplms ReEncodeFont" <plms.enc <plsy5.pfb
+plsy6 PLMathSymbols6-Italic "encplms ReEncodeFont" <plms.enc <plsy6.pfb
+plsy7 PLMathSymbols7-Italic "encplms ReEncodeFont" <plms.enc <plsy7.pfb
+plsy8 PLMathSymbols8-Italic "encplms ReEncodeFont" <plms.enc <plsy8.pfb
+plsy9 PLMathSymbols9-Italic "encplms ReEncodeFont" <plms.enc <plsy9.pfb
+pltex10 PLTeXExtended10-Regular "encplte ReEncodeFont" <plte.enc <pltex10.pfb
+pltex8 PLTeXExtended8-Regular "encplte ReEncodeFont" <plte.enc <pltex8.pfb
+pltex9 PLTeXExtended9-Regular "encplte ReEncodeFont" <plte.enc <pltex9.pfb

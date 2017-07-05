@@ -1,0 +1,47 @@
+% This file belongs to the Antykwa Poltawskiego collection of fonts. The work is released
+% under the GUST Font License. See the MANIFEST-Antykwa-Poltawskiego.txt
+% and README-Antykwa-Poltawskiego.txt files for the details.
+% For the most recent version of this license see
+% http://www.gust.org.pl/fonts/licenses/GUST-FONT-LICENSE.txt or
+% http://tug.org/fonts/licenses/GUST-FONT-LICENSE.txt
+% 
+ts1-antpl6 AntPoltLtExpd-Regular "encapts1 ReEncodeFont" <ap-ts1.enc <antpl6.pfb
+ts1-antpl8 AntPoltLtSemiExpd-Regular "encapts1 ReEncodeFont" <ap-ts1.enc <antpl8.pfb
+ts1-antpl10 AntPoltLt-Regular "encapts1 ReEncodeFont" <ap-ts1.enc <antpl10.pfb
+ts1-antpl12 AntPoltLtSemiCond-Regular "encapts1 ReEncodeFont" <ap-ts1.enc <antpl12.pfb
+ts1-antpl17 AntPoltLtCond-Regular "encapts1 ReEncodeFont" <ap-ts1.enc <antpl17.pfb
+ts1-antpli6 AntPoltLtExpd-Italic "encapts1 ReEncodeFont" <ap-ts1.enc <antpli6.pfb
+ts1-antpli8 AntPoltLtSemiExpd-Italic "encapts1 ReEncodeFont" <ap-ts1.enc <antpli8.pfb
+ts1-antpli10 AntPoltLt-Italic "encapts1 ReEncodeFont" <ap-ts1.enc <antpli10.pfb
+ts1-antpli12 AntPoltLtSemiCond-Italic "encapts1 ReEncodeFont" <ap-ts1.enc <antpli12.pfb
+ts1-antpli17 AntPoltLtCond-Italic "encapts1 ReEncodeFont" <ap-ts1.enc <antpli17.pfb
+ts1-antpr6 AntPoltExpd-Regular "encapts1 ReEncodeFont" <ap-ts1.enc <antpr6.pfb
+ts1-antpr8 AntPoltSemiExpd-Regular "encapts1 ReEncodeFont" <ap-ts1.enc <antpr8.pfb
+ts1-antpr10 AntPolt-Regular "encapts1 ReEncodeFont" <ap-ts1.enc <antpr10.pfb
+ts1-antpr12 AntPoltSemiCond-Regular "encapts1 ReEncodeFont" <ap-ts1.enc <antpr12.pfb
+ts1-antpr17 AntPoltCond-Regular "encapts1 ReEncodeFont" <ap-ts1.enc <antpr17.pfb
+ts1-antpri6 AntPoltExpd-Italic "encapts1 ReEncodeFont" <ap-ts1.enc <antpri6.pfb
+ts1-antpri8 AntPoltSemiExpd-Italic "encapts1 ReEncodeFont" <ap-ts1.enc <antpri8.pfb
+ts1-antpri10 AntPolt-Italic "encapts1 ReEncodeFont" <ap-ts1.enc <antpri10.pfb
+ts1-antpri12 AntPoltSemiCond-Italic "encapts1 ReEncodeFont" <ap-ts1.enc <antpri12.pfb
+ts1-antpri17 AntPoltCond-Italic "encapts1 ReEncodeFont" <ap-ts1.enc <antpri17.pfb
+ts1-antpm6 AntPoltLtExpd-Bold "encapts1 ReEncodeFont" <ap-ts1.enc <antpm6.pfb
+ts1-antpm8 AntPoltLtSemiExpd-Bold "encapts1 ReEncodeFont" <ap-ts1.enc <antpm8.pfb
+ts1-antpm10 AntPoltLt-Bold "encapts1 ReEncodeFont" <ap-ts1.enc <antpm10.pfb
+ts1-antpm12 AntPoltLtSemiCond-Bold "encapts1 ReEncodeFont" <ap-ts1.enc <antpm12.pfb
+ts1-antpm17 AntPoltLtCond-Bold "encapts1 ReEncodeFont" <ap-ts1.enc <antpm17.pfb
+ts1-antpmi6 AntPoltLtExpd-BoldItalic "encapts1 ReEncodeFont" <ap-ts1.enc <antpmi6.pfb
+ts1-antpmi8 AntPoltLtSemiExpd-BoldItalic "encapts1 ReEncodeFont" <ap-ts1.enc <antpmi8.pfb
+ts1-antpmi10 AntPoltLt-BoldItalic "encapts1 ReEncodeFont" <ap-ts1.enc <antpmi10.pfb
+ts1-antpmi12 AntPoltLtSemiCond-BoldItalic "encapts1 ReEncodeFont" <ap-ts1.enc <antpmi12.pfb
+ts1-antpmi17 AntPoltLtCond-BoldItalic "encapts1 ReEncodeFont" <ap-ts1.enc <antpmi17.pfb
+ts1-antpb6 AntPoltExpd-Bold "encapts1 ReEncodeFont" <ap-ts1.enc <antpb6.pfb
+ts1-antpb8 AntPoltSemiExpd-Bold "encapts1 ReEncodeFont" <ap-ts1.enc <antpb8.pfb
+ts1-antpb10 AntPolt-Bold "encapts1 ReEncodeFont" <ap-ts1.enc <antpb10.pfb
+ts1-antpb12 AntPoltSemiCond-Bold "encapts1 ReEncodeFont" <ap-ts1.enc <antpb12.pfb
+ts1-antpb17 AntPoltCond-Bold "encapts1 ReEncodeFont" <ap-ts1.enc <antpb17.pfb
+ts1-antpbi6 AntPoltExpd-BoldItalic "encapts1 ReEncodeFont" <ap-ts1.enc <antpbi6.pfb
+ts1-antpbi8 AntPoltSemiExpd-BoldItalic "encapts1 ReEncodeFont" <ap-ts1.enc <antpbi8.pfb
+ts1-antpbi10 AntPolt-BoldItalic "encapts1 ReEncodeFont" <ap-ts1.enc <antpbi10.pfb
+ts1-antpbi12 AntPoltSemiCond-BoldItalic "encapts1 ReEncodeFont" <ap-ts1.enc <antpbi12.pfb
+ts1-antpbi17 AntPoltCond-BoldItalic "encapts1 ReEncodeFont" <ap-ts1.enc <antpbi17.pfb

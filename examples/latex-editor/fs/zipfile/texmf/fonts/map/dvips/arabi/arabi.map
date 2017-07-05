@@ -1,0 +1,67 @@
+% \iffalse meta-comment
+%
+% Copyright 2006, 2011, 2012      Youssef Jabri
+% 
+% 
+% This file is part of the `Arabi' system.
+% -------------------------------------------
+% 
+% It may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3b
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%    http://www.latex-project.org/lppl.txt
+% and version 1.3b or later is part of all distributions of LaTeX 
+% version 2005/12/01 or later.
+% 
+% This file has the LPPL maintenance status "maintained".
+% 
+% 
+% \fi
+%
+% Font map correspondence between TFMs and real (actually .PFB)
+% fonts used by the Arabi package.
+%
+%%%%%%%%%%%%%%% Arabeyes Arabic GNU fonts %%%%%%%%%%%%%%%%%%
+aealbattar ae_AlBattar " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_albattar.pfb
+aealmateen ae_AlMateen " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_almateen.pfb
+aealmohanadb ae_AlMohanadBold " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_almohanad_bold.pfb
+aealmothnna ae_AlMothnna " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_almothnna.pfb
+aealyermook ae_AlYermook " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_alyermook.pfb
+aearab ae_Arab " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_arab.pfb
+aecortoba ae_Cortoba " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_cortoba.pfb
+aedimnah ae_Dimnah " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_dimnah.pfb
+aefurat ae_Furat " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_furat.pfb
+aegranada ae_Granada " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_granada.pfb
+aegraph ae_Graph " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_graph.pfb
+aehani ae_Hani " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_hani.pfb
+aehor ae_Hor " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_hor.pfb
+aekayrawan ae_Kayrawan " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_kayrawan.pfb
+aekhalid ae_Khalid " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_khalid.pfb
+aemashq ae_Mashq " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_mashq.pfb
+aemetal ae_Metal " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_metal.pfb
+aenada ae_Nada " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_nada.pfb
+aenagham ae_Nagham " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_nagham.pfb
+aenice ae_Nice " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_nice.pfb
+aeostorah ae_Ostorah " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_ostorah.pfb
+aeouhod ae_Ouhod " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_ouhod.pfb
+aepetra ae_Petra " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_petra.pfb
+aerehan ae_Rehan " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_rehan.pfb
+aesalem ae_Salem " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_salem.pfb
+aeshado ae_Shado " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_shado.pfb
+aesharjah ae_Sharjah " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_sharjah.pfb
+aesindibad ae_Sindibad " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_sindibad.pfb
+aetarablus ae_Tarablus " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_tarablus.pfb
+aetholoth ae_Tholoth " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_tholoth.pfb
+%
+aealmohanadbolditalic ae_AlMohanadBoldItalic " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_AlMohanad_boldItalic.pfb
+ae_almohanad_xxbold ae_AlMohanadExtraBold2 " ArabeyesArabicEncoding ReEncodeFont " <ararabeyes.enc <ae_AlMohanad_xxbold.pfb
+%
+%%%%%%%%%%%%%%%%%%%% FarsiWeb GNU fonts %%%%%%%%%%%%%%%%%%%%
+%nazlibout Nazli-Bold " FarsiWebEncoding ReEncodeFont /PaintType 2 store" <farsiwebencoding.enc <nazlib.pfb
+%nazliout Nazli "FarsiWebEncoding ReEncodeFont /PaintType 2 store" <farsiwebencoding.enc <nazli.pfb
+%titrout Titr-Bold " FarsiWebEncoding ReEncodeFont /PaintType 2 store" <farsiwebencoding.enc <titr.pfb
+homa Homa " FarsiWebEncoding ReEncodeFont " <farsiwebencoding.enc <homa.pfb
+nazli Nazli " FarsiWebEncoding ReEncodeFont " <farsiwebencoding.enc <nazli.pfb
+nazlib Nazli-Bold " FarsiWebEncoding ReEncodeFont " <farsiwebencoding.enc <nazlib.pfb
+titr Titr-Bold " FarsiWebEncoding ReEncodeFont " <farsiwebencoding.enc <titr.pfb

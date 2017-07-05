@@ -1,0 +1,11 @@
+%%%%%%%%%%%
+% SkakNew %
+%%%%%%%%%%%
+SkakNew-Figurine SkakNew-Figurine <SkakNew-Figurine.pfb
+SkakNew-FigurineBold SkakNew-Figurine-Bold <SkakNew-FigurineBold.pfb
+SkakNew-Diagram SkakNew-Diagram <SkakNew-Diagram.pfb
+SkakNew-DiagramT SkakNew-DiagramT <SkakNew-DiagramT.pfb
+%%%%%%%%%%%%
+% AlphaDia %
+%%%%%%%%%%%%
+AlphaDia ChessAlphaDiagram <AlphaDia.pfb

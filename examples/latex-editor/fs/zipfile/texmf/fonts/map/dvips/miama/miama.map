@@ -1,0 +1,9 @@
+miama-t1 MiamaNueva-Regular "T1Encoding ReEncodeFont" <t1-miama.enc <miama.pfb
+miama-ot1 MiamaNueva-Regular "OT1Encoding ReEncodeFont" <ot1-miama.enc <miama.pfb
+miama-x2 MiamaNueva-Regular "X2Encoding ReEncodeFont" <x2-miama.enc <miama.pfb
+miama-t2a MiamaNueva-Regular "T2AEncoding ReEncodeFont" <t2a-miama.enc <miama.pfb
+miama-t2b MiamaNueva-Regular "T2BEncoding ReEncodeFont" <t2b-miama.enc <miama.pfb
+miama-t2c MiamaNueva-Regular "T2CEncoding ReEncodeFont" <t2c-miama.enc <miama.pfb
+miama-t5 MiamaNueva-Regular "T5Encoding ReEncodeFont" <t5-miama.enc <miama.pfb
+miama-qx MiamaNueva-Regular "QXEncoding ReEncodeFont" <qx-miama.enc <miama.pfb
+miama-lgr MiamaNueva-Regular "LGREncoding ReEncodeFont" <lgr-miama.enc <miama.pfb

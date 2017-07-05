@@ -1,0 +1,178 @@
+
+jkpmn8r Kp-Regular " TeXBase1Encoding ReEncodeFont " <8r.enc <jkpmn8a.pfb 
+jkpmne Kp-Expert-Regular " KPFonts-Expert ReEncodeFont " <kpfonts-expert.enc  <jkpmne.pfb
+jkpmnc Kp-Companion-Regular <jkpmnc.pfb
+jkpmsc8r Kp-SmallCaps-Regular " TeXBase1Encoding ReEncodeFont " <8r.enc <jkpmsc8a.pfb
+jkpmscsl8r Kp-SmallCaps-Regular " TeXBase1Encoding ReEncodeFont 0.167 SlantFont " <8r.enc <jkpmsc8a.pfb
+jkpmsce Kp-SC-Expert-Regular " KPFonts-Expert-SC ReEncodeFont " <kpfonts-expert-sc.enc <jkpmsce.pfb
+jkpmscsle Kp-SC-Expert-Regular " KPFonts-Expert-SC ReEncodeFont 0.167 SlantFont " <kpfonts-expert-sc.enc <jkpmsce.pfb
+jkpmit8r Kp-Italic <8r.enc <jkpmit8a.pfb " TeXBase1Encoding ReEncodeFont "
+jkpmite Kp-Expert-Italic " KPFonts-Expert ReEncodeFont " <kpfonts-expert.enc  <jkpmite.pfb
+jkpmitc Kp-Companion-Italic <jkpmitc.pfb
+jkpmsl8r Kp-Regular " TeXBase1Encoding ReEncodeFont 0.167 SlantFont " <8r.enc <jkpmn8a.pfb
+jkpmsle Kp-Expert-Regular " KPFonts-Expert ReEncodeFont 0.167 SlantFont " <kpfonts-expert.enc  <jkpmne.pfb
+jkpmslc Kp-Companion-Regular " 0.167 SlantFont " <jkpmnc.pfb
+jkpbn8r Kp-Medium " TeXBase1Encoding ReEncodeFont " <8r.enc <jkpbn8a.pfb
+jkpbne Kp-Expert-Medium " KPFonts-Expert ReEncodeFont " <kpfonts-expert.enc  <jkpbne.pfb
+jkpbnc Kp-Companion-Medium <jkpbnc.pfb
+jkpbsc8r Kp-Smallcaps-Medium " TeXBase1Encoding ReEncodeFont " <8r.enc <jkpbsc8a.pfb
+jkpbscsl8r Kp-Smallcaps-Medium " TeXBase1Encoding ReEncodeFont 0.167 SlantFont " <8r.enc <jkpbsc8a.pfb
+jkpbsce Kp-SC-Expert-Medium " KPFonts-Expert-SC ReEncodeFont " <kpfonts-expert-sc.enc <jkpbsce.pfb
+jkpbscsle Kp-SC-Expert-Medium " KPFonts-Expert-SC ReEncodeFont 0.167 SlantFont " <kpfonts-expert-sc.enc <jkpbsce.pfb
+jkpbit8r Kp-MediumItalic " TeXBase1Encoding ReEncodeFont " <8r.enc <jkpbit8a.pfb
+jkpbite Kp-Expert-MediumItalic " KPFonts-Expert ReEncodeFont " <kpfonts-expert.enc  <jkpbite.pfb
+jkpbitc Kp-Companion-MediumItalic <jkpbitc.pfb
+jkpbsl8r Kp-Medium " TeXBase1Encoding ReEncodeFont 0.167 SlantFont " <8r.enc <jkpbn8a.pfb
+jkpbsle Kp-Expert-Medium " KPFonts-Expert ReEncodeFont 0.167 SlantFont " <kpfonts-expert.enc  <jkpbne.pfb
+jkpbslc Kp-Companion-Medium " 0.167 SlantFont " <jkpbnc.pfb
+jkpbxn8r Kp-Medium " TeXBase1Encoding ReEncodeFont 1.125 ExtendFont " <8r.enc <jkpbn8a.pfb
+jkpbxne Kp-Expert-Medium " KPFonts-Expert ReEncodeFont 1.125 ExtendFont " <kpfonts-expert.enc  <jkpbne.pfb
+jkpbxnc Kp-Companion-Medium " 1.125 ExtendFont " <jkpbnc.pfb
+jkpbxit8r Kp-MediumItalic " TeXBase1Encoding ReEncodeFont 1.125 ExtendFont " <8r.enc <jkpbit8a.pfb
+jkpbxite Kp-Expert-MediumItalic " KPFonts-Expert ReEncodeFont 1.125 ExtendFont " <kpfonts-expert.enc  <jkpbite.pfb
+jkpbxitc Kp-Companion-MediumItalic " 1.125 ExtendFont " <jkpbitc.pfb
+jkpbxsc8r Kp-Smallcaps-Medium " TeXBase1Encoding ReEncodeFont 1.125 ExtendFont " <8r.enc <jkpbsc8a.pfb
+jkpbxscsl8r Kp-Smallcaps-Medium " TeXBase1Encoding ReEncodeFont 1.125 ExtendFont 0.167 SlantFont " <8r.enc <jkpbsc8a.pfb
+jkpbxsce Kp-SC-Expert-Medium " KPFonts-Expert-SC ReEncodeFont 1.125 ExtendFont " <kpfonts-expert-sc.enc <jkpbsce.pfb
+jkpbxscsle Kp-SC-Expert-Medium " KPFonts-Expert-SC ReEncodeFont  1.125 ExtendFont 0.167 SlantFont " <kpfonts-expert-sc.enc <jkpbsce.pfb
+jkpbxsl8r Kp-Medium " TeXBase1Encoding ReEncodeFont 1.125 ExtendFont 0.167 SlantFont " <8r.enc <jkpbn8a.pfb
+jkpbxsle Kp-Expert-Medium " KPFonts-Expert ReEncodeFont 1.125 ExtendFont 0.167 SlantFont " <kpfonts-expert.enc  <jkpbne.pfb
+jkpbxslc Kp-Companion-Medium " 1.125 ExtendFont 0.167 SlantFont " <jkpbnc.pfb
+jkpkmsc Kp-LargeSmallCaps-Regular " KPFonts-large-SC ReEncodeFont " <kpfonts-large-sc.enc <jkpkmsc.pfb
+jkpkmscsl Kp-LargeSmallCaps-Regular " KPFonts-large-SC ReEncodeFont 0.167 SlantFont " <kpfonts-large-sc.enc <jkpkmsc.pfb
+jkpkbsc Kp-LargeSmallCaps-Medium " KPFonts-large-SC ReEncodeFont " <kpfonts-large-sc.enc <jkpkbsc.pfb
+jkpkbscsl Kp-LargeSmallCaps-Medium " KPFonts-large-SC ReEncodeFont 0.167 SlantFont " <kpfonts-large-sc.enc <jkpkbsc.pfb
+jkpkbxsc Kp-LargeSmallCaps-Medium " KPFonts-large-SC ReEncodeFont 1.125 ExtendFont " <kpfonts-large-sc.enc <jkpkbsc.pfb
+jkpkbxscsl Kp-LargeSmallCaps-Medium " KPFonts-large-SC ReEncodeFont 1.125 ExtendFont 0.167 SlantFont " <kpfonts-large-sc.enc <jkpkbsc.pfb 
+
+jkpbex Kp--M-Ex-Medium <jkpbex.pfb
+jkpbexa Kp--M-Exa-Medium <jkpbexa.pfb
+jkpbmi Kp--M-MediumItalic <jkpbmi.pfb
+jkpbmia Kp--M-Medium <jkpbmia.pfb
+jkpbsy Kp--M-Sy-Medium <jkpbsy.pfb
+jkpbsya Kp--M-Sya-Medium <jkpbsya.pfb
+jkpbsyb Kp--M-Syb-Medium <jkpbsyb.pfb
+jkpbsyc Kp--M-Syc-Medium <jkpbsyc.pfb
+jkpbsyd Kp--M-Syd-Medium <jkpbsyd.pfb
+jkpex Kp--M-Ex-Regular <jkpex.pfb
+jkpexa Kp--M-Exa-Regular <jkpexa.pfb
+jkpmi Kp--M-Italic <jkpmi.pfb
+jkpmia Kp--M-Regular <jkpmia.pfb
+jkpsy Kp--M-Sy-Regular <jkpsy.pfb
+jkpsya Kp--M-Sya-Regular <jkpsya.pfb
+jkpsyb Kp--M-Syb-Regular <jkpsyb.pfb
+jkpsyc Kp--M-Syc-Regular <jkpsyc.pfb
+jkpsyd Kp--M-Syd-Regular <jkpsyd.pfb
+
+jkplmn8r Kp-Light-Regular " TeXBase1Encoding ReEncodeFont " <8r.enc <jkplmn8a.pfb
+jkplmne Kp-Light-Expert-Regular " KPFonts-Expert ReEncodeFont " <kpfonts-expert.enc  <jkplmne.pfb
+jkplmnc Kp-Light-Companion-Regular <jkplmnc.pfb
+jkplmsc8r Kp-Light-SmallCaps-Regular " TeXBase1Encoding ReEncodeFont " <8r.enc <jkplmsc8a.pfb
+jkplmscsl8r Kp-Light-SmallCaps-Regular " TeXBase1Encoding ReEncodeFont 0.167 SlantFont " <8r.enc <jkplmsc8a.pfb
+jkplmsce Kp-Light-SC-Expert-Regular " KPFonts-Expert-SC ReEncodeFont " <kpfonts-expert-sc.enc <jkplmsce.pfb
+jkplmscsle Kp-Light-SC-Expert-Regular " KPFonts-Expert-SC ReEncodeFont 0.167 SlantFont " <kpfonts-expert-sc.enc <jkplmsce.pfb
+jkplmit8r Kp-Light-Italic " TeXBase1Encoding ReEncodeFont " <8r.enc <jkplmit8a.pfb
+jkplmite Kp-Light-Expert-Italic " KPFonts-Expert ReEncodeFont " <kpfonts-expert.enc  <jkplmite.pfb
+jkplmitc Kp-Light-Companion-Italic <jkplmitc.pfb
+jkplmsl8r Kp-Light-Regular " TeXBase1Encoding ReEncodeFont 0.167 SlantFont " <8r.enc <jkplmn8a.pfb
+jkplmsle Kp-Light-Expert-Regular " KPFonts-Expert ReEncodeFont 0.167 SlantFont " <kpfonts-expert.enc  <jkplmne.pfb
+jkplmslc Kp-Light-Companion-Regular " 0.167 SlantFont " <jkplmnc.pfb
+jkplbn8r Kp-Light-Medium " TeXBase1Encoding ReEncodeFont " <8r.enc <jkplbn8a.pfb
+jkplbne Kp-Light-Expert-Medium " KPFonts-Expert ReEncodeFont " <kpfonts-expert.enc  <jkplbne.pfb
+jkplbnc Kp-Light-Companion-Medium <jkplbnc.pfb
+jkplbsc8r Kp-Light-Smallcaps-Medium " TeXBase1Encoding ReEncodeFont " <8r.enc <jkplbsc8a.pfb
+jkplbscsl8r Kp-Light-Smallcaps-Medium " TeXBase1Encoding ReEncodeFont 0.167 SlantFont " <8r.enc <jkplbsc8a.pfb
+jkplbsce Kp-Light-SC-Expert-Medium " KPFonts-Expert-SC ReEncodeFont " <kpfonts-expert-sc.enc <jkplbsce.pfb
+jkplbscsle Kp-Light-SC-Expert-Medium " KPFonts-Expert-SC ReEncodeFont 0.167 SlantFont " <kpfonts-expert-sc.enc <jkplbsce.pfb
+jkplbit8r Kp-Light-MediumItalic " TeXBase1Encoding ReEncodeFont " <8r.enc <jkplbit8a.pfb
+jkplbite Kp-Light-Expert-MediumItalic " KPFonts-Expert ReEncodeFont " <kpfonts-expert.enc  <jkplbite.pfb
+jkplbitc Kp-Light-Companion-MediumItalic <jkplbitc.pfb
+jkplbsl8r Kp-Light-Medium " TeXBase1Encoding ReEncodeFont 0.167 SlantFont " <8r.enc <jkplbn8a.pfb
+jkplbsle Kp-Light-Expert-Medium " KPFonts-Expert ReEncodeFont 0.167 SlantFont " <kpfonts-expert.enc  <jkplbne.pfb
+jkplbslc Kp-Light-Companion-Medium " 0.167 SlantFont " <jkplbnc.pfb
+jkplbxn8r Kp-Light-Medium " TeXBase1Encoding ReEncodeFont 1.125 ExtendFont " <8r.enc <jkplbn8a.pfb
+jkplbxne Kp-Light-Expert-Medium " KPFonts-Expert ReEncodeFont 1.125 ExtendFont " <kpfonts-expert.enc  <jkplbne.pfb
+jkplbxnc Kp-Light-Companion-Medium " 1.125 ExtendFont " <jkplbnc.pfb
+jkplbxit8r Kp-Light-MediumItalic " TeXBase1Encoding ReEncodeFont 1.125 ExtendFont " <8r.enc <jkplbit8a.pfb
+jkplbxite Kp-Light-Expert-MediumItalic " KPFonts-Expert ReEncodeFont 1.125 ExtendFont " <kpfonts-expert.enc  <jkplbite.pfb
+jkplbxitc Kp-Light-Companion-MediumItalic " 1.125 ExtendFont " <jkplbitc.pfb
+jkplbxsc8r Kp-Light-Smallcaps-Medium " TeXBase1Encoding ReEncodeFont 1.125 ExtendFont " <8r.enc <jkplbsc8a.pfb
+jkplbxscsl8r Kp-Light-Smallcaps-Medium " TeXBase1Encoding ReEncodeFont 1.125 ExtendFont 0.167 SlantFont " <8r.enc <jkplbsc8a.pfb
+jkplbxsce Kp-Light-SC-Expert-Medium " KPFonts-Expert-SC ReEncodeFont 1.125 ExtendFont " <kpfonts-expert-sc.enc <jkplbsce.pfb
+jkplbxscsle Kp-Light-SC-Expert-Medium " KPFonts-Expert-SC ReEncodeFont 1.125 ExtendFont 0.167 SlantFont " <kpfonts-expert-sc.enc <jkplbsce.pfb
+jkplbxsl8r Kp-Light-Medium " TeXBase1Encoding ReEncodeFont 1.125 ExtendFont 0.167 SlantFont " <8r.enc <jkplbn8a.pfb
+jkplbxsle Kp-Light-Expert-Medium " KPFonts-Expert ReEncodeFont 1.125 ExtendFont 0.167 SlantFont " <kpfonts-expert.enc  <jkplbne.pfb
+jkplbxslc Kp-Light-Companion-Medium " 1.125 ExtendFont 0.167 SlantFont " <jkplbnc.pfb
+jkplkmsc Kp-Light-LargeSmallCaps-Regular " KPFonts-large-SC ReEncodeFont " <kpfonts-large-sc.enc <jkplkmsc.pfb
+jkplkmscsl Kp-Light-LargeSmallCaps-Regular " KPFonts-large-SC ReEncodeFont 0.167 SlantFont " <kpfonts-large-sc.enc <jkplkmsc.pfb
+jkplkbsc Kp-Light-LargeSmallCaps-Medium " KPFonts-large-SC ReEncodeFont " <kpfonts-large-sc.enc <jkplkbsc.pfb
+jkplkbscsl Kp-Light-LargeSmallCaps-Medium " KPFonts-large-SC ReEncodeFont 0.167 SlantFont " <kpfonts-large-sc.enc <jkplkbsc.pfb
+jkplkbxsc Kp-Light-LargeSmallCaps-Medium " KPFonts-large-SC ReEncodeFont 1.125 ExtendFont " <kpfonts-large-sc.enc <jkplkbsc.pfb
+jkplkbxscsl Kp-Light-LargeSmallCaps-Medium " KPFonts-large-SC ReEncodeFont 1.125 ExtendFont 0.167 SlantFont " <kpfonts-large-sc.enc <jkplkbsc.pfb
+
+jkplbex Kp-Light-M-Ex-Medium <jkplbex.pfb
+jkplbexa Kp-Light-M-Exa-Medium <jkplbexa.pfb
+jkplbmi Kp-Light-M-MediumItalic <jkplbmi.pfb
+jkplbmia Kp-Light-M-Medium <jkplbmia.pfb
+jkplbsy Kp-Light-M-Sy-Medium <jkplbsy.pfb
+jkplbsyb Kp-Light-M-Syb-Medium <jkplbsyb.pfb
+jkplbsyc Kp-Light-M-Syc-Medium <jkplbsyc.pfb
+jkplbsyd Kp-Light-M-Syd-Medium <jkplbsyd.pfb
+jkplex Kp-Light-M-Ex-Regular <jkplex.pfb
+jkplexa Kp-Light-M-Exa-Regular <jkplexa.pfb
+jkplmi Kp-Light-M-Italic <jkplmi.pfb
+jkplmia Kp-Light-M-Regular <jkplmia.pfb
+jkplsy Kp-Light-M-Sy-Regular <jkplsy.pfb
+jkplsyb Kp-Light-M-Syb-Regular <jkplsyb.pfb
+jkplsyc Kp-Light-M-Syc-Regular <jkplsyc.pfb
+jkplsyd Kp-Light-M-Syd-Regular <jkplsyd.pfb
+
+jkpssmn8r Sf-Kp-Regular " TeXBase1Encoding ReEncodeFont " <8r.enc <jkpssmn8a.pfb
+jkpssmne Sf-Kp-Exp-Regular " KPFonts-Expert ReEncodeFont " <kpfonts-expert.enc  <jkpssmne.pfb
+jkpssmnc Sf-Kp-Comp-Regular <jkpssmnc.pfb
+jkpssmsc8r Sf-Kp-Sc-Regular " TeXBase1Encoding ReEncodeFont " <8r.enc <jkpssmsc8a.pfb
+jkpssmscsl8r Sf-Kp-Sc-Regular " TeXBase1Encoding ReEncodeFont 0.167 SlantFont " <8r.enc <jkpssmsc8a.pfb
+jkpssmsce Sf-Kp-Sc-Exp-Regular " KPFonts-Expert-SC ReEncodeFont " <kpfonts-expert-sc.enc <jkpssmsce.pfb
+jkpssmscsle Sf-Kp-Sc-Exp-Regular " KPFonts-Expert-SC ReEncodeFont 0.167 SlantFont " <kpfonts-expert-sc.enc <jkpssmsce.pfb
+jkpssmsl8r Sf-Kp-Regular " TeXBase1Encoding ReEncodeFont 0.167 SlantFont " <8r.enc <jkpssmn8a.pfb
+jkpssmsle Sf-Kp-Exp-Regular " KPFonts-Expert ReEncodeFont 0.167 SlantFont " <kpfonts-expert.enc  <jkpssmne.pfb
+jkpssmslc Sf-Kp-Comp-Regular " 0.167 SlantFont " <jkpssmnc.pfb
+jkpssbn8r Sf-Kp-Medium " TeXBase1Encoding ReEncodeFont " <8r.enc <jkpssbn8a.pfb
+jkpssbne Sf-Kp-Exp-Medium " KPFonts-Expert ReEncodeFont " <kpfonts-expert.enc  <jkpssbne.pfb
+jkpssbnc Sf-Kp-Companion-Medium <jkpssbnc.pfb
+jkpssbsc8r Sf-Kp-Sc-Medium " TeXBase1Encoding ReEncodeFont " <8r.enc <jkpssbsc8a.pfb
+jkpssbscsl8r Sf-Kp-Sc-Medium " TeXBase1Encoding ReEncodeFont 0.167 SlantFont " <8r.enc <jkpssbsc8a.pfb
+jkpssbsce Sf-Kp-Sc-Exp-Medium " KPFonts-Expert-SC ReEncodeFont " <kpfonts-expert-sc.enc <jkpssbsce.pfb
+jkpssbscsle Sf-Kp-Sc-Exp-Medium " KPFonts-Expert-SC ReEncodeFont 0.167 SlantFont " <kpfonts-expert-sc.enc <jkpssbsce.pfb
+jkpssbsl8r Sf-Kp-Medium " TeXBase1Encoding ReEncodeFont 0.167 SlantFont " <8r.enc <jkpssbn8a.pfb
+jkpssbsle Sf-Kp-Exp-Medium " KPFonts-Expert ReEncodeFont 0.167 SlantFont " <kpfonts-expert.enc  <jkpssbne.pfb
+jkpssbslc Sf-Kp-Companion-Medium " 0.167 SlantFont " <jkpssbnc.pfb
+jkpssbxn8r Sf-Kp-Medium " TeXBase1Encoding ReEncodeFont 1.125 ExtendFont " <8r.enc <jkpssbn8a.pfb
+jkpssbxne Sf-Kp-Exp-Medium " KPFonts-Expert ReEncodeFont 1.125 ExtendFont " <kpfonts-expert.enc  <jkpssbne.pfb
+jkpssbxnc Sf-Kp-Companion-Medium " 1.125 ExtendFont " <jkpssbnc.pfb
+jkpssbxsc8r Sf-Kp-Sc-Medium " TeXBase1Encoding ReEncodeFont 1.125 ExtendFont " <8r.enc <jkpssbsc8a.pfb
+jkpssbxscsl8r Sf-Kp-Sc-Medium " TeXBase1Encoding ReEncodeFont 1.125 ExtendFont 0.167 SlantFont " <8r.enc <jkpssbsc8a.pfb
+jkpssbxsce Sf-Kp-Sc-Exp-Medium " KPFonts-Expert-SC ReEncodeFont 1.125 ExtendFont " <kpfonts-expert-sc.enc <jkpssbsce.pfb
+jkpssbxscsle Sf-Kp-Sc-Exp-Medium " KPFonts-Expert-SC ReEncodeFont 1.125 ExtendFont 0.167 SlantFont " <kpfonts-expert-sc.enc <jkpssbsce.pfb
+jkpssbxsl8r Sf-Kp-Medium " TeXBase1Encoding ReEncodeFont 1.125 ExtendFont 0.167 SlantFont " <8r.enc <jkpssbn8a.pfb
+jkpssbxsle Sf-Kp-Exp-Medium " KPFonts-Expert ReEncodeFont 1.125 ExtendFont 0.167 SlantFont " <kpfonts-expert.enc  <jkpssbne.pfb
+jkpssbxslc Sf-Kp-Companion-Medium " 1.125 ExtendFont 0.167 SlantFont " <jkpssbnc.pfb
+jkpsskmsc Sf-Kp-LargeSmallCaps-Regular " KPFonts-large-SC ReEncodeFont " <kpfonts-large-sc.enc <jkpsskmsc.pfb
+jkpsskmscsl Sf-Kp-LargeSmallCaps-Regular " KPFonts-large-SC ReEncodeFont 0.167 SlantFont " <kpfonts-large-sc.enc <jkpsskmsc.pfb
+jkpsskbsc Sf-Kp-LargeSmallCaps-Medium " KPFonts-large-SC ReEncodeFont " <kpfonts-large-sc.enc <jkpsskbsc.pfb
+jkpsskbscsl Sf-Kp-LargeSmallCaps-Medium " KPFonts-large-SC ReEncodeFont 0.167 SlantFont " <kpfonts-large-sc.enc <jkpsskbsc.pfb
+jkpsskbxsc Sf-Kp-LargeSmallCaps-Medium " KPFonts-large-SC ReEncodeFont 1.125 ExtendFont " <kpfonts-large-sc.enc <jkpsskbsc.pfb
+jkpsskbxscsl Sf-Kp-LargeSmallCaps-Medium " KPFonts-large-SC ReEncodeFont 1.125 ExtendFont 0.167 SlantFont " <kpfonts-large-sc.enc <jkpsskbsc.pfb
+
+jkpttmn8r Tt-Kp-Regular " TeXBase1Encoding ReEncodeFont " <8r.enc <jkpttmn8a.pfb
+jkpttmne Tt-Kp-Exp-Regular " KPFonts-Expert-TT ReEncodeFont " <kpfonts-expert-tt.enc  <jkpttmne.pfb
+jkpttmnc Tt-Kp-Comp-Regular <jkpttmnc.pfb
+jkpttmsl8r Tt-Kp-Regular " TeXBase1Encoding ReEncodeFont 0.167 SlantFont " <8r.enc <jkpttmn8a.pfb
+jkpttmsle Tt-Kp-Exp-Regular " KPFonts-Expert-TT ReEncodeFont 0.167 SlantFont " <kpfonts-expert-tt.enc  <jkpttmne.pfb
+jkpttmslc Tt-Kp-Comp-Regular " 0.167 SlantFont " <jkpttmnc.pfb
+jkpttbn8r Tt-Kp-Medium " TeXBase1Encoding ReEncodeFont " <8r.enc <jkpttbn8a.pfb
+jkpttbne Tt-Kp-Exp-Medium " KPFonts-Expert-TT ReEncodeFont " <kpfonts-expert-tt.enc  <jkpttbne.pfb
+jkpttbnc Tt-Kp-Comp-Medium <jkpttbnc.pfb
+jkpttbsl8r Tt-Kp-Medium " TeXBase1Encoding ReEncodeFont 0.167 SlantFont " <8r.enc <jkpttbn8a.pfb
+jkpttbsle Tt-Kp-Exp-Medium " KPFonts-Expert-TT ReEncodeFont 0.167 SlantFont " <kpfonts-expert-tt.enc  <jkpttbne.pfb
+jkpttbslc Tt-Kp-Comp-Medium " 0.167 SlantFont " <jkpttbnc.pfb

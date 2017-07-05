@@ -1,0 +1,51 @@
+% This file a (slightly adapted) copy of the map file
+% that comes with the PX fonts by Young Ryu.
+
+% URW fonts replaced by TeX Gyre
+
+% TeX Gyre Pagella (Palatino)
+
+rpxpplr  TeXGyrePagella-Regular     "encq8r ReEncodeFont" <q-8r.enc <qplr.pfb
+rpxpplb  TeXGyrePagella-Bold        "encq8r ReEncodeFont" <q-8r.enc <qplb.pfb
+rpxpplri TeXGyrePagella-Italic      "encq8r ReEncodeFont" <q-8r.enc <qplri.pfb
+rpxpplbi TeXGyrePagella-BoldItalic  "encq8r ReEncodeFont" <q-8r.enc <qplbi.pfb
+% no idea why these were added
+rpxpplro TeXGyrePagella-Oblique     ".167 SlantFont encq8r ReEncodeFont" <q-8r.enc <qplr.pfb
+rpxpplbo TeXGyrePagella-BoldOblique ".167 SlantFont encq8r ReEncodeFont" <q-8r.enc <qplb.pfb
+
+% PX Text
+
+rpxr    rpxr                    <rpxr.pfb
+rpxsl   rpxr   ".167 SlantFont" <rpxr.pfb
+rpxi    rpxi                    <rpxi.pfb
+rpxsc   rpxsc                   <rpxsc.pfb
+rpxb    rpxb                    <rpxb.pfb
+rpxbsl  rpxb   ".167 SlantFont" <rpxb.pfb
+rpxbi   rpxbi                   <rpxbi.pfb
+rpxbsc  rpxbsc                  <rpxbsc.pfb
+rpcxb   rpcxb                   <rpcxb.pfb
+rpcxbsl rpcxb  ".167 SlantFont" <rpcxb.pfb
+rpcxbi  rpcxbi                  <rpcxbi.pfb
+rpcxi   rpcxi                   <rpcxi.pfb
+rpcxr   rpcxr                   <rpcxr.pfb
+rpcxsl  rpcxsl ".167 SlantFont" <rpcxr.pfb
+
+% PX Math
+
+rpxbmi  rpxbmi                  <rpxbmi.pfb
+rpxmi   rpxmi                   <rpxmi.pfb
+
+pxbex   pxbex                   <pxbex.pfb
+pxbexa  pxbexa                  <pxbexa.pfb
+pxbmia  pxbmia                  <pxbmia.pfb
+pxbsy   pxbsy                   <pxbsy.pfb
+pxbsya  pxbsya                  <pxbsya.pfb
+pxbsyb  pxbsyb                  <pxbsyb.pfb
+pxbsyc  pxbsyc                  <pxbsyc.pfb
+pxex    pxex                    <pxex.pfb
+pxexa   pxexa                   <pxexa.pfb
+pxmia   pxmia                   <pxmia.pfb
+pxsy    pxsy                    <pxsy.pfb
+pxsya   pxsya                   <pxsya.pfb
+pxsyb   pxsyb                   <pxsyb.pfb
+pxsyc   pxsyc                   <pxsyc.pfb

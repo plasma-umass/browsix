@@ -1,0 +1,142 @@
+% author: Hans Hagen
+%
+% This map file defines the texnansi alternatives of the public fonts,
+% beware, these are seldom present on your system. If you really want
+% to use these fonts, uncomment the relevant lines. If no fonts are
+% present, pdftex may get confused.
+
+% courier / urw
+
+% ucrb8y  NimbusMonL-Bold          <texnansi.enc <ucrb8a.pfb
+% ucrbo8y NimbusMonL-BoldObli      <texnansi.enc <ucrbo8a.pfb
+% ucrr8y  NimbusMonL-Regu          <texnansi.enc <ucrr8a.pfb
+% ucrro8y NimbusMonL-ReguObli      <texnansi.enc <ucrro8a.pfb
+
+% courier / adobe
+
+% pcrb8y  NimbusMonL-Bold          <texnansi.enc <ucrb8a.pfb
+% pcrbo8y NimbusMonL-BoldObli      <texnansi.enc <ucrbo8a.pfb
+% pcrr8y  NimbusMonL-Regu          <texnansi.enc <ucrr8a.pfb
+% pcrro8y NimbusMonL-ReguObli      <texnansi.enc <ucrro8a.pfb
+
+% helvetica / urw
+
+% uhvb8y  NimbusSanL-Bold          <texnansi.enc <uhvb8a.pfb
+% uhvbo8y NimbusSanL-BoldItal      <texnansi.enc <uhvbo8a.pfb
+% uhvr8y  NimbusSanL-Regu          <texnansi.enc <uhvr8a.pfb
+% uhvro8y NimbusSanL-ReguItal      <texnansi.enc <uhvro8a.pfb
+
+% helvetica / adobe
+
+% phvb8y  NimbusSanL-Bold          <texnansi.enc <uhvb8a.pfb
+% phvbo8y NimbusSanL-BoldItal      <texnansi.enc <uhvbo8a.pfb
+% phvr8y  NimbusSanL-Regu          <texnansi.enc <uhvr8a.pfb
+% phvro8y NimbusSanL-ReguItal      <texnansi.enc <uhvro8a.pfb
+
+% times / urw
+
+% utmb8y  NimbusRomNo9L-Medi       <texnansi.enc <utmb8a.pfb
+% utmbi8y NimbusRomNo9L-MediItal   <texnansi.enc <utmbi8a.pfb
+% utmr8y  NimbusRomNo9L-Regu       <texnansi.enc <utmr8a.pfb
+% utmri8y NimbusRomNo9L-ReguItal   <texnansi.enc <utmri8a.pfb
+
+% utmbo8y NimbusRomNo9L-Medi       ".167 SlantFont" <texnansi.enc <utmb8a.pfb
+% utmro8y NimbusRomNo9L-Regu       ".167 SlantFont" <texnansi.enc <utmr8a.pfb
+
+% times / adobe
+
+% ptmb8y  NimbusRomNo9L-Medi       <texnansi.enc <utmb8a.pfb
+% ptmbi8y NimbusRomNo9L-MediItal   <texnansi.enc <utmbi8a.pfb
+% ptmr8y  NimbusRomNo9L-Regu       <texnansi.enc <utmr8a.pfb
+% ptmri8y NimbusRomNo9L-ReguItal   <texnansi.enc <utmri8a.pfb
+
+% ptmbo8y NimbusRomNo9L-Medi       ".167 SlantFont" <texnansi.enc <utmb8a.pfb
+% ptmro8y NimbusRomNo9L-Regu       ".167 SlantFont" <texnansi.enc <utmr8a.pfb
+
+% palatino / urw
+
+% uplb8y  URWPalladioL-Bold        <texnansi.enc <uplb8a.pfb
+% uplbi8y URWPalladioL-BoldItal    <texnansi.enc <uplbi8a.pfb
+% uplr8y  URWPalladioL-Roma        <texnansi.enc <uplr8a.pfb
+% uplri8y URWPalladioL-Ital        <texnansi.enc <uplri8a.pfb
+
+% uplbo8y URWPalladioL-Bold        ".167 SlantFont" <texnansi.enc <uplb8a.pfb
+% uplro8y URWPalladioL-Roma        ".167 SlantFont" <texnansi.enc <uplr8a.pfb
+
+% palatino / adobe
+
+% pplb8y  URWPalladioL-Bold        <texnansi.enc <uplb8a.pfb
+% pplbi8y URWPalladioL-BoldItal    <texnansi.enc <uplbi8a.pfb
+% pplr8y  URWPalladioL-Roma        <texnansi.enc <uplr8a.pfb
+% pplri8y URWPalladioL-Ital        <texnansi.enc <uplri8a.pfb
+
+% pplbo8y URWPalladioL-Bold        ".167 SlantFont" <texnansi.enc <uplb8a.pfb
+% pplro8y URWPalladioL-Roma        ".167 SlantFont" <texnansi.enc <uplr8a.pfb
+
+% bookman / urw
+
+% ubkd8y  URWBookmanL-DemiBold     <texnansi.enc <ubkd8a.pfb
+% ubkdi8y URWBookmanL-DemiBoldItal <texnansi.enc <ubkdi8a.pfb
+% ubkl8y  URWBookmanL-Ligh         <texnansi.enc <ubkl8a.pfb
+% vubkli8y URWBookmanL-LighItal     <texnansi.enc <ubkli8a.pfb
+
+% ubkdo8y URWBookmanL-DemiBold     ".167 SlantFont" <texnansi.enc <ubkd8a.pfb
+% ubklo8y URWBookmanL-Ligh         ".167 SlantFont" <texnansi.enc <ubkl8a.pfb
+
+% bookman / adobe
+
+% pbkd8y  URWBookmanL-DemiBold     <texnansi.enc <ubkd8a.pfb
+% pbkdi8y URWBookmanL-DemiBoldItal <texnansi.enc <ubkdi8a.pfb
+% pbkl8y  URWBookmanL-Ligh         <texnansi.enc <ubkl8a.pfb
+% pbkli8y URWBookmanL-LighItal     <texnansi.enc <ubkli8a.pfb
+
+% pbkdo8y URWBookmanL-DemiBold     ".167 SlantFont" <texnansi.enc <ubkd8a.pfb
+% pbklo8y URWBookmanL-Ligh         ".167 SlantFont" <texnansi.enc <ubkl8a.pfb
+
+% chancery / urw
+
+% uzcmi8y URWChanceryL-MediItal    <texnansi.enc <uzcmi8a.pfb
+
+% chancery / adobe
+
+% pzcmi8y URWChanceryL-MediItal    <texnansi.enc <uzcmi8a.pfb
+
+% schoolbook / urw
+
+% uncb8y  CenturySchL-Bold         <texnansi.enc <uncb8a.pfb
+% uncbi8y CenturySchL-BoldItal     <texnansi.enc <uncbi8a.pfb
+% uncr8y  CenturySchL-Roma         <texnansi.enc <uncr8a.pfb
+% uncri8y CenturySchL-Ital         <texnansi.enc <uncri8a.pfb
+
+% uncbo8y CenturySchL-Bold         ".167 SlantFont" <texnansi.enc <uncb8a.pfb
+% uncro8y CenturySchL-Roma         ".167 SlantFont" <texnansi.enc <uncr8a.pfb
+
+% schoolbook / adobe
+
+% pncb8y  CenturySchL-Bold         <texnansi.enc <uncb8a.pfb
+% pncbi8y CenturySchL-BoldItal     <texnansi.enc <uncbi8a.pfb
+% pncr8y  CenturySchL-Roma         <texnansi.enc <uncr8a.pfb
+% pncri8y CenturySchL-Ital         <texnansi.enc <uncri8a.pfb
+
+% pncbo8y CenturySchL-Bold         ".167 SlantFont" <texnansi.enc <uncb8a.pfb
+% pncro8y CenturySchL-Roma         ".167 SlantFont" <texnansi.enc <uncr8a.pfb
+
+% utopia
+
+% putb8y  Utopia-Bold              <texnansi.enc <putb8a.pfb
+% putbi8y Utopia-BoldItalic        <texnansi.enc <putbi8a.pfb
+% putr8y  Utopia-Regular           <texnansi.enc <putr8a.pfb
+% putri8y Utopia-Italic            <texnansi.enc <putri8a.pfb
+
+% putbo8y Utopia-Bold              ".167 SlantFont" <texnansi.enc <putb8a.pfb
+% putro8y Utopia-Regular           ".167 SlantFont" <texnansi.enc <putr8a.pfb
+
+% charter
+
+% bchb8y  CharterBT-Bold           <texnansi.enc <bchb8a.pfb
+% bchbi8y CharterBT-BoldItalic     <texnansi.enc <bchbi8a.pfb
+% bchr8y  CharterBT-Roman          <texnansi.enc <bchr8a.pfb
+% bchri8y CharterBT-Italic         <texnansi.enc <bchri8a.pfb
+
+% bchbo8y CharterBT-Bold           ".167 SlantFont"  <texnansi.enc <bchb8a.pfb
+% bchro8y CharterBT-Roman          ".167 SlantFont " <texnansi.enc <bchr8a.pfb

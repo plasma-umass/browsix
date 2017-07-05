@@ -1,0 +1,6 @@
+% File name:      pbsi.map
+% Created by:     Maurizio Loreti
+% Created using:  vim 5.8
+% Creation date:  10-Sep-2001
+
+pbsi8r BrushScriptX-Italic "TeXBase1Encoding ReEncodeFont" <8r.enc <BrushScriptX-Italic.pfa

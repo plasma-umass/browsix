@@ -1,0 +1,30 @@
+% Do not substitute cb-greek fonts by these ones! Some glyphs differ.
+% ecrm1000 CMUSerif-Roman "T1Encoding ReEncodeFont" <cmu-t1.enc <cmunrm.pfb
+% tcrm1000 CMUSerif-Roman "TCEncoding ReEncodeFont" <cmu-tc.enc <cmunrm.pfb
+% larm1000 CMUSerif-Roman "T2AEncoding ReEncodeFont" <cmu-t2a.enc <cmunrm.pfb
+% ecti1000 CMUSerif-Italic "T1Encoding ReEncodeFont" <cmu-t1.enc <cmunti.pfb
+% tcti1000 CMUSerif-Italic "TCEncoding ReEncodeFont" <cmu-tc.enc <cmunti.pfb
+% lati1000 CMUSerif-Italic "T2AEncoding ReEncodeFont" <cmu-t2a.enc <cmunti.pfb
+ecrm1000 CMUSerif-Roman "T1Encoding ReEncodeFont" <cmu-ec.enc 
+tcrm1000 CMUSerif-Roman "TCEncoding ReEncodeFont" <cmu-tc.enc 
+larm1000 CMUSerif-Roman "T2AEncoding ReEncodeFont" <cmu-la.enc 
+ecti1000 CMUSerif-Italic "T1Encoding ReEncodeFont" <cmu-ec.enc 
+tcti1000 CMUSerif-Italic "TCEncoding ReEncodeFont" <cmu-tc.enc 
+lati1000 CMUSerif-Italic "T2AEncoding ReEncodeFont" <cmu-la.enc 
+ecss1000 CMUSansSerif "T1Encoding ReEncodeFont" <cmu-ec.enc 
+tcss1000 CMUSansSerif "TCEncoding ReEncodeFont" <cmu-tc.enc 
+lass1000 CMUSansSerif "T2AEncoding ReEncodeFont" <cmu-la.enc 
+ecssdc10 CMUSansSerif-DemiCondensed "T1Encoding ReEncodeFont" <cmu-ec.enc 
+tcssdc10 CMUSansSerif-DemiCondensed "TCEncoding ReEncodeFont" <cmu-tc.enc 
+lassdc10 CMUSansSerif-DemiCondensed "T2AEncoding ReEncodeFont" <cmu-la.enc 
+ecbx1000 CMUSerif-Bold "T1Encoding ReEncodeFont" <cmu-ec.enc 
+tcbx1000 CMUSerif-Bold "TCEncoding ReEncodeFont" <cmu-tc.enc 
+labx1000 CMUSerif-Bold "T2AEncoding ReEncodeFont" <cmu-la.enc 
+ecsl1000 CMUSerif-RomanSlanted "T1Encoding ReEncodeFont" <cmu-ec.enc 
+tcsl1000 CMUSerif-RomanSlanted "TCEncoding ReEncodeFont" <cmu-tc.enc 
+lasl1000 CMUSerif-RomanSlanted "T2AEncoding ReEncodeFont" <cmu-la.enc 
+eccc1000 CMUSerif-Roman "LatinSCEncoding ReEncodeFont" <cmu-ecsc.enc 
+lacc1000 CMUSerif-Roman "T2AScEncoding ReEncodeFont" <cmu-lasc.enc 
+ectt1000 CMUTypewriter-Regular "T1Encoding ReEncodeFont" <cmu-ec.enc 
+tctt1000 CMUTypewriter-Regular "TCEncoding ReEncodeFont" <cmu-tc.enc 
+latt1000 CMUTypewriter-Regular "T2AEncoding ReEncodeFont" <cmu-la.enc 

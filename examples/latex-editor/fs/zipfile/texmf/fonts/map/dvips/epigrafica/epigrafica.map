@@ -1,0 +1,16 @@
+#### Epigrafica (C) A. Tsolomitis. ####
+gepigraficahn7a Epigrafica-Regular " epigraficahellenic ReEncodeFont " <epigraficahellenic.enc <Epigrafica-Ortha.pfb
+epigraficahno7a Epigrafica-Regular " 0.167 SlantFont epigraficahellenic ReEncodeFont " <epigraficahellenic.enc <Epigrafica-Ortha.pfb
+epigraficahi7a Epigrafica-Italic " epigraficahellenic ReEncodeFont " <epigraficahellenic.enc <Epigrafica-Reonta.pfb
+epigraficahb7a Epigrafica-Bold " epigraficahellenic ReEncodeFont " <epigraficahellenic.enc <Epigrafica-Entona.pfb
+epigraficahbo7a Epigrafica-Bold " 0.167 SlantFont epigraficahellenic ReEncodeFont " <epigraficahellenic.enc <Epigrafica-Entona.pfb
+epigraficahbi7a Epigrafica-BoldItalic " epigraficahellenic ReEncodeFont " <epigraficahellenic.enc <Epigrafica-EntonaReonta.pfb
+epigraficahc7a Epigrafica-SmallCaps " epigraficahellenic ReEncodeFont " <epigraficahellenic.enc <Epigrafica-Pezokefalaia.pfb
+epigrafican8a Epigrafica-Regular " TeXBase1Encoding ReEncodeFont " <8r.enc <Epigrafica-Ortha.pfb
+epigraficano8a Epigrafica-Regular " 0.167 SlantFont TeXBase1Encoding ReEncodeFont " <8r.enc <Epigrafica-Ortha.pfb
+epigraficai8a Epigrafica-Italic " TeXBase1Encoding ReEncodeFont " <8r.enc <Epigrafica-Reonta.pfb
+epigraficab8a Epigrafica-Bold " TeXBase1Encoding ReEncodeFont " <8r.enc <Epigrafica-Entona.pfb
+epigraficabo8a Epigrafica-Bold " 0.167 SlantFont TeXBase1Encoding ReEncodeFont " <8r.enc <Epigrafica-Entona.pfb
+epigraficabi8a Epigrafica-BoldItalic " TeXBase1Encoding ReEncodeFont " <8r.enc <Epigrafica-EntonaReonta.pfb
+epigraficac8a Epigrafica-SmallCaps " TeXBase1Encoding ReEncodeFont " <8r.enc <Epigrafica-Pezokefalaia.pfb
+#############################################

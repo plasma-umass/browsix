@@ -1,0 +1,42 @@
+%%
+%% This is file `lxfonts.map',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% lxfonts.dtx  (with options: `lxmap')
+%%   ______________________________________________________
+%%   The LXfonts package
+%%   Copyright (C) 2008-2013 Claudio Beccari
+%%   All rights reserved
+%% 
+%%   Distributable under the LaTeX Project Public License,
+%%   version 1.3c or higher (your choice). The latest version of
+%%   this license is at: http://www.latex-project.org/lppl.txt
+
+
+lcmbsy8   lcmbsy8   <lcmbsy8.pfb
+lcmex8    lcmex8    <lcmex8.pfb
+lcmmi8    lcmmi8    <lcmmi8.pfb
+lcmmib8   lcmmib8   <lcmmib8.pfb
+lcmsy8    lcmsy8    <lcmsy8.pfb
+leclb8    leclb8    <leclb8.pfb
+lecli8    lecli8    <lecli8.pfb
+leclo8    leclo8    <leclo8.pfb
+leclq8    leclq8    <leclq8.pfb
+llasy8    llasy8    <llasy8.pfb
+llasyb8   llasyb8   <llasyb8.pfb
+llcmss8   llcmss8   <llcmss8.pfb
+llcmssb8  llcmssb8  <llcmssb8.pfb
+llcmssi8  llcmssi8  <llcmssi8.pfb
+llcmsso8  llcmsso8  <llcmsso8.pfb
+lmsam8    lmsam8    <lmsam8.pfb
+lmsbm8    lmsbm8    <lmsbm8.pfb
+ltclb8    ltclb8    <ltclb8.pfb
+ltcli8    ltcli8    <ltcli8.pfb
+ltclo8    ltclo8    <ltclo8.pfb
+ltclq8    ltclq8    <ltclq8.pfb
+
+%% Read the README test file for further details about installation
+%%
+%% End of file `lxfonts.map'.

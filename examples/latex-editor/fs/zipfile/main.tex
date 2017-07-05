@@ -1,0 +1,44 @@
+\documentclass[11pt]{article}
+\usepackage[T1,hyphens]{url}
+
+\newcommand{\Browsix}{\textsc{Browsix}}
+
+\begin{document}
+
+\title{\bf \Browsix{}: Bringing Unix to the Browser}
+\author{The \Browsix{} Authors}
+\date{\today}
+\maketitle
+
+\begin{abstract}
+
+While standard operating systems like Unix make it relatively simple
+to build complex applications, web browsers lack the features that
+make this possible. In this paper, we present \Browsix{}, a
+JavaScript-only framework that brings the essence of Unix to the
+browser. \Browsix{} makes core Unix features available to web
+applications (including pipes, processes, signals, sockets, and a
+shared file system) and extends JavaScript runtimes for C, C++, Go,
+and Node.js programs so they can run in a Unix-like environment within
+the browser. We illustrate \Browsix{}'s capabilities by converting a
+client-server application to run entirely in the browser and
+developing a serverless \LaTeX{} editor that executes PDFLaTeX and
+BibTeX in the browser.
+
+\end{abstract}
+
+\section{Related Work}
+\label{sec:related}
+
+\Browsix{} builds on and extends its filesystem component,
+BrowserFS. Emscripten compiles LLVM bytecode to JavaScript, enabling
+the compilation of C and C++ to JavaScript~\cite{emscripten}.
+\Browsix{} augments its runtime system so that unmodified C and C++
+programs compiled with Emscripten can take full advantage of its
+facilities. GopherJS compiles Go code to JavaScript and provides
+similar runtime support~\cite{musiol:2016gopherjs}.
+
+\bibliography{main}{}
+\bibliographystyle{plain}
+
+\end{document}

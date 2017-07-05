@@ -1,0 +1,16 @@
+rm-anttr AntykwaTorunska-Regular "encantt-rm ReEncodeFont" <antt-rm.enc <anttr.pfb
+rm-anttb AntykwaTorunska-Bold "encantt-rm ReEncodeFont" <antt-rm.enc <anttb.pfb
+rm-anttl AntykwaTorunskaLight-Regular "encantt-rm ReEncodeFont" <antt-rm.enc <anttl.pfb
+rm-anttm AntykwaTorunskaMed-Regular "encantt-rm ReEncodeFont" <antt-rm.enc <anttm.pfb
+rm-anttbi AntykwaTorunska-BoldItalic "encantt-rm ReEncodeFont" <antt-rm.enc <anttbi.pfb
+rm-anttli AntykwaTorunskaLight-Italic "encantt-rm ReEncodeFont" <antt-rm.enc <anttli.pfb
+rm-anttmi AntykwaTorunskaMed-Italic "encantt-rm ReEncodeFont" <antt-rm.enc <anttmi.pfb
+rm-anttri AntykwaTorunska-Italic "encantt-rm ReEncodeFont" <antt-rm.enc <anttri.pfb
+rm-anttcr AntykwaTorunskaCond-Regular "encantt-rm ReEncodeFont" <antt-rm.enc <anttcr.pfb
+rm-anttcb AntykwaTorunskaCond-Bold "encantt-rm ReEncodeFont" <antt-rm.enc <anttcb.pfb
+rm-anttcm AntykwaTorunskaCondMed-Regular "encantt-rm ReEncodeFont" <antt-rm.enc <anttcm.pfb
+rm-anttcl AntykwaTorunskaCondLight-Regular "encantt-rm ReEncodeFont" <antt-rm.enc <anttcl.pfb
+rm-anttcri AntykwaTorunskaCond-Italic "encantt-rm ReEncodeFont" <antt-rm.enc <anttcri.pfb
+rm-anttcmi AntykwaTorunskaCondMed-Italic "encantt-rm ReEncodeFont" <antt-rm.enc <anttcmi.pfb
+rm-anttcli AntykwaTorunskaCondLight-Italic "encantt-rm ReEncodeFont" <antt-rm.enc <anttcli.pfb
+rm-anttcbi AntykwaTorunskaCond-BoldItalic "encantt-rm ReEncodeFont" <antt-rm.enc <anttcbi.pfb

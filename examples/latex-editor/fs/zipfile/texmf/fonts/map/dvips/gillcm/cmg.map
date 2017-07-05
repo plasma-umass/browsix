@@ -1,0 +1,6 @@
+cmgmi8r CMTI10 <8r.enc <cmti10.pfb " TeXBase1Encoding ReEncodeFont "
+cmgm8r CMR10 <8r.enc <cmr10.pfb " TeXBase1Encoding ReEncodeFont "
+cmgbi8r CMBXTI10 <8r.enc <cmbxti10.pfb " TeXBase1Encoding ReEncodeFont "
+cmgb8r CMBX10 <8r.enc <cmbx10.pfb " TeXBase1Encoding ReEncodeFont "
+cmgmiu8r CMTI10 <8r.enc <cmti10.pfb " TeXBase1Encoding ReEncodeFont -0.167 SlantFont "
+cmgbiu8r CMBXTI10 <8r.enc <cmbxti10.pfb " TeXBase1Encoding ReEncodeFont -0.167 SlantFont "

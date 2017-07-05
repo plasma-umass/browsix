@@ -1,0 +1,62 @@
+% ralph
+
+rsfs7  rsfs5                       <rsfs7.pfb
+rsfs5  rsfs7                       <rsfs5.pfb
+rsfs10 rsfs10                      <rsfs10.pfb
+
+% marvosym
+
+umvs MarVoSym                      <marvosym.pfb
+
+% context
+
+contnav ContextNavigation          <contnav.pfb
+hans    Hans-Regular               <hans.pfb
+hans-sh Hans-sh-Regular            <hans-sh.pfb
+
+% dingbats
+
+uzdr Dingbats                      <uzdr.pfb
+pzdr Dingbats                      <pzdr.pfb
+
+% symbols
+
+usyr StandardSymL                  <usyr.pfb
+
+% xypic
+
+xyatip10 XYATIP10                  <xyatip10.pfb
+xybsql10 XYBSQL10                  <xybsql10.pfb
+xybtip10 XYBTIP10                  <xybtip10.pfb
+xycirc10 XYCIRC10                  <xycirc10.pfb
+xydash10 XYDASH10                  <xydash10.pfb
+
+xycmat10 XYCMAT10                  <xycmat10.pfb
+xycmbt10 XYCMBT10                  <xycmbt10.pfb
+xyeuat10 XYEUAT10                  <xyeuat10.pfb
+xyeubt10 XYEUBT10                  <xyeubt10.pfb
+
+xycmat11 XYCMAT10 "1.1 ExtendFont" <xycmat10.pfb
+xycmbt11 XYCMBT10 "1.1 ExtendFont" <xycmbt10.pfb
+xyeuat11 XYEUAT10 "1.1 ExtendFont" <xyeuat10.pfb
+xyeubt11 XYEUBT10 "1.1 ExtendFont" <xyeubt10.pfb
+
+xycmat12 XYCMAT10 "1.2 ExtendFont" <xycmat10.pfb
+xycmbt12 XYCMBT10 "1.2 ExtendFont" <xycmbt10.pfb
+xyeuat12 XYEUAT10 "1.2 ExtendFont" <xyeuat10.pfb
+xyeubt12 XYEUBT10 "1.2 ExtendFont" <xyeubt10.pfb
+
+% euro
+
+zpeub   EuroSerif-Bold             <zpeub.pfb
+zpeubi  EuroSerif-BoldItalic       <zpeubi.pfb
+zpeubis EuroSans-BoldItalic        <zpeubis.pfb
+zpeubit EuroMono-BoldItalic        <zpeubit.pfb
+zpeubs  EuroSans-Bold              <zpeubs.pfb
+zpeubt  EuroMono-Bold              <zpeubt.pfb
+zpeur   EuroSerif-Regular          <zpeur.pfb
+zpeuri  EuroSerif-Italic           <zpeuri.pfb
+zpeuris EuroSans-Italic            <zpeuris.pfb
+zpeurit EuroMono-Italic            <zpeurit.pfb
+zpeurs  EuroSans-Regular           <zpeurs.pfb
+zpeurt  EuroMono-Regular           <zpeurt.pfb

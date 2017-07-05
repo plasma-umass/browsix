@@ -1,0 +1,115 @@
+fcmr8r		CMRoman-Regular			"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmr8a.pfb
+fcmri8r		CMRoman-Italic			"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmri8a.pfb
+fcmrc8r		CMRoman-RegularSC		"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmrc8a.pfb
+fcmrij8r	CMRoman-ItalicOsF		"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmrij8a.pfb
+fcmb8r		CMRoman-Bold			"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmb8a.pfb
+fcmbi8r		CMRoman-BoldItalic		"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmbi8a.pfb
+fcmbc8r		CMRoman-BoldSC			"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmbc8a.pfb
+fcmbij8r	CMRoman-BoldItalicOsF		"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmbij8a.pfb
+fcmro8r		CMRoman-Regular			".250 SlantFont TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmr8a.pfb
+fcmru8r		CMRoman-Italic			"-.250 SlantFont TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmri8a.pfb
+fcmruj8r	CMRoman-ItalicOsF		"-.250 SlantFont TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmrij8a.pfb
+fcmbo8r		CMRoman-Bold			".250 SlantFont TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmb8a.pfb
+fcmbu8r		CMRoman-BoldItalic		"-.250 SlantFont TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmbi8a.pfb
+fcmbuj8r	CMRoman-BoldItalicOsF		"-.250 SlantFont TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmbij8a.pfb
+fcmroc8r	CMRoman-RegularSC		".250 SlantFont TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmrc8a.pfb
+fcmboc8r	CMRoman-BoldSC			".250 SlantFont TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcmbc8a.pfb
+fcsr8r		CMSans-Regular			"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcsr8a.pfb
+fcsro8r		CMSans-Slanted			"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcsro8a.pfb
+fcsb8r		CMSans-Bold			"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcsb8a.pfb
+fcsbo8r		CMSans-BoldSlanted		"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fcsbo8a.pfb
+fctr8r		CMTypewriter-Regular		"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fctr8a.pfb
+fctri8r		CMTypewriter-Italic		"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fctri8a.pfb
+fctrc8r		CMTypewriter-RegularSC		"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fctrc8a.pfb
+fctrij8r	CMTypewriter-ItalicOsF		"TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fctrij8a.pfb
+fctro8r		CMTypewriter-Regular		".250 SlantFont TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fctr8a.pfb
+fctru8r		CMTypewriter-Italic		"-.250 SlantFont TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fctri8a.pfb
+fctruj8r	CMTypewriter-ItalicOsF		"-.250 SlantFont TeXBase1Encoding ReEncodeFont" <8r-mod.enc <<fctrij8a.pfb
+fcmrce		CMRomanCE-Regular		<fcmrce.pfb
+fcmrice		CMRomanCE-Italic		<fcmrice.pfb
+fcmrcce		CMRomanCE-RegularSC		<fcmrcce.pfb
+fcmrijce	CMRomanCE-ItalicOsF		<fcmrijce.pfb
+fcmbce		CMRomanCE-Bold			<fcmbce.pfb
+fcmbice		CMRomanCE-BoldItalic		<fcmbice.pfb
+fcmbcce		CMRomanCE-BoldSC		<fcmbcce.pfb
+fcmbijce	CMRomanCE-BoldItalicOsF		<fcmbijce.pfb
+fcmroce		CMRomanCE-Regular		".250 SlantFont" <fcmrce.pfb
+fcmruce		CMRomanCE-Italic		"-.250 SlantFont" <fcmrice.pfb
+fcmboce		CMRomanCE-Bold			".250 SlantFont" <fcmbce.pfb
+fcmbuce		CMRomanCE-BoldItalic		"-.250 SlantFont" <fcmbice.pfb
+fcsrce		CMSansCE-Regular		<fcsrce.pfb
+fcsroce		CMSansCE-Slanted		<fcsroce.pfb
+fcsbce		CMSansCE-Bold			<fcsbce.pfb
+fcsboce		CMSansCE-BoldSlanted		<fcsboce.pfb
+fctrce		CMTypewriterCE-Regular		<fctrce.pfb
+fctrice		CMTypewriterCE-Italic		<fctrice.pfb
+fctrcce		CMTypewriterCE-RegularSC	<fctrcce.pfb
+fctrijce	CMTypewriterCE-ItalicOsF	<fctrijce.pfb
+fctroce		CMTypewriterCE-Regular		".250 SlantFont" <fctrce.pfb
+fctruce		CMTypewriterCE-Italic		"-.250 SlantFont" <fctrice.pfb
+fcmr6z		CMRomanCyrillic-Regular		<fcmr6z.pfb
+fcmri6z		CMRomanCyrillic-Italic		<fcmri6z.pfb
+fcmrc6z		CMRomanCyrillic-RegularSC	<fcmrc6z.pfb
+fcmrij6z	CMRomanCyrillic-ItalicOsF	<fcmrij6z.pfb
+fcmb6z		CMRomanCyrillic-Bold		<fcmb6z.pfb
+fcmbi6z		CMRomanCyrillic-BoldItalic	<fcmbi6z.pfb
+fcmbc6z		CMRomanCyrillic-BoldSC		<fcmbc6z.pfb
+fcmbij6z	CMRomanCyrillic-BoldItalicOsF	<fcmbij6z.pfb
+fcmro6z		CMRomanCyrillic-Regular		".250 SlantFont" <fcmr6z.pfb
+fcmru6z		CMRomanCyrillic-Italic		"-.250 SlantFont" <fcmri6z.pfb
+fcmbo6z		CMRomanCyrillic-Bold		".250 SlantFont" <fcmb6z.pfb
+fcmbu6z		CMRomanCyrillic-BoldItalic	"-.250 SlantFont" <fcmbi6z.pfb
+fcsr6z		CMSansCyrillic-Regular		<fcsr6z.pfb
+fcsro6z		CMSansCyrillic-Slanted		<fcsro6z.pfb
+fcsb6z		CMSansCyrillic-Bold		<fcsb6z.pfb
+fcsbo6z		CMSansCyrillic-BoldSlanted	<fcsbo6z.pfb
+fctr6z		CMTypewriterCyrillic-Regular	<fctr6z.pfb
+fctri6z		CMTypewriterCyrillic-Italic	<fctri6z.pfb
+fctrc6z		CMTypewriterCyrillic-RegularSC	<fctrc6z.pfb
+fctrij6z	CMTypewriterCyrillic-ItalicOsF	<fctrij6z.pfb
+fctro6z		CMTypewriterCyrillic-Regular	".250 SlantFont" <fctr6z.pfb
+fctru6z		CMTypewriterCyrillic-Italic	"-.250 SlantFont" <fctri6z.pfb
+fcmr6y		CMRomanAsian-Regular		<fcmr6y.pfb
+fcmri6y		CMRomanAsian-Italic		<fcmri6y.pfb
+fcmrc6y		CMRomanAsian-RegularSC		<fcmrc6y.pfb
+fcmrij6y	CMRomanAsian-ItalicOsF		<fcmrij6y.pfb
+fcmb6y		CMRomanAsian-Bold		<fcmb6y.pfb
+fcmbi6y		CMRomanAsian-BoldItalic		<fcmbi6y.pfb
+fcmbc6y		CMRomanAsian-BoldSC		<fcmbc6y.pfb
+fcmbij6y	CMRomanAsian-BoldItalicOsF	<fcmbij6y.pfb
+fcmro6y		CMRomanAsian-Regular		".250 SlantFont" <fcmr6y.pfb
+fcmru6y		CMRomanAsian-Italic		"-.250 SlantFont" <fcmri6y.pfb
+fcmbo6y		CMRomanAsian-Bold		".250 SlantFont" <fcmb6y.pfb
+fcmbu6y		CMRomanAsian-BoldItalic		"-.250 SlantFont" <fcmbi6y.pfb
+fcsr6y		CMSansAsian-Regular		<fcsr6y.pfb
+fcsro6y		CMSansAsian-Slanted		<fcsro6y.pfb
+fcsb6y		CMSansAsian-Bold		<fcsb6y.pfb
+fcsbo6y		CMSansAsian-BoldSlanted		<fcsbo6y.pfb
+fctr6y		CMTypewriterAsian-Regular	<fctr6y.pfb
+fctri6y		CMTypewriterAsian-Italic	<fctri6y.pfb
+fctrc6y		CMTypewriterAsian-RegularSC	<fctrc6y.pfb
+fctrij6y	CMTypewriterAsian-ItalicOsF	<fctrij6y.pfb
+fctro6y		CMTypewriterAsian-Regular	".250 SlantFont" <fctr6y.pfb
+fctru6y		CMTypewriterAsian-Italic	"-.250 SlantFont" <fctri6y.pfb
+fcmrpg		CMRomanGreek-Regular		<fcmrpg.pfb
+fcmripg		CMRomanGreek-Italic		<fcmripg.pfb
+fcmrcpg		CMRomanGreek-RegularSC		<fcmrcpg.pfb
+fcmrijpg	CMRomanGreek-ItalicOsF		<fcmrijpg.pfb
+fcmbpg		CMRomanGreek-Bold		<fcmbpg.pfb
+fcmbipg		CMRomanGreek-BoldItalic		<fcmbipg.pfb
+fcmbcpg		CMRomanGreek-BoldSC		<fcmbcpg.pfb
+fcmbijpg	CMRomanGreek-BoldItalicOsF	<fcmbijpg.pfb
+fcmropg		CMRomanGreek-Regular		".268 SlantFont" <fcmrpg.pfb
+fcmrupg		CMRomanGreek-Italic		"-.268 SlantFont" <fcmripg.pfb
+fcmbopg		CMRomanGreek-Bold		".268 SlantFont" <fcmbpg.pfb
+fcmbupg		CMRomanGreek-BoldItalic		"-.268 SlantFont" <fcmbipg.pfb
+fcsrpg		CMSansGreek-Regular		<fcsrpg.pfb
+fcsropg		CMSansGreek-Slanted		<fcsropg.pfb
+fcsbpg		CMSansGreek-Bold		<fcsbpg.pfb
+fcsbopg		CMSansGreek-BoldSlanted		<fcsbopg.pfb
+fctrpg		CMTypewriterGreek-Regular	<fctrpg.pfb
+fctripg		CMTypewriterGreek-Italic	<fctripg.pfb
+fctrcpg		CMTypewriterGreek-RegularSC	<fctrcpg.pfb
+fctrijpg	CMTypewriterGreek-ItalicOsF	<fctrijpg.pfb
+fctropg		CMTypewriterGreek-Regular	".268 SlantFont" <fctrpg.pfb
+fctrupg		CMTypewriterGreek-Italic	"-.268 SlantFont" <fctripg.pfb

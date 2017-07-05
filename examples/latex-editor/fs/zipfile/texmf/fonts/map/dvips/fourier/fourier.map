@@ -1,0 +1,32 @@
+%% Here is Fourier-GUtenberg (math complement for Utopia)
+%%
+
+fourier-orns fourier-orns <fourier-orns.pfb
+fourier-alt Fourier-Alternate-Roman <fourier-alt.pfb
+fourier-alt-semi Fourier-Alternate-SemiBold <fourier-alt-semi.pfb
+fourier-alt-bold Fourier-Alternate-Bold <fourier-alt-bold.pfb
+fourier-alt-black Fourier-Alternate-Black <fourier-alt-black.pfb
+fourier-alt-ita Fourier-Alternate-Italic <fourier-alt-ita.pfb
+fourier-alt-semiita Fourier-Alternate-SemItalic <fourier-alt-semiita.pfb
+fourier-alt-boldita Fourier-Alternate-BoldItalic <fourier-alt-boldita.pfb
+fourier-alt-sl Fourier-Alternate-Roman " .167 SlantFont " <fourier-alt.pfb
+fourier-alt-semi-sl Fourier-Alternate-SemiBold " .167 SlantFont " <fourier-alt-semi.pfb
+fourier-alt-bold-sl Fourier-Alternate-Bold " .167 SlantFont " <fourier-alt-bold.pfb
+fourier-bb Fourier-Math-BlackBoard <fourier-bb.pfb
+fourier-mcl Fourier-Math-Cal <fourier-mcl.pfb
+fourier-mex Fourier-Math-Extension <fourier-mex.pfb
+fourier-ml Fourier-Math-Letters <fourier-ml.pfb
+fourier-mlit Fourier-Math-Letters-Italic <fourier-mlit.pfb
+fourier-mlb Fourier-Math-Letters-Bold <fourier-mlb.pfb
+fourier-mlitb Fourier-Math-Letters-Bold-Italic <fourier-mlitb.pfb
+fourier-ms Fourier-Math-Symbols <fourier-ms.pfb
+%%%
+futb8r Utopia-Bold "TeXBase1Encoding ReEncodeFont " <8r.enc <putb8a.pfb
+futbi8r Utopia-BoldItalic "TeXBase1Encoding ReEncodeFont " <8r.enc <putbi8a.pfb
+futbo8r Utopia-Bold " .167 SlantFont TeXBase1Encoding ReEncodeFont " <8r.enc <putb8a.pfb
+futr8r Utopia-Regular "TeXBase1Encoding ReEncodeFont " <8r.enc <putr8a.pfb
+futri8r Utopia-Italic "TeXBase1Encoding ReEncodeFont " <8r.enc <putri8a.pfb
+futro8r Utopia-Regular " .167 SlantFont TeXBase1Encoding ReEncodeFont " <8r.enc <putr8a.pfb
+
+
+

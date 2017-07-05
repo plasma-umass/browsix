@@ -230,6 +230,6 @@
         request.send();
     }
 
-    remoteRequest('fs/zipfile2.zip');
+    remoteRequest('fs/zipfile.zip');
 })();
 //# sourceMappingURL=main.js.map

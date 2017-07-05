@@ -1,0 +1,10 @@
+% troff-updmap.map.  Public domain.
+% 
+% This map file is the TeX Live counterpart to troff.map, removing all
+% the entries for the PostScript base35 fonts (leaving just the sngle
+% FreeEuro entry).  Why?  Because we want the *8g.tfm names to obey the
+% same updmap options for downloading/not-downloading as the 8r, 8y,
+% etc., versions.  Therefore they have to be handled from the same
+% source map files (in TL's texmf-dist/fonts/map/dvips/tetex).
+%
+freeeuro FreeEuro <freeeuro.pfa

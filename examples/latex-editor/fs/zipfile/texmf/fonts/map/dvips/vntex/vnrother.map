@@ -1,0 +1,8 @@
+% Copyright (c) 2003-2005 Han The Thanh, (Public domain) 
+% Support for VNR fonts (based on CM fonts) in Type1 format 
+% available from vntex.sf.net
+% this is the supplemental set of "other and non-text" fonts
+vndunh10 VNDUNH10 <vndunh10.pfb
+vnff10 VNFF10 <vnff10.pfb
+vnfi10 VNFI10 <vnfi10.pfb
+vnfib8 VNFIB8 <vnfib8.pfb

@@ -1,0 +1,14 @@
+gtimesg6r FreeSerifb " gptimes ReEncodeFont " <gptimes.enc <FreeSerifb.pfb
+gtimesb6r FreeSerifbBold " gptimes ReEncodeFont " <gptimes.enc <FreeSerifbBold.pfb
+gtimesbi6r FreeSerifbBoldItalic " gptimes ReEncodeFont " <gptimes.enc <FreeSerifbBoldItalic.pfb
+gtimesi6r FreeSerifbItalic " gptimes ReEncodeFont " <gptimes.enc <FreeSerifbItalic.pfb
+gtimessc6r FreeSerifb-SmallCaps " gptimes ReEncodeFont " <gptimes.enc <FreeSerifb-SmallCaps.pfb
+gtimessco6r FreeSerifb-SmallCaps " 0.167 SlantFont gptimes ReEncodeFont " <gptimes.enc <FreeSerifb-SmallCaps.pfb
+timessc6r FreeSerifb-SmallCaps <FreeSerifb-SmallCaps.pfb
+timessco6r FreeSerifb-SmallCaps " 0.167 SlantFont " <FreeSerifb-SmallCaps.pfb
+gtimesyg6r FreeSerifb " gptimesy ReEncodeFont " <gptimesy.enc <FreeSerifb.pfb
+gtimesyb6r FreeSerifbBold " gptimesy ReEncodeFont " <gptimesy.enc <FreeSerifbBold.pfb
+gtimesybi6r FreeSerifbBoldItalic " gptimesy ReEncodeFont " <gptimesy.enc <FreeSerifbBoldItalic.pfb
+gtimesyi6r FreeSerifbItalic " gptimesy ReEncodeFont " <gptimesy.enc <FreeSerifbItalic.pfb
+gtimesysc6r FreeSerifb-SmallCapsAlt " gptimes ReEncodeFont " <gptimes.enc <FreeSerifb-SmallCapsAlt.pfb
+gtimesysco6r FreeSerifb-SmallCapsAlt " 0.167 SlantFont gptimes ReEncodeFont " <gptimes.enc <FreeSerifb-SmallCapsAlt.pfb

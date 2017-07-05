@@ -1,0 +1,55 @@
+% Copyright (c) 2003-2005 Han The Thanh, (Public domain) 
+% Support for VNR fonts (based on CM fonts) in Type1 format 
+% available from vntex.sf.net
+% this is the main set of text fonts
+vnb10 VNB10 <vnb10.pfb
+vnbx10 VNBX10 <vnbx10.pfb
+vnbx12 VNBX12 <vnbx12.pfb
+vnbx5 VNBX5 <vnbx5.pfb
+vnbx6 VNBX6 <vnbx6.pfb
+vnbx7 VNBX7 <vnbx7.pfb
+vnbx8 VNBX8 <vnbx8.pfb
+vnbx9 VNBX9 <vnbx9.pfb
+vnbxsl10 VNBXSL10 <vnbxsl10.pfb
+vnbxti10 VNBXTI10 <vnbxti10.pfb
+vncsc10 VNCSC10 <vncsc10.pfb
+vnitt10 VNITT10 <vnitt10.pfb
+vnr10 VNR10 <vnr10.pfb
+vnr12 VNR12 <vnr12.pfb
+vnr17 VNR17 <vnr17.pfb
+vnr5 VNR5 <vnr5.pfb
+vnr6 VNR6 <vnr6.pfb
+vnr7 VNR7 <vnr7.pfb
+vnr8 VNR8 <vnr8.pfb
+vnr9 VNR9 <vnr9.pfb
+vnsl10 VNSL10 <vnsl10.pfb
+vnsl12 VNSL12 <vnsl12.pfb
+vnsl8 VNSL8 <vnsl8.pfb
+vnsl9 VNSL9 <vnsl9.pfb
+vnsltt10 VNSLTT10 <vnsltt10.pfb
+vnss10 VNSS10 <vnss10.pfb
+vnss12 VNSS12 <vnss12.pfb
+vnss17 VNSS17 <vnss17.pfb
+vnss8 VNSS8 <vnss8.pfb
+vnss9 VNSS9 <vnss9.pfb
+vnssbx10 VNSSBX10 <vnssbx10.pfb
+vnssdc10 VNSSDC10 <vnssdc10.pfb
+vnssi10 VNSSI10 <vnssi10.pfb
+vnssi12 VNSSI12 <vnssi12.pfb
+vnssi17 VNSSI17 <vnssi17.pfb
+vnssi8 VNSSI8 <vnssi8.pfb
+vnssi9 VNSSI9 <vnssi9.pfb
+vnssq8 VNSSQ8 <vnssq8.pfb
+vnssqi8 VNSSQI8 <vnssqi8.pfb
+vntcsc10 VNTCSC10 <vntcsc10.pfb
+vnti10 VNTI10 <vnti10.pfb
+vnti12 VNTI12 <vnti12.pfb
+vnti7 VNTI7 <vnti7.pfb
+vnti8 VNTI8 <vnti8.pfb
+vnti9 VNTI9 <vnti9.pfb
+vntt10 VNTT10 <vntt10.pfb
+vntt12 VNTT12 <vntt12.pfb
+vntt8 VNTT8 <vntt8.pfb
+vntt9 VNTT9 <vntt9.pfb
+vnu10 VNU10 <vnu10.pfb
+vnvtt10 VNVTT10 <vnvtt10.pfb

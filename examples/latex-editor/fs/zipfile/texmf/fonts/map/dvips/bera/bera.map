@@ -1,0 +1,12 @@
+fvsr8r  BeraSans-Roman         " TeXBase1Encoding ReEncodeFont " <8r.enc <fvsr8a.pfb
+fvsro8r BeraSans-Oblique       " TeXBase1Encoding ReEncodeFont " <8r.enc <fvsro8a.pfb
+fvsb8r  BeraSans-Bold          " TeXBase1Encoding ReEncodeFont " <8r.enc <fvsb8a.pfb
+fvsbo8r BeraSans-BoldOblique   " TeXBase1Encoding ReEncodeFont " <8r.enc <fvsbo8a.pfb
+fver8r  BeraSerif-Roman        " TeXBase1Encoding ReEncodeFont " <8r.enc <fver8a.pfb
+fveb8r  BeraSerif-Bold         " TeXBase1Encoding ReEncodeFont " <8r.enc <fveb8a.pfb
+fvero8r  BeraSerif-Roman  " .167 SlantFont TeXBase1Encoding ReEncodeFont " <8r.enc <fver8a.pfb
+fvebo8r  BeraSerif-Bold   " .167 SlantFont TeXBase1Encoding ReEncodeFont " <8r.enc <fveb8a.pfb
+fvmr8r  BeraSansMono-Roman     " TeXBase1Encoding ReEncodeFont " <8r.enc <fvmr8a.pfb
+fvmro8r BeraSansMono-Oblique   " TeXBase1Encoding ReEncodeFont " <8r.enc <fvmro8a.pfb
+fvmb8r  BeraSansMono-Bold      " TeXBase1Encoding ReEncodeFont " <8r.enc <fvmb8a.pfb
+fvmbo8r BeraSansMono-BoldOb    " TeXBase1Encoding ReEncodeFont " <8r.enc <fvmbo8a.pfb

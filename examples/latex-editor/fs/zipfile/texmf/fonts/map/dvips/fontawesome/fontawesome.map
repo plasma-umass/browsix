@@ -1,0 +1,12 @@
+%% start of file `fontawesome.map'.
+%% Copyright 2015 Xavier Danaux (xdanaux@gmail.com).
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License version 1.3c,
+% available at http://www.latex-project.org/lppl/.
+
+FontAwesome--fontawesomeone FontAwesome "fontawesomeone ReEncodeFont" <[fontawesomeone.enc <FontAwesome.pfb
+FontAwesome--fontawesometwo FontAwesome "fontawesometwo ReEncodeFont" <[fontawesometwo.enc <FontAwesome.pfb
+FontAwesome--fontawesomethree FontAwesome "fontawesomethree ReEncodeFont" <[fontawesomethree.enc <FontAwesome.pfb
+
+%% end of file `fontawesome.map'.

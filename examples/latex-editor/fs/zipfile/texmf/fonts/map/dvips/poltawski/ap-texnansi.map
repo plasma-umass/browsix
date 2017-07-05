@@ -1,0 +1,87 @@
+% This file belongs to the Antykwa Poltawskiego collection of fonts. The work is released
+% under the GUST Font License. See the MANIFEST-Antykwa-Poltawskiego.txt
+% and README-Antykwa-Poltawskiego.txt files for the details.
+% For the most recent version of this license see
+% http://www.gust.org.pl/fonts/licenses/GUST-FONT-LICENSE.txt or
+% http://tug.org/fonts/licenses/GUST-FONT-LICENSE.txt
+% 
+texnansi-antpl6 AntPoltLtExpd-Regular "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpl6.pfb
+texnansi-antpl8 AntPoltLtSemiExpd-Regular "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpl8.pfb
+texnansi-antpl10 AntPoltLt-Regular "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpl10.pfb
+texnansi-antpl12 AntPoltLtSemiCond-Regular "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpl12.pfb
+texnansi-antpl17 AntPoltLtCond-Regular "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpl17.pfb
+texnansi-antpli6 AntPoltLtExpd-Italic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpli6.pfb
+texnansi-antpli8 AntPoltLtSemiExpd-Italic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpli8.pfb
+texnansi-antpli10 AntPoltLt-Italic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpli10.pfb
+texnansi-antpli12 AntPoltLtSemiCond-Italic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpli12.pfb
+texnansi-antpli17 AntPoltLtCond-Italic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpli17.pfb
+texnansi-antpr6 AntPoltExpd-Regular "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpr6.pfb
+texnansi-antpr8 AntPoltSemiExpd-Regular "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpr8.pfb
+texnansi-antpr10 AntPolt-Regular "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpr10.pfb
+texnansi-antpr12 AntPoltSemiCond-Regular "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpr12.pfb
+texnansi-antpr17 AntPoltCond-Regular "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpr17.pfb
+texnansi-antpri6 AntPoltExpd-Italic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpri6.pfb
+texnansi-antpri8 AntPoltSemiExpd-Italic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpri8.pfb
+texnansi-antpri10 AntPolt-Italic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpri10.pfb
+texnansi-antpri12 AntPoltSemiCond-Italic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpri12.pfb
+texnansi-antpri17 AntPoltCond-Italic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpri17.pfb
+texnansi-antpm6 AntPoltLtExpd-Bold "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpm6.pfb
+texnansi-antpm8 AntPoltLtSemiExpd-Bold "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpm8.pfb
+texnansi-antpm10 AntPoltLt-Bold "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpm10.pfb
+texnansi-antpm12 AntPoltLtSemiCond-Bold "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpm12.pfb
+texnansi-antpm17 AntPoltLtCond-Bold "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpm17.pfb
+texnansi-antpmi6 AntPoltLtExpd-BoldItalic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpmi6.pfb
+texnansi-antpmi8 AntPoltLtSemiExpd-BoldItalic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpmi8.pfb
+texnansi-antpmi10 AntPoltLt-BoldItalic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpmi10.pfb
+texnansi-antpmi12 AntPoltLtSemiCond-BoldItalic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpmi12.pfb
+texnansi-antpmi17 AntPoltLtCond-BoldItalic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpmi17.pfb
+texnansi-antpb6 AntPoltExpd-Bold "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpb6.pfb
+texnansi-antpb8 AntPoltSemiExpd-Bold "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpb8.pfb
+texnansi-antpb10 AntPolt-Bold "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpb10.pfb
+texnansi-antpb12 AntPoltSemiCond-Bold "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpb12.pfb
+texnansi-antpb17 AntPoltCond-Bold "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpb17.pfb
+texnansi-antpbi6 AntPoltExpd-BoldItalic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpbi6.pfb
+texnansi-antpbi8 AntPoltSemiExpd-BoldItalic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpbi8.pfb
+texnansi-antpbi10 AntPolt-BoldItalic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpbi10.pfb
+texnansi-antpbi12 AntPoltSemiCond-BoldItalic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpbi12.pfb
+texnansi-antpbi17 AntPoltCond-BoldItalic "encaptexnansi ReEncodeFont" <ap-texnansi.enc <antpbi17.pfb
+texnansi-antpl6-sc AntPoltLtExpd-Regular "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpl6.pfb
+texnansi-antpl8-sc AntPoltLtSemiExpd-Regular "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpl8.pfb
+texnansi-antpl10-sc AntPoltLt-Regular "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpl10.pfb
+texnansi-antpl12-sc AntPoltLtSemiCond-Regular "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpl12.pfb
+texnansi-antpl17-sc AntPoltLtCond-Regular "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpl17.pfb
+texnansi-antpli6-sc AntPoltLtExpd-Italic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpli6.pfb
+texnansi-antpli8-sc AntPoltLtSemiExpd-Italic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpli8.pfb
+texnansi-antpli10-sc AntPoltLt-Italic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpli10.pfb
+texnansi-antpli12-sc AntPoltLtSemiCond-Italic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpli12.pfb
+texnansi-antpli17-sc AntPoltLtCond-Italic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpli17.pfb
+texnansi-antpr6-sc AntPoltExpd-Regular "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpr6.pfb
+texnansi-antpr8-sc AntPoltSemiExpd-Regular "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpr8.pfb
+texnansi-antpr10-sc AntPolt-Regular "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpr10.pfb
+texnansi-antpr12-sc AntPoltSemiCond-Regular "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpr12.pfb
+texnansi-antpr17-sc AntPoltCond-Regular "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpr17.pfb
+texnansi-antpri6-sc AntPoltExpd-Italic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpri6.pfb
+texnansi-antpri8-sc AntPoltSemiExpd-Italic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpri8.pfb
+texnansi-antpri10-sc AntPolt-Italic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpri10.pfb
+texnansi-antpri12-sc AntPoltSemiCond-Italic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpri12.pfb
+texnansi-antpri17-sc AntPoltCond-Italic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpri17.pfb
+texnansi-antpm6-sc AntPoltLtExpd-Bold "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpm6.pfb
+texnansi-antpm8-sc AntPoltLtSemiExpd-Bold "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpm8.pfb
+texnansi-antpm10-sc AntPoltLt-Bold "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpm10.pfb
+texnansi-antpm12-sc AntPoltLtSemiCond-Bold "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpm12.pfb
+texnansi-antpm17-sc AntPoltLtCond-Bold "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpm17.pfb
+texnansi-antpmi6-sc AntPoltLtExpd-BoldItalic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpmi6.pfb
+texnansi-antpmi8-sc AntPoltLtSemiExpd-BoldItalic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpmi8.pfb
+texnansi-antpmi10-sc AntPoltLt-BoldItalic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpmi10.pfb
+texnansi-antpmi12-sc AntPoltLtSemiCond-BoldItalic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpmi12.pfb
+texnansi-antpmi17-sc AntPoltLtCond-BoldItalic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpmi17.pfb
+texnansi-antpb6-sc AntPoltExpd-Bold "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpb6.pfb
+texnansi-antpb8-sc AntPoltSemiExpd-Bold "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpb8.pfb
+texnansi-antpb10-sc AntPolt-Bold "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpb10.pfb
+texnansi-antpb12-sc AntPoltSemiCond-Bold "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpb12.pfb
+texnansi-antpb17-sc AntPoltCond-Bold "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpb17.pfb
+texnansi-antpbi6-sc AntPoltExpd-BoldItalic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpbi6.pfb
+texnansi-antpbi8-sc AntPoltSemiExpd-BoldItalic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpbi8.pfb
+texnansi-antpbi10-sc AntPolt-BoldItalic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpbi10.pfb
+texnansi-antpbi12-sc AntPoltSemiCond-BoldItalic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpbi12.pfb
+texnansi-antpbi17-sc AntPoltCond-BoldItalic "encaptexnansisc ReEncodeFont" <ap-texnansi-sc.enc <antpbi17.pfb

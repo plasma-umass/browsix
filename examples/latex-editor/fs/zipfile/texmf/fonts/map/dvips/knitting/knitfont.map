@@ -1,0 +1,20 @@
+knitnn	KnittingSymbols-nogrid-foreground-Medium  <knitnn.pfb	
+knitwn	KnittingSymbols-wide-foreground-Medium  <knitwn.pfb
+knitgn	KnittingSymbols-grid-foreground-Medium  <knitgn.pfb 
+
+knitnp	KnittingSymbols-nogrid-purl-Medium  <knitnp.pfb
+knitwp	KnittingSymbols-wide-purl-Medium  <knitwp.pfb
+knitgp	KnittingSymbols-grid-purl-Medium  <knitgp.pfb 
+
+knitnr	KnittingSymbols-nogrid-raised-Medium  <knitnr.pfb	
+knitnl	KnittingSymbols-nogrid-lowered-Medium  <knitnl.pfb	
+
+knitgg	KnittingSymbols-grid-grid-Medium  <knitgg.pfb 
+knitwg	KnittingSymbols-wide-grid-Medium  <knitwg.pfb 
+
+knitn_sc_in  KnittingSymbols-nogrid-incount-Medium  <knitn_sc_in.pfb
+knitn_sc_out KnittingSymbols-nogrid-outcount-Medium <knitn_sc_out.pfb
+knitg_sc_in  KnittingSymbols-grid-incount-Medium  <knitg_sc_in.pfb
+knitg_sc_out KnittingSymbols-grid-outcount-Medium <knitg_sc_out.pfb
+knitw_sc_in  KnittingSymbols-wide-incount-Medium  <knitw_sc_in.pfb
+knitw_sc_out KnittingSymbols-wide-outcount-Medium <knitw_sc_out.pfb

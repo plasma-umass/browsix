@@ -1,0 +1,73 @@
+% Adobe Times
+rtxptmb Times-Bold "TeXBase1Encoding ReEncodeFont" <tx8r.enc
+rtxptmbo Times-Bold ".167 SlantFont TeXBase1Encoding ReEncodeFont" <tx8r.enc
+rtxptmbi Times-BoldItalic "TeXBase1Encoding ReEncodeFont" <tx8r.enc
+rtxptmr Times-Roman "TeXBase1Encoding ReEncodeFont" <tx8r.enc
+rtxptmro Times-Roman ".167 SlantFont TeXBase1Encoding ReEncodeFont" <tx8r.enc
+rtxptmri Times-Italic "TeXBase1Encoding ReEncodeFont" <tx8r.enc
+% TX Text
+rtxr rtxr <rtxr.pfb
+rtxsl rtxr ".167 SlantFont" <rtxr.pfb
+rtxi rtxi <rtxi.pfb
+rtxsc rtxsc <rtxsc.pfb
+rtxb rtxb <rtxb.pfb
+rtxbsl rtxb ".167 SlantFont" <rtxb.pfb
+rtxbi rtxbi <rtxbi.pfb
+rtxbsc rtxbsc <rtxbsc.pfb
+rtcxb rtcxb <rtcxb.pfb
+rtcxbsl rtcxb ".167 SlantFont" <rtcxb.pfb
+rtcxbi rtcxbi <rtcxbi.pfb
+rtcxi rtcxi <rtcxi.pfb
+rtcxr rtcxr <rtcxr.pfb
+rtcxsl rtcxr ".167 SlantFont" <rtcxr.pfb
+% TX Math
+rtxbmi rtxbmi <rtxbmi.pfb
+rtxmi rtxmi <rtxmi.pfb
+txbex txbex <txbex.pfb
+txbexa txbexa <txbexa.pfb
+txbmia txbmia <txbmia.pfb
+txbsy txbsy <txbsy.pfb
+txbsya txbsya <txbsya.pfb
+txbsyb txbsyb <txbsyb.pfb
+txbsyc txbsyc <txbsyc.pfb
+txex txex <txex.pfb
+txexa txexa <txexa.pfb
+txmia txmia <txmia.pfb
+txsy txsy <txsy.pfb
+txsya txsya <txsya.pfb
+txsyb txsyb <txsyb.pfb
+txsyc txsyc <txsyc.pfb
+% TX TT Text
+txtt txtt <txtt.pfb
+txttsl txtt ".167 SlantFont" <txtt.pfb
+txttsc txttsc <txttsc.pfb
+txbtt txbtt <txbtt.pfb
+txbttsl txbtt ".167 SlantFont" <txbtt.pfb
+txbttsc txbttsc <txbttsc.pfb
+t1xtt t1xtt <t1xtt.pfb
+t1xttsl t1xtt ".167 SlantFont" <t1xtt.pfb
+t1xttsc t1xttsc <t1xttsc.pfb
+t1xbtt t1xbtt <t1xbtt.pfb
+t1xbttsl t1xbtt ".167 SlantFont" <t1xbtt.pfb
+t1xbttsc t1xbttsc <t1xbttsc.pfb
+tcxtt tcxtt <tcxtt.pfb
+tcxttsl tcxtt ".167 SlantFont" <tcxtt.pfb
+tcxbtt tcxbtt <tcxbtt.pfb
+tcxbttsl tcxbtt ".167 SlantFont" <tcxbtt.pfb
+
+% Adobe Helvetica
+rtxphvr Helvetica "TeXBase1Encoding ReEncodeFont" <tx8r.enc
+rtxphvro Helvetica ".167 SlantFont TeXBase1Encoding ReEncodeFont" <tx8r.enc
+rtxphvb Helvetica-Bold "TeXBase1Encoding ReEncodeFont" <tx8r.enc
+rtxphvbo Helvetica-Bold ".167 SlantFont TeXBase1Encoding ReEncodeFont" <tx8r.enc
+% TX SS Text
+rtxss rtxss <rtxss.pfb
+rtxsssl rtxss ".167 SlantFont" <rtxss.pfb
+rtxsssc rtxsssc <rtxsssc.pfb
+rtxbss rtxbss <rtxbss.pfb
+rtxbsssl rtxbss ".167 SlantFont" <rtxbss.pfb
+rtxbsssc rtxbsssc <rtxbsssc.pfb
+rtcxss rtcxss <rtcxss.pfb
+rtcxbss rtcxbss <rtcxbss.pfb
+rtcxsssl rtcxss ".167 SlantFont" <rtcxss.pfb
+rtcxbsso rtcxbss ".167 SlantFont" <rtcxbss.pfb

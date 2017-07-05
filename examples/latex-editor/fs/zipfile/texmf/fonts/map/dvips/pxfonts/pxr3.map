@@ -1,0 +1,33 @@
+% For dvipdfm by Dan Luecking
+% Uses the file names for URW fonts as delivered with MiKTeX
+% 1. place them where dvipdfm will look for .map files (normally
+%    a subdirectory of localtexmf/dvipdfm/ will do).
+% 2. Add the line
+%     f pxr3.map
+%    to dvipdfm's config file (normally texmf/dvipdfm/config/config).
+% 3. Refresh the filename database.
+%
+% These can be translated to the Ghostscript file names as follows:
+% uplb8a    = p052004l
+% uplbi8a   = p052024l
+% uplr8a    = p052003l
+% uplri8a   = p052023l
+%
+% These can be translated to the original Adobe file names as follows:
+% uplb8a    = pob_____
+% uplbi8a   = pobi____
+% uplr8a    = por_____
+% uplri8a   = pori____
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PX Palatino
+rpxpplb     tx8r.enc    uplb8a
+rpxpplbo    tx8r.enc    uplb8a  -s 0.167
+rpxpplbi    tx8r.enc    uplbi8a
+rpxpplr     tx8r.enc    uplr8a
+rpxpplro    tx8r.enc    uplr8a  -s 0.167
+rpxpplri    tx8r.enc    uplri8a
+% PX Text
+rpxsl       default     rpxr    -s 0.167
+rpxbsl      default     rpxb    -s 0.167
+rpcxbsl     default     rpcxb   -s 0.167
+rpcxsl      default     rpcxr   -s 0.167

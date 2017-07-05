@@ -1,0 +1,43 @@
+
+ptmr8z   Times-Roman      "XL2encoding ReEncodeFont" <xl2.enc
+ptmb8z   Times-Bold       "XL2encoding ReEncodeFont" <xl2.enc
+ptmbi8z  Times-BoldItalic "XL2encoding ReEncodeFont" <xl2.enc
+ptmri8z  Times-Italic     "XL2encoding ReEncodeFont" <xl2.enc
+
+pagk8z   AvantGarde-Book        "XL2encoding ReEncodeFont" <xl2.enc
+pagko8z  AvantGarde-BookOblique "XL2encoding ReEncodeFont" <xl2.enc
+pagd8z   AvantGarde-Demi        "XL2encoding ReEncodeFont" <xl2.enc
+pagdo8z  AvantGarde-DemiOblique "XL2encoding ReEncodeFont" <xl2.enc
+
+pbkd8z    Bookman-Demi        "XL2encoding ReEncodeFont" <xl2.enc
+pbkdi8z   Bookman-DemiItalic  "XL2encoding ReEncodeFont" <xl2.enc
+pbkl8z    Bookman-Light       "XL2encoding ReEncodeFont" <xl2.enc
+pbkli8z   Bookman-LightItalic "XL2encoding ReEncodeFont" <xl2.enc
+
+pcrb8u    Courier-Bold        "XT2encoding ReEncodeFont" <xt2.enc
+pcrbo8u   Courier-BoldOblique "XT2encoding ReEncodeFont" <xt2.enc
+pcrro8u   Courier-Oblique     "XT2encoding ReEncodeFont" <xt2.enc
+pcrr8u    Courier             "XT2encoding ReEncodeFont" <xt2.enc
+
+pncb8z   NewCenturySchlbk-Bold       "XL2encoding ReEncodeFont" <xl2.enc
+pncbi8z  NewCenturySchlbk-BoldItalic "XL2encoding ReEncodeFont" <xl2.enc
+pncri8z  NewCenturySchlbk-Italic     "XL2encoding ReEncodeFont" <xl2.enc
+pncr8z   NewCenturySchlbk-Roman      "XL2encoding ReEncodeFont" <xl2.enc
+
+phvb8z    Helvetica-Bold        "XL2encoding ReEncodeFont" <xl2.enc
+phvbo8z   Helvetica-BoldOblique "XL2encoding ReEncodeFont" <xl2.enc
+phvro8z   Helvetica-Oblique     "XL2encoding ReEncodeFont" <xl2.enc
+phvr8z    Helvetica             "XL2encoding ReEncodeFont" <xl2.enc
+
+phvbn8z    Helvetica-Narrow-Bold        "XL2encoding ReEncodeFont" <xl2.enc
+phvbon8z   Helvetica-Narrow-BoldOblique "XL2encoding ReEncodeFont" <xl2.enc
+phvron8z   Helvetica-Narrow-Oblique     "XL2encoding ReEncodeFont" <xl2.enc
+phvrn8z    Helvetica-Narrow             "XL2encoding ReEncodeFont" <xl2.enc
+
+pplbi8z   Palatino-BoldItalic "XL2encoding ReEncodeFont" <xl2.enc
+pplri8z   Palatino-Italic     "XL2encoding ReEncodeFont" <xl2.enc
+pplr8z    Palatino-Roman      "XL2encoding ReEncodeFont" <xl2.enc
+pplb8z    Palatino-Bold       "XL2encoding ReEncodeFont" <xl2.enc
+
+pzcmi8z   ZapfChancery-MediumItalic "XL2encoding ReEncodeFont" <xl2.enc
+

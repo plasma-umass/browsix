@@ -1,0 +1,72 @@
+% courier / urw
+
+ucrr8v  VnNimbusMonL-Regu                          "T5Encoding ReEncodeFont" <t5.enc <ucrr8v.pfb
+ucrro8v VnNimbusMonL-ReguObli                      "T5Encoding ReEncodeFont" <t5.enc <ucrro8v.pfb
+ucrb8v  VnNimbusMonL-Bold                          "T5Encoding ReEncodeFont" <t5.enc <ucrb8v.pfb
+ucrbo8v VnNimbusMonL-BoldObli                      "T5Encoding ReEncodeFont" <t5.enc <ucrbo8v.pfb
+
+% helvetica / urw
+
+uhvr8v  VnNimbusSanL-Regu                          "T5Encoding ReEncodeFont" <t5.enc <uhvr8v.pfb
+uhvro8v VnNimbusSanL-ReguItal                      "T5Encoding ReEncodeFont" <t5.enc <uhvro8v.pfb
+uhvb8v  VnNimbusSanL-Bold                          "T5Encoding ReEncodeFont" <t5.enc <uhvb8v.pfb
+uhvbo8v VnNimbusSanL-BoldItal                      "T5Encoding ReEncodeFont" <t5.enc <uhvbo8v.pfb
+
+% times / urw
+
+utmr8v  VnNimbusRomNo9L-Regu                       "T5Encoding ReEncodeFont" <t5.enc <utmr8v.pfb
+utmri8v VnNimbusRomNo9L-ReguItal                   "T5Encoding ReEncodeFont" <t5.enc <utmri8v.pfb
+utmb8v  VnNimbusRomNo9L-Medi                       "T5Encoding ReEncodeFont" <t5.enc <utmb8v.pfb
+utmbi8v VnNimbusRomNo9L-MediItal                   "T5Encoding ReEncodeFont" <t5.enc <utmbi8v.pfb
+
+utmro8v VnNimbusRomNo9L-Regu       "0.277 SlantFont T5Encoding ReEncodeFont" <t5.enc <utmr8v.pfb
+utmbo8v VnNimbusRomNo9L-Medi       "0.277 SlantFont T5Encoding ReEncodeFont" <t5.enc <utmb8v.pfb
+
+% palatino / urw
+
+uplr8v  VnURWPalladioL-Roma                        "T5Encoding ReEncodeFont" <t5.enc <uplr8v.pfb
+uplri8v VnURWPalladioL-Ital                        "T5Encoding ReEncodeFont" <t5.enc <uplri8v.pfb
+uplb8v  VnURWPalladioL-Bold                        "T5Encoding ReEncodeFont" <t5.enc <uplb8v.pfb
+uplbi8v VnURWPalladioL-BoldItal                    "T5Encoding ReEncodeFont" <t5.enc <uplbi8v.pfb
+
+uplro8v VnURWPalladioL-Roma        "0.277 SlantFont T5Encoding ReEncodeFont" <t5.enc <uplr8v.pfb
+uplbo8v VnURWPalladioL-Bold        "0.277 SlantFont T5Encoding ReEncodeFont" <t5.enc <uplb8v.pfb
+
+% bookman / urw
+
+ubkl8v  VnURWBookmanL-Ligh                         "T5Encoding ReEncodeFont" <t5.enc <ubkl8v.pfb
+ubkli8v VnURWBookmanL-LighItal                     "T5Encoding ReEncodeFont" <t5.enc <ubkli8v.pfb
+ubkd8v  VnURWBookmanL-DemiBold                     "T5Encoding ReEncodeFont" <t5.enc <ubkd8v.pfb
+ubkdi8v VnURWBookmanL-DemiBoldItal                 "T5Encoding ReEncodeFont" <t5.enc <ubkdi8v.pfb
+
+ubklo8v VnURWBookmanL-Ligh         "0.277 SlantFont T5Encoding ReEncodeFont" <t5.enc <ubkl8v.pfb
+ubkdo8v VnURWBookmanL-DemiBold     "0.277 SlantFont T5Encoding ReEncodeFont" <t5.enc <ubkd8v.pfb
+
+% chancery / urw
+
+% not supported
+%
+% schoolbook / urw
+
+uncr8v  VnCenturySchL-Roma                         "T5Encoding ReEncodeFont" <t5.enc <uncr8v.pfb
+uncri8v VnCenturySchL-Ital                         "T5Encoding ReEncodeFont" <t5.enc <uncri8v.pfb
+uncb8v  VnCenturySchL-Bold                         "T5Encoding ReEncodeFont" <t5.enc <uncb8v.pfb
+uncbi8v VnCenturySchL-BoldItal                     "T5Encoding ReEncodeFont" <t5.enc <uncbi8v.pfb
+
+uncro8v VnCenturySchL-Roma         "0.277 SlantFont T5Encoding ReEncodeFont" <t5.enc <uncr8v.pfb
+uncbo8v VnCenturySchL-Bold         "0.277 SlantFont T5Encoding ReEncodeFont" <t5.enc <uncb8v.pfb
+
+% utopia
+%
+% not supported
+
+% charter
+%
+% not supported
+
+% gothic / urw
+
+uagk8v  VnURWGothicL-Book                          "T5Encoding ReEncodeFont" <t5.enc <uagk8v.pfb
+uagko8v VnURWGothicL-BookObli                      "T5Encoding ReEncodeFont" <t5.enc <uagko8v.pfb
+uagd8v  VnURWGothicL-Demi                          "T5Encoding ReEncodeFont" <t5.enc <uagd8v.pfb
+uagdo8v VnURWGothicL-DemiObli                      "T5Encoding ReEncodeFont" <t5.enc <uagdo8v.pfb

@@ -1,0 +1,41 @@
+% Copyright 2003-2005 Han The Thanh <hanthethanh@gmx.net>.
+% This file is part of vntex.  Public domain.
+
+uagk8v VnURWGothicL " T5Encoding ReEncodeFont " <t5.enc <uagk8v.pfb
+uagko8v VnURWGothicL-Italic " T5Encoding ReEncodeFont " <t5.enc <uagko8v.pfb
+uagd8v VnURWGothicL-Demi " T5Encoding ReEncodeFont " <t5.enc <uagd8v.pfb
+uagdo8v VnURWGothicL-DemiItalic " T5Encoding ReEncodeFont " <t5.enc <uagdo8v.pfb
+ubkl8v VnURWBookmanL " T5Encoding ReEncodeFont " <t5.enc <ubkl8v.pfb
+ubkli8v VnURWBookmanL-Italic " T5Encoding ReEncodeFont " <t5.enc <ubkli8v.pfb
+ubklo8v VnURWBookmanL " 0.277 SlantFont T5Encoding ReEncodeFont " <t5.enc <ubkl8v.pfb
+ubkd8v VnURWBookmanL-Bold " T5Encoding ReEncodeFont " <t5.enc <ubkd8v.pfb
+ubkdi8v VnURWBookmanL-BoldItalic " T5Encoding ReEncodeFont " <t5.enc <ubkdi8v.pfb
+ubkdo8v VnURWBookmanL-Bold " 0.277 SlantFont T5Encoding ReEncodeFont " <t5.enc <ubkd8v.pfb
+uhvr8v VnNimbusSansL " T5Encoding ReEncodeFont " <t5.enc <uhvr8v.pfb
+uhvro8v VnNimbusSansL-Italic " T5Encoding ReEncodeFont " <t5.enc <uhvro8v.pfb
+uhvb8v VnNimbusSansL-Bold " T5Encoding ReEncodeFont " <t5.enc <uhvb8v.pfb
+uhvbo8v VnNimbusSansL-BoldItalic " T5Encoding ReEncodeFont " <t5.enc <uhvbo8v.pfb
+uncr8v VnCenturySchoolbookL " T5Encoding ReEncodeFont " <t5.enc <uncr8v.pfb
+uncri8v VnCenturySchoolbookL-Italic " T5Encoding ReEncodeFont " <t5.enc <uncri8v.pfb
+uncro8v VnCenturySchoolbookL " 0.277 SlantFont T5Encoding ReEncodeFont " <t5.enc <uncr8v.pfb
+uncb8v VnCenturySchoolbookL-Bold " T5Encoding ReEncodeFont " <t5.enc <uncb8v.pfb
+uncbi8v VnCenturySchoolbookL-BoldItalic " T5Encoding ReEncodeFont " <t5.enc <uncbi8v.pfb
+uncbo8v VnCenturySchoolbookL-Bold " 0.277 SlantFont T5Encoding ReEncodeFont " <t5.enc <uncb8v.pfb
+uplr8v VnURWPalladioL " T5Encoding ReEncodeFont " <t5.enc <uplr8v.pfb
+uplri8v VnURWPalladioL-Italic " T5Encoding ReEncodeFont " <t5.enc <uplri8v.pfb
+uplro8v VnURWPalladioL " 0.277 SlantFont T5Encoding ReEncodeFont " <t5.enc <uplr8v.pfb
+uplb8v VnURWPalladioL-Bold " T5Encoding ReEncodeFont " <t5.enc <uplb8v.pfb
+uplbi8v VnURWPalladioL-BoldItalic " T5Encoding ReEncodeFont " <t5.enc <uplbi8v.pfb
+uplbo8v VnURWPalladioL-Bold " 0.277 SlantFont T5Encoding ReEncodeFont " <t5.enc <uplb8v.pfb
+fplrc8v VnTeXPalladioL-SC " T5Encoding ReEncodeFont " <t5.enc <fplrc8v.pfb
+utmr8v VnNimbusRomanNo9L " T5Encoding ReEncodeFont " <t5.enc <utmr8v.pfb
+utmri8v VnNimbusRomanNo9L-Italic " T5Encoding ReEncodeFont " <t5.enc <utmri8v.pfb
+utmro8v VnNimbusRomanNo9L " 0.277 SlantFont T5Encoding ReEncodeFont " <t5.enc <utmr8v.pfb
+utmb8v VnNimbusRomanNo9L-Bold " T5Encoding ReEncodeFont " <t5.enc <utmb8v.pfb
+utmbi8v VnNimbusRomanNo9L-BoldItalic " T5Encoding ReEncodeFont " <t5.enc <utmbi8v.pfb
+utmbo8v VnNimbusRomanNo9L-Bold " 0.277 SlantFont T5Encoding ReEncodeFont " <t5.enc <utmb8v.pfb
+ucrr8v VnNimbusMonoL " T5Encoding ReEncodeFont " <t5.enc <ucrr8v.pfb
+ucrro8v VnNimbusMonoL-Italic " T5Encoding ReEncodeFont " <t5.enc <ucrro8v.pfb
+ucrb8v VnNimbusMonoL-Bold " T5Encoding ReEncodeFont " <t5.enc <ucrb8v.pfb
+ucrbo8v VnNimbusMonoL-BoldItalic " T5Encoding ReEncodeFont " <t5.enc <ucrbo8v.pfb
+uzcmi8v VnURWChanceryL-MediItal " T5Encoding ReEncodeFont " <t5.enc <uzcmi8v.pfb

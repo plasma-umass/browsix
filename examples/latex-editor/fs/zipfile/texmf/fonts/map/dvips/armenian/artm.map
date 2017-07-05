@@ -1,0 +1,35 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% This is the `artm.map' file (Map file for Armenian Times fonts).
+%%
+%% This file is a part of the ArmTeX project [2014/04/09 v3.0-beta3]
+%%
+%% ArmTeX is a system for writing in Armenian with plain TeX and/or LaTeX(2e).
+%%
+%% Copyright 1997 - 2013:
+%%   Serguei Dachian (Serguei.Dachian_AT_math.univ-bpclermont.fr),
+%%   Arnak Dalalyan  (arnak.dalalyan_AT_ensae.fr),
+%%   Vardan Akopian  (vakopian_AT_yahoo.com).
+%%
+%% ArmTeX may be distributed and/or modified under the conditions of the LaTeX
+%% Project Public License, either version 1.3 of this license or (at your
+%% option) any later version.
+%%
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX version
+%% 2005/12/01 or later.
+%%
+%% ArmTeX has the LPPL maintenance status `author-maintained'.
+%%
+%% For more details, installation instructions and the complete list of files
+%% see the provided `readme.txt' file.
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+artmr10  ARTMR10  <artmr10.pfb
+artmsl10 ARTMSL10 <artmsl10.pfb
+artmi10  ARTMI10  <artmi10.pfb
+artmb10  ARTMB10  <artmb10.pfb
+artmbs10 ARTMBS10 <artmbs10.pfb
+artmbi10 ARTMBI10 <artmbi10.pfb

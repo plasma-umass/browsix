@@ -1,0 +1,4 @@
+favr8v ArevSans-Roman-T5 <t5.enc <ArevSans-Roman-T5.pfb " T5Encoding ReEncodeFont "
+favri8v ArevSans-Oblique-T5 <t5.enc <ArevSans-Oblique-T5.pfb " T5Encoding ReEncodeFont "
+favb8v ArevSans-Bold-T5 <t5.enc <ArevSans-Bold-T5.pfb " T5Encoding ReEncodeFont "
+favbi8v ArevSans-BoldOblique-T5 <t5.enc <ArevSans-BoldOblique-T5.pfb " T5Encoding ReEncodeFont "

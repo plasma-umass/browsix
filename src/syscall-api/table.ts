@@ -287,7 +287,7 @@ function sys_setsockopt(cb: Function, trap: number): void {
 	setTimeout(cb, 0, [0, 0, 0]);
 }
 
-export var syscallTbl = [
+export const syscallTbl = [
 	sys_read,       // 0 read
 	sys_write,      // 1 write
 	sys_ni_syscall, // 2 open

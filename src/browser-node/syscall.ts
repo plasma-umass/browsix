@@ -7,7 +7,7 @@ export enum AF {
 	FILE = 1,
 	INET = 2,
 	INET6 = 10,
-};
+}
 
 export enum SOCK {
 	STREAM = 1,
@@ -425,4 +425,4 @@ export function getGlobal(): any {
 	}
 }
 
-export var syscall = new USyscalls(getGlobal());
+export const syscall = new USyscalls(getGlobal());

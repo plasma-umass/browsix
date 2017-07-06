@@ -50,19 +50,22 @@ var builtins = {
 // the 'ts project', as gulp-typescript seems to use it as a dumping
 // ground for mutable state.
 function project() {
-    return ts.createProject('tsconfig.json', {
-        sortOutput: true,
-        declaration: true,
-    });
+    return ts.createProject('tsconfig.json');
 }
 
 function tsPipeline(src, dst) {
     return function() {
-        var build = gulp.src(src)
-            .pipe(ts(project()));
-        return merge(
-	    build.js.pipe(gulp.dest(dst)),
-	    build.dts.pipe(gulp.dest(dst)));
+        return gulp.src(src)
+            .pipe(ts({
+		"target": "es5",
+		"module": "commonjs",
+		"allowJs": true,
+		"noImplicitAny": true,
+		"removeComments": true,
+		"experimentalDecorators": true,
+		"newLine": "LF",
+	    }))
+	    .pipe(gulp.dest(dst));
     }
 }
 
@@ -81,7 +84,7 @@ function tsTask(subdir, options) {
     gulp.task('lint-'+subdir, function() {
         return gulp.src(['src/'+subdir+'/*.ts', 'src/'+subdir+'/*/*.ts'])
             .pipe(lint({
-		formatter: "verbose"
+		formatter: "verbose",
 	    }))
             .pipe(lint.report());
     });
@@ -239,13 +242,13 @@ gulp.task('index-benchfs', [], function() {
 
 gulp.task('build-test', ['index-fs'], function() {
     return gulp.src('test/*.ts')
-        .pipe(ts(project())).js
+        .pipe(project()).js
         .pipe(gulp.dest('test'));
 });
 
 gulp.task('build-bench', ['index-benchfs'], function() {
     return gulp.src('bench/*.ts')
-        .pipe(ts(project())).js
+        .pipe(project()).js
         .pipe(gulp.dest('bench'));
 });
 
@@ -474,7 +477,7 @@ gulp.task('app:build', ['index-fs'], function (cb) {
     return gulp.src([
         'app/elements/**/*.ts',
     ])
-        .pipe(ts(project())).js
+        .pipe(project()).js
         .pipe(gulp.dest('app/elements'));
 
 });

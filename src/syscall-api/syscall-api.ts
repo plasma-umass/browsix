@@ -10,13 +10,13 @@ export interface SyscallCallback {
 // for gopherjs
 export function Syscall(cb: Function, trap: number): void {
 	syscallTbl[trap].apply(this, arguments);
-};
+}
 
 // for gopherjs
-export var Syscall6 = Syscall;
+export const Syscall6 = Syscall;
 
 // for emscripten
-export var internal = syscall;
+export const internal = syscall;
 
 interface Environment {
 	[name: string]: string;

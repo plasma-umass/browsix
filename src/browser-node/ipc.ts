@@ -6,14 +6,15 @@
 
 'use strict';
 
-export var now: () => number;
-
 // use performance.now in the browser, and hrtime under node.
+let nowFn: () => number;
 if (typeof performance !== 'undefined') {
-	now = performance.now.bind(performance);
+	nowFn = performance.now.bind(performance);
 } else {
-	now = function(): number {
+	nowFn = function(): number {
 		let [sec, nanosec] = process.hrtime();
 		return sec*1e3 + nanosec/1e6;
 	};
 }
+
+export const now = nowFn;

@@ -2,8 +2,6 @@
 // Use of this source code is governed by the ISC
 // license that can be found in the LICENSE file.
 
-/// <reference path="../../typings/index.d.ts" />
-
 'use strict';
 
 import * as constants from './constants';
@@ -221,7 +219,7 @@ export enum AF {
 	FILE = 1,
 	INET = 2,
 	INET6 = 10,
-};
+}
 
 export enum SOCK {
 	STREAM = 1,
@@ -960,7 +958,7 @@ export class Syscalls {
 
 	personality(task: ITask, kind: number, heap: SharedArrayBuffer, off: number, cb: (err: any) => void): void {
 		task.personality(kind, heap, off, cb);
-	};
+	}
 
 	fork(task: ITask, heap: ArrayBuffer, args: any, cb: (pid: number) => void): void {
 		this.kernel.fork(<Task>task, heap, args, cb);
@@ -2460,7 +2458,7 @@ export interface BootArgs {
 	fsArgs?: any[];
 	ttyParent?: Element;
 	readOnly?: boolean;
-};
+}
 
 export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: BootArgs = {}): void {
 	let browserfs: any = {};

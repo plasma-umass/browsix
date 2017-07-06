@@ -13,7 +13,6 @@ var browserSync = require('browser-sync');
 var reload = browserSync.reload;
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
-var uglify = require('gulp-uglify');
 var karma = require('karma');
 var run = require('gulp-run');
 var chmod = require('gulp-chmod');
@@ -122,7 +121,6 @@ function tsTask(subdir, options) {
         return b.bundle()
             .pipe(source('./lib/'+subdir+'/'+subdir+'.js'))
             .pipe(buffer())
-        //  .pipe(uglify())
             .on('error', gutil.log)
             .pipe(gulp.dest('./lib-dist/'));
     });
@@ -379,9 +377,6 @@ var optimizeHtmlTask = function (src, dest) {
     // Replace path for vulcanized assets
         .pipe($.if('*.html', $.replace('elements/elements.html', 'elements/elements.vulcanized.html')))
         .pipe(assets)
-    // Concatenate and minify JavaScript
-//        .pipe($.if('*.js', $.uglify({preserveComments: 'some'})))
-    // Concatenate and minify styles
     // In case you are still using useref build blocks
         .pipe($.if('*.css', $.cssmin()))
         .pipe(assets.restore())

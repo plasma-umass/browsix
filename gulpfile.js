@@ -51,7 +51,7 @@ var builtins = {
 // ground for mutable state.
 function project(extraLibs) {
     let configFile = fs.readFileSync('tsconfig.json');
-    let config = JSON.parse(configFile);
+    let config = JSON.parse(configFile).compilerOptions;
     config.lib = [
         "DOM",
         "DOM.Iterable",

@@ -102,7 +102,7 @@ test-browser: $(BUILD_DEPS)
 test: test-browser
 
 clean:
-	rm -rf dist lib fs report.{pdf,aux,bbl,blg,log}
+	rm -rf dist lib lib-dist fs report.{pdf,aux,bbl,blg,log} test/*.js
 	find . -name '*~' | xargs rm -f
 
 distclean: clean

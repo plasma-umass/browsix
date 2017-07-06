@@ -14,7 +14,7 @@ import { ExitCallback, OutputCallback, SyscallContext, SyscallResult,
 
 import { HTTPParser } from './http_parser';
 
-import * as bfs from 'browserfs-browsix-tmp';
+import * as bfs from 'browserfs';
 import * as marshal from 'node-binary-marshal';
 
 import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
@@ -1665,7 +1665,7 @@ export class Kernel implements IKernel {
 				mime = 'text/plain';
 			}
 			let response = Buffer.concat(resp);
-			let data = new Uint8Array(response.data.buff.buffer, 0, response.length);
+			let data = new Uint8Array(response.data, 0, response.length);
 
 			// FIXME: only convert to blob if
 			// xhr.responseType === 'blob'
@@ -2190,7 +2190,7 @@ export class Task implements ITask {
 			return;
 		}
 
-		let jsBytes = new Uint8Array((<any>buf).data.buff.buffer);
+		let jsBytes = buf;
 		let blob = new Blob([jsBytes], {type: 'text/javascript'});
 		jsBytes = undefined;
 		let blobUrl = window.URL.createObjectURL(blob);

@@ -34,8 +34,8 @@ var addShebang = require('./gulp-plugins/add-shebang');
 // handle this ourselves.
 var globalVars = {
     'RELEASE': function() { return 'false'; },
-    'buffer': function() { return 'require("browserfs-browsix-tmp").BFSRequire("buffer")'; },
-    'Buffer': function() { return 'require("browserfs-browsix-tmp").BFSRequire("buffer").Buffer'; },
+    'buffer': function() { return 'require("browserfs").BFSRequire("buffer")'; },
+    'Buffer': function() { return 'require("browserfs").BFSRequire("buffer").Buffer'; },
     'process': function() { return "" },
 };
 

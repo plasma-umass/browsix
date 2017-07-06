@@ -97,7 +97,7 @@ RUN \
     bfs-path@"^0.1.2" \
     bower@"^1.7.9" \
     browser-sync@"^2.13.0" \
-    browserfs-browsix-tmp@"0.5.15" \
+    browserfs@"0.5.15" \
     browserify@"^13.0.1" \
     chai@"^3.5.0" \
     connect-history-api-fallback@"^1.1.0" \

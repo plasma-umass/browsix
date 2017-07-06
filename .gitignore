@@ -22,3 +22,5 @@
 /examples/meme-service/frontend/fs/meme-service.js
 /examples/latex-editor/fs/usr/bin
 .DS_STORE
+examples/latex-editor/fs/compress_items
+examples/latex-editor/fs/fs.zip

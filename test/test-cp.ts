@@ -1,6 +1,3 @@
-/// <reference path="../typings/globals/chai/index.d.ts" />
-/// <reference path="../typings/globals/mocha/index.d.ts" />
-
 'use strict';
 
 import * as chai from 'chai';
@@ -312,10 +309,10 @@ describe('cp /a /b', function(): void {
     });
 
     it('should create a directory c/', function (done:MochaDone):void {
-       kernel.fs.mkdir('/c', function(err) {
-           expect(err).not.to.be.undefined;
-           done();
-       });
+        kernel.fs.mkdir('/c', function(err: any) {
+            expect(err).not.to.be.undefined;
+            done();
+        });
     });
 
     it('should run `cp /a c/`', function (done:MochaDone): void {
@@ -457,7 +454,7 @@ describe('cp /a /b /c', function(): void {
     });
 
     it('should create a directory c/', function (done:MochaDone):void {
-        kernel.fs.mkdir('/c', function(err) {
+        kernel.fs.mkdir('/c', function(err: any) {
             expect(err).not.to.be.undefined;
             done();
         });

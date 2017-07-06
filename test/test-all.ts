@@ -1,5 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
-
 require('./test-stat');
 require('./test-cat');
 require('./test-echo');
@@ -18,4 +16,3 @@ require('./test-sort');
 require('./test-tee');
 require('./test-xargs');
 require('./test-cp');
-// require('./test-scheduler');

@@ -2,8 +2,6 @@
 // Use of this source code is governed by the ISC
 // license that can be found in the LICENSE file.
 
-/// <reference path="../../typings/index.d.ts" />
-
 'use strict';
 
 import { EINVAL, ESPIPE } from './constants';

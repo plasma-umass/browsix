@@ -2364,12 +2364,12 @@ export class Task implements ITask {
 		this.blobUrl = undefined;
 
 		// only show perf information for emscripten programs for now
-		if (this.timeFirstMsg && false) {
-			let exit = performance.now();
-			// console.log('' + this.pid + ' real: ' + (exit - this.timeWorkerStart));
-			// console.log('' + this.pid + ' init: ' + (this.timeFirstMsg - this.timeWorkerStart));
-			// console.log('' + this.pid + ' sys:  ' + this.timeSyscallTotal);
-		}
+		// if (this.timeFirstMsg) {
+		// 	let exit = performance.now();
+		// 	console.log('' + this.pid + ' real: ' + (exit - this.timeWorkerStart));
+		// 	console.log('' + this.pid + ' init: ' + (this.timeFirstMsg - this.timeWorkerStart));
+		// 	console.log('' + this.pid + ' sys:  ' + this.timeSyscallTotal);
+		// }
 
 		for (let n in this.files) {
 			if (!this.files.hasOwnProperty(n))

@@ -4,6 +4,7 @@
   "description": "in-browser, multi-process operating system",
   "main": "lib/kernel/kernel.js",
   "scripts": {
+    "prepublish": "node_modules/.bin/gulp build:dist",
     "test": "node_modules/.bin/gulp test-once"
   },
   "repository": {
@@ -60,6 +61,10 @@
     "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
+    "@types/chai": "^4.0.1",
+    "@types/dropboxjs": "0.0.29",
+    "@types/filesystem": "0.0.28",
+    "@types/mocha": "^2.2.41",
     "node-binary-marshal": "^0.4.2",
     "term.js": "github:bpowers/term.js"
   },

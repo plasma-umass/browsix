@@ -49,23 +49,31 @@ var builtins = {
 // each user of our tsconfig.json setup needs a different instance of
 // the 'ts project', as gulp-typescript seems to use it as a dumping
 // ground for mutable state.
-function project() {
-    return ts.createProject('tsconfig.json');
+function project(extraLibs) {
+    let configFile = fs.readFileSync('tsconfig.json');
+    let config = JSON.parse(configFile);
+    config.lib = [
+        "DOM",
+        "DOM.Iterable",
+        "ScriptHost",
+        "es2016",
+        "es2017.sharedmemory",
+    ];
+    if (extraLibs)
+        libs.concat(extraLibs);
+
+    return ts(config);
 }
 
-function tsPipeline(src, dst) {
+function tsPipeline(src, dst, extraLibs) {
     return function() {
-        return gulp.src(src)
-            .pipe(ts({
-		"target": "es5",
-		"module": "commonjs",
-		"allowJs": true,
-		"noImplicitAny": true,
-		"removeComments": true,
-		"experimentalDecorators": true,
-		"newLine": "LF",
-	    }))
-	    .pipe(gulp.dest(dst));
+        let build = gulp.src(src)
+            .pipe(project(extraLibs));
+
+	return merge([
+	    build.dts.pipe(gulp.dest(dst)),
+	    build.js.pipe(gulp.dest(dst)),
+	]);
     }
 }
 
@@ -84,8 +92,8 @@ function tsTask(subdir, options) {
     gulp.task('lint-'+subdir, function() {
         return gulp.src(['src/'+subdir+'/*.ts', 'src/'+subdir+'/*/*.ts'])
             .pipe(lint({
-		formatter: "verbose",
-	    }))
+                formatter: "verbose",
+            }))
             .pipe(lint.report());
     });
 
@@ -93,7 +101,7 @@ function tsTask(subdir, options) {
     if (!options.hasOwnProperty('lint') || options.lint)
         buildDeps = buildDeps.concat(['lint-'+subdir]);
 
-    gulp.task('build-'+subdir, buildDeps, tsPipeline(sources, 'lib/'+subdir));
+    gulp.task('build-'+subdir, buildDeps, tsPipeline(sources, 'lib/'+subdir, options.extraLibs));
 
     var globals = extend({}, globalVars);
     if (noGlobal)

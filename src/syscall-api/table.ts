@@ -134,7 +134,7 @@ function sys_read(cb: Function, trap: number, fd: number, readArray: any, readLe
 	syscall.pread(fd, readLen, -1, done);
 }
 
-function sys_write(cb: Function, trap: number, fd: number, buf: Uint8Array, blen: number): void {
+function sys_write(cb: Function, trap: number, fd: number, buf: ArrayBuffer, blen: number): void {
 	let done = function(err: any, len: number): void {
 		cb([len, 0, err ? -1 : 0]);
 	};

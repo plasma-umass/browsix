@@ -2500,20 +2500,12 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 					cb(err, undefined);
 					return;
 				}
-				if (args.useLocalStorage) {
-					let writable = new bfs.FileSystem['LocalStorage']();
-				} else {
-					let writable = new bfs.FileSystem['InMemory']();
-				}
+				let writable = args.useLocalStorage ? new bfs.FileSystem['LocalStorage']() : new bfs.FileSystem['InMemory']();
 				let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
 				overlaid.initialize(finishInit.bind(this, overlaid));
 			});
 		} else {
-			if (args.useLocalStorage) {
-					let writable = new bfs.FileSystem['LocalStorage']();
-				} else {
-					let writable = new bfs.FileSystem['InMemory']();
-			}
+			let writable = args.useLocalStorage ? new bfs.FileSystem['LocalStorage']() : new bfs.FileSystem['InMemory']();
 			let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
 			overlaid.initialize(finishInit.bind(this, overlaid));
 		}

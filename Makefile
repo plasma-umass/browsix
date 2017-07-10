@@ -99,14 +99,10 @@ test-browser: $(BUILD_DEPS)
 	@echo "  TEST BROWSER"
 	$(GULP) test-browser
 
-test-node: $(BUILD_DEPS)
-	@echo "  TEST NODE"
-	$(GULP) test-node
-
 test: test-browser
 
 clean:
-	rm -rf dist lib fs report.{pdf,aux,bbl,blg,log}
+	rm -rf dist lib lib-dist fs report.{pdf,aux,bbl,blg,log} test/*.js
 	find . -name '*~' | xargs rm -f
 
 distclean: clean

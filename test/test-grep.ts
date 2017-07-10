@@ -1,6 +1,3 @@
-/// <reference path="../typings/globals/chai/index.d.ts" />
-/// <reference path="../typings/globals/mocha/index.d.ts" />
-
 'use strict';
 
 import * as chai from 'chai';

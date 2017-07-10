@@ -8,7 +8,7 @@ import * as uv from './uv';
 const ERROR = uv.UV_EMFILE;
 const ENOENT = uv.UV_ENOENT;
 
-export interface Environment { [k: string]: string; };
+export interface Environment { [k: string]: string; }
 
 export interface File {
 	type: string;      // 'pipe' | 'ignore' | 'inherit' | 'fd'

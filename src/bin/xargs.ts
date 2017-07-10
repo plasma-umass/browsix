@@ -4,8 +4,6 @@
  * Options implemented: [dEnrstx]
  */
 
-/// <reference path="../../typings/index.d.ts" />
-
 
 /**
  * TODO:

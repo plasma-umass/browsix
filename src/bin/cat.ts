@@ -1,5 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
-
 'use strict';
 
 import * as fs from 'fs';

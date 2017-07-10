@@ -13,11 +13,9 @@ var browserSync = require('browser-sync');
 var reload = browserSync.reload;
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
-var uglify = require('gulp-uglify');
 var karma = require('karma');
 var run = require('gulp-run');
 var chmod = require('gulp-chmod');
-var proxy = require('proxy-middleware');
 var url = require('url');
 var extend = require('util')._extend;
 
@@ -50,20 +48,31 @@ var builtins = {
 // each user of our tsconfig.json setup needs a different instance of
 // the 'ts project', as gulp-typescript seems to use it as a dumping
 // ground for mutable state.
-function project() {
-    return ts.createProject('tsconfig.json', {
-        sortOutput: true,
-        declaration: true,
-    });
+function project(extraLibs) {
+    let configFile = fs.readFileSync('tsconfig.json');
+    let config = JSON.parse(configFile).compilerOptions;
+    config.lib = [
+        "DOM",
+        "DOM.Iterable",
+        "ScriptHost",
+        "es2016",
+        "es2017.sharedmemory",
+    ];
+    if (extraLibs)
+        libs.concat(extraLibs);
+
+    return ts(config);
 }
 
-function tsPipeline(src, dst) {
+function tsPipeline(src, dst, extraLibs) {
     return function() {
-        var build = gulp.src(src)
-            .pipe(ts(project()));
-        return merge(
+        let build = gulp.src(src)
+            .pipe(project(extraLibs));
+
+	return merge([
+	    build.dts.pipe(gulp.dest(dst)),
 	    build.js.pipe(gulp.dest(dst)),
-	    build.dts.pipe(gulp.dest(dst)));
+	]);
     }
 }
 
@@ -82,8 +91,8 @@ function tsTask(subdir, options) {
     gulp.task('lint-'+subdir, function() {
         return gulp.src(['src/'+subdir+'/*.ts', 'src/'+subdir+'/*/*.ts'])
             .pipe(lint({
-		formatter: "verbose"
-	    }))
+                formatter: "verbose",
+            }))
             .pipe(lint.report());
     });
 
@@ -91,7 +100,7 @@ function tsTask(subdir, options) {
     if (!options.hasOwnProperty('lint') || options.lint)
         buildDeps = buildDeps.concat(['lint-'+subdir]);
 
-    gulp.task('build-'+subdir, buildDeps, tsPipeline(sources, 'lib/'+subdir));
+    gulp.task('build-'+subdir, buildDeps, tsPipeline(sources, 'lib/'+subdir, options.extraLibs));
 
     var globals = extend({}, globalVars);
     if (noGlobal)
@@ -112,7 +121,6 @@ function tsTask(subdir, options) {
         return b.bundle()
             .pipe(source('./lib/'+subdir+'/'+subdir+'.js'))
             .pipe(buffer())
-        //  .pipe(uglify())
             .on('error', gutil.log)
             .pipe(gulp.dest('./lib-dist/'));
     });
@@ -240,13 +248,13 @@ gulp.task('index-benchfs', [], function() {
 
 gulp.task('build-test', ['index-fs'], function() {
     return gulp.src('test/*.ts')
-        .pipe(ts(project())).js
+        .pipe(project()).js
         .pipe(gulp.dest('test'));
 });
 
 gulp.task('build-bench', ['index-benchfs'], function() {
     return gulp.src('bench/*.ts')
-        .pipe(ts(project())).js
+        .pipe(project()).js
         .pipe(gulp.dest('bench'));
 });
 
@@ -282,14 +290,6 @@ gulp.task('dist-bench', ['build-bench', 'index-benchfs'], function() {
         .pipe(buffer())
         .on('error', gutil.log)
         .pipe(gulp.dest('./lib-dist/'));
-});
-
-// XXX: this doesn't work due to the tight integration of the kernel
-// with BrowserFS.  Potentially this could be changed by using a
-// different BrowserFS backend (like zipfs?) that doesn't do
-// XMLHttpRequest.
-gulp.task('test-node', ['dist-test'], function() {
-    return gulp.src('test/*.js').pipe(mocha());
 });
 
 // this starts karma & rebuild everything on change
@@ -377,9 +377,6 @@ var optimizeHtmlTask = function (src, dest) {
     // Replace path for vulcanized assets
         .pipe($.if('*.html', $.replace('elements/elements.html', 'elements/elements.vulcanized.html')))
         .pipe(assets)
-    // Concatenate and minify JavaScript
-//        .pipe($.if('*.js', $.uglify({preserveComments: 'some'})))
-    // Concatenate and minify styles
     // In case you are still using useref build blocks
         .pipe($.if('*.css', $.cssmin()))
         .pipe(assets.restore())
@@ -483,16 +480,13 @@ gulp.task('app:build', ['index-fs'], function (cb) {
     return gulp.src([
         'app/elements/**/*.ts',
     ])
-        .pipe(ts(project())).js
+        .pipe(project()).js
         .pipe(gulp.dest('app/elements'));
 
 });
 
 // Watch files for changes & reload
 gulp.task('serve', ['app:build', 'app:styles', 'app:elements', 'app:images'], function () {
-    var proxyOptions = url.parse('http://localhost:8080/api');
-    proxyOptions.route = '/api';
-
     browserSync({
         port: 5000,
         notify: false,
@@ -517,10 +511,11 @@ gulp.task('serve', ['app:build', 'app:styles', 'app:elements', 'app:images'], fu
                 '/fs': 'fs',
                 '/benchfs': 'benchfs',
             },
-            middleware: [proxy(proxyOptions)],
+            middleware: [],
         }
     });
 
+    gulp.watch(['src/kernel/*.ts'], ['dist-kernel', reload]);
     gulp.watch(['app/**/*.html'], reload);
     gulp.watch(['app/styles/**/*.css'], ['app:styles', reload]);
     gulp.watch(['app/elements/**/*.css'], ['app:elements', reload]);

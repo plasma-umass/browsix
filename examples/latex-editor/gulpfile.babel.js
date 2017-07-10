@@ -141,6 +141,8 @@ gulp.task('serve', ['styles', 'scripts', 'fonts', 'index-fs', 'copy-kernel'], ()
     '.tmp/fonts/**/*'
   ]).on('change', reload);
 
+
+  gulp.watch('../../lib-dist/lib/kernel/kernel.js', ['copy-kernel', reload]);
   gulp.watch('app/styles/**/*.scss', ['styles']);
   gulp.watch('app/scripts/**/*.js', ['scripts']);
   gulp.watch('app/fonts/**/*', ['fonts']);

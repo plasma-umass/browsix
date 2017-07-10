@@ -2458,6 +2458,7 @@ export interface BootArgs {
 	fsArgs?: any[];
 	ttyParent?: Element;
 	readOnly?: boolean;
+	useLocalStorage?: boolean;
 }
 
 export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: BootArgs = {}): void {
@@ -2497,12 +2498,12 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 					cb(err, undefined);
 					return;
 				}
-				let writable = new bfs.FileSystem['InMemory']();
+				let writable = args.useLocalStorage ? new bfs.FileSystem['LocalStorage']() : new bfs.FileSystem['InMemory']();
 				let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
 				overlaid.initialize(finishInit.bind(this, overlaid));
 			});
 		} else {
-			let writable = new bfs.FileSystem['InMemory']();
+			let writable = args.useLocalStorage ? new bfs.FileSystem['LocalStorage']() : new bfs.FileSystem['InMemory']();
 			let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
 			overlaid.initialize(finishInit.bind(this, overlaid));
 		}

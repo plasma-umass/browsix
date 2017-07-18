@@ -5,47 +5,67 @@
     var SECRET_ID = '03fdtv6adj77snd';
     var REDIRECT_URL = "http://localhost:9000";
 
-    var client = new Dropbox.Client({
+    var dropboxClient = new Dropbox.Client({
         key: CLIENT_ID
     });
-    client.authDriver(new Dropbox.AuthDriver.Redirect({
+    dropboxClient.authDriver(new Dropbox.AuthDriver.Redirect({
         redirectUrl: REDIRECT_URL
     }));
 
     // Try to use cached credentials.
-    client.authenticate({
+    dropboxClient.authenticate({
         interactive: false
-    }, function(error, client) {
+    }, function(error, dropboxClient) {
         if (error) {
             return handleError(error);
         }
 
-        if (client.isAuthenticated()) {
-            displayLoggedInContent(client);
+        if (dropboxClient.isAuthenticated()) {
+            displayLoggedInContent(dropboxClient);
         } else {
-            displayLoggedOutContent(client);
+            displayLoggedOutContent(dropboxClient);
         }
     });
 
-    function displayLoggedInContent(client) {
-        client.getAccountInfo(function(error, accountInfo) {
+    function displayLoggedInContent(dropboxClient) {
+        
+        var loginButton = document.querySelector("#login-button");
+        loginButton.setAttribute("class", "btn btn-primary hidden");
+
+        dropboxClient.getAccountInfo(function(error, accountInfo) {
             if (error) {
                 return handleError(error);
             };
             document.getElementById('user-name').innerHTML = "Hello, " + accountInfo.name + "!";
         })
-    }
-
-    function displayLoggedOutContent(client) {
-        var button = document.querySelector("#login-button");
+        var button = document.querySelector("#logout-button");
         button.setAttribute("class", "btn btn-primary");
         button.addEventListener("click", function() {
-            // The user will have to click an 'Authorize' button.
-            client.authenticate(function(error, client) {
+            dropboxClient.signOut(function(error) {
                 if (error) {
                     return handleError(error);
                 }
-                displayLoggedInContent(client);
+                window.location.reload();
+                displayLoggedOutContent(dropboxClient);
+            })
+        });
+    }
+
+    function displayLoggedOutContent(dropboxClient) {
+        
+        var logoutButton = document.querySelector("#logout-button");
+        logoutButton.setAttribute("class", "btn btn-primary hidden");
+        
+        document.getElementById('user-name').innerHTML = "";
+
+        var loginButton = document.querySelector("#login-button");
+        loginButton.setAttribute("class", "btn btn-primary");
+        loginButton.addEventListener("click", function() {
+            dropboxClient.authenticate(function(error) {
+                if (error) {
+                    return handleError(error);
+                }
+                displayLoggedInContent(dropboxClient);
             });
         });
     }
@@ -63,7 +83,7 @@
     var f = 'main';
     var texFile = f + '.tex';
     var bibFile = f + '.bib';
-    var cwd = client.isAuthenticated() ? '/workspace/dropbox/' : '/';
+    var cwd = dropboxClient.isAuthenticated() ? '/workspace/dropbox/' : '/';
     var edTex = document.getElementById('ed-tex');
     var edBib = document.getElementById('ed-bib');
     var button = document.getElementById('create-button');
@@ -84,7 +104,7 @@
 
         $('#loading').removeClass('browsix-hidden');
 
-        window.Boot('XmlHttpRequest', ['index.json', 'fs', true, client, zippedData], function(err, k) {
+        window.Boot('XmlHttpRequest', ['index.json', 'fs', true, dropboxClient, zippedData], function(err, k) {
             if (err) {
                 console.log(err);
                 throw new Error(err);

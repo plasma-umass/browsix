@@ -1,5 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
-
 'use strict';
 
 import { now } from './ipc';
@@ -223,6 +221,7 @@ function init(data: SyscallResponse): void {
 
 			(<any>self).process = process;
 			(<any>self).require = _require;
+			(self as any).exports = {};
 			//try {
 			(<any>self).eval(contents);
 			//} catch (e) {

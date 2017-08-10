@@ -2,8 +2,6 @@
 // Use of this source code is governed by the ISC
 // license that can be found in the LICENSE file.
 
-/// <reference path="../../typings/index.d.ts" />
-
 'use strict';
 
 import * as constants from './constants';
@@ -223,7 +221,7 @@ export enum AF {
 	FILE = 1,
 	INET = 2,
 	INET6 = 10,
-};
+}
 
 export enum SOCK {
 	STREAM = 1,
@@ -962,7 +960,7 @@ export class Syscalls {
 
 	personality(task: ITask, kind: number, heap: SharedArrayBuffer, off: number, cb: (err: any) => void): void {
 		task.personality(kind, heap, off, cb);
-	};
+	}
 
 	fork(task: ITask, heap: ArrayBuffer, args: any, cb: (pid: number) => void): void {
 		this.kernel.fork(<Task>task, heap, args, cb);
@@ -2371,12 +2369,12 @@ export class Task implements ITask {
 		this.blobUrl = undefined;
 
 		// only show perf information for emscripten programs for now
-		if (this.timeFirstMsg && false) {
-			let exit = performance.now();
-			// console.log('' + this.pid + ' real: ' + (exit - this.timeWorkerStart));
-			// console.log('' + this.pid + ' init: ' + (this.timeFirstMsg - this.timeWorkerStart));
-			// console.log('' + this.pid + ' sys:  ' + this.timeSyscallTotal);
-		}
+		// if (this.timeFirstMsg) {
+		// 	let exit = performance.now();
+		// 	console.log('' + this.pid + ' real: ' + (exit - this.timeWorkerStart));
+		// 	console.log('' + this.pid + ' init: ' + (this.timeFirstMsg - this.timeWorkerStart));
+		// 	console.log('' + this.pid + ' sys:  ' + this.timeSyscallTotal);
+		// }
 
 		for (let n in this.files) {
 			if (!this.files.hasOwnProperty(n))
@@ -2465,7 +2463,8 @@ export interface BootArgs {
 	fsArgs?: any[];
 	ttyParent?: Element;
 	readOnly?: boolean;
-};
+	useLocalStorage?: boolean;
+}
 
 export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: BootArgs = {}): void {
 	let browserfs: any = {};
@@ -2532,7 +2531,6 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 					cb(err, undefined);
 					return;
 				}
-
 				if (zipFS) {
 					asyncRoot = new bfs.FileSystem['OverlayFS'](zipFS, asyncRoot);
 					asyncRoot.initialize((err: any) => {
@@ -2588,8 +2586,8 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 
 				finishInit(newmfs, null);
 			} else {
-				let localStorageFS = new bfs.FileSystem['LocalStorage']();
-				let overlaid = new bfs.FileSystem['OverlayFS'](localStorageFS, asyncRoot);
+				let writable = args.useLocalStorage ? new bfs.FileSystem['LocalStorage']() : new bfs.FileSystem['InMemory']();
+				let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
 				overlaid.initialize(finishInit.bind(this, overlaid));
 			}
 		}

@@ -1,5 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
-
 'use strict';
 
 import * as child_process from 'child_process';

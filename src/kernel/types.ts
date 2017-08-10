@@ -2,8 +2,6 @@
 // Use of this source code is governed by the ISC
 // license that can be found in the LICENSE file.
 
-/// <reference path="../../typings/index.d.ts" />
-
 'use strict';
 
 export interface ExitCallback {
@@ -50,6 +48,8 @@ export interface Environment {
 }
 
 export interface IFile {
+	port?: number;
+	addr?: string;
 
 	write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void;
 	read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void;

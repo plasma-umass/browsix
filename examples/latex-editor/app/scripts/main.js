@@ -83,7 +83,7 @@
     var f = 'main';
     var texFile = f + '.tex';
     var bibFile = f + '.bib';
-    var cwd = dropboxClient.isAuthenticated() ? '/workspace/dropbox/' : '/';
+    var dropboxMountPoint = dropboxClient.isAuthenticated() ? '/workspace/dropbox/' : '/';
     var edTex = document.getElementById('ed-tex');
     var edBib = document.getElementById('ed-bib');
     var button = document.getElementById('create-button');
@@ -115,47 +115,70 @@
     }
 
     function loadFiles() {
-        edTex.value = kernel.fs.readFileSync(texFile).toString();
-        edBib.value = kernel.fs.readFileSync(bibFile).toString();
+        kernel.fs.readFile(dropboxMountPoint + texFile, function(err, data) {
+            if (err) {
+                edTex.value = kernel.fs.readFileSync(texFile).toString();
+            } else {
+                edTex.value = data;
+            }
+            kernel.fs.readFile(dropboxMountPoint + bibFile, function(err, data) {
+                if (err) {
+                    edBib.value = kernel.fs.readFileSync(bibFile).toString();
+                }
+                edBib.value = data;
+                $('#loading').addClass('browsix-hidden');
+                button.disabled = false;
+            });
+        });
+    }
 
-        $('#loading').addClass('browsix-hidden');
-        button.disabled = false;
+    function deleteFiles() {
+        if (dropboxClient.isAuthenticated()) {
+            kernel.fs.unlink(dropboxMountPoint + f + '.pdf', function(err) {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }
     }
 
     function saveFiles(next) {
-        kernel.fs.writeFile(cwd + texFile, edTex.value, function() {
-            kernel.fs.writeFile(cwd + bibFile, edBib.value, function() {
+        kernel.fs.writeFile(dropboxMountPoint + texFile, edTex.value, function() {
+            kernel.fs.writeFile(dropboxMountPoint + bibFile, edBib.value, function() {
                 next();
             });
         });
     }
 
-    function showPDF() {
-        var fName = cwd + f + '.pdf';
+    function showPDF(retry=3) {
+        var fName = dropboxMountPoint + f + '.pdf';
         kernel.fs.readFile(fName, function(err, data) {
             if (err) {
-                console.log(err);
-                throw new Error(err);
+                if (retry <= 0) {
+                    console.log(err);
+                    throw new Error(err);
+                } else {
+                    showPDF(retry-1);
+                }
+            } else {
+                var buf = new Uint8Array(data.toArrayBuffer());
+                var blob = new Blob([buf], {
+                    type: 'application/pdf'
+                });
+                var pdfEmbed = document.createElement('embed');
+                pdfEmbed.className = 'pdf';
+                pdfEmbed['src'] = window.URL.createObjectURL(blob);
+                pdfEmbed.setAttribute('alt', fName);
+                pdfEmbed.setAttribute('pluginspage', 'http://www.adobe.com/products/acrobat/readstep2.html');
+
+                pdfParent.innerHTML = '';
+                pdfParent.appendChild(pdfEmbed);
+
+                $(button).removeClass('is-active').blur();
             }
-
-            var buf = new Uint8Array(data.toArrayBuffer());
-            var blob = new Blob([buf], {
-                type: 'application/pdf'
-            });
-            var pdfEmbed = document.createElement('embed');
-            pdfEmbed.className = 'pdf';
-            pdfEmbed['src'] = window.URL.createObjectURL(blob);
-            pdfEmbed.setAttribute('alt', fName);
-            pdfEmbed.setAttribute('pluginspage', 'http://www.adobe.com/products/acrobat/readstep2.html');
-
-            pdfParent.innerHTML = '';
-            pdfParent.appendChild(pdfEmbed);
-
-            $(button).removeClass('is-active').blur();
         });
     }
     var sequence = ['pdflatex ' + TEX_FLAGS + '-draftmode ' + f, 'bibtex ' + f,
-        //		'pdflatex ' + TEX_FLAGS + '-draftmode ' + f,
         'pdflatex ' + TEX_FLAGS + f
     ];
 
@@ -174,17 +197,14 @@
 
         function onStdout(pid, out) {
             log += out;
-            //console.log(out);
         }
 
         function onStderr(pid, out) {
             log += out;
-            //console.log(out);
         }
 
         function runNext(pid, code) {
             if (code !== 0) {
-                //console.log(log);
 
                 var errEmbed = document.createElement('code');
                 errEmbed.innerHTML = replaceAll(log, '\n', '<br>\n');
@@ -204,11 +224,10 @@
             $('#build-bar').css('width', '' + progress + '%').attr('aria-valuenow', progress);
             progress += 25;
 
-            //console.log(log);
             log = '';
             var cmd = seq.shift();
             if (!cmd) {
-                showPDF();
+                setTimeout(function(){ showPDF() }, 1000);
                 $('#build-progress').addClass('browsix-hidden');
                 $('#build-bar').css('width', '10%').attr('aria-valuenow', 10);
                 var totalTime = '' + (performance.now() - startTime) / 1000;
@@ -228,6 +247,7 @@
 
     function clicked() {
         $(button).toggleClass('is-active').blur();
+        deleteFiles();
         saveFiles(runLatex);
     }
     button.addEventListener('click', clicked);

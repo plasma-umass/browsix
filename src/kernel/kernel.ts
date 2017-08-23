@@ -2482,8 +2482,8 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 
 	let zipFS: any;
 	/*
-		If the zipped data buffer is present, 
-		create an OverlayFS with ZipFS as the lower file system 
+		If the zipped data buffer is present,
+		create an OverlayFS with ZipFS as the lower file system
 		and LocalStorage as the upper file system  the zipped data,
 	*/
 	if (fsArgs.length > 4) {
@@ -2555,8 +2555,8 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 
 					finishInit(newmfs, null);
 				} else {
-					let localStorageFS = new bfs.FileSystem['LocalStorage']();
-					let overlaid = new bfs.FileSystem['OverlayFS'](localStorageFS, asyncRoot);
+					let writable = args.useLocalStorage ? new bfs.FileSystem['LocalStorage']() : new bfs.FileSystem['InMemory']();
+					let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
 					overlaid.initialize(finishInit.bind(this, overlaid));
 				}
 			});

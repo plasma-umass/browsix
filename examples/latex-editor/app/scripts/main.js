@@ -121,15 +121,16 @@
             } else {
                 edTex.value = data;
             }
-            kernel.fs.readFile(dropboxMountPoint + bibFile, function(err, data) {
-                if (err) {
-                    edBib.value = kernel.fs.readFileSync(bibFile).toString();
-                }
-                edBib.value = data;
-                $('#loading').addClass('browsix-hidden');
-                button.disabled = false;
-            });
         });
+        kernel.fs.readFile(dropboxMountPoint + bibFile, function(err, data) {
+            if (err) {
+                edBib.value = kernel.fs.readFileSync(bibFile).toString();
+            } else {
+                edBib.value = data;
+            }
+        });
+        $('#loading').addClass('browsix-hidden');
+        button.disabled = false;
     }
 
     function deleteFiles() {

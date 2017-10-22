@@ -42,15 +42,31 @@ export class SocketFile implements IFile {
 	acceptQueue:             AcceptCallback[]  = [];
 
 	isWebRTC:                boolean           = false;
-	peerConnection:          RTCPeerConnection = undefined;
+	peerConnection:          any               = undefined;
+	peerObject:              any               = undefined;
+	webRTCReadBuffer:        Pipe              = undefined;
 
 	constructor(task: ITask) {
 		this.task = task;
+		this.webRTCReadBuffer = new Pipe();
+	}
+
+	setConnection(conn: any): any {
+		this.peerConnection = conn;
+		console.log("SetConnection");
+		console.log(this.peerConnection);
+		console.log(this);
+	}
+
+	getOnData(): any {
+		return this.onData.bind(this);
 	}
 
 	onData(data: any): any {
 		console.log("received data!");
 		console.log(data);
+		console.log(this);
+		this.webRTCReadBuffer.write(data);
 	}
 
 	stat(cb: (err: any, stats: any) => void): void {
@@ -66,50 +82,60 @@ export class SocketFile implements IFile {
 		if (this.isWebRTC) {
 			console.log("creating new peer in listen");
 			let newPeer = new Peer('SERVER', {host: 'localhost', port: 9000, path: '/browsix-net'});
-			console.log(newPeer);
-			newPeer.on('connection', function(conn: any): any {
-				console.log("listening completed - established connection to remote peer");
-				conn.on('open', function(): any {
-					console.log(conn);
-					//conn.send("test");
-					cb(0);
-				});
-			});
+			this.peerObject = newPeer;
+			cb(0);
 		} else {
 			cb(0);
 		}
 	}
 
 	accept(cb: AcceptCallback): void {
-		if (!this.incomingQueue.length) {
-			this.acceptQueue.push(cb);
-			return;
+		console.log("accept called");
+		if (this.isWebRTC) {
+			console.log(this.peerObject);
+			this.peerObject.on('connection', function(conn: any): any {
+				console.log("listening completed - established connection to remote peer");
+				conn.on('open', function(): any {
+					console.log(conn);
+					let local = new SocketFile(this.task);
+					local.isWebRTC = true;
+					local.setConnection(conn);
+					conn.on('data', local.onData.bind(local));
+					cb(0, local, "remoteaddr", 5555);
+				});
+			});
+		} else {
+			if (!this.incomingQueue.length) {
+				this.acceptQueue.push(cb);
+				return;
+			}
+
+			let queued = this.incomingQueue.shift();
+
+			let remote = queued.s;
+			let local = new SocketFile(this.task);
+			local.addr = queued.addr;
+			local.port = queued.port;
+
+			let outgoing = new Pipe();
+			let incoming = new Pipe();
+
+			local.outgoing = outgoing;
+			remote.incoming = outgoing;
+
+			local.incoming = incoming;
+			remote.outgoing = incoming;
+
+			local.peer = remote;
+			remote.peer = local;
+
+			cb(0, local, queued.addr, queued.port);
+			queued.cb(null);
 		}
-
-		let queued = this.incomingQueue.shift();
-
-		let remote = queued.s;
-		let local = new SocketFile(this.task);
-		local.addr = queued.addr;
-		local.port = queued.port;
-
-		let outgoing = new Pipe();
-		let incoming = new Pipe();
-
-		local.outgoing = outgoing;
-		remote.incoming = outgoing;
-
-		local.incoming = incoming;
-		remote.outgoing = incoming;
-
-		local.peer = remote;
-		remote.peer = local;
-
-		cb(0, local, queued.addr, queued.port);
-		queued.cb(null);
 	}
 
 	doAccept(remote: SocketFile, remoteAddr: string, remotePort: number, cb: ConnectCallback): void {
+		console.log("doAccept called");
 		if (!this.acceptQueue.length) {
 			this.incomingQueue.push({
 				s: remote,
@@ -151,14 +177,26 @@ export class SocketFile implements IFile {
 		console.log("read called");
 		if (pos !== -1)
 			return cb(-ESPIPE);
-		this.incoming.read(buf, 0, buf.length, undefined, cb);
+		if (this.isWebRTC) {
+			this.webRTCReadBuffer.read(buf, 0, buf.length, undefined, cb);
+		} else {
+			this.incoming.read(buf, 0, buf.length, undefined, cb);
+		}
 	}
 
 	write(buf: Buffer, pos: number, cb: RWCallback): void {
-		console.log("write called");
 		if (pos !== -1)
 			return cb(-ESPIPE);
-		this.outgoing.writeBuffer(buf, cb);
+		console.log("write called");
+		console.log(this);
+		if (this.isWebRTC) {
+			console.log(this.peerConnection);
+			console.log(buf.toString());
+			this.peerConnection.send(buf.toString());
+			cb(0, buf.length);
+		} else {
+			this.outgoing.writeBuffer(buf, cb);
+		}
 	}
 
 	readSync(): Buffer {

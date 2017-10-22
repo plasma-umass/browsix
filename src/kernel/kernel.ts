@@ -1797,12 +1797,13 @@ export class Kernel implements IKernel {
 			console.log(newPeer);
 			console.log(connection);
 			newPeer.on('open', function(): any {
-				console.log("opened connection");
-				let remote = new SocketFile(local.task);
-				remote.peerConnection = connection;
-				connection.on('data', remote.onData);
-				remote.doAccept(local, addr, port, cb);
-				console.log("connect doaccept finished");
+				connection.on('open', function(): any {
+					console.log("opened connection");
+					local.setConnection(connection);
+					connection.on('data', local.getOnData());
+					console.log("connect finished");
+					cb(null);
+				});
 			});
 		} else {
 			if (!(port in this.ports)) {

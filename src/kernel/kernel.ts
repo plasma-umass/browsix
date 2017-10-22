@@ -2,6 +2,8 @@
 // Use of this source code is governed by the ISC
 // license that can be found in the LICENSE file.
 
+/// <reference path="../../typings/index.d.ts" />
+
 'use strict';
 
 import * as constants from './constants';
@@ -18,6 +20,8 @@ import * as bfs from 'browserfs-browsix-tmp';
 import * as marshal from 'node-binary-marshal';
 
 import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
+
+import Peer = require('peerjs');
 
 // controls the default of whether to delay the initialization message
 // to a Worker to aid in debugging.
@@ -1057,7 +1061,6 @@ export class Syscalls {
 		let [_, err] = marshal.Unmarshal(info, view, 0, marshal.socket.SockAddrInDef);
 		let addr: string = info.addr;
 		let port: number = info.port;
-
 		// FIXME: this hack
 		if (port === 0) {
 			console.log('port was zero -- changing to 8080');
@@ -1071,6 +1074,11 @@ export class Syscalls {
 			return;
 		}
 		if (isSocket(file)) {
+			if (addr !== 'localhost' && addr !== '127.0.0.1' && addr !== '0.0.0.0') {
+				console.log("setting socket to isWebRTC");
+				file.isWebRTC = true;
+				console.log(file);
+			}
 			this.kernel.bind(file, addr, port, cb);
 			return;
 		}
@@ -1198,7 +1206,8 @@ export class Syscalls {
 					if (this.kernel.ports[lPort])
 						continue;
 					file.port = lPort;
-					file.addr = '127.0.0.1';
+					file.addr = addr;
+					//file.addr = '127.0.0.1';
 					break;
 				}
 				cb(0);
@@ -1538,7 +1547,9 @@ export class Kernel implements IKernel {
 
 	// TODO: this should be per-protocol, i.e. separate for TCP
 	// and UDP
-	ports: {[port: number]: SocketFile} = {};
+	//[port: number]: SocketFile
+	addrs: {[addr: string]: SocketFile} = {};
+	ports: {[port: number]: addrs} = {};
 
 	private tasks: {[pid: number]: Task} = {};
 	private taskIdSeq: number = 0;
@@ -1772,27 +1783,42 @@ export class Kernel implements IKernel {
 	}
 
 	connect(f: IFile, addr: string, port: number, cb: ConnectCallback): void {
+		console.log("calling connect!");
+		console.log("addr: " + addr);
 		if (addr === '0.0.0.0')
 			addr = '127.0.0.1';
 		if (addr !== 'localhost' && addr !== '127.0.0.1') {
-			console.log('TODO connect(): only localhost supported for now');
-			cb(-constants.ECONNREFUSED);
-			return;
-		}
+			console.log('WebRTC connection started to: ' + addr + ":" + port);
+			let local = <SocketFile>(<any>f);
+			local.isWebRTC = true;
+			// now we have to actually connect to the peer
+			let newPeer = new Peer('CLIENT', {host: 'localhost', port: 9000, path: '/browsix-net'});
+			let connection = newPeer.connect('SERVER');
+			console.log(newPeer);
+			console.log(connection);
+			newPeer.on('open', function(): any {
+				console.log("opened connection");
+				let remote = new SocketFile(local.task);
+				remote.peerConnection = connection;
+				connection.on('data', remote.onData);
+				remote.doAccept(local, addr, port, cb);
+				console.log("connect doaccept finished");
+			});
+		} else {
+			if (!(port in this.ports)) {
+				cb(-constants.ECONNREFUSED);
+				return;
+			}
 
-		if (!(port in this.ports)) {
-			cb(-constants.ECONNREFUSED);
-			return;
-		}
+			let listener = this.ports[port];
+			if (!listener.isListening) {
+				cb(-constants.ECONNREFUSED);
+				return;
+			}
 
-		let listener = this.ports[port];
-		if (!listener.isListening) {
-			cb(-constants.ECONNREFUSED);
-			return;
+			let local = <SocketFile>(<any>f);
+			listener.doAccept(local, addr, port, cb);
 		}
-
-		let local = <SocketFile>(<any>f);
-		listener.doAccept(local, addr, port, cb);
 	}
 
 	doSyscall(syscall: Syscall): void {
@@ -2364,12 +2390,12 @@ export class Task implements ITask {
 		this.blobUrl = undefined;
 
 		// only show perf information for emscripten programs for now
-		// if (this.timeFirstMsg) {
-		// 	let exit = performance.now();
-		// 	console.log('' + this.pid + ' real: ' + (exit - this.timeWorkerStart));
-		// 	console.log('' + this.pid + ' init: ' + (this.timeFirstMsg - this.timeWorkerStart));
-		// 	console.log('' + this.pid + ' sys:  ' + this.timeSyscallTotal);
-		// }
+		if (this.timeFirstMsg && false) {
+			let exit = performance.now();
+			// console.log('' + this.pid + ' real: ' + (exit - this.timeWorkerStart));
+			// console.log('' + this.pid + ' init: ' + (this.timeFirstMsg - this.timeWorkerStart));
+			// console.log('' + this.pid + ' sys:  ' + this.timeSyscallTotal);
+		}
 
 		for (let n in this.files) {
 			if (!this.files.hasOwnProperty(n))
@@ -2458,7 +2484,6 @@ export interface BootArgs {
 	fsArgs?: any[];
 	ttyParent?: Element;
 	readOnly?: boolean;
-	useLocalStorage?: boolean;
 }
 
 export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: BootArgs = {}): void {
@@ -2498,12 +2523,12 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 					cb(err, undefined);
 					return;
 				}
-				let writable = args.useLocalStorage ? new bfs.FileSystem['LocalStorage']() : new bfs.FileSystem['InMemory']();
+				let writable = new bfs.FileSystem['InMemory']();
 				let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
 				overlaid.initialize(finishInit.bind(this, overlaid));
 			});
 		} else {
-			let writable = args.useLocalStorage ? new bfs.FileSystem['LocalStorage']() : new bfs.FileSystem['InMemory']();
+			let writable = new bfs.FileSystem['InMemory']();
 			let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
 			overlaid.initialize(finishInit.bind(this, overlaid));
 		}

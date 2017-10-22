@@ -64,7 +64,9 @@
     "@types/dropboxjs": "0.0.29",
     "@types/filesystem": "0.0.28",
     "@types/mocha": "^2.2.41",
+    "@types/peerjs": "0.0.29",
     "node-binary-marshal": "^0.4.2",
+    "peerjs": "^0.3.14",
     "term.js": "github:bpowers/term.js"
   },
   "engines": {

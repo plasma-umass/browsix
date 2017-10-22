@@ -7,6 +7,7 @@
 import { EINVAL, ESPIPE } from './constants';
 import { ConnectCallback, RWCallback, SyscallContext, IFile, ITask } from './types';
 import { Pipe } from './pipe';
+import Peer = require('peerjs');
 
 export interface AcceptCallback {
 	(err: number, s?: SocketFile, remoteAddr?: string, remotePort?: number): void;
@@ -24,24 +25,32 @@ export interface Incoming {
 }
 
 export class SocketFile implements IFile {
-	task:          ITask;
-	isListening:   boolean    = false;
-	parent:        SocketFile = undefined;
-	refCount:      number     = 1;
+	task:                    ITask;
+	isListening:             boolean           = false;
+	parent:                  SocketFile        = undefined;
+	refCount:                number            = 1;
 
-	port:          number;
-	addr:          string;
+	port:                    number;
+	addr:                    string;
 
-	peer:          SocketFile = undefined;
+	peer:                    SocketFile        = undefined;
 
-	outgoing:      Pipe = undefined;
-	incoming:      Pipe = undefined;
+	outgoing:                Pipe              = undefined;
+	incoming:                Pipe              = undefined;
 
-	incomingQueue: Incoming[] = [];
-	acceptQueue:   AcceptCallback[] = [];
+	incomingQueue:           Incoming[]        = [];
+	acceptQueue:             AcceptCallback[]  = [];
+
+	isWebRTC:                boolean           = false;
+	peerConnection:          RTCPeerConnection = undefined;
 
 	constructor(task: ITask) {
 		this.task = task;
+	}
+
+	onData(data: any): any {
+		console.log("received data!");
+		console.log(data);
 	}
 
 	stat(cb: (err: any, stats: any) => void): void {
@@ -54,7 +63,21 @@ export class SocketFile implements IFile {
 
 	listen(cb: (err: number) => void): void {
 		this.isListening = true;
-		cb(0);
+		if (this.isWebRTC) {
+			console.log("creating new peer in listen");
+			let newPeer = new Peer('SERVER', {host: 'localhost', port: 9000, path: '/browsix-net'});
+			console.log(newPeer);
+			newPeer.on('connection', function(conn: any): any {
+				console.log("listening completed - established connection to remote peer");
+				conn.on('open', function(): any {
+					console.log(conn);
+					//conn.send("test");
+					cb(0);
+				});
+			});
+		} else {
+			cb(0);
+		}
 	}
 
 	accept(cb: AcceptCallback): void {
@@ -125,12 +148,14 @@ export class SocketFile implements IFile {
 
 
 	read(buf: Buffer, pos: number, cb: RWCallback): void {
+		console.log("read called");
 		if (pos !== -1)
 			return cb(-ESPIPE);
 		this.incoming.read(buf, 0, buf.length, undefined, cb);
 	}
 
 	write(buf: Buffer, pos: number, cb: RWCallback): void {
+		console.log("write called");
 		if (pos !== -1)
 			return cb(-ESPIPE);
 		this.outgoing.writeBuffer(buf, cb);

@@ -1792,7 +1792,7 @@ export class Kernel implements IKernel {
 			let local = <SocketFile>(<any>f);
 			local.isWebRTC = true;
 			// now we have to actually connect to the peer
-			let clientName = "CLIENT" + (Math.floor(Math.random()*1000)).toString();
+			let clientName = "CLIENT" + (Math.floor(Math.random()*100000)).toString();
 			let connectName = addr + ":" + port.toString();
 			console.log(connectName);
 			console.log(clientName);

@@ -1792,17 +1792,41 @@ export class Kernel implements IKernel {
 			let local = <SocketFile>(<any>f);
 			local.isWebRTC = true;
 			// now we have to actually connect to the peer
-			let newPeer = new Peer('CLIENT', {host: 'localhost', port: 9000, path: '/browsix-net'});
-			let connection = newPeer.connect('SERVER');
-			console.log(newPeer);
-			console.log(connection);
-			newPeer.on('open', function(): any {
-				connection.on('open', function(): any {
-					console.log("opened connection");
-					local.setConnection(connection);
-					connection.on('data', local.getOnData());
-					console.log("connect finished");
-					cb(null);
+			let clientName = "CLIENT" + (Math.floor(Math.random()*1000)).toString();
+			let connectName = addr + ":" + port.toString();
+			console.log(connectName);
+			console.log(clientName);
+			crypto.subtle.digest("SHA-256", new TextEncoder("utf-8").encode(connectName)).then(function (hashedAddrPort: any): any {
+				// https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
+				function hex(buffer: any): any {
+					let hexCodes = [];
+					let view = new DataView(buffer);
+					for (let i = 0; i < view.byteLength; i += 4) {
+						// Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
+						let value = view.getUint32(i);
+						// toString(16) will give the hex representation of the number without padding
+						let stringValue = value.toString(16);
+						// We use concatenation and slice for padding
+						let padding = "00000000";
+						let paddedValue = (padding + stringValue).slice(-padding.length);
+						hexCodes.push(paddedValue);
+					}
+					// Join all the hex strings into one
+					return hexCodes.join("");
+				}
+				console.log(hex(hashedAddrPort));
+				let newPeer = new Peer(clientName, {host: 'localhost', port: 9000, path: '/browsix-net'});
+				let connection = newPeer.connect(hex(hashedAddrPort));
+				console.log(newPeer);
+				console.log(connection);
+				newPeer.on('open', function(): any {
+					connection.on('open', function(): any {
+						console.log("opened connection");
+						local.setConnection(connection);
+						connection.on('data', local.getOnData());
+						console.log("connect finished");
+						cb(null);
+					});
 				});
 			});
 		} else {

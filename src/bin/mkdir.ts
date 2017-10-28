@@ -118,7 +118,7 @@ function main (): void {
 
 		function checkExists(index: number): void {
 			subpath += subdirs[index] + '/';
-			fs.stat(subpath, function (oerr: any, stats: fs.Stats): void{
+			fs.stat(subpath, function (oerr: any, stats: fs.Stats): void {
 				if (oerr) {
 					if (oerr.code==="ENOENT")
 						makePath(index+1);

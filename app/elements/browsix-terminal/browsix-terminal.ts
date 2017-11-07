@@ -24,13 +24,8 @@ namespace Terminal {
 		@property({type: Object})
 		kernel: any;
 
-		@property({type: Boolean})
-		editable: boolean;
-
 		@property({type: String})
 		ps1: string = '$ ';
-
-		extraNewline: boolean = false;
 
 		constructor() {
 			super();
@@ -40,7 +35,7 @@ namespace Terminal {
 				(err: any, k: Kernel) => {
 					if (err) {
 						console.log(err);
-						this.$.term.innerHTML = ERROR;
+						this.$.output.innerHTML = ERROR;
 						throw new Error(err);
 					}
 					this.kernel = k;
@@ -49,49 +44,41 @@ namespace Terminal {
 		}
 
 		attached(): void {
-			this.$.term.addEventListener('input', this.onInput.bind(this));
+			this.$.input.addEventListener('keypress', this.onInput.bind(this));
+			(<any>document).body.addEventListener('click', this.focus.bind(this));
 		}
 
 		onInput(ev: any): void {
-			// FIXME: be less horrendously inefficient.
-			let txt = this.$.term.value;
-			if (txt[txt.length-1] !== '\n')
-				return;
-			let parts = txt.split('\n');
-			let cmd = parts[parts.length-2].substring(this.ps1.length).trim();
+			// If key pressed is not Return/Enter, skip
+			if (ev.keyCode !== 13) return;
+
+			let cmd = this.$.input.value;
+			this.$.output.innerHTML += this.ps1 + cmd + '<br>';
 			if (cmd === '') {
-				this.nextPrompt();
+				this.scrollBottom();
 				return;
 			}
-			this.editable = false;
+			this.setEditable(false);
 			let bg = cmd[cmd.length - 1] === '&';
 			if (bg) {
 				cmd = cmd.slice(0, -1).trim();
-				setTimeout(() => { this.editable = true; }, 0);
+				setTimeout(() => { this.setEditable(true); }, 0);
 			}
 
 			let completed = (pid: number, code: number) => {
-				this.editable = true;
-			}
-			let onInput = (pid: number, out: string) => {
-				let newlinePos = this.$.term.value.lastIndexOf('\n');
-				let lastLine = this.$.term.value.substr(newlinePos+1);
-				if (lastLine[0] === '$') {
-
-					if (!this.extraNewline && out && out[out.length-1] !== '\n') {
-						out += '\n';
-						this.extraNewline = true;
-					} else if (this.extraNewline && out && out[out.length-1] === '\n') {
-						out = out.slice(0, -1);
-						this.extraNewline = false;
-					}
-					this.$.term.value = this.$.term.value.substr(0, newlinePos+1) + out + lastLine;
-				} else {
-					this.extraNewline = false;
-					this.$.term.value += out;
-				}
-
+				this.setEditable(true);
+				this.$.input.value = '';
+				this.focus();
+				this.scrollBottom();
 			};
+
+			let onInput = (pid: number, out: string) => {
+				// Replace all LF with HTML breaks
+				out = out.split('\n').join('<br>');
+				this.$.output.innerHTML += out;
+				this.scrollBottom();
+			};
+
 			this.kernel.system(cmd, completed, onInput, onInput);
 		}
 
@@ -103,21 +90,20 @@ namespace Terminal {
 				console.log('unexpected kernel change');
 				return;
 			}
-			this.editable = true;
 		}
 
-		@observe('editable')
-		editableChanged(editable: boolean): void {
-			if (!editable)
-				return;
-			this.nextPrompt();
+		focus(): void {
+			this.$.input.focus();
 		}
 
-		nextPrompt(): void {
-			this.$.term.value += this.ps1;
-			let len = this.$.term.value.length;
-			this.$.term.setSelectionRange(len, len);
-			this.$.term.focus();
+		setEditable(editable: boolean): void {
+			// Hide input if not editable
+			this.$.input_container.style.visibility = (editable) ? '' : 'hidden';
+		}
+
+		scrollBottom(): void {
+			(<any>window).scrollTo(0, document.documentElement.scrollHeight
+				|| document.body.scrollHeight);
 		}
 	}
 

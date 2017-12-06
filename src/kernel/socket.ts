@@ -198,7 +198,7 @@ export class SocketFile implements IFile {
 
 
 	read(buf: Buffer, pos: number, cb: RWCallback): void {
-		console.log("read called");
+		// console.log("read called");
 		if (pos !== -1)
 			return cb(-ESPIPE);
 		if (this.isWebRTC) {
@@ -216,7 +216,7 @@ export class SocketFile implements IFile {
 		if (this.isWebRTC) {
 			//console.log(this.peerConnection);
 			//console.log(buf.toString());
-			this.peerConnection.send(buf.toString());
+			this.peerConnection.send(buf.getBufferCore().getDataView().buffer);
 			cb(0, buf.length);
 		} else {
 			this.outgoing.writeBuffer(buf, cb);

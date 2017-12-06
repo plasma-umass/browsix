@@ -63,9 +63,9 @@ export class SocketFile implements IFile {
 	}
 
 	onData(data: any): any {
-		console.log("received data!");
-		console.log(data);
-		console.log(this);
+		//console.log("received data!");
+		//console.log(data);
+		//console.log(this);
 		this.webRTCReadBuffer.write(data);
 	}
 
@@ -211,11 +211,11 @@ export class SocketFile implements IFile {
 	write(buf: Buffer, pos: number, cb: RWCallback): void {
 		if (pos !== -1)
 			return cb(-ESPIPE);
-		console.log("write called");
-		console.log(this);
+		//console.log("write called");
+		//console.log(this);
 		if (this.isWebRTC) {
-			console.log(this.peerConnection);
-			console.log(buf.toString());
+			//console.log(this.peerConnection);
+			//console.log(buf.toString());
 			this.peerConnection.send(buf.toString());
 			cb(0, buf.length);
 		} else {

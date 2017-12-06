@@ -7,7 +7,7 @@ import (
 	"os"
 	"strconv"
 	"time"
-	"io"
+	"io/ioutil"
 )
 
 func main() {
@@ -28,14 +28,11 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Get(%s): %s", url, err)
 			os.Exit(1)
 		}
-		defer resp.Body.Close()
+		b, _ := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
+		_ = b
 		elapsed := time.Since(start)
 		fmt.Printf("Time for request: %s\n", elapsed)	
-		n, err := io.Copy(os.Stdout, resp.Body)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Copy: %s", err)
-		}
-		fmt.Fprintf(os.Stderr, "\ncopied %d bytes\n", n)
 	}
 
 }

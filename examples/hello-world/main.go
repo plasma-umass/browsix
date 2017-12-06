@@ -1,7 +1,8 @@
 package main
 
 import "fmt"
+import "runtime/internal/sys"
 
 func main() {
-	fmt.Println("Hello, 世界")
+	fmt.Println(sys.TheGoos)
 }

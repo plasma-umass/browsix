@@ -123,7 +123,9 @@ export class SocketFile implements IFile {
 					local.isWebRTC = true;
 					local.setConnection(conn);
 					conn.on('data', local.onData.bind(local));
-					cb(0, local, "remoteaddr", 5555);
+					local.addr = "localhost";
+					local.port = 0;
+					cb(0, local, "localhost", 0);
 				});
 			});
 		} else {

@@ -66,7 +66,7 @@
     "@types/mocha": "^2.2.41",
     "@types/peerjs": "0.0.29",
     "node-binary-marshal": "^0.4.2",
-    "peerjs": "^0.3.14",
+    "peerjs": "github:bpowers/peerjs#0.3.14-browsix1",
     "term.js": "github:bpowers/term.js"
   },
   "engines": {

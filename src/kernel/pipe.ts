@@ -49,6 +49,7 @@ export class Pipe {
 				this.buf = new Buffer(0);
 			else
 				this.buf = this.buf.slice(off + n);
+			releaseWriter();
 			return cb(undefined, n);
 		}
 		// at this point, we're waiting on more data or an EOF.
@@ -58,12 +59,8 @@ export class Pipe {
 				this.buf = new Buffer(0);
 			else
 				this.buf = this.buf.slice(off + n);
+			releaseWriter();
 			cb(undefined, n);
-			if (this.writeWaiter) {
-				let waiter = this.writeWaiter;
-				this.writeWaiter = undefined;
-				waiter();
-			}
 		};
 	}
 
@@ -87,6 +84,16 @@ export class Pipe {
 
 		this.readWaiter();
 		this.readWaiter = undefined;
+	}
+
+	// if any writers are blocked (because the buffer was at
+	// capacity) unblock them
+	private releaseWriter(): void {
+		if (this.writeWaiter) {
+			let waiter = this.writeWaiter;
+			this.writeWaiter = undefined;
+			waiter();
+		}
 	}
 }
 

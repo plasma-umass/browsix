@@ -1,4 +1,4 @@
-giMAIN = large-file-test
+MAIN = large-file-test
 
 all: $(MAIN).js
 

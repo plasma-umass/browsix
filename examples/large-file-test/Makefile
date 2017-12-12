@@ -1,13 +1,19 @@
 MAIN = large-file-test
 
+FSROOT = ../../fs
+
 all: $(MAIN).js
 
 $(MAIN).js:
 	browsix-gopherjs build
-	cp $(MAIN).js ../../fs/usr/bin/large
-	cp big1.txt ../../fs/usr/bin/
-	cp big2.txt ../../fs/usr/bin/
-	cp big3.txt ../../fs/usr/bin/
-	cp big4.txt ../../fs/usr/bin/
-	cp big5.txt ../../fs/usr/bin/
+	mkdir -p $(FSROOT)/usr/bin
+	cp $(MAIN).js $(FSROOT)/usr/bin/large
+
+	mkdir -p $(FSROOT)/srv
+	cp big1.txt $(FSROOT)/srv/
+	cp big2.txt $(FSROOT)/srv/
+	cp big3.txt $(FSROOT)/srv/
+	cp big4.txt $(FSROOT)/srv/
+	cp big5.txt $(FSROOT)/srv/
+
 .PHONY: $(MAIN).js

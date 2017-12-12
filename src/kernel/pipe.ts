@@ -12,7 +12,7 @@ declare var Buffer: any;
 const CUTOFF = 8192;
 
 export class Pipe {
-	buf: Buffer = new Buffer(0);
+	bufs: Buffer[] = [];
 	refcount: number = 1; // maybe more accurately a reader count
 	readWaiter: Function = undefined;
 	writeWaiter: Function = undefined;
@@ -23,14 +23,20 @@ export class Pipe {
 		this.writeBuffer(b, (err: number, len?: number) => {});
 	}
 
+	get bufferLength(): number {
+		let len = 0;
+
+		for (let i = 0; i < this.bufs.length; i++)
+			len += this.bufs[i].length;
+
+		return len;
+	}
+
 	writeBuffer(b: Buffer, cb: RWCallback): void {
-		this.buf = Buffer.concat([this.buf, b]);
-		if (this.readWaiter) {
-			let waiter = this.readWaiter;
-			this.readWaiter = undefined;
-			waiter();
-		}
-		if (this.buf.length <= CUTOFF) {
+		this.bufs.push(b);
+		this.releaseReader();
+
+		if (this.bufferLength <= CUTOFF) {
 			cb(0, b.length);
 		} else {
 			if (this.writeWaiter) {
@@ -43,29 +49,29 @@ export class Pipe {
 	}
 
 	read(buf: Buffer, off: number, len: number, pos: number, cb: RWCallback): void {
-		if (this.buf.length || this.closed) {
-			let n = this.buf.copy(buf, pos, off, off+len);
-			if (this.buf.length === off + n)
-				this.buf = new Buffer(0);
-			else
-				this.buf = this.buf.slice(off + n);
-			releaseWriter();
+		if (off !== 0) {
+			console.log('ERROR: Pipe.read w/ non-zero offset');
+		}
+
+		if (this.bufs.length || this.closed) {
+			let n = this.copy(buf, len, pos);
+			this.releaseWriter();
 			return cb(undefined, n);
 		}
+
 		// at this point, we're waiting on more data or an EOF.
 		this.readWaiter = () => {
-			let n = this.buf.copy(buf, pos, off, off+len);
-			if (this.buf.length === off + n)
-				this.buf = new Buffer(0);
-			else
-				this.buf = this.buf.slice(off + n);
-			releaseWriter();
+			let n = this.copy(buf, len, pos);
+			this.releaseWriter();
 			cb(undefined, n);
 		};
 	}
 
 	readSync(): Buffer {
-		return this.buf;
+		let len = this.bufferLength;
+		let buf = new Buffer(len);
+		this.copy(buf, len, 0);
+		return buf;
 	}
 
 	ref(): void {
@@ -86,12 +92,42 @@ export class Pipe {
 		this.readWaiter = undefined;
 	}
 
+	private copy(dst: Buffer, len: number, pos: number): number {
+		let result = 0;
+		// ensure pos is a number
+		pos = pos ? pos : 0;
+
+		while (this.bufs.length > 0 && len > 0) {
+			let src = this.bufs[0];
+
+			let n = src.copy(dst, pos);
+			pos += n;
+			result += n;
+			len -= n;
+
+			if (src.length === n)
+				this.bufs.shift();
+			else
+				this.bufs[0] = src.slice(n);
+		}
+
+		return result;
+	}
+
 	// if any writers are blocked (because the buffer was at
 	// capacity) unblock them
 	private releaseWriter(): void {
 		if (this.writeWaiter) {
 			let waiter = this.writeWaiter;
 			this.writeWaiter = undefined;
+			waiter();
+		}
+	}
+
+	private releaseReader(): void {
+		if (this.readWaiter) {
+			let waiter = this.readWaiter;
+			this.readWaiter = undefined;
 			waiter();
 		}
 	}

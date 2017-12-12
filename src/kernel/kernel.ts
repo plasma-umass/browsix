@@ -1798,22 +1798,25 @@ export class Kernel implements IKernel {
 	doSyscall(syscall: Syscall): void {
 		if (syscall.name in this.syscalls) {
 			if (STRACE) {
-				let argfmt = (arg: any): any => {
-					if (arg instanceof Uint8Array) {
+				let argfmt = (arg: any): string => {
+					if (arg.constructor === Uint8Array) {
 						let len = arg.length;
 						if (len > 0 && arg[len - 1] === 0)
 							len--;
-						return utf8Slice(arg, 0, len);
+						return '(' + len + ') ' + utf8Slice(arg, 0, len > 32 ? 32 : len);
+					} else if (typeof arg === 'string' && arg.length > 32) {
+						return arg.slice(0, 32);
 					} else {
-						return arg;
+						return '' + arg;
 					}
 				};
 
 				if (syscall.args === undefined)
 					syscall.args = [undefined];
 				let arg = argfmt(syscall.args[0]);
-				if (syscall.args[1])
+				if (syscall.args[1]) {
 					arg += '\t' + argfmt(syscall.args[1]);
+				}
 				console.log('[' + syscall.ctx.task.pid + '|' + syscall.ctx.id + '] \tsys_' + syscall.name + '\t' + arg);
 			}
 			this.syscalls[syscall.name].apply(this.syscalls, syscall.callArgs());
@@ -2351,8 +2354,16 @@ export class Task implements ITask {
 
 		this.state = TaskState.Running;
 
-		if (STRACE)
-			console.log('[' + this.pid + '|' + msg.id + '] \tCOMPLETE'); // ' + JSON.stringify(msg));
+		if (STRACE) {
+			let add = ' ';
+			if (msg.args && msg.args.length > 1) {
+				if (msg.args[1].constructor !== Uint8Array)
+					add += msg.args[1];
+				else
+					add += msg.args[1].byteLength;
+			}
+			console.log('[' + this.pid + '|' + msg.id + '] \tDONE' + add); // ' + JSON.stringify(msg));
+		}
 		this.worker.postMessage(msg, transferrable || []);
 	}
 

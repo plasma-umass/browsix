@@ -34,7 +34,7 @@ export class Pipe {
 			cb(0, b.length);
 		} else {
 			if (this.writeWaiter) {
-				// console.log('ERROR: expected no other write waiter');
+				console.log('ERROR: expected no other write waiter');
 			}
 			this.writeWaiter = () => {
 				cb(0, b.length);

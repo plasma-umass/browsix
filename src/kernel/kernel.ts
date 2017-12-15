@@ -14,7 +14,7 @@ import { ExitCallback, OutputCallback, SyscallContext, SyscallResult,
 
 import { HTTPParser } from './http_parser';
 
-import * as bfs from 'browserfs-browsix-tmp';
+import * as bfs from 'browserfs';
 import * as marshal from 'node-binary-marshal';
 
 import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
@@ -25,6 +25,8 @@ let DEBUG = false;
 let STRACE = false;
 
 let Buffer: any;
+
+let dropboxClient: Dropbox.Client;
 
 // Polyfill.  Previously, Atomics.wait was called Atomics.futexWait and
 // Atomics.wake was called Atomics.futexWake.
@@ -1597,7 +1599,10 @@ export class Kernel implements IKernel {
 			'LC_ALL=en_US.UTF-8',
 			'HOME=/',
 		];
-		this.spawn(null, '/', parts[0], parts, env, null, (err: any, pid: number) => {
+
+		let cwd: string = dropboxClient && dropboxClient.isAuthenticated() ? '/workspace/dropbox/' : '/';
+
+		this.spawn(null, cwd, parts[0], parts, env, null, (err: any, pid: number) => {
 			if (err) {
 				let code = -666;
 				if (err.errno === ENOENT) {
@@ -1865,7 +1870,7 @@ export class Kernel implements IKernel {
 			files[2] = new PipeFile();
 		}
 
-		let task = new Task(this, parent, pid, '/', name, args, env, files, null, null, null, cb);
+		let task = new Task(this, parent, pid, cwd, name, args, env, files, null, null, null, cb);
 		this.tasks[pid] = task;
 	}
 
@@ -2475,18 +2480,45 @@ export interface BootArgs {
 export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: BootArgs = {}): void {
 	let browserfs: any = {};
 	bfs.install(browserfs);
+
 	// this is the 'Buffer' in the file-level/module scope above.
 	Buffer = browserfs.Buffer;
 	if (typeof window !== 'undefined' && !(<any>window).Buffer) {
 		(<any>window).Buffer = browserfs.Buffer;
 	}
-	let rootConstructor: any = (<any>bfs).FileSystem[fsType];
+
+	// Initialise the async root file system
+	let rootConstructor: any;
+	let rootConstructorArgs: any = [];
+
+	let zipFS: any;
+	/*
+		If the zipped data buffer is present,
+		create an OverlayFS with ZipFS as the lower file system
+		and LocalStorage as the upper file system  the zipped data,
+	*/
+	if (fsArgs.length > 4) {
+		let zippedData = new Buffer(new DataView(fsArgs[4]));
+		zipFS = new bfs.FileSystem['ZipFS'](zippedData);
+	}
+
+	rootConstructor = (<any>bfs).FileSystem[fsType];
+	rootConstructorArgs = [null].concat(fsArgs);
+
 	if (!rootConstructor) {
 		setImmediate(cb, 'unknown FileSystem type: ' + fsType);
 		return;
 	}
-	let asyncRoot = new (Function.prototype.bind.apply(rootConstructor, [null].concat(fsArgs)));
-	asyncRoot.supportsSynch = function(): boolean { return false; };
+
+	let asyncRoot = new (Function.prototype.bind.apply(rootConstructor, rootConstructorArgs));
+	// asyncRoot.supportsSynch = function(): boolean { return false; };
+
+	// Initialize dropboxClient
+	if (fsArgs.length > 3) {
+		dropboxClient = fsArgs[3];
+	} else {
+		dropboxClient = null;
+	}
 
 	function finishInit(root: any, err: any): void {
 		if (err) {
@@ -2503,20 +2535,72 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 			finishInit(asyncRoot, null);
 		}
 	} else {
+
 		if (asyncRoot.initialize) {
 			asyncRoot.initialize((err: any) => {
 				if (err) {
 					cb(err, undefined);
 					return;
 				}
+				if (zipFS) {
+					asyncRoot = new bfs.FileSystem['OverlayFS'](zipFS, asyncRoot);
+					asyncRoot.initialize((err: any) => {
+						if (err) {
+							cb(err, undefined);
+							return;
+						}
+					});
+				}
+
+				if (dropboxClient && dropboxClient.isAuthenticated()) {
+
+					// Create Dropbox File System
+					let dropboxFS = new bfs.FileSystem['Dropbox'](dropboxClient);
+
+					// Create mountable File System
+					let newmfs = new bfs.FileSystem.MountableFileSystem();
+
+					// Mount File Systems
+					newmfs.mount('/', asyncRoot);
+					newmfs.mount('/workspace/dropbox', dropboxFS);
+
+					finishInit(newmfs, null);
+				} else {
+					let writable = args.useLocalStorage ? new bfs.FileSystem['LocalStorage']() : new bfs.FileSystem['InMemory']();
+					let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
+					overlaid.initialize(finishInit.bind(this, overlaid));
+				}
+			});
+		}
+		else {
+			if (zipFS) {
+				asyncRoot = new bfs.FileSystem['OverlayFS'](zipFS, asyncRoot);
+				asyncRoot.initialize((err: any) => {
+					if (err) {
+						cb(err, undefined);
+						return;
+					}
+				});
+			}
+
+			if (dropboxClient && dropboxClient.isAuthenticated()) {
+
+				// Create Dropbox File System
+				let dropboxFS = new bfs.FileSystem['Dropbox'](dropboxClient);
+
+				// Create mountable File System
+				let newmfs = new bfs.FileSystem.MountableFileSystem();
+
+				// Mount File Systems
+				newmfs.mount('/', asyncRoot);
+				newmfs.mount('/workspace/dropbox', dropboxFS);
+
+				finishInit(newmfs, null);
+			} else {
 				let writable = args.useLocalStorage ? new bfs.FileSystem['LocalStorage']() : new bfs.FileSystem['InMemory']();
 				let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
 				overlaid.initialize(finishInit.bind(this, overlaid));
-			});
-		} else {
-			let writable = args.useLocalStorage ? new bfs.FileSystem['LocalStorage']() : new bfs.FileSystem['InMemory']();
-			let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
-			overlaid.initialize(finishInit.bind(this, overlaid));
+			}
 		}
 	}
 }

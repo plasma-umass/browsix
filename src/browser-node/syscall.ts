@@ -209,6 +209,12 @@ export class USyscalls {
 		this.post(msgId, 'connect', fd, addr);
 	}
 
+	fcntl(cmd: number, arg: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'fcntl', cmd, arg);
+	}
+
 	getcwd(cb: SyscallCallback): void {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;
@@ -261,6 +267,18 @@ export class USyscalls {
 		const msgId = this.nextMsgId();
 		this.outstanding[msgId] = cb;
 		this.post(msgId, 'unlink', path);
+	}
+
+	unlinkat(fd: number, path: string, flags: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'unlinkat', fd, path, flags);
+	}
+
+	flock(fd: number, operation: number, cb: SyscallCallback): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
+		this.post(msgId, 'flock', fd, operation);
 	}
 
 	utimes(path: string, atime: number, mtime: number, cb: SyscallCallback): void {

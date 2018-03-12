@@ -1,13 +1,13 @@
 'use strict';
 
-import { syscall } from '../browser-node/syscall';
+import { syscall } from './../browser-node/syscall';
 
 const ENOSYS = 38;
 const AT_FDCWD = -0x64;
 
 // not implemented
 function sys_ni_syscall(cb: Function, trap: number): void {
-	console.log('ni syscall ' + trap);
+	console.log('TEST ni syscall ' + trap);
 	debugger;
 	setTimeout(cb, 0, [-1, 0, -ENOSYS]);
 }
@@ -78,6 +78,13 @@ function sys_pipe2(cb: Function, trap: number, fds: Int32Array, flags: number): 
 		cb([err ? err : 0, 0, err ? err : 0]);
 	};
 	syscall.pipe2(flags, done);
+}
+
+function sys_fcntl(cb: Function, trap: number, cmd: number, arg: number): void {
+	let done = function(err: any): void {
+		cb(err);
+	};
+	syscall.fcntl(cmd, arg, done);
 }
 
 function sys_getcwd(cb: Function, trap: number, path: Uint8Array, len: number): void {
@@ -287,6 +294,20 @@ function sys_setsockopt(cb: Function, trap: number): void {
 	setTimeout(cb, 0, [0, 0, 0]);
 }
 
+function sys_unlinkat(cb: Function, trap: number, fd: number, path: string, flags: number): void {
+	let done = function(err: any): void {
+		cb([err ? -1 : 0, 0, err ? -1 : 0]);
+	};
+	syscall.unlinkat(fd, path, flags, done);
+}
+
+function sys_flock(cb: Function, fd: number, operation: number): void {
+	let done = function(err: any): void {
+		cb([err ? -1 : 0, 0, err ? -1 : 0]);
+	};
+	syscall.flock(fd, operation, done);
+}
+
 export const syscallTbl = [
 	sys_read,       // 0 read
 	sys_write,      // 1 write
@@ -360,8 +381,8 @@ export const syscallTbl = [
 	sys_ni_syscall, // 69 msgsnd
 	sys_ni_syscall, // 70 msgrcv
 	sys_ni_syscall, // 71 msgctl
-	sys_ni_syscall, // 72 fcntl
-	sys_ni_syscall, // 73 flock
+	sys_fcntl, // 72 fcntl
+	sys_flock, // 73 flock
 	sys_ni_syscall, // 74 fsync
 	sys_ni_syscall, // 75 fdatasync
 	sys_ni_syscall, // 76 truncate
@@ -551,7 +572,7 @@ export const syscallTbl = [
 	sys_ni_syscall, // 260 fchownat
 	sys_ni_syscall, // 261 futimesat
 	sys_ni_syscall, // 262 newfstatat
-	sys_ni_syscall, // 263 unlinkat
+	sys_unlinkat, // 263 unlinkat
 	sys_ni_syscall, // 264 renameat
 	sys_ni_syscall, // 265 linkat
 	sys_ni_syscall, // 266 symlinkat

@@ -166,6 +166,8 @@ const F_GETOWN_EX = 16;
 
 const F_GETOWNER_UIDS = 17;
 
+// for unlinkat
+const AT_REMOVEDIR = 0x200;
 
 // based on stringToFlags from node's lib/fs.js
 function flagsToString(flag: any): string {
@@ -406,6 +408,46 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		64: (fd: number, op: number): void => { // getppid
 			sysret(sys.getppid(task));
 		},
+		72: (fd: number, cmd: number, arg: number): void => { // fcntl64 copied as fcntl
+			switch (cmd) {
+			case F_DUPFD:
+				return sys.dup3(task, fd, arg, 0, sysret);
+			case F_GETFD:
+				console.log('TODO: fcntl(GETFD)');
+				break;
+			case F_SETFD:
+				console.log('TODO: fcntl(SETFD)');
+				break;
+			case F_GETFL:
+				console.log('TODO: fcntl(GETFL)');
+				break;
+			case F_SETFL:
+				console.log('TODO: fcntl(SETFL)');
+				break;
+			case F_GETLK:
+				console.log('TODO: fcntl(GETLK)');
+				break;
+			case F_SETLK:
+				console.log('TODO: fcntl(SETLK)');
+				break;
+			case F_SETLKW:
+				console.log('TODO: fcntl(SETLKW)');
+				break;
+			case F_GETOWN_EX:
+				console.log('TODO: fcntl(GETOWN_EX)');
+				break;
+			case F_SETOWN:
+				console.log('TODO: fcntl(SETOWN)');
+				break;
+			case F_GETOWN:
+				console.log('TODO: fcntl(GETOWN)');
+				break;
+			default:
+				console.log('TODO: unrecognized fctl64 cmd: ' + cmd);
+			}
+
+			sysret(0);
+		},
 		114: (pid: number, wstatus: number, options: number, rusage: number) => { // wait4
 			sys.wait4(task, pid, options, (pid: number, wstatus?: number, rusage: any = null) => {
 				wstatus = wstatus|0;
@@ -579,6 +621,10 @@ class AsyncSyscalls {
 		}
 
 		this.sys.execve(ctx.task, file, sargs, senv, ctx.complete.bind(ctx));
+	}
+
+	fcntl(ctx: SyscallContext, fd: number, cmd: number, arg: number): void {
+		this.fcntl64(ctx, fd, cmd, arg);
 	}
 
 	fcntl64(ctx: SyscallContext, fd: number, cmd: number, arg: number): void {
@@ -848,6 +894,47 @@ class AsyncSyscalls {
 		});
 	}
 
+	flock(ctx: SyscallContext, fd: number, operation: number): void {
+		console.log("flock system call not implemented -- returning 0");
+		ctx.complete(0);
+	}
+
+	unlinkat(ctx: SyscallContext, dirFD: number, path: Uint8Array, flags: number): void {
+		let spath: string;
+		let len = path.length;
+		if (len && path[path.length-1] === 0)
+			len--;
+		if (path instanceof Uint8Array)
+			spath = utf8Slice(path, 0, len);
+		else
+			spath = path;
+
+		if (flags === AT_REMOVEDIR) {
+			this.sys.rmdir(ctx.task, spath, (err: any) => {
+				if (err && err.errno) {
+					console.log(err);
+					ctx.complete(-err.errno);
+				}
+				else if (err) {
+					console.log(err);
+					ctx.complete(-1);
+				}
+				else {
+					ctx.complete(0);
+				}
+			});
+		} else {
+			this.sys.unlink(ctx.task, spath, (err: any) => {
+				if (err && err.errno)
+					ctx.complete(-err.errno);
+				else if (err)
+					ctx.complete(-1);
+				else
+					ctx.complete(0);
+			});
+		}
+	}
+
 	utimes(ctx: SyscallContext, path: any, atimets: number, mtimets: number): void {
 		let spath: string;
 		if (path instanceof Uint8Array)
@@ -1063,8 +1150,20 @@ export class Syscalls {
 		let port: number = info.port;
 		// FIXME: this hack
 		if (port === 0) {
-			console.log('port was zero -- changing to 8080');
-			port = 8080;
+			console.log('port was zero -- getting random port');
+			let breakOutCounter = 0;
+			while (true) {
+				if (breakOutCounter > 65535) {
+					return cb(-constants.ENOTSOCK);
+				}
+				let lPort = getRandomPort();
+				if (this.kernel.ports[lPort] === undefined) {
+					port = lPort;
+					console.log('port set to: ' + port);
+					break;
+				}
+				breakOutCounter++;
+			}
 		}
 		// TODO: check family === SOCK.STREAM
 
@@ -1788,45 +1887,17 @@ export class Kernel implements IKernel {
 		if (addr === '0.0.0.0')
 			addr = '127.0.0.1';
 		if (addr !== 'localhost' && addr !== '127.0.0.1') {
-			console.log('WebRTC connection started to: ' + addr + ":" + port);
 			let local = <SocketFile>(<any>f);
 			local.isWebRTC = true;
 			// now we have to actually connect to the peer
-			let clientName = "CLIENT" + (Math.floor(Math.random()*100000)).toString();
 			let connectName = addr + ":" + port.toString();
-			console.log(connectName);
-			console.log(clientName);
-			crypto.subtle.digest("SHA-256", new TextEncoder("utf-8").encode(connectName)).then(function (hashedAddrPort: any): any {
-				// https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-				function hex(buffer: any): any {
-					let hexCodes = [];
-					let view = new DataView(buffer);
-					for (let i = 0; i < view.byteLength; i += 4) {
-						// Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
-						let value = view.getUint32(i);
-						// toString(16) will give the hex representation of the number without padding
-						let stringValue = value.toString(16);
-						// We use concatenation and slice for padding
-						let padding = "00000000";
-						let paddedValue = (padding + stringValue).slice(-padding.length);
-						hexCodes.push(paddedValue);
-					}
-					// Join all the hex strings into one
-					return hexCodes.join("");
-				}
-				console.log(hex(hashedAddrPort));
-				let newPeer = new Peer(clientName, {host: 'localhost', port: 9000, path: '/browsix-net'});
-				let connection = newPeer.connect(hex(hashedAddrPort));
-				console.log(newPeer);
-				console.log(connection);
-				newPeer.on('open', function(): any {
-					connection.on('open', function(): any {
-						console.log("opened connection");
-						local.setConnection(connection);
-						connection.on('data', local.getOnData());
-						console.log("connect finished");
-						cb(null);
-					});
+			let newPeer = new Peer(null, {host: 'localhost', port: 9000, path: '/browsix-net'});
+			let connection = newPeer.connect(connectName);
+			newPeer.on('open', function(): any {
+				connection.on('open', function(): any {
+					local.setConnection(connection);
+					connection.on('data', local.getOnData());
+					cb(null);
 				});
 			});
 		} else {

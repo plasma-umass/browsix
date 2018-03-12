@@ -83,29 +83,9 @@ export class SocketFile implements IFile {
 			console.log("creating new peer in listen");
 			let listenName = this.addr + ":" + this.port.toString();
 			console.log("listening on: " + listenName);
-			crypto.subtle.digest("SHA-256", new TextEncoder("utf-8").encode(listenName)).then(function (hashedAddrPort: any): any {
-				// https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-				function hex(buffer: any): any {
-					let hexCodes = [];
-					let view = new DataView(buffer);
-					for (let i = 0; i < view.byteLength; i += 4) {
-						// Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
-						let value = view.getUint32(i);
-						// toString(16) will give the hex representation of the number without padding
-						let stringValue = value.toString(16);
-						// We use concatenation and slice for padding
-						let padding = "00000000";
-						let paddedValue = (padding + stringValue).slice(-padding.length);
-						hexCodes.push(paddedValue);
-					}
-					// Join all the hex strings into one
-					return hexCodes.join("");
-				}
-				console.log(hex(hashedAddrPort));
-				let newPeer = new Peer(hex(hashedAddrPort), {host: 'localhost', port: 9000, path: '/browsix-net'});
-				this.peerObject = newPeer;
-				cb(0);
-			}.bind(this));
+			let newPeer = new Peer(listenName, {host: 'localhost', port: 9000, path: '/browsix-net'});
+			this.peerObject = newPeer;
+			cb(0);
 		} else {
 			cb(0);
 		}

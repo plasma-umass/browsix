@@ -4,7 +4,7 @@
 
 'use strict';
 
-import { EINVAL, ESPIPE } from './constants';
+import { EINVAL, ESPIPE, EAGAIN } from './constants';
 import { ConnectCallback, RWCallback, SyscallContext, IFile, ITask } from './types';
 import { Pipe } from './pipe';
 import Peer = require('peerjs');
@@ -45,10 +45,13 @@ export class SocketFile implements IFile {
 	peerConnection:          any               = undefined;
 	peerObject:              any               = undefined;
 	webRTCReadBuffer:        Pipe              = undefined;
+	pollinCB:                any               = undefined;
+	blocking:                boolean           = true;
 
 	constructor(task: ITask) {
 		this.task = task;
 		this.webRTCReadBuffer = new Pipe();
+		this.pollinCB = [];
 	}
 
 	setConnection(conn: any): any {
@@ -63,10 +66,13 @@ export class SocketFile implements IFile {
 	}
 
 	onData(data: any): any {
-		//console.log("received data!");
-		//console.log(data);
-		//console.log(this);
+		console.log("received data!");
+		console.log(data);
 		this.webRTCReadBuffer.write(data);
+		this.pollinCB.forEach((pollcb: any) => {
+			// notify all pollers that we have some stuff to read
+			pollcb();
+		});
 	}
 
 	stat(cb: (err: any, stats: any) => void): void {
@@ -96,6 +102,7 @@ export class SocketFile implements IFile {
 		if (this.isWebRTC) {
 			console.log(this.peerObject);
 			this.peerObject.on('connection', function(conn: any): any {
+				debugger;
 				console.log("listening completed - established connection to remote peer");
 				conn.on('open', function(): any {
 					console.log(conn);
@@ -108,11 +115,17 @@ export class SocketFile implements IFile {
 					cb(0, local, "localhost", 0);
 				});
 			});
+			(<any>window).peerObjects.push(this.peerObject);
 		} else {
 			if (!this.incomingQueue.length) {
-				this.acceptQueue.push(cb);
+				if (this.blocking)  { // for blocking sockets
+					this.acceptQueue.push(cb);
+				} else {
+					cb(-EAGAIN);
+				}
 				return;
 			}
+			debugger;
 
 			let queued = this.incomingQueue.shift();
 
@@ -176,9 +189,9 @@ export class SocketFile implements IFile {
 		this.task.kernel.connect(this, addr, port, cb);
 	}
 
-
 	read(buf: Buffer, pos: number, cb: RWCallback): void {
-		// console.log("read called");
+		console.log("read called");
+		debugger;
 		if (pos !== -1)
 			return cb(-ESPIPE);
 		if (this.isWebRTC) {
@@ -191,14 +204,15 @@ export class SocketFile implements IFile {
 	write(buf: Buffer, pos: number, cb: RWCallback): void {
 		if (pos !== -1)
 			return cb(-ESPIPE);
-		//console.log("write called");
+		console.log("write called");
 		//console.log(this);
 		if (this.isWebRTC) {
-			//console.log(this.peerConnection);
-			//console.log(buf.toString());
+			console.log(this.peerConnection);
+			console.log(buf.toString());
 			this.peerConnection.send(buf.getBufferCore().getDataView().buffer);
 			cb(0, buf.length);
 		} else {
+			console.log(buf.toString());
 			this.outgoing.writeBuffer(buf, cb);
 		}
 	}

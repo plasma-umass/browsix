@@ -77,6 +77,8 @@ export interface ITask {
 	cwd: string;
 	priority: number;
 
+	resource_limits: number[];
+
 	personality(kind: number, sab: SharedArrayBuffer, off: number, cb: (err: any) => void): void;
 	exec(filename: string, args: string[], env: Environment, cb: (err: any, pid: number) => void): void;
 	allocFD(): number;

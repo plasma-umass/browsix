@@ -89,11 +89,15 @@ export class RegularFile implements IFile {
 
 	refCount: number;
 
+	pollinCB: any = undefined;
+
+
 	constructor(kernel: IKernel, fd: number) {
 		this.kernel = kernel;
 		this.fd = fd;
 		this.refCount = 1;
 		this.pos = 0;
+		this.pollinCB = [];
 	}
 
 	read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
@@ -115,6 +119,11 @@ export class RegularFile implements IFile {
 			if (!err && len)
 				this.pos += len;
 			cb(err, len);
+		});
+
+		this.pollinCB.forEach((pollcb: any) => {
+			// notify all pollers that we have some stuff to read
+			pollcb();
 		});
 	}
 

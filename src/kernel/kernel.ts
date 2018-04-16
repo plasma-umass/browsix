@@ -22,6 +22,7 @@ import * as marshal from 'node-binary-marshal';
 import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
 
 import Peer = require('peerjs');
+import { Socket } from 'net';
 
 // controls the default of whether to delay the initialization message
 // to a Worker to aid in debugging.
@@ -466,9 +467,34 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 				sysret(err);
 			});
 		},
+		168: (pollfd_ptr: number, count: number, timeout: number) => {
+			if (count === 0) {
+				// if we aren't waiting on anything, we can just return
+				sysret(0);
+			} else {
+				let buffer = arrayAt(pollfd_ptr, 8 * count);
+				sys.poll(task, buffer, count, timeout, sysret);
+			}
+		},
 		174: (act: number, oldact: number): void => { //rt_sigaction
-//			console.log('TODO: rt_sigaction');
+			// console.log('TODO: rt_sigaction');
 			sysret(0);
+		},
+		180: (fd: number, bufp: number, count: number, offset: number): void => { // pread64
+			let buffer = bufferAt(bufp, count);
+			sys.pread(task, fd, buffer, offset, (err, len) => {
+				if (err)
+					sysret(err);
+				sysret(len);
+			});
+		},
+		181: (fd: number, bufp: number, count: number, pos: number): void => { // pwrite64
+			let buffer = bufferAt(bufp, count);
+			sys.pwrite(task, fd, buffer, pos, (err, len) => {
+				if (err)
+					sysret(err);
+				sysret(len);
+			});
 		},
 		183: (bufp: number, size: number): void => { // getcwd
 			let cwd = utf8ToBytes(sys.getcwd(task));
@@ -476,6 +502,10 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 				cwd = cwd.subarray(0, size);
 			task.heapu8.subarray(bufp, bufp+size).set(cwd);
 			sysret(cwd.byteLength);
+		},
+		191: (resource: number, rlimit_bufp: number): void => { // getrlimit
+			let buffer = arrayAt(rlimit_bufp, 128);
+			sys.getrlimit(task, resource, buffer, sysret);
 		},
 		195: (pathp: number, bufp: number): void => { // stat64
 			let path = stringAt(pathp);
@@ -500,6 +530,11 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 					task.heapu8.subarray(bufp, bufp+len).set(buf);
 				sysret.apply(this, arguments);
 			});
+		},
+		212: (pathp: number, owner: number, group: number): void => { // chown
+			// TODO: implement chown
+			// return success for now
+			sysret(0);
 		},
 		197: (fd: number, bufp: number): void => { // fstat64
 //			console.log('fstat(' + path + ')');
@@ -562,6 +597,56 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		330: (fd1: number, fd2: number, flags: number): void => { // dup3
 			sys.dup3(task, fd1, fd2, flags, sysret);
 		},
+		359: (domain: number, type: number, protocol: number) => { // socket
+			sys.socket(task, domain, type, protocol, (err: number, fd: number): void => {
+				if (err === 0) {
+					sysret(fd);
+				} else {
+					sysret(err);
+				}
+			});
+		},
+		361: (fd: number, sockAddr: number, len: number) => { // bind
+			let sockbuf = arrayAt(sockAddr, len);
+			sys.bind(task, fd, sockbuf, sysret);
+		},
+		362: (fd: number, sockAddr: number, len: number) => { // connect
+			let sockbuf = arrayAt(sockAddr, len);
+			sys.connect(task, fd, sockbuf, sysret);
+		},
+		363: (fd: number, backlog: number) => { // listen
+			sys.listen(task, fd, backlog, sysret);
+		},
+		364: (fd: number, buf_ptr: number, addr_len: number, flags: number) => { // accept4, accept
+			let buf = arrayAt(buf_ptr, addr_len);
+			sys.accept(task, fd, buf, flags, sysret);
+		},
+		// TODO remove this and implement socketcall here isntead of in emscripten
+		1000: (fd: number, level: number, optname: number, optval: Uint8Array) => { // setsockopt, not a real syscall
+			console.log("TODO: implement socketcall and remove extra syscall for setsockopt");
+			sysret(0);
+		},
+		1001: (fd: number, addr: Uint8Array) => { // getsockname, not a real syscall
+			sys.getsockname(task, fd, addr, (err, len) => {
+				if (err)
+					sysret(-1);
+				sysret(0);
+			});
+		},
+		1002: (sockfd: number, buf_ptr: number, buf_len: number, flags: number, sockaddr_ptr: number, socklen: number) => {
+			let readBuf = bufferAt(buf_ptr, buf_len);
+			let retF = (err: number, len: number) => {
+				if (err)
+					sysret(-1);
+				sysret(len);
+			};
+			if (sockaddr_ptr === 0) {
+				sys.recvfrom(task, sockfd, readBuf, flags, true, null, retF);
+			} else {
+				let sockaddr = arrayAt(sockaddr_ptr, socklen);
+				sys.recvfrom(task, sockfd, readBuf, flags, false, sockaddr, retF);
+			}
+		}
 	};
 
 	return (n: number, args: number[]) => {
@@ -709,6 +794,10 @@ class AsyncSyscalls {
 
 	llseek(ctx: SyscallContext, fd: number, offhi: number, offlo: number, whence: number): void {
 		this.sys.llseek(ctx.task, fd, offhi, offlo, whence, ctx.complete.bind(ctx));
+	}
+
+	poll(ctx: SyscallContext, pollfd_buffer: Uint8Array, count: number, timeout: number): void {
+		this.sys.poll(ctx.task, pollfd_buffer, count, timeout, ctx.complete.bind(ctx));
 	}
 
 	socket(ctx: SyscallContext, domain: AF, type: SOCK, protocol: number): void {
@@ -1129,8 +1218,39 @@ export class Syscalls {
 		file.llseek(offhi, offlo, whence, cb);
 	}
 
+	poll(task: ITask, pollfd_buffer: Uint8Array, count: number, timeout: number, cb: (err: number) => void): void {
+		let info: any = {};
+		let countArray = [];
+		let CBCount = 0;
+		for (let c = 0; c < count; c++) {
+			countArray.push(c);
+		}
+		for (let c = 0; c < count; c++) {
+			let tempArray = pollfd_buffer.slice(c * 8, ((c+1) * 8));
+			let view = new DataView(tempArray.buffer, tempArray.byteOffset, tempArray.byteLength);
+			let [_, err] = marshal.Unmarshal(info, view, 0, marshal.poll.PollFdDef);
+			debugger;
+			console.log(info);
+			if (info.events === constants.POLLIN) {
+				// we need to block until we read in data on the fd
+				info.revents = constants.POLLIN;
+				marshal.Marshal(view, 0, info, marshal.poll.PollFdDef);
+				pollfd_buffer.set(new Uint8Array(view.buffer), c * 8);
+				CBCount++; // TODO: remove
+			} else if (info.events === 0) {
+				info.revents = constants.POLLERR;
+				marshal.Marshal(view, 0, info, marshal.poll.PollFdDef);
+				pollfd_buffer.set(new Uint8Array(view.buffer), c * 8);
+				CBCount++;
+			}
+		}
+		cb(count);
+	}
+
 	socket(task: ITask, domain: AF, type: SOCK, protocol: number, cb: (err: number, fd?: number) => void): void {
 		if (domain === AF.UNSPEC)
+			domain = AF.INET;
+		if (domain === AF.FILE)
 			domain = AF.INET;
 		if (domain !== AF.INET && type !== SOCK.STREAM) {
 			cb(-constants.EAFNOSUPPORT);
@@ -1265,20 +1385,20 @@ export class Syscalls {
 
 				if (remoteAddr === 'localhost')
 					remoteAddr = '127.0.0.1';
-
 				let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+				debugger;
 				marshal.Marshal(
 					view,
 					0,
 					{family: 2, port: remotePort, addr: remoteAddr},
 					marshal.socket.SockAddrInDef);
-
 				cb(fd);
+				return;
 			});
+		} else {
+			cb(-constants.ENOTSOCK);
 			return;
 		}
-
-		return cb(-constants.ENOTSOCK);
 	}
 
 	connect(task: ITask, fd: number, sockAddr: Uint8Array, cb: ConnectCallback): void {
@@ -1296,6 +1416,7 @@ export class Syscalls {
 
 		if (isSocket(file)) {
 			file.connect(addr, port, (err: number) => {
+				console.log("err: " + err);
 				if (err)
 					cb(err);
 
@@ -1622,7 +1743,48 @@ export class Syscalls {
 
 	// FIXME: this doesn't work as an API for real ioctls
 	ioctl(task: ITask, fd: number, request: number, length: number, cb: (err: number) => void): void {
-		cb(-ENOTTY);
+		debugger;
+		if (request === 0x5421) { // FIONBIO
+			let file = task.files[fd];
+			if (isSocket(file))
+				file.blocking = false;
+		}
+		cb(0); // lets just return 0 for now
+	}
+
+	getrlimit(task: ITask, resource: number, buf: Uint8Array, cb: (err: number) => void): void {
+		if (resource >= constants.RLIMIT_NLIMITS) {
+			return cb(-EINVAL);
+		} else {
+			let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+			marshal.rlimit.rlimit_struct_marshal(view, task.resource_limits[resource]);
+			return cb(0);
+		}
+	}
+
+	recvfrom(task:   ITask,
+			// tslint:disable-next-line:indent
+						    sockfd: number,
+			// tslint:disable-next-line:indent
+						    buf: Buffer,
+			// tslint:disable-next-line:indent
+						    flags: number,
+			// tslint:disable-next-line:indent
+						    sockaddr_null: boolean,
+			// tslint:disable-next-line:indent
+						    sockaddr: Uint8Array,
+			// tslint:disable-next-line:indent
+					     cb: (err: any, len?: number) => void): void {
+		let file = task.files[sockfd];
+		if (isSocket(file)) {
+			if (!sockaddr_null) {
+				let view = new DataView(sockaddr.buffer, buf.byteOffset, buf.byteLength);
+				marshal.Marshal(view, 0, { family: 2, port: file.peer.port, addr: file.peer.addr }, marshal.socket.SockAddrInDef);
+			}
+			file.read(buf, -1, cb);
+		} else {
+			cb(-1);
+		}
 	}
 }
 
@@ -1882,6 +2044,7 @@ export class Kernel implements IKernel {
 	}
 
 	connect(f: IFile, addr: string, port: number, cb: ConnectCallback): void {
+		debugger;
 		console.log("calling connect!");
 		console.log("addr: " + addr);
 		if (addr === '0.0.0.0')
@@ -1901,6 +2064,7 @@ export class Kernel implements IKernel {
 				});
 			});
 		} else {
+			debugger;
 			if (!(port in this.ports)) {
 				cb(-constants.ECONNREFUSED);
 				return;
@@ -1911,9 +2075,17 @@ export class Kernel implements IKernel {
 				cb(-constants.ECONNREFUSED);
 				return;
 			}
-
 			let local = <SocketFile>(<any>f);
-			listener.doAccept(local, addr, port, cb);
+			if (isSocket(listener) && listener.blocking === false) {
+				listener.incomingQueue.push({
+					s: local,
+					addr: addr,
+					port: port,
+					cb: cb,
+				});
+			} else {
+				listener.doAccept(local, addr, port, cb);
+			}
 		}
 	}
 
@@ -1988,6 +2160,34 @@ export class Kernel implements IKernel {
 		}
 
 		let task = new Task(this, parent, pid, '/', name, args, env, files, null, null, null, cb);
+
+		// resource limits for a task
+		// max virtual memory
+		task.resource_limits[constants.RLIMIT_AS] = 0x40000000;
+		// we are not making any core dump files
+		task.resource_limits[constants.RLIMIT_CORE] = 0;
+		// we allow an infinite amount of CPU time
+		task.resource_limits[constants.RLIMIT_CPU] = constants.RLIM_INFINITY;
+		// maximum size of a data segment, we allow infinity
+		task.resource_limits[constants.RLIMIT_DATA] = constants.RLIM_INFINITY;
+		// maximum file size
+		task.resource_limits[constants.RLIMIT_FSIZE] = 0x40000000;
+		// max number of flocks a program can make
+		task.resource_limits[constants.RLIMIT_LOCKS] = constants.RLIM_INFINITY;
+		// max number of bytes that can be locked in memory
+		task.resource_limits[constants.RLIMIT_MEMLOCK] = 0x40000000;
+		// limit on number of bytes for messages
+		task.resource_limits[constants.RLIMIT_MSGQUEUE] = 0x40000000;
+		// max process priority
+		task.resource_limits[constants.RLIMIT_NICE] = constants.RLIM_INFINITY;
+		// max fd number that can be opened
+		task.resource_limits[constants.RLIMIT_NOFILE] = 0x100000;
+		task.resource_limits[constants.RLIMIT_NPROC] = constants.RLIM_INFINITY;
+		task.resource_limits[constants.RLIMIT_RSS] = constants.RLIM_INFINITY;
+		task.resource_limits[constants.RLIMIT_RTPRIO] = constants.RLIM_INFINITY;
+		task.resource_limits[constants.RLIMIT_SIGPENDING] = constants.RLIM_INFINITY;
+		task.resource_limits[constants.RLIMIT_STACK] = constants.RLIM_INFINITY;
+
 		this.tasks[pid] = task;
 	}
 
@@ -2086,6 +2286,8 @@ export class Task implements ITask {
 
 	priority: number;
 
+	resource_limits: number[];
+
 	private msgIdSeq: number = 1;
 	private onRunnable: (err: number, pid: number) => void;
 
@@ -2142,6 +2344,8 @@ export class Task implements ITask {
 		} else {
 			this.exec(filename, args, env, cb);
 		}
+
+		this.resource_limits = new Array<number>(16);
 	}
 
 	personality(kind: number, sab: SharedArrayBuffer, off: number, cb: (err: number) => void): void {
@@ -2658,6 +2862,7 @@ export function BootWith(rootFs: any, cb: BootCallback, args: BootArgs = {}): vo
 	let k = new Kernel(fs, nCPUs, args);
 	// FIXME: this is for debugging purposes
 	(<any>window).kernel = k;
+	(<any>window).peerObjects = [];
 	setImmediate(cb, null, k);
 }
 

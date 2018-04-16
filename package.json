@@ -18,7 +18,7 @@
   "devDependencies": {
     "bfs-buffer": "^0.1.7",
     "bfs-path": "^0.1.2",
-    "bower": "^1.8.2",
+    "bower": "^1.8.4",
     "browser-sync": "^2.23.6",
     "browserfs-browsix-tmp": "0.5.15",
     "browserify": "^13.0.1",
@@ -65,7 +65,7 @@
     "@types/filesystem": "0.0.28",
     "@types/mocha": "^2.2.47",
     "@types/peerjs": "0.0.29",
-    "node-binary-marshal": "^0.4.2",
+    "node-binary-marshal": "github:SamGinzburg/node-binary-marshal",
     "peerjs": "github:SamGinzburg/peerjs",
     "term.js": "github:bpowers/term.js"
   },

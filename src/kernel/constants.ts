@@ -157,3 +157,33 @@ export const S_IXUSR = 64;
 export const UV_UDP_REUSEADDR = 4;
 export const W_OK = 2;
 export const X_OK = 1;
+
+
+// rlimit constants
+
+export const RLIMIT_CPU = 0;
+export const RLIMIT_FSIZE = 1;
+export const RLIMIT_DATA = 2;
+export const RLIMIT_STACK = 3;
+export const RLIMIT_CORE = 4;
+export const RLIMIT_RSS = 5;
+export const RLIMIT_NPROC = 6;
+export const RLIMIT_NOFILE = 7;
+export const RLIMIT_MEMLOCK = 8;
+export const RLIMIT_AS = 9;
+export const RLIMIT_LOCKS = 10;
+export const RLIMIT_SIGPENDING = 11;
+export const RLIMIT_MSGQUEUE = 12;
+export const RLIMIT_NICE = 13;
+export const RLIMIT_RTPRIO = 14;
+export const RLIMIT_NLIMITS = 15;
+
+export const RLIM_INFINITY = -1;
+
+// poll constants
+export const POLLIN = 0x0001;
+export const POLLPRI = 0x0002;
+export const POLLOUT = 0x0004;
+export const POLLERR = 0x0008;
+export const POLLHUP = 0x0010;
+export const POLLNVAL = 0x0020;

@@ -34,6 +34,9 @@ export class Pipe {
 
 	writeBuffer(b: Buffer, cb: RWCallback): void {
 		this.bufs.push(b);
+		if (this.bufs.length > 10) {
+			this.bufs = Buffer.concat(this.bufs);
+		}
 		this.releaseReader();
 
 		if (this.bufferLength <= CUTOFF) {

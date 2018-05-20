@@ -114,9 +114,11 @@ function sys_chdir(cb: Function, trap: number, path: any): void {
 
 function sys_ioctl(cb: Function, trap: number, fd: number, request: any, argp: any): void {
 	let done = function(err: any, buf: Uint8Array): void {
-		if (!err && argp.byteLength !== undefined)
+		if (!err && argp.byteLength !== undefined) {
 			argp.set(buf);
-		cb([err ? err : buf.byteLength, 0, err ? -1 : 0]);
+			cb([err ? err : buf.byteLength, 0, err ? -1 : 0]);
+		}
+		cb([err, 0, -1]);
 	};
 	syscall.ioctl(fd, request, argp.byteLength, done);
 }

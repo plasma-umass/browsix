@@ -1229,7 +1229,7 @@ export class Syscalls {
 			let tempArray = pollfd_buffer.slice(c * 8, ((c+1) * 8));
 			let view = new DataView(tempArray.buffer, tempArray.byteOffset, tempArray.byteLength);
 			let [_, err] = marshal.Unmarshal(info, view, 0, marshal.poll.PollFdDef);
-			debugger;
+			info.revents = 0;
 			console.log(info);
 			if (info.events === constants.POLLIN) {
 				// we need to block until we read in data on the fd
@@ -1237,14 +1237,22 @@ export class Syscalls {
 				marshal.Marshal(view, 0, info, marshal.poll.PollFdDef);
 				pollfd_buffer.set(new Uint8Array(view.buffer), c * 8);
 				CBCount++; // TODO: remove
+			} else if (info.events === constants.POLLOUT) {
+				info.revents = constants.POLLOUT;
+				marshal.Marshal(view, 0, info, marshal.poll.PollFdDef);
+				pollfd_buffer.set(new Uint8Array(view.buffer), c * 8);
+				CBCount++;
 			} else if (info.events === 0) {
 				info.revents = constants.POLLERR;
 				marshal.Marshal(view, 0, info, marshal.poll.PollFdDef);
 				pollfd_buffer.set(new Uint8Array(view.buffer), c * 8);
 				CBCount++;
+			} else {
+				debugger;
 			}
 		}
-		cb(count);
+		console.log("DEBUG: poll returned: " + CBCount);
+		cb(CBCount);
 	}
 
 	socket(task: ITask, domain: AF, type: SOCK, protocol: number, cb: (err: number, fd?: number) => void): void {

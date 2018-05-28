@@ -29,7 +29,7 @@ func main() {
 			os.Exit(1)
 		}
 		b, _ := ioutil.ReadAll(resp.Body)
-		resp.Body.Close()
+		defer resp.Body.Close()
 		_ = b
 		elapsed := time.Since(start)
 		fmt.Printf("Time for request: %s\n", elapsed)	

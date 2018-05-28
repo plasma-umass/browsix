@@ -16,4 +16,8 @@ $(MAIN).js:
 	cp big4.txt $(FSROOT)/srv/
 	cp big5.txt $(FSROOT)/srv/
 
+clean:
+	rm -rf *.js
+	rm -rf *.js.map
+
 .PHONY: $(MAIN).js

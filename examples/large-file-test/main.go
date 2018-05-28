@@ -12,7 +12,7 @@ import (
 
 var (
 	addr   = flag.String("addr", "128.0.0.1:80", "address to listen on")
-	prefix = flag.String("prefix", "/srv", "large file location")
+	prefix = flag.String("prefix", "", "large file location")
 )
 
 func read(filename string) string {

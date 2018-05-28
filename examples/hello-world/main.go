@@ -4,5 +4,5 @@ import "fmt"
 import "runtime/internal/sys"
 
 func main() {
-	fmt.Println(sys.TheGoos)
+	fmt.Println(sys.GOOS)
 }

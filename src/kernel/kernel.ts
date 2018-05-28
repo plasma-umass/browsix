@@ -1754,6 +1754,8 @@ export class Syscalls {
 		debugger;
 		if (request === 0x5421) { // FIONBIO
 			let file = task.files[fd];
+			console.log("setting file to FIONBIO via ioctl");
+			console.log(file);
 			if (isSocket(file))
 				file.blocking = false;
 		}
@@ -2052,7 +2054,6 @@ export class Kernel implements IKernel {
 	}
 
 	connect(f: IFile, addr: string, port: number, cb: ConnectCallback): void {
-		debugger;
 		console.log("calling connect!");
 		console.log("addr: " + addr);
 		if (addr === '0.0.0.0')
@@ -2068,6 +2069,13 @@ export class Kernel implements IKernel {
 				connection.on('open', function(): any {
 					local.setConnection(connection);
 					connection.on('data', local.getOnData());
+					let fakepeer = <SocketFile>(<any>f);
+					console.log(connection.peer);
+					let spliturl = connection.peer.split(":");
+					fakepeer.addr = spliturl[0];
+					fakepeer.port = parseInt(spliturl[1], 10);
+					local.peer = fakepeer;
+					fakepeer.peer = local;
 					cb(null);
 				});
 			});

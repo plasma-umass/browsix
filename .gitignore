@@ -7,7 +7,6 @@
 /core.*
 /fs
 /fs_*
-/lib-dist
 /.tmp
 /bench/*.js
 /app/elements/**/*.js

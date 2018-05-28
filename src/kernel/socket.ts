@@ -112,6 +112,7 @@ export class SocketFile implements IFile {
 					conn.on('data', local.onData.bind(local));
 					local.addr = "localhost";
 					local.port = 0;
+					local.peer = this;
 					cb(0, local, "localhost", 0);
 				});
 			});
@@ -191,7 +192,6 @@ export class SocketFile implements IFile {
 
 	read(buf: Buffer, pos: number, cb: RWCallback): void {
 		console.log("read called");
-		debugger;
 		if (pos !== -1)
 			return cb(-ESPIPE);
 		if (this.isWebRTC) {
@@ -207,12 +207,11 @@ export class SocketFile implements IFile {
 		console.log("write called");
 		//console.log(this);
 		if (this.isWebRTC) {
-			console.log(this.peerConnection);
-			console.log(buf.toString());
+			//console.log(this.peerConnection);
+			//console.log(buf.toString());
 			this.peerConnection.send(buf.getBufferCore().getDataView().buffer);
 			cb(0, buf.length);
 		} else {
-			console.log(buf.toString());
 			this.outgoing.writeBuffer(buf, cb);
 		}
 	}

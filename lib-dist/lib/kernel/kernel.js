@@ -1505,6 +1505,16 @@ function syncSyscalls(sys, task, sysret) {
             task.heapu8.subarray(bufp, bufp + size).set(cwd);
             sysret(cwd.byteLength);
         },
+        185: function (pathp, bufp, buf_size) {
+            var path = stringAt(pathp);
+            var input_buffer = arrayAt(bufp, buf_size);
+            sys.readlink(task, path, function (err, buf) {
+                if (err)
+                    sysret(err);
+                input_buffer.set(buf);
+                sysret(buf.byteLength);
+            });
+        },
         191: function (resource, rlimit_bufp) {
             var buffer = arrayAt(rlimit_bufp, 128);
             sys.getrlimit(task, resource, buffer, sysret);

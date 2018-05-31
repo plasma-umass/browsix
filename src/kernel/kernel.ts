@@ -506,7 +506,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		185: (pathp: number, bufp: number, buf_size: number): void => { // readLink
 			let path = stringAt(pathp);
 			let input_buffer = arrayAt(bufp, buf_size);
-			sys.readlink(task, path, function (err: number, buf?: Uint8Array) {
+			sys.readlink(task, path, (err: number, buf?: Uint8Array): void => {
 				if (err)
 					sysret(err);
 				input_buffer.set(buf);

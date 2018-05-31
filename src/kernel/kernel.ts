@@ -503,6 +503,16 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 			task.heapu8.subarray(bufp, bufp+size).set(cwd);
 			sysret(cwd.byteLength);
 		},
+		185: (pathp: number, bufp: number, buf_size: number): void => { // readLink
+			let path = stringAt(pathp);
+			let input_buffer = arrayAt(bufp, buf_size);
+			sys.readlink(task, path, function (err: number, buf?: Uint8Array) {
+				if (err)
+					sysret(err);
+				input_buffer.set(buf);
+				sysret(buf.byteLength);
+			});
+		},
 		191: (resource: number, rlimit_bufp: number): void => { // getrlimit
 			let buffer = arrayAt(rlimit_bufp, 128);
 			sys.getrlimit(task, resource, buffer, sysret);

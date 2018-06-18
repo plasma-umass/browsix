@@ -1177,6 +1177,7 @@ var O_TRUNC = constants.O_TRUNC;
 var O_WRONLY = constants.O_WRONLY;
 var O_NONBLOCK = constants.O_NONBLOCK;
 var O_DIRECTORY = constants.O_DIRECTORY;
+var O_NOCTTY = constants.O_NOCTTY;
 var PRIO_MIN = -20;
 var PRIO_MAX = 20;
 var O_CLOEXEC = 0x80000;
@@ -1205,7 +1206,7 @@ function flagsToString(flag) {
     if (flag & O_NONBLOCK) {
         console.log('TODO: nonblocking flag');
     }
-    flag &= ~(O_CLOEXEC | O_LARGEFILE | O_DIRECTORY | O_NONBLOCK);
+    flag &= ~(O_CLOEXEC | O_LARGEFILE | O_DIRECTORY | O_NONBLOCK | O_NOCTTY);
     switch (flag) {
         case O_RDONLY:
             return 'r';
@@ -1509,10 +1510,13 @@ function syncSyscalls(sys, task, sysret) {
             var path = stringAt(pathp);
             var input_buffer = arrayAt(bufp, buf_size);
             sys.readlink(task, path, function (err, buf) {
-                if (err)
+                if (err) {
                     sysret(err);
-                input_buffer.set(buf);
-                sysret(buf.byteLength);
+                }
+                else {
+                    input_buffer.set(buf);
+                    sysret(buf.byteLength);
+                }
             });
         },
         191: function (resource, rlimit_bufp) {
@@ -2156,7 +2160,6 @@ var Syscalls = (function () {
                 CBCount++;
             }
             else {
-                debugger;
             }
         }
         console.log("DEBUG: poll returned: " + CBCount);
@@ -2284,7 +2287,6 @@ var Syscalls = (function () {
                 if (remoteAddr === 'localhost')
                     remoteAddr = '127.0.0.1';
                 var view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
-                debugger;
                 marshal.Marshal(view, 0, { family: 2, port: remotePort, addr: remoteAddr }, marshal.socket.SockAddrInDef);
                 cb(fd);
                 return;
@@ -2582,7 +2584,6 @@ var Syscalls = (function () {
         });
     };
     Syscalls.prototype.ioctl = function (task, fd, request, length, cb) {
-        debugger;
         if (request === 0x5421) {
             var file = task.files[fd];
             console.log("setting file to FIONBIO via ioctl");
@@ -2590,7 +2591,12 @@ var Syscalls = (function () {
             if (socket_1.isSocket(file))
                 file.blocking = false;
         }
-        cb(0);
+        else if (request === 21523) {
+            cb(1);
+        }
+        else {
+            cb(0);
+        }
     };
     Syscalls.prototype.getrlimit = function (task, resource, buf, cb) {
         if (resource >= constants.RLIMIT_NLIMITS) {
@@ -2680,6 +2686,7 @@ var Kernel = (function () {
             }
             var t = _this.tasks[pid];
             t.onExit = onExit;
+            var stdin = t.files[0];
             var stdout = t.files[1];
             var stderr = t.files[2];
             stdout.addEventListener('write', onStdout);
@@ -2829,7 +2836,6 @@ var Kernel = (function () {
             });
         }
         else {
-            debugger;
             if (!(port in this.ports)) {
                 cb(-constants.ECONNREFUSED);
                 return;
@@ -3399,8 +3405,11 @@ var constants_1 = require("./constants");
 var CUTOFF = 8192;
 var Pipe = (function () {
     function Pipe() {
-        this.bufs = [];
+        this.fileBuffer = new Buffer(4096);
+        this.offset = 0;
+        this.readOffset = 0;
         this.refcount = 1;
+        this.writeCalled = false;
         this.readWaiter = undefined;
         this.writeWaiter = undefined;
         this.closed = false;
@@ -3411,44 +3420,46 @@ var Pipe = (function () {
     };
     Object.defineProperty(Pipe.prototype, "bufferLength", {
         get: function () {
-            var len = 0;
-            for (var i = 0; i < this.bufs.length; i++)
-                len += this.bufs[i].length;
-            return len;
+            return this.fileBuffer.length;
         },
         enumerable: true,
         configurable: true
     });
     Pipe.prototype.writeBuffer = function (b, cb) {
-        this.bufs.push(b);
+        if (this.offset + b.length > this.bufferLength) {
+            var tempBuffer = new Buffer(this.bufferLength * 2);
+            this.fileBuffer.copy(tempBuffer, 0);
+            this.fileBuffer = tempBuffer;
+        }
+        b.copy(this.fileBuffer, this.offset);
+        this.offset += b.length;
         this.releaseReader();
-        if (this.bufferLength <= CUTOFF) {
-            cb(0, b.length);
-        }
-        else {
-            if (this.writeWaiter) {
-                console.log('ERROR: expected no other write waiter');
-            }
-            this.writeWaiter = function () {
-                cb(0, b.length);
-            };
-        }
+        this.writeCalled = true;
+        cb(0, b.length);
     };
     Pipe.prototype.read = function (buf, off, len, pos, cb) {
         var _this = this;
         if (off !== 0) {
             console.log('ERROR: Pipe.read w/ non-zero offset');
         }
-        if (this.bufs.length || this.closed) {
+        console.log("read params");
+        console.log(off);
+        console.log(len);
+        console.log(pos);
+        if (this.closed) {
             var n = this.copy(buf, len, pos);
-            this.releaseWriter();
+            this.readOffset += n;
             return cb(undefined, n);
         }
         this.readWaiter = function () {
             var n = _this.copy(buf, len, pos);
-            _this.releaseWriter();
+            _this.readOffset += n;
             cb(undefined, n);
         };
+        if (this.writeCalled) {
+            this.writeCalled = false;
+            this.releaseReader();
+        }
     };
     Pipe.prototype.readSync = function () {
         var len = this.bufferLength;
@@ -3470,20 +3481,13 @@ var Pipe = (function () {
         this.readWaiter = undefined;
     };
     Pipe.prototype.copy = function (dst, len, pos) {
-        var result = 0;
         pos = pos ? pos : 0;
-        while (this.bufs.length > 0 && len > 0) {
-            var src = this.bufs[0];
-            var n = src.copy(dst, pos);
-            pos += n;
-            result += n;
-            len -= n;
-            if (src.length === n)
-                this.bufs.shift();
-            else
-                this.bufs[0] = src.slice(n);
-        }
-        return result;
+        console.log(dst.length);
+        console.log(pos);
+        console.log(len);
+        var n = this.fileBuffer.copy(dst, 0, pos, pos + len);
+        console.log(dst.toString());
+        return n;
     };
     Pipe.prototype.releaseWriter = function () {
         if (this.writeWaiter) {
@@ -3582,7 +3586,6 @@ var SocketFile = (function () {
         this.blocking = true;
         this.task = task;
         this.webRTCReadBuffer = new pipe_1.Pipe();
-        this.pollinCB = [];
     }
     SocketFile.prototype.setConnection = function (conn) {
         this.peerConnection = conn;
@@ -3597,9 +3600,6 @@ var SocketFile = (function () {
         console.log("received data!");
         console.log(data);
         this.webRTCReadBuffer.write(data);
-        this.pollinCB.forEach(function (pollcb) {
-            pollcb();
-        });
     };
     SocketFile.prototype.stat = function (cb) {
         throw new Error('TODO: SocketFile.stat not implemented');
@@ -3626,7 +3626,6 @@ var SocketFile = (function () {
         if (this.isWebRTC) {
             console.log(this.peerObject);
             this.peerObject.on('connection', function (conn) {
-                debugger;
                 console.log("listening completed - established connection to remote peer");
                 conn.on('open', function () {
                     console.log(conn);
@@ -3652,7 +3651,6 @@ var SocketFile = (function () {
                 }
                 return;
             }
-            debugger;
             var queued = this.incomingQueue.shift();
             var remote = queued.s;
             var local = new SocketFile(this.task);
@@ -3701,13 +3699,16 @@ var SocketFile = (function () {
     };
     SocketFile.prototype.read = function (buf, pos, cb) {
         console.log("read called");
-        if (pos !== -1)
+        if (pos !== -1) {
             return cb(-constants_1.ESPIPE);
+        }
         if (this.isWebRTC) {
-            this.webRTCReadBuffer.read(buf, 0, buf.length, undefined, cb);
+            var readPos = this.webRTCReadBuffer.readOffset;
+            this.webRTCReadBuffer.read(buf, 0, buf.length, readPos, cb);
         }
         else {
-            this.incoming.read(buf, 0, buf.length, undefined, cb);
+            var readPos = this.incoming.readOffset;
+            this.incoming.read(buf, 0, buf.length, readPos, cb);
         }
     };
     SocketFile.prototype.write = function (buf, pos, cb) {

@@ -12,8 +12,11 @@ declare var Buffer: any;
 const CUTOFF = 8192;
 
 export class Pipe {
-	bufs: Buffer[] = [];
+	fileBuffer: Buffer = new Buffer(4096);
+	offset: number = 0;
+	readOffset: number = 0;
 	refcount: number = 1; // maybe more accurately a reader count
+	writeCalled: boolean = false;
 	readWaiter: Function = undefined;
 	writeWaiter: Function = undefined;
 	closed: boolean = false;
@@ -24,47 +27,49 @@ export class Pipe {
 	}
 
 	get bufferLength(): number {
-		let len = 0;
-
-		for (let i = 0; i < this.bufs.length; i++)
-			len += this.bufs[i].length;
-
-		return len;
+		return this.fileBuffer.length;
 	}
 
 	writeBuffer(b: Buffer, cb: RWCallback): void {
-		this.bufs.push(b);
-		this.releaseReader();
-
-		if (this.bufferLength <= CUTOFF) {
-			cb(0, b.length);
-		} else {
-			if (this.writeWaiter) {
-				console.log('ERROR: expected no other write waiter');
-			}
-			this.writeWaiter = () => {
-				cb(0, b.length);
-			};
+		// if we are going to write off the end of the buffer, we need to expand
+		if (this.offset + b.length > this.bufferLength) {
+			let tempBuffer = new Buffer(this.bufferLength * 2);
+			this.fileBuffer.copy(tempBuffer, 0);
+			this.fileBuffer = tempBuffer;
 		}
+
+		b.copy(this.fileBuffer, this.offset);
+		this.offset+=b.length;
+		this.releaseReader();
+		this.writeCalled = true;
+		cb(0, b.length);
 	}
 
 	read(buf: Buffer, off: number, len: number, pos: number, cb: RWCallback): void {
 		if (off !== 0) {
 			console.log('ERROR: Pipe.read w/ non-zero offset');
 		}
-
-		if (this.bufs.length || this.closed) {
+		console.log("read params");
+		console.log(off);
+		console.log(len);
+		console.log(pos);
+		if (this.closed) {
 			let n = this.copy(buf, len, pos);
-			this.releaseWriter();
+			this.readOffset += n;
 			return cb(undefined, n);
 		}
 
 		// at this point, we're waiting on more data or an EOF.
 		this.readWaiter = () => {
 			let n = this.copy(buf, len, pos);
-			this.releaseWriter();
+			this.readOffset += n;
 			cb(undefined, n);
 		};
+
+		if (this.writeCalled) {
+			this.writeCalled = false;
+			this.releaseReader();
+		}
 	}
 
 	readSync(): Buffer {
@@ -93,25 +98,16 @@ export class Pipe {
 	}
 
 	private copy(dst: Buffer, len: number, pos: number): number {
-		let result = 0;
 		// ensure pos is a number
 		pos = pos ? pos : 0;
 
-		while (this.bufs.length > 0 && len > 0) {
-			let src = this.bufs[0];
+		console.log(dst.length);
+		console.log(pos);
+		console.log(len);
 
-			let n = src.copy(dst, pos);
-			pos += n;
-			result += n;
-			len -= n;
-
-			if (src.length === n)
-				this.bufs.shift();
-			else
-				this.bufs[0] = src.slice(n);
-		}
-
-		return result;
+		let n = this.fileBuffer.copy(dst, 0, pos, pos + len);
+		console.log(dst.toString());
+		return n;
 	}
 
 	// if any writers are blocked (because the buffer was at

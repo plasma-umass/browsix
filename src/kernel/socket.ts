@@ -51,7 +51,6 @@ export class SocketFile implements IFile {
 	constructor(task: ITask) {
 		this.task = task;
 		this.webRTCReadBuffer = new Pipe();
-		this.pollinCB = [];
 	}
 
 	setConnection(conn: any): any {
@@ -69,10 +68,6 @@ export class SocketFile implements IFile {
 		console.log("received data!");
 		console.log(data);
 		this.webRTCReadBuffer.write(data);
-		this.pollinCB.forEach((pollcb: any) => {
-			// notify all pollers that we have some stuff to read
-			pollcb();
-		});
 	}
 
 	stat(cb: (err: any, stats: any) => void): void {
@@ -102,7 +97,6 @@ export class SocketFile implements IFile {
 		if (this.isWebRTC) {
 			console.log(this.peerObject);
 			this.peerObject.on('connection', function(conn: any): any {
-				debugger;
 				console.log("listening completed - established connection to remote peer");
 				conn.on('open', function(): any {
 					console.log(conn);
@@ -126,8 +120,6 @@ export class SocketFile implements IFile {
 				}
 				return;
 			}
-			debugger;
-
 			let queued = this.incomingQueue.shift();
 
 			let remote = queued.s;
@@ -192,12 +184,16 @@ export class SocketFile implements IFile {
 
 	read(buf: Buffer, pos: number, cb: RWCallback): void {
 		console.log("read called");
-		if (pos !== -1)
+		if (pos !== -1) {
 			return cb(-ESPIPE);
+		}
+
 		if (this.isWebRTC) {
-			this.webRTCReadBuffer.read(buf, 0, buf.length, undefined, cb);
+			let readPos = this.webRTCReadBuffer.readOffset;
+			this.webRTCReadBuffer.read(buf, 0, buf.length, readPos, cb);
 		} else {
-			this.incoming.read(buf, 0, buf.length, undefined, cb);
+			let readPos = this.incoming.readOffset;
+			this.incoming.read(buf, 0, buf.length, readPos, cb);
 		}
 	}
 

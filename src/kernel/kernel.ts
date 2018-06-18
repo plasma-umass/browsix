@@ -139,6 +139,7 @@ const O_TRUNC = constants.O_TRUNC;
 const O_WRONLY = constants.O_WRONLY;
 const O_NONBLOCK = constants.O_NONBLOCK;
 const O_DIRECTORY = constants.O_DIRECTORY;
+const O_NOCTTY = constants.O_NOCTTY;
 
 const PRIO_MIN = -20;
 const PRIO_MAX = 20;
@@ -180,7 +181,7 @@ function flagsToString(flag: any): string {
 	if (flag & O_NONBLOCK) {
 		console.log('TODO: nonblocking flag');
 	}
-	flag &= ~(O_CLOEXEC|O_LARGEFILE|O_DIRECTORY|O_NONBLOCK);
+	flag &= ~(O_CLOEXEC|O_LARGEFILE|O_DIRECTORY|O_NONBLOCK|O_NOCTTY);
 
 	switch (flag) {
 	case O_RDONLY:
@@ -507,10 +508,12 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 			let path = stringAt(pathp);
 			let input_buffer = arrayAt(bufp, buf_size);
 			sys.readlink(task, path, (err: number, buf?: Uint8Array): void => {
-				if (err)
+				if (err) {
 					sysret(err);
-				input_buffer.set(buf);
-				sysret(buf.byteLength);
+				} else {
+					input_buffer.set(buf);
+					sysret(buf.byteLength);
+				}
 			});
 		},
 		191: (resource: number, rlimit_bufp: number): void => { // getrlimit
@@ -1258,7 +1261,6 @@ export class Syscalls {
 				pollfd_buffer.set(new Uint8Array(view.buffer), c * 8);
 				CBCount++;
 			} else {
-				debugger;
 			}
 		}
 		console.log("DEBUG: poll returned: " + CBCount);
@@ -1404,7 +1406,6 @@ export class Syscalls {
 				if (remoteAddr === 'localhost')
 					remoteAddr = '127.0.0.1';
 				let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
-				debugger;
 				marshal.Marshal(
 					view,
 					0,
@@ -1761,15 +1762,17 @@ export class Syscalls {
 
 	// FIXME: this doesn't work as an API for real ioctls
 	ioctl(task: ITask, fd: number, request: number, length: number, cb: (err: number) => void): void {
-		debugger;
 		if (request === 0x5421) { // FIONBIO
 			let file = task.files[fd];
 			console.log("setting file to FIONBIO via ioctl");
 			console.log(file);
 			if (isSocket(file))
 				file.blocking = false;
+		} else if (request === 21523) { // FIONREAD
+			cb(1);
+		} else {
+			cb(0); // lets just return 0 for now
 		}
-		cb(0); // lets just return 0 for now
 	}
 
 	getrlimit(task: ITask, resource: number, buf: Uint8Array, cb: (err: number) => void): void {
@@ -1902,6 +1905,7 @@ export class Kernel implements IKernel {
 			let t = this.tasks[pid];
 			t.onExit = onExit;
 
+			let stdin = <PipeFile>t.files[0];
 			let stdout = <PipeFile>t.files[1];
 			let stderr = <PipeFile>t.files[2];
 
@@ -2090,7 +2094,6 @@ export class Kernel implements IKernel {
 				});
 			});
 		} else {
-			debugger;
 			if (!(port in this.ports)) {
 				cb(-constants.ECONNREFUSED);
 				return;

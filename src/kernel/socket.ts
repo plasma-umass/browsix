@@ -205,7 +205,20 @@ export class SocketFile implements IFile {
 		if (this.isWebRTC) {
 			//console.log(this.peerConnection);
 			//console.log(buf.toString());
-			this.peerConnection.send(buf.getBufferCore().getDataView().buffer);
+			let tempBuffer: ArrayBuffer = buf.getBufferCore().getDataView().buffer;
+			if (buf.length > 4096) {
+				let offset: number = 0;
+				while (offset < buf.length) {
+					if (offset + 4096 > buf.length) {
+						this.peerConnection.send(tempBuffer.slice(offset, buf.length));
+					} else {
+						this.peerConnection.send(tempBuffer.slice(offset, offset + 4096));
+					}
+					offset += 4096;
+				}
+			} else {
+				this.peerConnection.send(tempBuffer);
+			}
 			cb(0, buf.length);
 		} else {
 			this.outgoing.writeBuffer(buf, cb);

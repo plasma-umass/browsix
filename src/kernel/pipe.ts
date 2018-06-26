@@ -10,6 +10,7 @@ import { SyscallContext, IFile, OutputCallback, RWCallback } from './types';
 declare var Buffer: any;
 
 const CUTOFF = 8192;
+const READ_CUTOFF = 1024 * 80;
 
 export class Pipe {
 	fileBuffer: Buffer = new Buffer(4096);
@@ -53,9 +54,11 @@ export class Pipe {
 		console.log(off);
 		console.log(len);
 		console.log(pos);
-		if (this.closed) {
+
+		if (this.offset > this.readOffset || this.closed) {
 			let n = this.copy(buf, len, pos);
 			this.readOffset += n;
+			this.releaseWriter();
 			return cb(undefined, n);
 		}
 
@@ -63,6 +66,7 @@ export class Pipe {
 		this.readWaiter = () => {
 			let n = this.copy(buf, len, pos);
 			this.readOffset += n;
+			this.releaseWriter();
 			cb(undefined, n);
 		};
 
@@ -98,15 +102,20 @@ export class Pipe {
 	}
 
 	private copy(dst: Buffer, len: number, pos: number): number {
+		let n: number = 0;
 		// ensure pos is a number
 		pos = pos ? pos : 0;
-
+		console.log("this.bufferLength() = " + this.bufferLength);
 		console.log(dst.length);
 		console.log(pos);
 		console.log(len);
-
-		let n = this.fileBuffer.copy(dst, 0, pos, pos + len);
-		console.log(dst.toString());
+		//this.readOffset + len
+		if (this.readOffset + READ_CUTOFF > this.offset) {
+			n = this.fileBuffer.copy(dst, 0, this.readOffset, this.offset);
+		} else {
+			n = this.fileBuffer.copy(dst, 0, this.readOffset, this.readOffset + READ_CUTOFF);
+		}
+		//console.log(dst.toString());
 		return n;
 	}
 

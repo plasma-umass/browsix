@@ -3403,6 +3403,7 @@ if (typeof window !== 'undefined') {
 Object.defineProperty(exports, "__esModule", { value: true });
 var constants_1 = require("./constants");
 var CUTOFF = 8192;
+var READ_CUTOFF = 1024 * 80;
 var Pipe = (function () {
     function Pipe() {
         this.fileBuffer = new Buffer(4096);
@@ -3446,14 +3447,16 @@ var Pipe = (function () {
         console.log(off);
         console.log(len);
         console.log(pos);
-        if (this.closed) {
+        if (this.offset > this.readOffset || this.closed) {
             var n = this.copy(buf, len, pos);
             this.readOffset += n;
+            this.releaseWriter();
             return cb(undefined, n);
         }
         this.readWaiter = function () {
             var n = _this.copy(buf, len, pos);
             _this.readOffset += n;
+            _this.releaseWriter();
             cb(undefined, n);
         };
         if (this.writeCalled) {
@@ -3481,12 +3484,18 @@ var Pipe = (function () {
         this.readWaiter = undefined;
     };
     Pipe.prototype.copy = function (dst, len, pos) {
+        var n = 0;
         pos = pos ? pos : 0;
+        console.log("this.bufferLength() = " + this.bufferLength);
         console.log(dst.length);
         console.log(pos);
         console.log(len);
-        var n = this.fileBuffer.copy(dst, 0, pos, pos + len);
-        console.log(dst.toString());
+        if (this.readOffset + READ_CUTOFF > this.offset) {
+            n = this.fileBuffer.copy(dst, 0, this.readOffset, this.offset);
+        }
+        else {
+            n = this.fileBuffer.copy(dst, 0, this.readOffset, this.readOffset + READ_CUTOFF);
+        }
         return n;
     };
     Pipe.prototype.releaseWriter = function () {
@@ -3716,7 +3725,22 @@ var SocketFile = (function () {
             return cb(-constants_1.ESPIPE);
         console.log("write called");
         if (this.isWebRTC) {
-            this.peerConnection.send(buf.getBufferCore().getDataView().buffer);
+            var tempBuffer = buf.getBufferCore().getDataView().buffer;
+            if (buf.length > 4096) {
+                var offset = 0;
+                while (offset < buf.length) {
+                    if (offset + 4096 > buf.length) {
+                        this.peerConnection.send(tempBuffer.slice(offset, buf.length));
+                    }
+                    else {
+                        this.peerConnection.send(tempBuffer.slice(offset, offset + 4096));
+                    }
+                    offset += 4096;
+                }
+            }
+            else {
+                this.peerConnection.send(tempBuffer);
+            }
             cb(0, buf.length);
         }
         else {

@@ -1766,8 +1766,10 @@ export class Syscalls {
 			let file = task.files[fd];
 			console.log("setting file to FIONBIO via ioctl");
 			console.log(file);
-			if (isSocket(file))
+			if (isSocket(file)) {
 				file.blocking = false;
+			}
+			cb(0);
 		} else if (request === 21523) { // FIONREAD
 			cb(1);
 		} else {

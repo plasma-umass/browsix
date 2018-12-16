@@ -48,7 +48,7 @@ export class Pipe {
 		}
 	}
 
-	read(buf: Buffer, off: number, len: number, pos: number, cb: RWCallback): void {
+	read(buf: Buffer, off: number, len: number, pos: number | undefined, cb: RWCallback): void {
 		if (off !== 0) {
 			console.log('ERROR: Pipe.read w/ non-zero offset');
 		}

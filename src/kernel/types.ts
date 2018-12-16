@@ -19,12 +19,12 @@ export interface RWCallback {
 
 export interface SyscallResult {
 	id: number;
-	name: string;
+	name?: string;
 	args: any[];
 }
 
 export interface ConnectCallback {
-	(err: number): void;
+	(err?: number): void;
 }
 
 export interface IKernel {
@@ -54,7 +54,7 @@ export interface IFile {
 	write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void;
 	read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void;
 	stat(cb: (err: any, stats: any) => void): void;
-	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void;
+	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off?: number) => void): void;
 	readdir(cb: (err: any, files: string[]) => void): void;
 
 	ref(): void;
@@ -104,7 +104,7 @@ export class SyscallContext {
 export class Syscall {
 	private static requiredOnData: string[] = ['id', 'name', 'args'];
 
-	static From(task: ITask, ev: MessageEvent): Syscall {
+	static From(task: ITask, ev: MessageEvent): Syscall | undefined {
 		if (!ev.data)
 			return;
 		for (let i = 0; i < Syscall.requiredOnData.length; i++) {

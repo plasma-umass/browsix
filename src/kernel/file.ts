@@ -84,7 +84,7 @@ export function resolve(...args: string[]): string {
 
 export class RegularFile implements IFile {
 	kernel:   IKernel;
-	fd:       number;
+	fd?:       number;
 	pos:      number;
 
 	refCount: number;
@@ -166,7 +166,7 @@ export class RegularFile implements IFile {
 
 export class DirFile implements IFile {
 	kernel:   IKernel;
-	path:     string;
+	path?:     string;
 	off:      number;
 
 	refCount: number;
@@ -187,11 +187,11 @@ export class DirFile implements IFile {
 	}
 
 	stat(cb: (err: any, stats: any) => void): void {
-		this.kernel.fs.stat(this.path, cb);
+		this.kernel.fs.stat(this.path || '', cb);
 	}
 
 	readdir(cb: (err: any, files: string[]) => void): void {
-		this.kernel.fs.readdir(this.path, cb);
+		this.kernel.fs.readdir(this.path || '', cb);
 	}
 
 	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void {
@@ -245,10 +245,8 @@ export class DirFile implements IFile {
 }
 
 export class NullFile implements IFile {
-	fd:       number;
-	pos:      number;
-
 	refCount: number;
+	pos:      number;
 
 	constructor() {
 		this.refCount = 1;
@@ -282,9 +280,5 @@ export class NullFile implements IFile {
 
 	unref(): void {
 		this.refCount--;
-		// FIXME: verify this is what we want.
-		if (!this.refCount) {
-			this.fd = undefined;
-		}
 	}
 }

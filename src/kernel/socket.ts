@@ -26,16 +26,16 @@ export interface Incoming {
 export class SocketFile implements IFile {
 	task:          ITask;
 	isListening:   boolean    = false;
-	parent:        SocketFile = undefined;
+	parent?:        SocketFile = undefined;
 	refCount:      number     = 1;
 
 	port:          number;
 	addr:          string;
 
-	peer:          SocketFile = undefined;
+	peer?:          SocketFile = undefined;
 
-	outgoing:      Pipe = undefined;
-	incoming:      Pipe = undefined;
+	outgoing?:      Pipe = undefined;
+	incoming?:      Pipe = undefined;
 
 	incomingQueue: Incoming[] = [];
 	acceptQueue:   AcceptCallback[] = [];
@@ -58,12 +58,11 @@ export class SocketFile implements IFile {
 	}
 
 	accept(cb: AcceptCallback): void {
-		if (!this.incomingQueue.length) {
+		let queued = this.incomingQueue.shift();
+		if (queued === undefined) {
 			this.acceptQueue.push(cb);
 			return;
 		}
-
-		let queued = this.incomingQueue.shift();
 
 		let remote = queued.s;
 		let local = new SocketFile(this.task);
@@ -83,11 +82,12 @@ export class SocketFile implements IFile {
 		remote.peer = local;
 
 		cb(0, local, queued.addr, queued.port);
-		queued.cb(null);
+		queued.cb();
 	}
 
 	doAccept(remote: SocketFile, remoteAddr: string, remotePort: number, cb: ConnectCallback): void {
-		if (!this.acceptQueue.length) {
+		let acceptCB = this.acceptQueue.shift();
+		if (acceptCB === undefined) {
 			this.incomingQueue.push({
 				s: remote,
 				addr: remoteAddr,
@@ -96,8 +96,6 @@ export class SocketFile implements IFile {
 			});
 			return;
 		}
-
-		let acceptCB = this.acceptQueue.shift();
 
 		let local = new SocketFile(this.task);
 		local.addr = remoteAddr;
@@ -116,7 +114,7 @@ export class SocketFile implements IFile {
 		remote.peer = local;
 
 		acceptCB(0, local, remoteAddr, remotePort);
-		cb(null);
+		cb();
 	}
 
 	connect(addr: string, port: number, cb: ConnectCallback): void {
@@ -127,20 +125,29 @@ export class SocketFile implements IFile {
 	read(buf: Buffer, pos: number, cb: RWCallback): void {
 		if (pos !== -1)
 			return cb(-ESPIPE);
+		if (this.incoming === undefined) {
+			throw new Error('incoming undefined');
+		}
 		this.incoming.read(buf, 0, buf.length, undefined, cb);
 	}
 
 	write(buf: Buffer, pos: number, cb: RWCallback): void {
 		if (pos !== -1)
 			return cb(-ESPIPE);
+		if (this.outgoing === undefined) {
+			throw new Error('outgoing undefined');
+		}
 		this.outgoing.writeBuffer(buf, cb);
 	}
 
 	readSync(): Buffer {
+		if (this.incoming === undefined) {
+			throw new Error('incoming undefined');
+		}
 		return this.incoming.readSync();
 	}
 
-	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void {
+	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off?: number) => void): void {
 		cb(-EINVAL, undefined);
 	}
 

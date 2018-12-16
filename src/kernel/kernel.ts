@@ -76,14 +76,14 @@ if (true/*typeof setImmediate === 'undefined'*/) {
 			}
 
 			if (timeouts.length > 0) {
-				let [fn, args] = timeouts.shift();
-				return fn.apply(this, args);
+				let [fn, args] = (timeouts.shift() as [Function, any[]]);
+				return fn.apply(undefined, args);
 			}
 		};
 		g.addEventListener('message', handleMessage, true);
 	} else {
 		g.setImmediate = (fn: () => void, ...args: any[]) => {
-			return setTimeout.apply(this, [fn, 0].concat(args));
+			return setTimeout.apply(undefined, [fn, 0, ...args]);
 		};
 	}
 }
@@ -280,7 +280,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 	function stringArrayAt(ptr: number): string[] {
 		if (!dataViewWorks) {
 			console.log('FIXME: get data view working');
-			return;
+			return [];
 		}
 
 		let arr: string[] = [];
@@ -295,26 +295,26 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 	let table: {[n: number]: Function} = {
 		3: (fd: number, bufp: number, len: number): void => { // read
 			let buf = bufferAt(bufp, len);
-			sys.pread(task, fd, buf, -1, (err: any, len: number) => {
+			sys.pread(task, fd, buf, -1, (err: any, len?: number) => {
 				if (err) {
 					if (typeof err === 'number')
 						len = err;
 					else
 						len = -1;
 				}
-				sysret(len);
+				sysret(len || -1);
 			});
 		},
 		4: (fd: number, bufp: number, len: number): void => { // write
 			let buf = bufferAt(bufp, len);
-			sys.pwrite(task, fd, buf, -1, (err: any, len: number) => {
+			sys.pwrite(task, fd, buf, -1, (err: any, len?: number) => {
 				if (err) {
 					if (typeof err === 'number')
 						len = err;
 					else
 						len = -1;
 				}
-				sysret(len);
+				sysret(len || -1);
 			});
 		},
 		5: (pathp: number, flags: number, mode: number): void => { // open
@@ -404,7 +404,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		114: (pid: number, wstatus: number, options: number, rusage: number) => { // wait4
 			sys.wait4(task, pid, options, (pid: number, wstatus?: number, rusage: any = null) => {
-				wstatus = wstatus|0;
+				wstatus = (wstatus || 0)|0;
 				if (wstatus)
 					task.heap32[wstatus>>2] = wstatus;
 				if (rusage)

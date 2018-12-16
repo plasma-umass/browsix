@@ -14,8 +14,8 @@ const CUTOFF = 8192;
 export class Pipe {
 	bufs: Buffer[] = [];
 	refcount: number = 1; // maybe more accurately a reader count
-	readWaiter: Function = undefined;
-	writeWaiter: Function = undefined;
+	readWaiter?: Function = undefined;
+	writeWaiter?: Function = undefined;
 	closed: boolean = false;
 
 	write(s: string): void {
@@ -56,14 +56,14 @@ export class Pipe {
 		if (this.bufs.length || this.closed) {
 			let n = this.copy(buf, len, pos);
 			this.releaseWriter();
-			return cb(undefined, n);
+			return cb(0, n);
 		}
 
 		// at this point, we're waiting on more data or an EOF.
 		this.readWaiter = () => {
 			let n = this.copy(buf, len, pos);
 			this.releaseWriter();
-			cb(undefined, n);
+			cb(0, n);
 		};
 	}
 
@@ -92,7 +92,7 @@ export class Pipe {
 		this.readWaiter = undefined;
 	}
 
-	private copy(dst: Buffer, len: number, pos: number): number {
+	private copy(dst: Buffer, len: number, pos?: number): number {
 		let result = 0;
 		// ensure pos is a number
 		pos = pos ? pos : 0;
@@ -175,7 +175,7 @@ export class PipeFile implements IFile {
 		throw new Error('TODO: PipeFile.stat not implemented');
 	}
 
-	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void {
+	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off?: number) => void): void {
 		cb(-ESPIPE, undefined);
 	}
 

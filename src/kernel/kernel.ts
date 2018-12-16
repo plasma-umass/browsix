@@ -413,9 +413,9 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 			});
 		},
 		140: (fd: number, offhi: number, offlo: number, resultp: number, whence: number): void => { // llseek
-			sys.llseek(task, fd, offhi, offlo, whence, (err: number, off: number) => {
+			sys.llseek(task, fd, offhi, offlo, whence, (err: number, off?: number) => {
 				if (!err) {
-					task.heap32[resultp >> 2] = off;
+					task.heap32[resultp >> 2] = off || 0;
 				}
 				sysret(err);
 			});
@@ -434,7 +434,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		195: (pathp: number, bufp: number): void => { // stat64
 			let path = stringAt(pathp);
 //			console.log('stat(' + path + ')');
-			let len = marshal.fs.StatDef.length;
+			let len = marshal.fs.StatDef.length || 0;
 			let buf = arrayAt(bufp, len);
 			sys.stat(task, path, buf, function(): void {
 				// workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1246597
@@ -446,7 +446,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		196: (pathp: number, bufp: number): void => { // lstat64
 			let path = stringAt(pathp);
 //			console.log('lstat(' + path + ')');
-			let len = marshal.fs.StatDef.length;
+			let len = marshal.fs.StatDef.length || 0;
 			let buf = arrayAt(bufp, len);
 			sys.lstat(task, path, buf, function(): void {
 				// workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1246597
@@ -457,7 +457,7 @@ function syncSyscalls(sys: Syscalls, task: Task, sysret: (ret: number) => void):
 		},
 		197: (fd: number, bufp: number): void => { // fstat64
 //			console.log('fstat(' + path + ')');
-			let len = marshal.fs.StatDef.length;
+			let len = marshal.fs.StatDef.length || 0;
 			let buf = arrayAt(bufp, len);
 			sys.fstat(task, fd, buf, function(): void {
 				if (!dataViewWorks)
@@ -1029,7 +1029,7 @@ export class Syscalls {
 		dir.getdents(buf, cb);
 	}
 
-	llseek(task: ITask, fd: number, offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void {
+	llseek(task: ITask, fd: number, offhi: number, offlo: number, whence: number, cb: (err: number, off?: number) => void): void {
 		let file = task.files[fd];
 		if (!file) {
 			cb(-constants.EBADF, undefined);
@@ -2480,45 +2480,42 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 	if (typeof window !== 'undefined' && !(<any>window).Buffer) {
 		(<any>window).Buffer = browserfs.Buffer;
 	}
-	let rootConstructor: any = (<any>bfs).FileSystem[fsType];
-	if (!rootConstructor) {
+
+	const rootFs = (bfs as any).FileSystem[fsType];
+	if (rootFs === undefined) {
 		setImmediate(cb, 'unknown FileSystem type: ' + fsType);
 		return;
 	}
-	let asyncRoot = new (Function.prototype.bind.apply(rootConstructor, [null].concat(fsArgs)));
-	asyncRoot.supportsSynch = function(): boolean { return false; };
 
-	function finishInit(root: any, err: any): void {
+	const finishInit = (root: any, err?: any): void => {
 		if (err) {
 			cb(err, undefined);
 			return;
 		}
 		BootWith(root, cb, args);
-	}
+	};
 
-	if (args.readOnly) {
-		if (asyncRoot.initialize) {
-			asyncRoot.initialize(finishInit.bind(this, asyncRoot));
-		} else {
-			finishInit(asyncRoot, null);
+	rootFs.Create((asyncRoot: any) => {
+		console.log('got fs: ' + asyncRoot);
+		asyncRoot.supportsSynch = function(): boolean { return false; };
+
+		if (args.readOnly) {
+			finishInit(asyncRoot);
+			return;
 		}
-	} else {
-		if (asyncRoot.initialize) {
-			asyncRoot.initialize((err: any) => {
-				if (err) {
-					cb(err, undefined);
-					return;
-				}
-				let writable = args.useLocalStorage ? new bfs.FileSystem['LocalStorage']() : new bfs.FileSystem['InMemory']();
-				let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
-				overlaid.initialize(finishInit.bind(this, overlaid));
-			});
-		} else {
-			let writable = args.useLocalStorage ? new bfs.FileSystem['LocalStorage']() : new bfs.FileSystem['InMemory']();
-			let overlaid = new bfs.FileSystem['OverlayFS'](writable, asyncRoot);
-			overlaid.initialize(finishInit.bind(this, overlaid));
-		}
-	}
+
+		const fsClass: any = args.useLocalStorage ? bfs.FileSystem['LocalStorage'] : bfs.FileSystem['InMemory'];
+		let writable = new fsClass();
+		const opts = {
+			writable,
+			readable: asyncRoot,
+		};
+		const overlayCb = (overlaid: any) => {
+			finishInit(overlaid);
+		};
+
+		bfs.FileSystem['OverlayFS'].Create(opts, overlayCb);
+	});
 }
 
 export function BootWith(rootFs: any, cb: BootCallback, args: BootArgs = {}): void {

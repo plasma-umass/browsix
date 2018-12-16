@@ -133,7 +133,7 @@ export class RegularFile implements IFile {
 		setTimeout(cb, 0, 'cant readdir on normal file');
 	}
 
-	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void {
+	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off?: number) => void): void {
 		if (whence === SEEK_CUR) {
 			this.pos += offlo;
 		} else if (whence === SEEK_SET) {
@@ -194,7 +194,7 @@ export class DirFile implements IFile {
 		this.kernel.fs.readdir(this.path || '', cb);
 	}
 
-	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void {
+	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off?: number) => void): void {
 		console.log('TODO: dir.llseek');
 		cb(0, 0);
 	}
@@ -269,7 +269,7 @@ export class NullFile implements IFile {
 		setTimeout(cb, 0, 'cant readdir on /dev/null');
 	}
 
-	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off: number) => void): void {
+	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off?: number) => void): void {
 		this.pos = 0;
 		cb(0, this.pos);
 	}

@@ -67,7 +67,7 @@ export interface ITask {
 	worker: Worker;
 
 	pid: number;
-	files: {[n: number]: IFile; };
+	files: {[n: number]: IFile | undefined };
 
 	exitCode: number;
 
@@ -77,8 +77,8 @@ export interface ITask {
 	cwd: string;
 	priority: number;
 
-	personality(kind: number, sab: SharedArrayBuffer, off: number, cb: (err: any) => void): void;
-	exec(filename: string, args: string[], env: Environment, cb: (err: any, pid: number) => void): void;
+	personality(kind: number, sab: SharedArrayBuffer, off: number, cb: (err?: number) => void): void;
+	exec(filename: string, args: string[], env: Environment, cb: (err: number | undefined, pid?: number) => void): void;
 	allocFD(): number;
 	addFile(f: IFile): number;
 	schedule(msg: SyscallResult): void;

@@ -1,5 +1,9 @@
 interface HTTPInfo {
-	headers: {[name: string]: string};
+	headers: {
+		length: number;
+		[name: string]: string;
+	};
+	statusCode: number;
 }
 
 export class HTTPParser {
@@ -16,7 +20,7 @@ export class HTTPParser {
 	info: HTTPInfo;
 	isUserCall: boolean;
 
-	HTTPParser(kind: string): HTTPParser;
+	constructor(kind: string): HTTPParser;
 
 	[n: number]: Function; // state machine callbacks
 

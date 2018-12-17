@@ -1583,7 +1583,7 @@ export class Kernel implements IKernel {
 		if (parts[0][0] !== '/' && parts[0][0] !== '.')
 			parts[0] = '/usr/bin/'+parts[0];
 
-		splitParts = undefined;
+		splitParts = [];
 
 		// FIXME: figure out what else we want in the default
 		// environment
@@ -1687,7 +1687,7 @@ export class Kernel implements IKernel {
 				return;
 			}
 			p.execute(buf.slice(0, len));
-			if (len > 0) {
+			if (len !== undefined && len > 0) {
 				buf = new Buffer(64*1024);
 				f.read(buf, -1, onRead);
 			}
@@ -1828,7 +1828,7 @@ export class Kernel implements IKernel {
 	spawn(
 		parent: Task, cwd: string, name: string, args: string[],
 		envArray: string[], filesArray: number[],
-		cb: (err: number, pid: number)=>void): void {
+		cb: (err: number | undefined, pid?: number)=>void): void {
 
 		let pid = this.nextTaskId();
 
@@ -1845,7 +1845,7 @@ export class Kernel implements IKernel {
 		}
 
 		// sparse map of files
-		let files: {[n: number]: IFile; } = [];
+		let files: {[n: number]: IFile | undefined; } = [];
 		// if a task is a child of another task and has been
 		// created by a call to spawn(2), inherit the parent's
 		// file descriptors.
@@ -1856,8 +1856,11 @@ export class Kernel implements IKernel {
 					console.log('spawn: tried to use bad fd ' + fd);
 					break;
 				}
-				files[i] = parent.files[fd];
-				files[i].ref();
+				let file = parent.files[fd];
+				if (file !== undefined) {
+					files[i] = file;
+					file.ref();
+				}
 			}
 		} else {
 			files[0] = new NullFile();
@@ -1865,7 +1868,7 @@ export class Kernel implements IKernel {
 			files[2] = new PipeFile();
 		}
 
-		let task = new Task(this, parent, pid, '/', name, args, env, files, null, null, null, cb);
+		let task = new Task(this, parent, pid, '/', name, args, env, files, '', undefined as unknown as ArrayBuffer, null, cb);
 		this.tasks[pid] = task;
 	}
 
@@ -1876,25 +1879,27 @@ export class Kernel implements IKernel {
 		let args = parent.args;
 		let env = parent.env;
 
-		let files: {[n: number]: IFile; } = _clone(parent.files);
+		let files: {[n: number]: IFile | undefined; } = _clone(parent.files);
 		for (let i in files) {
 			if (!files.hasOwnProperty(i))
 				continue;
-			if (files[i])
-				files[i].ref();
+			let file = files[i];
+			if (file !== undefined) {
+				file.ref();
+			}
 		}
 
-		let blobUrl = parent.blobUrl;
+		let blobUrl = parent.blobUrl || '';
 
 		// don't need to open() filename(?) - skip to  fileOpened
 		let forkedTask = new Task(
 			this, parent, pid, cwd, filename, args, env,
-			files, blobUrl, heap, forkArgs, (err: any, pid: number) => {
+			files, blobUrl, heap, forkArgs, (err: number | undefined, pid?: number) => {
 				if (err) {
 					console.log('fork failed in kernel: ' + err);
 					cb(-1);
 				}
-				cb(pid);
+				cb(pid !== undefined ? pid : -1);
 			});
 		this.tasks[pid] = forkedTask;
 	}
@@ -1932,13 +1937,13 @@ export class Task implements ITask {
 	pid: number;
 
 	// sparse map of files
-	files: {[n: number]: IFile; } = {};
+	files: {[n: number]: IFile | undefined; } = {};
 
 	exitCode: number;
 
 	exePath: string;
 	exeFd: any;
-	blobUrl: string;
+	blobUrl?: string;
 	args: string[];
 	env: Environment;
 	pendingExePath: string;
@@ -1965,7 +1970,7 @@ export class Task implements ITask {
 	priority: number;
 
 	private msgIdSeq: number = 1;
-	private onRunnable: (err: number, pid: number) => void;
+	private onRunnable?: (err: number | undefined, pid?: number) => void;
 
 	private syncSyscall: (n: number, args: number[]) => void;
 	private syncSyscallStart: number = 0.0;
@@ -1977,9 +1982,9 @@ export class Task implements ITask {
 	constructor(
 		kernel: Kernel, parent: Task, pid: number, cwd: string,
 		filename: string, args: string[], env: Environment,
-		files: {[n: number]: IFile; }, blobUrl: string,
+		files: {[n: number]: IFile | undefined; }, blobUrl: string,
 		heap: ArrayBuffer, forkArgs: any,
-		cb: (err: number, pid: number) => void) {
+		cb: (err: number | undefined, pid?: number) => void) {
 
 		//console.log('spawn PID ' + pid + ': ' + args.join(' '));
 
@@ -2022,7 +2027,7 @@ export class Task implements ITask {
 		}
 	}
 
-	personality(kind: number, sab: SharedArrayBuffer, off: number, cb: (err: number) => void): void {
+	personality(kind: number, sab: SharedArrayBuffer, off: number, cb: (err?: number) => void): void {
 		if (kind !== PER_BLOCKING) {
 			cb(-EINVAL);
 			return;
@@ -2042,10 +2047,10 @@ export class Task implements ITask {
 			// console.log('[' + this.pid + '] \t\tDONE \t' + ret);
 		});
 
-		cb(null);
+		cb();
 	}
 
-	exec(filename: string, args: string[], env: Environment, cb: (err: any, pid: number) => void): void {
+	exec(filename: string, args: string[], env: Environment, cb: (err: number | undefined, pid?: number) => void): void {
 		this.pendingExePath = filename;
 		this.pendingArgs = args;
 		this.pendingEnv = env;
@@ -2099,17 +2104,22 @@ export class Task implements ITask {
 
 	fileOpened(err: any, fd: any): void {
 		if (err) {
-			this.onRunnable(err, undefined);
+			if (this.onRunnable) {
+				this.onRunnable(err);
+			}
 			let code = -1;
-			if (err.errno)
+			if (err.errno) {
 				code = -err.errno;
+			}
 			this.exit(code);
 			return;
 		}
 		this.exeFd = fd;
 		this.kernel.fs.fstat(fd, (serr: any, stats: any) => {
 			if (serr) {
-				this.onRunnable(serr, undefined);
+				if (this.onRunnable) {
+					this.onRunnable(serr);
+				}
 				let code = -1;
 				if (serr.errno)
 					code = -serr.errno;
@@ -2126,7 +2136,9 @@ export class Task implements ITask {
 		this.kernel.fs.close(fd, function(e?: any): void {});
 
 		if (err) {
-			this.onRunnable(err, undefined);
+			if (this.onRunnable) {
+				this.onRunnable(err);
+			}
 			this.exit(-1);
 			return;
 		}
@@ -2160,6 +2172,9 @@ export class Task implements ITask {
 			buf = buf.slice(newlinePos+1);
 
 			let parts = shebang.match(/\S+/g);
+			if (parts === null || parts[0] === null) {
+				throw new Error('shebang parse error: ' + buf);
+			}
 			let cmd = parts[0];
 
 			// many commands don't want to hardcode the
@@ -2172,7 +2187,7 @@ export class Task implements ITask {
 			// that here for 2 reasons - to avoid
 			// implementing env (minor), and as a
 			// performance improvement (major).
-			if (parts.length === 2 && (parts[0] === '/usr/bin/env' || parts[0] === '/bin/env')) {
+			if (parts.length === 2 && parts[1] !== null && (parts[0] === '/usr/bin/env' || parts[0] === '/bin/env')) {
 				cmd = '/usr/bin/' + parts[1];
 			}
 
@@ -2195,7 +2210,7 @@ export class Task implements ITask {
 
 		let jsBytes = new Uint8Array((<any>buf).data.buff.buffer);
 		let blob = new Blob([jsBytes], {type: 'text/javascript'});
-		jsBytes = undefined;
+		(jsBytes as any) = undefined;
 		let blobUrl = window.URL.createObjectURL(blob);
 
 		// keep a reference to the URL so that we can use it for fork().
@@ -2206,9 +2221,9 @@ export class Task implements ITask {
 
 	blobReady(blobUrl: string): void {
 		if (this.worker) {
-			this.worker.onmessage = undefined;
+			(this.worker.onmessage as any) = undefined;
 			this.worker.terminate();
-			this.worker = undefined;
+			(this as any).worker = undefined;
 		}
 		this.timeWorkerStart = performance.now();
 		this.worker = new Worker(blobUrl);
@@ -2227,10 +2242,11 @@ export class Task implements ITask {
 
 			// console.log("onerror arrived before exit() syscall");
 
-			if (this.files[2]) {
+			const stderr = this.files[2];
+			if (stderr !== undefined) {
 				console.log(err);
 				let msg = new Buffer('Error while executing ' + this.pendingExePath + ': ' + err.message + '\n', 'utf8');
-				this.files[2].write(msg, -1, () => {
+				stderr.write(msg, -1, () => {
 					// setTimeout on purpose
 					setTimeout(() => {
 						this.kernel.exit(this, -1);
@@ -2247,22 +2263,24 @@ export class Task implements ITask {
 		let heap = this.heap;
 		let args = this.forkArgs;
 
-		this.heap = undefined;
+		this.heap = new ArrayBuffer(0);
 		this.forkArgs = undefined;
 
 		this.args = this.pendingArgs;
 		this.env = this.pendingEnv;
 		this.exePath = this.pendingExePath;
-		this.pendingArgs = undefined;
-		this.pendingEnv = undefined;
-		this.pendingExePath = undefined;
+		this.pendingArgs = [];
+		this.pendingEnv = {};
+		this.pendingExePath = '';
 
 		this.signal(
 			'init',
 			[this.args, this.env, this.kernel.debug, this.pid, heap, args],
-			heap ? [heap] : null);
+			heap ? [heap] : undefined);
 
-		this.onRunnable(null, this.pid);
+		if (this.onRunnable) {
+			this.onRunnable(undefined, this.pid);
+		}
 		this.onRunnable = undefined;
 	}
 
@@ -2383,23 +2401,27 @@ export class Task implements ITask {
 		// }
 
 		for (let n in this.files) {
-			if (!this.files.hasOwnProperty(n))
+			if (!this.files.hasOwnProperty(n)) {
 				continue;
-			if (this.files[n]) {
-				this.files[n].unref();
-				this.files[n] = undefined;
 			}
+			let file = this.files[n];
+			if (file === undefined) {
+				continue;
+			}
+
+			file.unref();
+			this.files[n] = undefined;
 		}
 
 		if (this.worker) {
-			this.worker.onmessage = undefined;
+			(this.worker.onmessage as any) = undefined;
 			this.worker.terminate();
-			this.worker = undefined;
+			(this.worker as any) = undefined;
 		}
 
-		this.sheap = null;
-		this.heapu8 = null;
-		this.heap32 = null;
+		(this.sheap as any) = undefined;
+		(this.heapu8 as any) = undefined;
+		(this.heap32 as any) = undefined;
 
 		// our children are now officially orphans.  re-parent them,
 		// if possible
@@ -2461,7 +2483,7 @@ export class Task implements ITask {
 }
 
 export interface BootCallback {
-	(err: any, kernel: IKernel): void;
+	(err: any, kernel?: IKernel): void;
 }
 
 export interface BootArgs {

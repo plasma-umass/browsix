@@ -5,12 +5,15 @@
 'use strict';
 
 import { EINVAL, ESPIPE } from './constants';
-import { ConnectCallback, RWCallback, SyscallContext, IFile, IKernel } from './types';
 import { Pipe } from './pipe';
+import { ConnectCallback, IFile, IKernel, RWCallback, SyscallContext } from './types';
 
-export interface AcceptCallback {
-  (err: number, s?: SocketFile, remoteAddr?: string, remotePort?: number): void;
-}
+export type AcceptCallback = (
+  err: number,
+  s?: SocketFile,
+  remoteAddr?: string,
+  remotePort?: number,
+) => void;
 
 export function isSocket(f: IFile): f is SocketFile {
   return f !== undefined && f instanceof SocketFile;
@@ -58,19 +61,19 @@ export class SocketFile implements IFile {
   }
 
   accept(cb: AcceptCallback): void {
-    let queued = this.incomingQueue.shift();
+    const queued = this.incomingQueue.shift();
     if (queued === undefined) {
       this.acceptQueue.push(cb);
       return;
     }
 
-    let remote = queued.s;
-    let local = new SocketFile(this.kernel);
+    const remote = queued.s;
+    const local = new SocketFile(this.kernel);
     local.addr = queued.addr;
     local.port = queued.port;
 
-    let outgoing = new Pipe();
-    let incoming = new Pipe();
+    const outgoing = new Pipe();
+    const incoming = new Pipe();
 
     local.outgoing = outgoing;
     remote.incoming = outgoing;
@@ -86,23 +89,23 @@ export class SocketFile implements IFile {
   }
 
   doAccept(remote: SocketFile, remoteAddr: string, remotePort: number, cb: ConnectCallback): void {
-    let acceptCB = this.acceptQueue.shift();
+    const acceptCB = this.acceptQueue.shift();
     if (acceptCB === undefined) {
       this.incomingQueue.push({
         s: remote,
         addr: remoteAddr,
         port: remotePort,
-        cb: cb,
+        cb,
       });
       return;
     }
 
-    let local = new SocketFile(this.kernel);
+    const local = new SocketFile(this.kernel);
     local.addr = remoteAddr;
     local.port = remotePort;
 
-    let outgoing = new Pipe();
-    let incoming = new Pipe();
+    const outgoing = new Pipe();
+    const incoming = new Pipe();
 
     local.outgoing = outgoing;
     remote.incoming = outgoing;
@@ -127,7 +130,9 @@ export class SocketFile implements IFile {
   }
 
   read(buf: Buffer, pos: number, cb: RWCallback): void {
-    if (pos !== -1) return cb(-ESPIPE);
+    if (pos !== -1) {
+      return cb(-ESPIPE);
+    }
     if (this.incoming === undefined) {
       throw new Error('incoming undefined');
     }
@@ -135,7 +140,9 @@ export class SocketFile implements IFile {
   }
 
   write(buf: Buffer, pos: number, cb: RWCallback): void {
-    if (pos !== -1) return cb(-ESPIPE);
+    if (pos !== -1) {
+      return cb(-ESPIPE);
+    }
     if (this.outgoing === undefined) {
       throw new Error('outgoing undefined');
     }
@@ -160,16 +167,26 @@ export class SocketFile implements IFile {
 
   ref(): void {
     this.refCount++;
-    if (this.outgoing) this.outgoing.ref();
-    if (this.incoming) this.incoming.ref();
+    if (this.outgoing) {
+      this.outgoing.ref();
+    }
+    if (this.incoming) {
+      this.incoming.ref();
+    }
   }
 
   unref(): void {
-    if (this.outgoing) this.outgoing.unref();
-    if (this.incoming) this.incoming.unref();
+    if (this.outgoing) {
+      this.outgoing.unref();
+    }
+    if (this.incoming) {
+      this.incoming.unref();
+    }
     this.refCount--;
     if (!this.refCount) {
-      if (this.isListening) this.kernel.unbind(this, this.addr, this.port);
+      if (this.isListening) {
+        this.kernel.unbind(this, this.addr, this.port);
+      }
     }
   }
 }

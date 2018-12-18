@@ -9,8 +9,8 @@ let nowFn: () => number;
 if (typeof performance !== 'undefined') {
   nowFn = performance.now.bind(performance);
 } else {
-  nowFn = function(): number {
-    let [sec, nanosec] = process.hrtime();
+  nowFn = (): number => {
+    const [sec, nanosec] = process.hrtime();
     return sec * 1e3 + nanosec / 1e6;
   };
 }

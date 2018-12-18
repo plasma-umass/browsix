@@ -5,21 +5,21 @@
 'use strict';
 
 import * as constants from './constants';
+import { DirFile, NullFile, RegularFile, resolve } from './file';
 import { now } from './ipc';
-import { Pipe, PipeFile, isPipe } from './pipe';
-import { SocketFile, isSocket } from './socket';
-import { DirFile, RegularFile, NullFile, resolve } from './file';
+import { isPipe, Pipe, PipeFile } from './pipe';
+import { isSocket, SocketFile } from './socket';
 import {
-  ExitCallback,
-  OutputCallback,
-  SyscallContext,
-  SyscallResult,
-  Syscall,
   ConnectCallback,
+  Environment,
+  ExitCallback,
+  IFile,
   IKernel,
   ITask,
-  IFile,
-  Environment,
+  OutputCallback,
+  Syscall,
+  SyscallContext,
+  SyscallResult,
 } from './types';
 
 import { HTTPParser } from './http_parser';
@@ -31,8 +31,8 @@ import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
 
 // controls the default of whether to delay the initialization message
 // to a Worker to aid in debugging.
-let DEBUG = false;
-let STRACE = false;
+const DEBUG = false;
+const STRACE = false;
 
 // returns a random, non-reserved port between 1024 and 65
 function getRandomPort(): number {
@@ -44,16 +44,19 @@ function getRandomPort(): number {
 // from + for John's BrowserFS
 // TODO: don't copy paste code :\
 if (true /*typeof setImmediate === 'undefined'*/) {
-  let g: any = global;
+  const g: any = global;
 
-  let timeouts: [Function, any[]][] = [];
+  // tslint:disable-next-line
+  const timeouts: Array<[Function, any[]]> = [];
   const messageName = 'zero-timeout-message';
-  let canUsePostMessage = () => {
-    if (typeof g.importScripts !== 'undefined' || !g.postMessage) return false;
+  const canUsePostMessage = () => {
+    if (typeof g.importScripts !== 'undefined' || !g.postMessage) {
+      return false;
+    }
 
     let isAsync = true;
-    let oldOnMessage = g.onmessage;
-    g.onmessage = function(): void {
+    const oldOnMessage = g.onmessage;
+    g.onmessage = (): void => {
       isAsync = false;
     };
     g.postMessage('', '*');
@@ -65,14 +68,18 @@ if (true /*typeof setImmediate === 'undefined'*/) {
       timeouts.push([fn, args]);
       g.postMessage(messageName, '*');
     };
-    let handleMessage = (event: MessageEvent) => {
+    const handleMessage = (event: MessageEvent) => {
       if (event.source === self && event.data === messageName) {
-        if (event.stopPropagation) event.stopPropagation();
-        else event.cancelBubble = true;
+        if (event.stopPropagation) {
+          event.stopPropagation();
+        } else {
+          event.cancelBubble = true;
+        }
       }
 
       if (timeouts.length > 0) {
-        let [fn, args] = timeouts.shift() as [Function, any[]];
+        // tslint:disable-next-line
+        const [fn, args] = timeouts.shift() as [Function, any[]];
         return fn.apply(undefined, args);
       }
     };
@@ -219,7 +226,7 @@ function syncSyscalls(
   // https://bugzilla.mozilla.org/show_bug.cgi?id=1246597
   let dataViewWorks = true;
   try {
-    let _ = new DataView(new SharedArrayBuffer(32), 0, 32);
+    const _ = new DataView(new SharedArrayBuffer(32), 0, 32);
   } catch (e) {
     dataViewWorks = false;
   }
@@ -228,8 +235,8 @@ function syncSyscalls(
     if (dataViewWorks) {
       return new Buffer((new DataView(task.sheap, off, len) as unknown) as ArrayBuffer);
     } else {
-      let tmp = new Uint8Array(task.sheap, off, len);
-      let notShared = new ArrayBuffer(len);
+      const tmp = new Uint8Array(task.sheap, off, len);
+      const notShared = new ArrayBuffer(len);
       new Uint8Array(notShared).set(tmp);
       return new Buffer((new DataView(notShared) as unknown) as ArrayBuffer);
     }
@@ -239,19 +246,21 @@ function syncSyscalls(
     if (dataViewWorks) {
       return task.heapu8.subarray(off, off + len);
     } else {
-      let tmp = new Uint8Array(task.sheap, off, len);
-      let notShared = new ArrayBuffer(len);
-      let notSharedArray = new Uint8Array(notShared);
+      const tmp = new Uint8Array(task.sheap, off, len);
+      const notShared = new ArrayBuffer(len);
+      const notSharedArray = new Uint8Array(notShared);
       notSharedArray.set(tmp);
       return notSharedArray;
     }
   }
 
   function stringAt(ptr: number): string {
-    let s = new Uint8Array(task.sheap, ptr);
+    const s = new Uint8Array(task.sheap, ptr);
 
     let len = 0;
-    while (s[len] !== 0) len++;
+    while (s[len] !== 0) {
+      len++;
+    }
 
     return utf8Slice(s, 0, len);
   }
@@ -262,46 +271,55 @@ function syncSyscalls(
       return [];
     }
 
-    let arr: string[] = [];
-    let i = 0;
+    const arr: string[] = [];
+    const i = 0;
     for (let i = 0; task.heap32[(ptr + i) >> 2] !== 0; i += 4) {
-      let s = stringAt(task.heap32[(ptr + i) >> 2]);
+      const s = stringAt(task.heap32[(ptr + i) >> 2]);
       arr.push(s);
     }
     return arr;
   }
 
-  let table: { [n: number]: Function } = {
+  // tslint:disable-next-line
+  const table: { [n: number]: Function } = {
     3: (fd: number, bufp: number, len: number): void => {
       // read
-      let buf = bufferAt(bufp, len);
+      const buf = bufferAt(bufp, len);
       sys.pread(task, fd, buf, -1, (err: any, len?: number) => {
         if (err) {
-          if (typeof err === 'number') len = err;
-          else len = -1;
+          if (typeof err === 'number') {
+            len = err;
+          } else {
+            len = -1;
+          }
         }
         sysret(len || -1);
       });
     },
     4: (fd: number, bufp: number, len: number): void => {
       // write
-      let buf = bufferAt(bufp, len);
+      const buf = bufferAt(bufp, len);
       sys.pwrite(task, fd, buf, -1, (err: any, len?: number) => {
         if (err) {
-          if (typeof err === 'number') len = err;
-          else len = -1;
+          if (typeof err === 'number') {
+            len = err;
+          } else {
+            len = -1;
+          }
         }
         sysret(len || -1);
       });
     },
     5: (pathp: number, flags: number, mode: number): void => {
       // open
-      let path = stringAt(pathp);
-      let sflags: string = flagsToString(flags);
+      const path = stringAt(pathp);
+      const sflags: string = flagsToString(flags);
 
       sys.open(task, path, sflags, mode, (err: number, fd: number) => {
-        if (typeof err === 'number' && err < 0) fd = err;
-        //				console.log('open(' + path + ') = ' + fd);
+        if (typeof err === 'number' && err < 0) {
+          fd = err;
+        }
+        // 				console.log('open(' + path + ') = ' + fd);
         sysret(fd | 0);
       });
     },
@@ -311,30 +329,35 @@ function syncSyscalls(
     },
     10: (pathp: number): void => {
       // unlink
-      let path = stringAt(pathp);
-      //			console.log('unlink(' + path + ')');
+      const path = stringAt(pathp);
+      // 			console.log('unlink(' + path + ')');
       sys.unlink(task, path, (err: any) => {
-        if (err && err.errno) sysret(-err.errno);
-        else if (err) sysret(-1);
-        else sysret(0);
+        if (err && err.errno) {
+          sysret(-err.errno);
+        } else if (err) {
+          sysret(-1);
+        } else {
+          sysret(0);
+        }
       });
     },
     11: (filenamep: number, argv: number, envp: number): void => {
       // execve
-      let filename = stringAt(filenamep);
-      let args = stringArrayAt(argv);
-      let env = stringArrayAt(envp);
-      let senv: Environment = {};
-      for (let i = 0; i < env.length; i++) {
-        let pair = env[i];
-        let n = pair.indexOf('=');
-        if (n > 0) senv[pair.slice(0, n)] = pair.slice(n + 1);
+      const filename = stringAt(filenamep);
+      const args = stringArrayAt(argv);
+      const env = stringArrayAt(envp);
+      const senv: Environment = {};
+      for (const pair of env) {
+        const n = pair.indexOf('=');
+        if (n > 0) {
+          senv[pair.slice(0, n)] = pair.slice(n + 1);
+        }
       }
       sys.execve(task, filename, args, senv, sysret);
     },
     12: (pathnamep: number): void => {
       // chdir
-      let pathname = stringAt(pathnamep);
+      const pathname = stringAt(pathnamep);
       sys.chdir(task, pathname, sysret);
     },
     20: (fd: number, op: number): void => {
@@ -343,8 +366,8 @@ function syncSyscalls(
     },
     33: (pathp: number, amode: number): void => {
       // access
-      let path = stringAt(pathp);
-      //			console.log('access(' + path + ')');
+      const path = stringAt(pathp);
+      // 			console.log('access(' + path + ')');
       sys.access(task, path, amode, sysret);
     },
     37: (pid: number, sig: number): void => {
@@ -353,18 +376,18 @@ function syncSyscalls(
     },
     38: (oldNamep: number, newNamep: number): void => {
       // rename
-      let oldName = stringAt(oldNamep);
-      let newName = stringAt(newNamep);
+      const oldName = stringAt(oldNamep);
+      const newName = stringAt(newNamep);
       sys.rename(task, oldName, newName, sysret);
     },
     39: (pathp: number, mode: number): void => {
       // mkdir
-      let path = stringAt(pathp);
+      const path = stringAt(pathp);
       sys.mkdir(task, path, mode, sysret);
     },
     40: (pathp: number): void => {
       // rmdir
-      let path = stringAt(pathp);
+      const path = stringAt(pathp);
       sys.rmdir(task, path, sysret);
     },
     41: (fd1: number): void => {
@@ -393,8 +416,12 @@ function syncSyscalls(
       // wait4
       sys.wait4(task, pid, options, (pid: number, wstatus?: number, rusage: any = null) => {
         wstatus = (wstatus || 0) | 0;
-        if (wstatus) task.heap32[wstatus >> 2] = wstatus;
-        if (rusage) console.log('FIXME: wait4 rusage');
+        if (wstatus) {
+          task.heap32[wstatus >> 2] = wstatus;
+        }
+        if (rusage) {
+          console.log('FIXME: wait4 rusage');
+        }
         sysret(pid);
       });
     },
@@ -408,55 +435,63 @@ function syncSyscalls(
       });
     },
     174: (act: number, oldact: number): void => {
-      //rt_sigaction
-      //			console.log('TODO: rt_sigaction');
+      // rt_sigaction
+      // 			console.log('TODO: rt_sigaction');
       sysret(0);
     },
     183: (bufp: number, size: number): void => {
       // getcwd
       let cwd = utf8ToBytes(sys.getcwd(task));
-      if (cwd.byteLength > size) cwd = cwd.subarray(0, size);
+      if (cwd.byteLength > size) {
+        cwd = cwd.subarray(0, size);
+      }
       task.heapu8.subarray(bufp, bufp + size).set(cwd);
       sysret(cwd.byteLength);
     },
     195: (pathp: number, bufp: number): void => {
       // stat64
-      let path = stringAt(pathp);
-      //			console.log('stat(' + path + ')');
-      let len = marshal.fs.StatDef.length || 0;
-      let buf = arrayAt(bufp, len);
+      const path = stringAt(pathp);
+      // 			console.log('stat(' + path + ')');
+      const len = marshal.fs.StatDef.length || 0;
+      const buf = arrayAt(bufp, len);
       sys.stat(task, path, buf, (err: number) => {
         // workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1246597
-        if (!dataViewWorks) task.heapu8.subarray(bufp, bufp + len).set(buf);
+        if (!dataViewWorks) {
+          task.heapu8.subarray(bufp, bufp + len).set(buf);
+        }
         sysret(err);
       });
     },
     196: (pathp: number, bufp: number): void => {
       // lstat64
-      let path = stringAt(pathp);
-      //			console.log('lstat(' + path + ')');
-      let len = marshal.fs.StatDef.length || 0;
-      let buf = arrayAt(bufp, len);
+      const path = stringAt(pathp);
+      // 			console.log('lstat(' + path + ')');
+      const len = marshal.fs.StatDef.length || 0;
+      const buf = arrayAt(bufp, len);
       sys.lstat(task, path, buf, (err: number) => {
         // workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1246597
-        if (!dataViewWorks) task.heapu8.subarray(bufp, bufp + len).set(buf);
+        if (!dataViewWorks) {
+          task.heapu8.subarray(bufp, bufp + len).set(buf);
+        }
         sysret(err);
       });
     },
     197: (fd: number, bufp: number): void => {
       // fstat64
-      //			console.log('fstat(' + path + ')');
-      let len = marshal.fs.StatDef.length || 0;
-      let buf = arrayAt(bufp, len);
+      // 			console.log('fstat(' + path + ')');
+      const len = marshal.fs.StatDef.length || 0;
+      const buf = arrayAt(bufp, len);
       sys.fstat(task, fd, buf, (err: number) => {
-        if (!dataViewWorks) task.heapu8.subarray(bufp, bufp + len).set(buf);
+        if (!dataViewWorks) {
+          task.heapu8.subarray(bufp, bufp + len).set(buf);
+        }
         sysret(err);
       });
     },
     220: (fd: number, dirp: number, count: number): void => {
       // getdents64
-      //			console.log('getdents64(' + fd + ')');
-      let buf = arrayAt(dirp, count); // count is the number of bytes
+      // 			console.log('getdents64(' + fd + ')');
+      const buf = arrayAt(dirp, count); // count is the number of bytes
       sys.getdents(task, fd, buf, sysret);
     },
     221: (fd: number, cmd: number, arg: number): void => {
@@ -516,7 +551,9 @@ function syncSyscalls(
       sysret(-constants.ENOTSUP);
       return;
     }
-    if (STRACE) console.log('[' + task.pid + '] \tsys_' + n + '\t' + args[0]);
+    if (STRACE) {
+      console.log('[' + task.pid + '] \tsys_' + n + '\t' + args[0]);
+    }
 
     table[n].apply(undefined, args);
   };
@@ -550,17 +587,19 @@ class AsyncSyscalls {
   execve(ctx: SyscallContext, filename: Uint8Array, args: Uint8Array[], env: Uint8Array[]): void {
     // TODO: see if its possible/useful to avoid
     // converting from uint8array to string here.
-    let file = utf8Slice(filename, 0, filename.length);
-    let sargs: string[] = [];
-    let senv: Environment = {};
+    const file = utf8Slice(filename, 0, filename.length);
+    const sargs: string[] = [];
+    const senv: Environment = {};
     for (let i = 0; i < args.length; i++) {
-      let arg = args[i];
+      const arg = args[i];
       sargs[i] = utf8Slice(arg, 0, arg.length);
     }
-    for (let i = 0; i < env.length; i++) {
-      let pair = utf8Slice(env[i], 0, env[i].length);
-      let n = pair.indexOf('=');
-      if (n > 0) senv[pair.slice(0, n)] = pair.slice(n + 1);
+    for (const v of env) {
+      const pair = utf8Slice(v, 0, v.length);
+      const n = pair.indexOf('=');
+      if (n > 0) {
+        senv[pair.slice(0, n)] = pair.slice(n + 1);
+      }
     }
 
     this.sys.execve(ctx.task, file, sargs, senv, ctx.complete.bind(ctx));
@@ -608,14 +647,19 @@ class AsyncSyscalls {
   }
 
   exit(ctx: SyscallContext, code?: number): void {
-    if (!code) code = 0;
+    if (!code) {
+      code = 0;
+    }
     this.sys.exit(ctx.task, code);
   }
 
   chdir(ctx: SyscallContext, p: any): void {
     let s: string;
-    if (p instanceof Uint8Array) s = utf8Slice(p, 0, p.length);
-    else s = p;
+    if (p instanceof Uint8Array) {
+      s = utf8Slice(p, 0, p.length);
+    } else {
+      s = p;
+    }
     this.sys.chdir(ctx.task, s, ctx.complete.bind(ctx));
   }
 
@@ -657,7 +701,7 @@ class AsyncSyscalls {
   }
 
   getsockname(ctx: SyscallContext, fd: number): void {
-    let buf = new Uint8Array(new ArrayBuffer(marshal.socket.SockAddrInDef.length || 0));
+    const buf = new Uint8Array(new ArrayBuffer(marshal.socket.SockAddrInDef.length || 0));
     this.sys.getsockname(
       ctx.task,
       fd,
@@ -669,7 +713,7 @@ class AsyncSyscalls {
   }
 
   getpeername(ctx: SyscallContext, fd: number): void {
-    let buf = new Uint8Array(new ArrayBuffer(marshal.socket.SockAddrInDef.length || 0));
+    const buf = new Uint8Array(new ArrayBuffer(marshal.socket.SockAddrInDef.length || 0));
     this.sys.getpeername(
       ctx.task,
       fd,
@@ -686,10 +730,13 @@ class AsyncSyscalls {
 
   accept(ctx: SyscallContext, fd: number, flags: number): void {
     flags = flags | 0;
-    let buf = new Uint8Array(new ArrayBuffer(marshal.socket.SockAddrInDef.length || 0));
+    const buf = new Uint8Array(new ArrayBuffer(marshal.socket.SockAddrInDef.length || 0));
     this.sys.accept(ctx.task, fd, buf, flags, (newFD: number) => {
-      if (newFD < 0) ctx.complete(newFD);
-      else ctx.complete(undefined, newFD, buf);
+      if (newFD < 0) {
+        ctx.complete(newFD);
+      } else {
+        ctx.complete(undefined, newFD, buf);
+      }
     });
   }
 
@@ -706,36 +753,40 @@ class AsyncSyscalls {
     ctx: SyscallContext,
     icwd: Uint8Array | string,
     iname: Uint8Array | string,
-    iargs: (Uint8Array | string)[],
-    ienv: (Uint8Array | string)[],
+    iargs: Array<Uint8Array | string>,
+    ienv: Array<Uint8Array | string>,
     files: number[],
   ): void {
     function toStr(buf: Uint8Array | number[] | string): string {
       if (typeof buf === 'string') {
-        return <string>buf;
+        return buf as string;
       } else if (buf instanceof Uint8Array || buf instanceof Array) {
         let len = buf.length;
-        if (len > 0 && buf[len - 1] === 0) len--;
+        if (len > 0 && buf[len - 1] === 0) {
+          len--;
+        }
         return utf8Slice(buf, 0, len);
       }
       console.log('unreachable');
       return '';
     }
-    let cwd = toStr(icwd);
-    let name = toStr(iname);
+    const cwd = toStr(icwd);
+    const name = toStr(iname);
 
-    let args: string[] = iargs.map((x: Uint8Array | string): string => toStr(x));
-    let env: string[] = ienv.map((x: Uint8Array | string): string => toStr(x));
+    const args: string[] = iargs.map((x: Uint8Array | string): string => toStr(x));
+    const env: string[] = ienv.map((x: Uint8Array | string): string => toStr(x));
 
     this.sys.spawn(ctx.task, cwd, name, args, env, files, ctx.complete.bind(ctx));
   }
 
   pread(ctx: SyscallContext, fd: number, len: number, pos: number): void {
-    let abuf = new Uint8Array(len);
-    let buf = new Buffer(abuf.buffer);
+    const abuf = new Uint8Array(len);
+    const buf = new Buffer(abuf.buffer);
     this.sys.pread(ctx.task, fd, buf, pos, (err: any, lenRead?: number) => {
       if (err) {
-        if (typeof err !== 'number') err = -constants.EIO;
+        if (typeof err !== 'number') {
+          err = -constants.EIO;
+        }
         return ctx.complete(err);
       }
       ctx.complete(0, lenRead, abuf.subarray(0, lenRead));
@@ -743,20 +794,20 @@ class AsyncSyscalls {
   }
 
   pwrite(ctx: SyscallContext, fd: number, buf: Buffer | Uint8Array | string, pos: number): void {
-    let bbuf: Buffer | undefined = undefined;
+    let bbuf: Buffer | undefined;
     if (typeof buf === 'string') {
-      let ubuf = utf8ToBytes(<string>buf);
+      const ubuf = utf8ToBytes(buf as string);
       bbuf = new Buffer(ubuf);
     } else if (!(buf instanceof Buffer) && buf instanceof Uint8Array) {
       // we need to slice the Uint8Array, because it
       // may represent a slice that is offset into a
       // larger parent ArrayBuffer.
-      let ubuf = <Uint8Array>buf;
+      const ubuf = buf as Uint8Array;
       // FIXME: I think this may be a BrowerFS quirk
-      let abuf = ubuf.buffer.slice(ubuf.byteOffset, ubuf.byteOffset + ubuf.byteLength);
+      const abuf = ubuf.buffer.slice(ubuf.byteOffset, ubuf.byteOffset + ubuf.byteLength);
       bbuf = new Buffer(abuf);
     } else {
-      bbuf = <Buffer>buf;
+      bbuf = buf as Buffer;
     }
 
     if (bbuf === undefined) {
@@ -765,7 +816,9 @@ class AsyncSyscalls {
 
     this.sys.pwrite(ctx.task, fd, bbuf, pos, (err: any, len?: number) => {
       if (err) {
-        if (typeof err !== 'number') err = -constants.EIO;
+        if (typeof err !== 'number') {
+          err = -constants.EIO;
+        }
         return ctx.complete(err);
       }
       ctx.complete(0, len);
@@ -787,28 +840,40 @@ class AsyncSyscalls {
   // TODO: remove and use getdents in node.
   readdir(ctx: SyscallContext, path: any): void {
     let spath: string;
-    if (path instanceof Uint8Array) spath = utf8Slice(path, 0, path.length);
-    else spath = path;
+    if (path instanceof Uint8Array) {
+      spath = utf8Slice(path, 0, path.length);
+    } else {
+      spath = path;
+    }
     this.sys.readdir(ctx.task, spath, ctx.complete.bind(ctx));
   }
 
   rename(ctx: SyscallContext, oldName: any, newName: any): void {
     let sOldName: string;
-    if (oldName instanceof Uint8Array) sOldName = utf8Slice(oldName, 0, oldName.length);
-    else sOldName = oldName;
+    if (oldName instanceof Uint8Array) {
+      sOldName = utf8Slice(oldName, 0, oldName.length);
+    } else {
+      sOldName = oldName;
+    }
 
     let sNewName: string;
-    if (newName instanceof Uint8Array) sNewName = utf8Slice(newName, 0, newName.length);
-    else sNewName = newName;
+    if (newName instanceof Uint8Array) {
+      sNewName = utf8Slice(newName, 0, newName.length);
+    } else {
+      sNewName = newName;
+    }
 
     this.sys.rename(ctx.task, sOldName, sNewName, ctx.complete.bind(ctx));
   }
 
   open(ctx: SyscallContext, path: any, flags: any, mode: number): void {
-    let sflags: string = flagsToString(flags);
+    const sflags: string = flagsToString(flags);
     let spath: string;
-    if (path instanceof Uint8Array) spath = utf8Slice(path, 0, path.length);
-    else spath = path;
+    if (path instanceof Uint8Array) {
+      spath = utf8Slice(path, 0, path.length);
+    } else {
+      spath = path;
+    }
 
     this.sys.open(ctx.task, spath, sflags, mode, ctx.complete.bind(ctx));
   }
@@ -823,19 +888,29 @@ class AsyncSyscalls {
 
   unlink(ctx: SyscallContext, path: any): void {
     let spath: string;
-    if (path instanceof Uint8Array) spath = utf8Slice(path, 0, path.length);
-    else spath = path;
+    if (path instanceof Uint8Array) {
+      spath = utf8Slice(path, 0, path.length);
+    } else {
+      spath = path;
+    }
     this.sys.unlink(ctx.task, spath, (err: any) => {
-      if (err && err.errno) ctx.complete(-err.errno);
-      else if (err) ctx.complete(-1);
-      else ctx.complete(0);
+      if (err && err.errno) {
+        ctx.complete(-err.errno);
+      } else if (err) {
+        ctx.complete(-1);
+      } else {
+        ctx.complete(0);
+      }
     });
   }
 
   utimes(ctx: SyscallContext, path: any, atimets: number, mtimets: number): void {
     let spath: string;
-    if (path instanceof Uint8Array) spath = utf8Slice(path, 0, path.length);
-    else spath = path;
+    if (path instanceof Uint8Array) {
+      spath = utf8Slice(path, 0, path.length);
+    } else {
+      spath = path;
+    }
     this.sys.utimes(ctx.task, spath, atimets, mtimets, ctx.complete.bind(ctx));
   }
 
@@ -845,15 +920,21 @@ class AsyncSyscalls {
 
   rmdir(ctx: SyscallContext, path: any): void {
     let spath: string;
-    if (path instanceof Uint8Array) spath = utf8Slice(path, 0, path.length);
-    else spath = path;
+    if (path instanceof Uint8Array) {
+      spath = utf8Slice(path, 0, path.length);
+    } else {
+      spath = path;
+    }
     this.sys.rmdir(ctx.task, spath, ctx.complete.bind(ctx));
   }
 
   mkdir(ctx: SyscallContext, path: any, mode: number): void {
     let spath: string;
-    if (path instanceof Uint8Array) spath = utf8Slice(path, 0, path.length);
-    else spath = path;
+    if (path instanceof Uint8Array) {
+      spath = utf8Slice(path, 0, path.length);
+    } else {
+      spath = path;
+    }
     this.sys.mkdir(ctx.task, spath, mode, ctx.complete.bind(ctx));
   }
 
@@ -863,47 +944,68 @@ class AsyncSyscalls {
 
   access(ctx: SyscallContext, path: any, flags: number): void {
     let spath: string;
-    if (path instanceof Uint8Array) spath = utf8Slice(path, 0, path.length);
-    else spath = path;
+    if (path instanceof Uint8Array) {
+      spath = utf8Slice(path, 0, path.length);
+    } else {
+      spath = path;
+    }
     this.sys.access(ctx.task, spath, flags, ctx.complete.bind(ctx));
   }
 
   fstat(ctx: SyscallContext, fd: number): void {
-    let buf = new Uint8Array(new ArrayBuffer(marshal.fs.StatDef.length || 0));
+    const buf = new Uint8Array(new ArrayBuffer(marshal.fs.StatDef.length || 0));
     this.sys.fstat(ctx.task, fd, buf, (err: number) => {
-      if (err) ctx.complete(err, null);
-      else ctx.complete(0, buf);
+      if (err) {
+        ctx.complete(err, null);
+      } else {
+        ctx.complete(0, buf);
+      }
     });
   }
 
   lstat(ctx: SyscallContext, path: any): void {
-    let buf = new Uint8Array(new ArrayBuffer(marshal.fs.StatDef.length || 0));
+    const buf = new Uint8Array(new ArrayBuffer(marshal.fs.StatDef.length || 0));
     let spath: string;
-    if (path instanceof Uint8Array) spath = utf8Slice(path, 0, path.length);
-    else spath = path;
+    if (path instanceof Uint8Array) {
+      spath = utf8Slice(path, 0, path.length);
+    } else {
+      spath = path;
+    }
 
     this.sys.lstat(ctx.task, spath, buf, (err: number) => {
-      if (err) ctx.complete(err);
-      else ctx.complete(0, buf);
+      if (err) {
+        ctx.complete(err);
+      } else {
+        ctx.complete(0, buf);
+      }
     });
   }
 
   stat(ctx: SyscallContext, path: any): void {
-    let buf = new Uint8Array(new ArrayBuffer(marshal.fs.StatDef.length || 0));
+    const buf = new Uint8Array(new ArrayBuffer(marshal.fs.StatDef.length || 0));
     let spath: string;
-    if (path instanceof Uint8Array) spath = utf8Slice(path, 0, path.length);
-    else spath = path;
+    if (path instanceof Uint8Array) {
+      spath = utf8Slice(path, 0, path.length);
+    } else {
+      spath = path;
+    }
 
     this.sys.stat(ctx.task, spath, buf, (err: number) => {
-      if (err) ctx.complete(err);
-      else ctx.complete(0, buf);
+      if (err) {
+        ctx.complete(err);
+      } else {
+        ctx.complete(0, buf);
+      }
     });
   }
 
   readlink(ctx: SyscallContext, path: any): void {
     let spath: string;
-    if (path instanceof Uint8Array) spath = utf8Slice(path, 0, path.length);
-    else spath = path;
+    if (path instanceof Uint8Array) {
+      spath = utf8Slice(path, 0, path.length);
+    } else {
+      spath = path;
+    }
     this.sys.readlink(ctx.task, spath, ctx.complete.bind(ctx));
   }
 
@@ -934,7 +1036,7 @@ export class Syscalls {
   }
 
   fork(task: ITask, heap: ArrayBuffer, args: any, cb: (pid: number) => void): void {
-    this.kernel.fork(<Task>task, heap, args, cb);
+    this.kernel.fork(task as Task, heap, args, cb);
   }
 
   execve(
@@ -944,10 +1046,12 @@ export class Syscalls {
     env: Environment,
     cb: (pid: number) => void,
   ): void {
-    let fullpath = resolve(task.cwd, path);
+    const fullpath = resolve(task.cwd, path);
 
     // FIXME: hack to work around unidentified GNU make issue
-    if (!env['PATH']) env['PATH'] = '/usr/bin';
+    if (!env.PATH) {
+      env.PATH = '/usr/bin';
+    }
 
     task.exec(fullpath, args, env, (err: number | undefined, pid?: number) => {
       let nerr = -EACCES;
@@ -966,7 +1070,7 @@ export class Syscalls {
 
   exit(task: ITask, code: number): void {
     code = code | 0;
-    this.kernel.exit(<Task>task, code);
+    this.kernel.exit(task as Task, code);
   }
 
   kill(task: ITask, pid: number, sig: number, cb: (err: number) => void): void {
@@ -1001,7 +1105,7 @@ export class Syscalls {
   }
 
   getdents(task: ITask, fd: number, buf: Uint8Array, cb: (err: number) => void): void {
-    let file = task.files[fd];
+    const file = task.files[fd];
     if (!file) {
       cb(-constants.EBADF);
       return;
@@ -1010,7 +1114,7 @@ export class Syscalls {
       cb(-constants.ENOTDIR);
       return;
     }
-    let dir = <DirFile>file;
+    const dir = file as DirFile;
     dir.getdents(buf, cb);
   }
 
@@ -1022,7 +1126,7 @@ export class Syscalls {
     whence: number,
     cb: (err: number, off?: number) => void,
   ): void {
-    let file = task.files[fd];
+    const file = task.files[fd];
     if (!file) {
       cb(-constants.EBADF, undefined);
       return;
@@ -1037,22 +1141,24 @@ export class Syscalls {
     protocol: number,
     cb: (err: number, fd?: number) => void,
   ): void {
-    if (domain === AF.UNSPEC) domain = AF.INET;
+    if (domain === AF.UNSPEC) {
+      domain = AF.INET;
+    }
     if (domain !== AF.INET && type !== SOCK.STREAM) {
       cb(-constants.EAFNOSUPPORT);
       return;
     }
 
-    let f = new SocketFile(this.kernel);
-    let fd = task.addFile(f);
+    const f = new SocketFile(this.kernel);
+    const fd = task.addFile(f);
     cb(0, fd);
   }
 
   bind(task: ITask, fd: number, sockAddr: Uint8Array, cb: (err: number) => void): void {
-    let info: any = {};
-    let view = new DataView(sockAddr.buffer, sockAddr.byteOffset, sockAddr.byteLength);
-    let [_, err] = marshal.Unmarshal(info, view, 0, marshal.socket.SockAddrInDef);
-    let addr: string = info.addr;
+    const info: any = {};
+    const view = new DataView(sockAddr.buffer, sockAddr.byteOffset, sockAddr.byteLength);
+    const [_, err] = marshal.Unmarshal(info, view, 0, marshal.socket.SockAddrInDef);
+    const addr: string = info.addr;
     let port: number = info.port;
 
     // FIXME: this hack
@@ -1062,7 +1168,7 @@ export class Syscalls {
     }
     // TODO: check family === SOCK.STREAM
 
-    let file = task.files[fd];
+    const file = task.files[fd];
     if (!file) {
       cb(-constants.EBADF);
       return;
@@ -1081,14 +1187,14 @@ export class Syscalls {
     buf: Uint8Array,
     cb: (err: number, len: number) => void,
   ): void {
-    let file = task.files[fd];
+    const file = task.files[fd];
     if (!file) {
       cb(-constants.EBADF, -1);
       return;
     }
     if (isSocket(file)) {
-      let remote = { family: SOCK.STREAM, port: file.port, addr: file.addr };
-      let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+      const remote = { family: SOCK.STREAM, port: file.port, addr: file.addr };
+      const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
       marshal.Marshal(view, 0, remote, marshal.socket.SockAddrInDef);
       cb(0, marshal.socket.SockAddrInDef.length || 0);
       return;
@@ -1103,7 +1209,7 @@ export class Syscalls {
     buf: Uint8Array,
     cb: (err: number, len: number) => void,
   ): void {
-    let file = task.files[fd];
+    const file = task.files[fd];
     if (!file) {
       cb(-constants.EBADF, -1);
       return;
@@ -1115,8 +1221,8 @@ export class Syscalls {
       if (file.peer === undefined) {
         throw new Error('unreachable');
       }
-      let remote = { family: SOCK.STREAM, port: file.peer.port, addr: file.peer.addr };
-      let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+      const remote = { family: SOCK.STREAM, port: file.peer.port, addr: file.peer.addr };
+      const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
       marshal.Marshal(view, 0, remote, marshal.socket.SockAddrInDef);
       cb(0, marshal.socket.SockAddrInDef.length || 0);
       return;
@@ -1126,7 +1232,7 @@ export class Syscalls {
   }
 
   listen(task: ITask, fd: number, backlog: number, cb: (err: number) => void): void {
-    let file = task.files[fd];
+    const file = task.files[fd];
     if (!file) {
       cb(-constants.EBADF);
       return;
@@ -1142,7 +1248,7 @@ export class Syscalls {
             throw new Error('unreachable');
           }
           if (isSocket(file)) {
-            let cb = this.kernel.portWaiters[file.port];
+            const cb = this.kernel.portWaiters[file.port];
             if (cb) {
               delete this.kernel.portWaiters[file.port];
               cb(file.port);
@@ -1163,7 +1269,7 @@ export class Syscalls {
     flags: number,
     cb: (newFD: number) => void,
   ): void {
-    let file = task.files[fd];
+    const file = task.files[fd];
     if (!file) {
       cb(-constants.EBADF);
       return;
@@ -1179,13 +1285,13 @@ export class Syscalls {
           throw new Error('unreachable');
         }
 
-        let fd = task.addFile(s);
+        const fd = task.addFile(s);
 
         if (remoteAddr === 'localhost') {
           remoteAddr = '127.0.0.1';
         }
 
-        let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+        const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
         marshal.Marshal(
           view,
           0,
@@ -1202,13 +1308,13 @@ export class Syscalls {
   }
 
   connect(task: ITask, fd: number, sockAddr: Uint8Array, cb: ConnectCallback): void {
-    let info: any = {};
-    let view = new DataView(sockAddr.buffer, sockAddr.byteOffset, sockAddr.byteLength);
-    let [_, err] = marshal.Unmarshal(info, view, 0, marshal.socket.SockAddrInDef);
-    let addr: string = info.addr;
-    let port: number = info.port;
+    const info: any = {};
+    const view = new DataView(sockAddr.buffer, sockAddr.byteOffset, sockAddr.byteLength);
+    const [_, err] = marshal.Unmarshal(info, view, 0, marshal.socket.SockAddrInDef);
+    const addr: string = info.addr;
+    const port: number = info.port;
 
-    let file = task.files[fd];
+    const file = task.files[fd];
     if (!file) {
       cb(-constants.EBADF);
       return;
@@ -1225,7 +1331,7 @@ export class Syscalls {
 
           // FIXME: to guarantee termination
           while (true) {
-            let lPort = getRandomPort();
+            const lPort = getRandomPort();
             if (this.kernel.ports[lPort]) {
               continue;
             }
@@ -1256,8 +1362,8 @@ export class Syscalls {
     files: number[],
     cb: (err: number | undefined, pid?: number) => void,
   ): void {
-    let fullpath = task ? resolve(task.cwd, path) : '';
-    this.kernel.spawn(task ? <Task>task : undefined, cwd, fullpath, args, env, files, cb);
+    const fullpath = task ? resolve(task.cwd, path) : '';
+    this.kernel.spawn(task ? (task as Task) : undefined, cwd, fullpath, args, env, files, cb);
   }
 
   pread(
@@ -1267,13 +1373,15 @@ export class Syscalls {
     pos: number,
     cb: (err: any, len?: number) => void,
   ): void {
-    let file = task.files[fd];
+    const file = task.files[fd];
     if (!file) {
       cb(-constants.EBADF);
       return;
     }
 
-    if (typeof pos !== 'number') pos = -1;
+    if (typeof pos !== 'number') {
+      pos = -1;
+    }
     pos = pos | 0; // ensure integer
 
     file.read(buf, pos, cb);
@@ -1286,22 +1394,24 @@ export class Syscalls {
     pos: number,
     cb: (err: any, len?: number) => void,
   ): void {
-    let file = task.files[fd];
+    const file = task.files[fd];
     if (!file) {
       cb(-constants.EBADF);
       return;
     }
 
-    if (typeof pos !== 'number') pos = -1;
+    if (typeof pos !== 'number') {
+      pos = -1;
+    }
     pos = pos | 0; // ensure integer
 
     file.write(buf, pos, cb);
   }
 
   pipe2(task: ITask, flags: number, cb: (err: number, fd1: number, fd2: number) => void): void {
-    let pipe = new Pipe();
-    let n1 = task.addFile(new PipeFile(pipe));
-    let n2 = task.addFile(new PipeFile(pipe));
+    const pipe = new Pipe();
+    const n1 = task.addFile(new PipeFile(pipe));
+    const n2 = task.addFile(new PipeFile(pipe));
     cb(0, n1, n2);
   }
 
@@ -1328,13 +1438,13 @@ export class Syscalls {
   }
 
   readdir(task: ITask, path: string, cb: (err: any, files: string[]) => void): void {
-    let fullpath = resolve(task.cwd, path);
+    const fullpath = resolve(task.cwd, path);
     this.kernel.fs.readdir(fullpath, cb);
   }
 
   rename(task: ITask, relOldName: string, relNewName: string, cb: (err: number) => void): void {
-    let oldName = resolve(task.cwd, relOldName);
-    let newName = resolve(task.cwd, relNewName);
+    const oldName = resolve(task.cwd, relOldName);
+    const newName = resolve(task.cwd, relNewName);
 
     this.kernel.fs.rename(oldName, newName, (err: any) => {
       if (err && err.errno) {
@@ -1355,14 +1465,14 @@ export class Syscalls {
     mode: number,
     cb: (err: number, fd: number) => void,
   ): void {
-    let fullpath = resolve(task.cwd, path);
+    const fullpath = resolve(task.cwd, path);
     // FIXME: support CLOEXEC
 
     let f: IFile;
 
     if (fullpath === '/dev/null') {
       f = new NullFile();
-      let n = task.addFile(f);
+      const n = task.addFile(f);
       cb(0, n);
       return;
     }
@@ -1374,18 +1484,22 @@ export class Syscalls {
       } else if (!err) {
         f = new RegularFile(this.kernel, fd);
       } else {
-        if (typeof err === 'number') cb(err, -1);
-        else if (err && err.errno) cb(-err.errno, -1);
-        else cb(-1, -1);
+        if (typeof err === 'number') {
+          cb(err, -1);
+        } else if (err && err.errno) {
+          cb(-err.errno, -1);
+        } else {
+          cb(-1, -1);
+        }
         return;
       }
-      let n = task.addFile(f);
+      const n = task.addFile(f);
       cb(0, n);
     });
   }
 
   dup(task: ITask, fd1: number, cb: (ret: number) => void): void {
-    let origFile = task.files[fd1];
+    const origFile = task.files[fd1];
     if (!origFile) {
       cb(-constants.EBADF);
       return;
@@ -1393,7 +1507,7 @@ export class Syscalls {
 
     origFile.ref();
 
-    let fd2 = task.allocFD();
+    const fd2 = task.allocFD();
     task.files[fd2] = origFile;
 
     cb(fd2);
@@ -1405,7 +1519,7 @@ export class Syscalls {
       cb(-EINVAL);
       return;
     }
-    let origFile = task.files[fd1];
+    const origFile = task.files[fd1];
     if (!origFile) {
       cb(-constants.EBADF);
       return;
@@ -1424,7 +1538,7 @@ export class Syscalls {
   }
 
   unlink(task: ITask, path: string, cb: (err: any) => void): void {
-    let fullpath = resolve(task.cwd, path);
+    const fullpath = resolve(task.cwd, path);
     this.kernel.fs.unlink(fullpath, cb);
   }
 
@@ -1435,14 +1549,14 @@ export class Syscalls {
     mtimets: number,
     cb: (err: any) => void,
   ): void {
-    let fullpath = resolve(task.cwd, path);
-    let atime = new Date(atimets * 1000);
-    let mtime = new Date(mtimets * 1000);
+    const fullpath = resolve(task.cwd, path);
+    const atime = new Date(atimets * 1000);
+    const mtime = new Date(mtimets * 1000);
     this.kernel.fs.utimes(fullpath, atime, mtime, cb);
   }
 
   futimes(task: ITask, fd: number, atimets: number, mtimets: number, cb: (err: any) => void): void {
-    let file = task.files[fd];
+    const file = task.files[fd];
     if (!file) {
       cb(-constants.EBADF);
       return;
@@ -1452,23 +1566,23 @@ export class Syscalls {
       cb(-constants.ENOSYS);
       return;
     }
-    let atime = new Date(atimets * 1000);
-    let mtime = new Date(mtimets * 1000);
+    const atime = new Date(atimets * 1000);
+    const mtime = new Date(mtimets * 1000);
     this.kernel.fs.futimes(file, atime, mtime, cb);
   }
 
   rmdir(task: ITask, path: string, cb: (err: any) => void): void {
-    let fullpath = resolve(task.cwd, path);
+    const fullpath = resolve(task.cwd, path);
     this.kernel.fs.rmdir(fullpath, cb);
   }
 
   mkdir(task: ITask, path: string, mode: number, cb: (err: any) => void): void {
-    let fullpath = resolve(task.cwd, path);
+    const fullpath = resolve(task.cwd, path);
     this.kernel.fs.mkdir(fullpath, mode, cb);
   }
 
   close(task: ITask, fd: number, cb: (err: number) => void): void {
-    let file = task.files[fd];
+    const file = task.files[fd];
     if (!file) {
       cb(-constants.EBADF);
       return;
@@ -1481,7 +1595,7 @@ export class Syscalls {
   }
 
   access(task: ITask, path: string, flags: number, cb: (err: number) => void): void {
-    let fullpath = resolve(task.cwd, path);
+    const fullpath = resolve(task.cwd, path);
     // TODO: the difference between access and stat
     this.kernel.fs.stat(fullpath, (err: any, stats: any) => {
       if (err) {
@@ -1509,7 +1623,7 @@ export class Syscalls {
   }
 
   fstat(task: ITask, fd: number, buf: Uint8Array, cb: (err: number) => void): void {
-    let file = task.files[fd];
+    const file = task.files[fd];
     if (!file) {
       cb(-constants.EBADF);
       return;
@@ -1523,14 +1637,14 @@ export class Syscalls {
         return;
       }
 
-      let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+      const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
       marshal.Marshal(view, 0, stats, marshal.fs.StatDef);
       cb(0);
     });
   }
 
   lstat(task: ITask, path: string, buf: Uint8Array, cb: (err: number) => void): void {
-    let fullpath = resolve(task.cwd, path);
+    const fullpath = resolve(task.cwd, path);
     this.kernel.fs.lstat(fullpath, (err: any, stats: any) => {
       if (err && err.errno) {
         cb(-err.errno);
@@ -1540,14 +1654,14 @@ export class Syscalls {
         return;
       }
 
-      let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+      const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
       marshal.Marshal(view, 0, stats, marshal.fs.StatDef);
       cb(0);
     });
   }
 
   stat(task: ITask, path: string, buf: Uint8Array, cb: (err: number) => any): void {
-    let fullpath = resolve(task.cwd, path);
+    const fullpath = resolve(task.cwd, path);
     this.kernel.fs.stat(fullpath, (err: any, stats: any) => {
       if (err && err.errno) {
         cb(-err.errno);
@@ -1557,18 +1671,22 @@ export class Syscalls {
         return;
       }
 
-      let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+      const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
       marshal.Marshal(view, 0, stats, marshal.fs.StatDef);
       cb(0);
     });
   }
 
   readlink(task: ITask, path: string, cb: (err: number, buf?: Uint8Array) => any): void {
-    let fullpath = resolve(task.cwd, path);
+    const fullpath = resolve(task.cwd, path);
     this.kernel.fs.readlink(fullpath, (err: any, linkString: any) => {
-      if (err && err.errno) cb(-err.errno);
-      else if (err) cb(-1);
-      else cb(0, utf8ToBytes(linkString));
+      if (err && err.errno) {
+        cb(-err.errno);
+      } else if (err) {
+        cb(-1);
+      } else {
+        cb(0, utf8ToBytes(linkString));
+      }
     });
   }
 
@@ -1618,11 +1736,15 @@ export class Kernel implements IKernel {
   }
 
   once(event: string, cb: (port: number) => void): any {
-    let parts = event.split(':');
-    if (parts.length !== 2 || parts[0] !== 'port') return 'only supported event is currently port';
+    const parts = event.split(':');
+    if (parts.length !== 2 || parts[0] !== 'port') {
+      return 'only supported event is currently port';
+    }
 
-    let port = parseInt(parts[1], 10);
-    if (!(port >= 1 && port < 2 << 14)) return 'invalid port: ' + port;
+    const port = parseInt(parts[1], 10);
+    if (!(port >= 1 && port < 2 << 14)) {
+      return 'invalid port: ' + port;
+    }
 
     this.portWaiters[port] = cb;
   }
@@ -1642,13 +1764,15 @@ export class Kernel implements IKernel {
     } else {
       parts = splitParts.filter(s => s !== '');
     }
-    if (parts[0][0] !== '/' && parts[0][0] !== '.') parts[0] = '/usr/bin/' + parts[0];
+    if (parts[0][0] !== '/' && parts[0][0] !== '.') {
+      parts[0] = '/usr/bin/' + parts[0];
+    }
 
     splitParts = [];
 
     // FIXME: figure out what else we want in the default
     // environment
-    let env: string[] = [
+    const env: string[] = [
       'PWD=/',
       'GOPATH=/',
       'PERL_DESTRUCT_LEVEL=2',
@@ -1675,11 +1799,11 @@ export class Kernel implements IKernel {
           onExit(-1, code);
           return;
         }
-        let t = this.tasks[pid];
+        const t = this.tasks[pid];
         t.onExit = onExit;
 
-        let stdout = <PipeFile>t.files[1];
-        let stderr = <PipeFile>t.files[2];
+        const stdout = t.files[1] as PipeFile;
+        const stderr = t.files[2] as PipeFile;
 
         stdout.addEventListener('write', onStdout);
         stderr.addEventListener('write', onStderr);
@@ -1689,9 +1813,9 @@ export class Kernel implements IKernel {
 
   httpRequest(url: string, cb: any): void {
     let port = 80;
-    let parts = url.split('://')[1].split('/');
+    const parts = url.split('://')[1].split('/');
     let host = parts[0];
-    let path = '/' + parts.slice(1).join('/');
+    const path = '/' + parts.slice(1).join('/');
     if (host.indexOf(':') > -1) {
       let sPort = '';
       [host, sPort] = host.split(':');
@@ -1703,15 +1827,17 @@ export class Kernel implements IKernel {
     req += 'User-Agent: Browsix/1.0\r\n';
     req += 'Accept: */*\r\n\r\n';
 
-    let resp: any[] = [];
-    let f = new SocketFile(this);
+    const resp: any[] = [];
+    const f = new SocketFile(this);
 
-    let p = new HTTPParser(HTTPParser.RESPONSE);
+    const p = new HTTPParser(HTTPParser.RESPONSE);
 
-    let getHeader = (name: string): string => {
-      let lname = name.toLowerCase();
+    const getHeader = (name: string): string => {
+      const lname = name.toLowerCase();
       for (let i = 0; i + 1 < p.info.headers.length; i += 2) {
-        if (p.info.headers[i].toLowerCase() === lname) return p.info.headers[i + 1];
+        if (p.info.headers[i].toLowerCase() === lname) {
+          return p.info.headers[i + 1];
+        }
       }
       return '';
     };
@@ -1732,14 +1858,14 @@ export class Kernel implements IKernel {
         console.log('WARN: no content-type header');
         mime = 'text/plain';
       }
-      let response = Buffer.concat(resp);
-      let data = new Uint8Array((response as any).data.buff.buffer, 0, response.length);
+      const response = Buffer.concat(resp);
+      const data = new Uint8Array((response as any).data.buff.buffer, 0, response.length);
 
       // FIXME: only convert to blob if
       // xhr.responseType === 'blob'
-      let blob = new Blob([data], { type: mime });
+      const blob = new Blob([data], { type: mime });
 
-      let ctx: any = {
+      const ctx: any = {
         status: p.info.statusCode,
         response: blob,
       };
@@ -1770,20 +1896,25 @@ export class Kernel implements IKernel {
           console.log('connect failed: ' + err);
           return;
         }
-        //console.log('connected to ' + port);
+        // console.log('connected to ' + port);
         f.read(buf, -1, onRead);
 
         f.write(new Buffer(req, 'utf8'), -1, (ierr: any, len?: number) => {
-          if (ierr) console.log('err: ' + ierr);
+          if (ierr) {
+            console.log('err: ' + ierr);
+          }
         });
-        //(<any>window).F = f;
+        // (<any>window).F = f;
       },
     );
   }
 
   wait(pid: number): void {
-    if (pid in this.tasks && this.tasks[pid].state === TaskState.Zombie) delete this.tasks[pid];
-    else console.log('wait called for bad pid ' + pid);
+    if (pid in this.tasks && this.tasks[pid].state === TaskState.Zombie) {
+      delete this.tasks[pid];
+    } else {
+      console.log('wait called for bad pid ' + pid);
+    }
   }
 
   exit(task: Task, code: number): void {
@@ -1801,8 +1932,10 @@ export class Kernel implements IKernel {
   // implement kill on the Kernel because we need to adjust our
   // list of all tasks.
   kill(pid: number): void {
-    if (!(pid in this.tasks)) return;
-    let task = this.tasks[pid];
+    if (!(pid in this.tasks)) {
+      return;
+    }
+    const task = this.tasks[pid];
     // TODO: this should deliver a signal and then wait a
     // short amount of time before killing the worker
     this.exit(task, -666);
@@ -1810,16 +1943,22 @@ export class Kernel implements IKernel {
 
   signal(pid: number, sig: number, cb: (err: number) => void): void {
     // TODO: support 'broadcast' signals
-    if (pid === -1) return cb(-constants.EPERM);
+    if (pid === -1) {
+      return cb(-constants.EPERM);
+    }
 
-    if (!(pid in this.tasks)) return cb(-constants.ESRCH);
+    if (!(pid in this.tasks)) {
+      return cb(-constants.ESRCH);
+    }
 
     this.tasks[pid].signal('signal' + sig, []);
     cb(0);
   }
 
   unbind(s: IFile, addr: string, port: number): any {
-    if (!(port in this.ports)) return;
+    if (!(port in this.ports)) {
+      return;
+    }
     if (s !== this.ports[port]) {
       console.log('unbind for wrong port?');
       return;
@@ -1828,7 +1967,9 @@ export class Kernel implements IKernel {
   }
 
   bind(s: SocketFile, addr: string, port: number, cb: (err: number) => void): any {
-    if (port in this.ports) return 'port ' + port + ' already bound';
+    if (port in this.ports) {
+      return 'port ' + port + ' already bound';
+    }
     this.ports[port] = s;
     s.port = port;
     s.addr = addr;
@@ -1836,7 +1977,9 @@ export class Kernel implements IKernel {
   }
 
   connect(f: IFile, addr: string, port: number, cb: ConnectCallback): void {
-    if (addr === '0.0.0.0') addr = '127.0.0.1';
+    if (addr === '0.0.0.0') {
+      addr = '127.0.0.1';
+    }
     if (addr !== 'localhost' && addr !== '127.0.0.1') {
       console.log('TODO connect(): only localhost supported for now');
       cb(-constants.ECONNREFUSED);
@@ -1848,23 +1991,25 @@ export class Kernel implements IKernel {
       return;
     }
 
-    let listener = this.ports[port];
+    const listener = this.ports[port];
     if (!listener.isListening) {
       cb(-constants.ECONNREFUSED);
       return;
     }
 
-    let local = <SocketFile>(<any>f);
+    const local = (f as any) as SocketFile;
     listener.doAccept(local, addr, port, cb);
   }
 
   doSyscall(syscall: Syscall): void {
     if (syscall.name in this.syscalls) {
       if (STRACE) {
-        let argfmt = (arg: any): string => {
+        const argfmt = (arg: any): string => {
           if (arg.constructor === Uint8Array) {
             let len = arg.length;
-            if (len > 0 && arg[len - 1] === 0) len--;
+            if (len > 0 && arg[len - 1] === 0) {
+              len--;
+            }
             return '(' + len + ') ' + utf8Slice(arg, 0, len > 32 ? 32 : len);
           } else if (typeof arg === 'string' && arg.length > 32) {
             return arg.slice(0, 32);
@@ -1873,7 +2018,9 @@ export class Kernel implements IKernel {
           }
         };
 
-        if (syscall.args === undefined) syscall.args = [undefined];
+        if (syscall.args === undefined) {
+          syscall.args = [undefined];
+        }
         let arg = argfmt(syscall.args[0]);
         if (syscall.args[1]) {
           arg += '\t' + argfmt(syscall.args[1]);
@@ -1904,32 +2051,33 @@ export class Kernel implements IKernel {
     filesArray: number[] | undefined,
     cb: (err: number | undefined, pid?: number) => void,
   ): void {
-    let pid = this.nextTaskId();
+    const pid = this.nextTaskId();
 
     envArray = envArray || [];
-    let env: Environment = {};
-    for (let i = 0; i < envArray.length; i++) {
-      let s = envArray[i];
-      let eq = s.search('=');
-      if (eq < 0) continue;
-      let k = s.substring(0, eq);
-      let v = s.substring(eq + 1);
+    const env: Environment = {};
+    for (const s of envArray) {
+      const eq = s.search('=');
+      if (eq < 0) {
+        continue;
+      }
+      const k = s.substring(0, eq);
+      const v = s.substring(eq + 1);
       env[k] = v;
     }
 
     // sparse map of files
-    let files: { [n: number]: IFile | undefined } = [];
+    const files: { [n: number]: IFile | undefined } = [];
     // if a task is a child of another task and has been
     // created by a call to spawn(2), inherit the parent's
     // file descriptors.
     if (filesArray && parent) {
       for (let i = 0; i < filesArray.length; i++) {
-        let fd = filesArray[i];
+        const fd = filesArray[i];
         if (!(fd in parent.files)) {
           console.log('spawn: tried to use bad fd ' + fd);
           break;
         }
-        let file = parent.files[fd];
+        const file = parent.files[fd];
         if (file !== undefined) {
           files[i] = file;
           file.ref();
@@ -1941,7 +2089,7 @@ export class Kernel implements IKernel {
       files[2] = new PipeFile();
     }
 
-    let task = new Task(
+    const task = new Task(
       this,
       parent,
       pid,
@@ -1959,25 +2107,27 @@ export class Kernel implements IKernel {
   }
 
   fork(parent: Task, heap: ArrayBuffer, forkArgs: any, cb: (pid: number) => void): void {
-    let pid = this.nextTaskId();
-    let cwd = parent.cwd;
-    let filename = parent.exePath;
-    let args = parent.args;
-    let env = parent.env;
+    const pid = this.nextTaskId();
+    const cwd = parent.cwd;
+    const filename = parent.exePath;
+    const args = parent.args;
+    const env = parent.env;
 
-    let files: { [n: number]: IFile | undefined } = _clone(parent.files);
-    for (let i in files) {
-      if (!files.hasOwnProperty(i)) continue;
-      let file = files[i];
+    const files: { [n: number]: IFile | undefined } = _clone(parent.files);
+    for (const i in files) {
+      if (!files.hasOwnProperty(i)) {
+        continue;
+      }
+      const file = files[i];
       if (file !== undefined) {
         file.ref();
       }
     }
 
-    let blobUrl = parent.blobUrl || '';
+    const blobUrl = parent.blobUrl || '';
 
     // don't need to open() filename(?) - skip to  fileOpened
-    let forkedTask = new Task(
+    const forkedTask = new Task(
       this,
       parent,
       pid,
@@ -2014,10 +2164,14 @@ export enum TaskState {
 
 // https://stackoverflow.com/questions/728360/most-elegant-way-to-clone-a-javascript-object
 function _clone(obj: any): any {
-  if (null === obj || 'object' !== typeof obj) return obj;
-  let copy: any = obj.constructor();
-  for (let attr in obj) {
-    if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+  if (null === obj || 'object' !== typeof obj) {
+    return obj;
+  }
+  const copy: any = obj.constructor();
+  for (const attr in obj) {
+    if (obj.hasOwnProperty(attr)) {
+      copy[attr] = obj[attr];
+    }
   }
   return copy;
 }
@@ -2087,7 +2241,7 @@ export class Task implements ITask {
     forkArgs: any,
     cb: (err: number | undefined, pid?: number) => void,
   ) {
-    //console.log('spawn PID ' + pid + ': ' + args.join(' '));
+    // console.log('spawn PID ' + pid + ': ' + args.join(' '));
 
     this.state = TaskState.Starting;
     this.pid = pid;
@@ -2139,7 +2293,7 @@ export class Task implements ITask {
     this.heapu8 = new Uint8Array(sab);
     this.heap32 = new Int32Array(sab);
     this.waitOff = off;
-    this.syncSyscall = syncSyscalls((<Kernel>this.kernel).syscallsCommon, this, (ret: number) => {
+    this.syncSyscall = syncSyscalls((this.kernel as Kernel).syscallsCommon, this, (ret: number) => {
       this.timeSyscallTotal += performance.now() - this.syncSyscallStart;
 
       Atomics.store(this.heap32, (this.waitOff >> 2) + 1, ret);
@@ -2176,7 +2330,9 @@ export class Task implements ITask {
     if (!path.length) {
       cb(-constants.ENOENT);
     }
-    if (path[0] !== '/') path = resolve(this.cwd, path);
+    if (path[0] !== '/') {
+      path = resolve(this.cwd, path);
+    }
     // make sure we are chdir'ing into a (1) directory
     // that (2) exists
     this.kernel.fs.stat(path, (err: any, stats: any) => {
@@ -2202,7 +2358,7 @@ export class Task implements ITask {
   }
 
   addFile(f: IFile): number {
-    let n = this.allocFD();
+    const n = this.allocFD();
     this.files[n] = f;
     return n;
   }
@@ -2226,18 +2382,20 @@ export class Task implements ITask {
           this.onRunnable(serr);
         }
         let code = -1;
-        if (serr.errno) code = -serr.errno;
+        if (serr.errno) {
+          code = -serr.errno;
+        }
         this.exit(code);
         return;
       }
-      let buf = new Buffer(stats.size);
+      const buf = new Buffer(stats.size);
       this.kernel.fs.read(fd, buf, 0, stats.size, 0, this.fileRead.bind(this, fd));
     });
   }
 
   fileRead(fd: number, err: any, bytesRead: number, buf: Buffer): void {
     // we don't care about errors, just releasing resources
-    this.kernel.fs.close(fd, function(e?: any): void {});
+    this.kernel.fs.close(fd, (err?: any): void => {});
 
     if (err) {
       if (this.onRunnable) {
@@ -2271,12 +2429,14 @@ export class Task implements ITask {
     // TODO: abstract this into something like a binfmt
     // handler
     if (isShebang(buf)) {
-      let newlinePos = buf.indexOf('\n');
-      if (newlinePos < 0) throw new Error('shebang with no newline: ' + buf);
-      let shebang = buf.slice(2, newlinePos).toString();
+      const newlinePos = buf.indexOf('\n');
+      if (newlinePos < 0) {
+        throw new Error('shebang with no newline: ' + buf);
+      }
+      const shebang = buf.slice(2, newlinePos).toString();
       buf = buf.slice(newlinePos + 1);
 
-      let parts = shebang.match(/\S+/g);
+      const parts = shebang.match(/\S+/g);
       if (parts === null || parts[0] === null) {
         throw new Error('shebang parse error: ' + buf);
       }
@@ -2317,10 +2477,10 @@ export class Task implements ITask {
       return;
     }
 
-    let jsBytes = new Uint8Array((<any>buf).data.buff.buffer);
-    let blob = new Blob([jsBytes], { type: 'text/javascript' });
+    const jsBytes = new Uint8Array((buf as any).data.buff.buffer);
+    const blob = new Blob([jsBytes], { type: 'text/javascript' });
     (jsBytes as any) = undefined;
-    let blobUrl = window.URL.createObjectURL(blob);
+    const blobUrl = window.URL.createObjectURL(blob);
 
     // keep a reference to the URL so that we can use it for fork().
     this.blobUrl = blobUrl;
@@ -2342,7 +2502,9 @@ export class Task implements ITask {
       // exited the process (according to the
       // kernel's record keeping) through an explict
       // exit() call.  Ignore this onerror message.
-      if (this.state === TaskState.Zombie) return;
+      if (this.state === TaskState.Zombie) {
+        return;
+      }
 
       // in this case, our onerror handler was
       // called before we received any explicit exit
@@ -2353,7 +2515,7 @@ export class Task implements ITask {
       const stderr = this.files[2];
       if (stderr !== undefined) {
         console.log(err);
-        let msg = new Buffer(
+        const msg = new Buffer(
           'Error while executing ' + this.pendingExePath + ': ' + err.message + '\n',
           'utf8',
         );
@@ -2371,8 +2533,8 @@ export class Task implements ITask {
       }
     };
 
-    let heap = this.heap;
-    let args = this.forkArgs;
+    const heap = this.heap;
+    const args = this.forkArgs;
 
     this.heap = new ArrayBuffer(0);
     this.forkArgs = undefined;
@@ -2403,8 +2565,12 @@ export class Task implements ITask {
     // don't enforce that here - essentially everyone is
     // root.
     this.priority += prio;
-    if (this.priority < PRIO_MIN) this.priority = PRIO_MIN;
-    if (this.priority >= PRIO_MAX) this.priority = PRIO_MAX - 1;
+    if (this.priority < PRIO_MIN) {
+      this.priority = PRIO_MIN;
+    }
+    if (this.priority >= PRIO_MAX) {
+      this.priority = PRIO_MAX - 1;
+    }
     return 0;
   }
 
@@ -2422,8 +2588,10 @@ export class Task implements ITask {
     }
 
     for (let i = 0; i < this.children.length; i++) {
-      let child = this.children[i];
-      if (pid !== -1 && pid !== 0 && child.pid !== pid) continue;
+      const child = this.children[i];
+      if (pid !== -1 && pid !== 0 && child.pid !== pid) {
+        continue;
+      }
       // we have a child that matches, but it is still
       // alive.  Sleep until the child meets its maker.
       if (child.state !== TaskState.Zombie) {
@@ -2433,7 +2601,7 @@ export class Task implements ITask {
       // at this point, we have a zombie that matches our filter
       // TODO: fill in rest of wstatus
       // lowest 8 bits is return value
-      let wstatus = (child.exitCode >>> 0) % (1 << 8);
+      const wstatus = (child.exitCode >>> 0) % (1 << 8);
       cb(child.pid, wstatus, null);
       // reap the zombie!
       this.kernel.wait(child.pid);
@@ -2453,14 +2621,14 @@ export class Task implements ITask {
     }
 
     // FIXME: this is naiive, and can be optimized
-    let queue = this.waitQueue;
+    const queue = this.waitQueue;
     this.waitQueue = [];
-    for (let i = 0; i < queue.length; i++) {
-      this.wait4.apply(this, queue[i]);
+    for (const item of queue) {
+      this.wait4.apply(this, item);
     }
 
     // TODO: sigchld is IGN by default.
-    //this.signal('child', [pid, code, 0]);
+    // this.signal('child', [pid, code, 0]);
   }
 
   signal(name: string, args: any[], transferrable?: any[]): void {
@@ -2468,8 +2636,8 @@ export class Task implements ITask {
     this.schedule(
       {
         id: -1,
-        name: name,
-        args: args,
+        name,
+        args,
       },
       transferrable,
     );
@@ -2481,15 +2649,20 @@ export class Task implements ITask {
     // this may happen if we have an async thing that
     // eventually results in a syscall response, but we've
     // killed the process in the meantime.
-    if (this.state === TaskState.Zombie) return;
+    if (this.state === TaskState.Zombie) {
+      return;
+    }
 
     this.state = TaskState.Running;
 
     if (STRACE) {
       let add = ' ';
       if (msg.args && msg.args.length > 1) {
-        if (msg.args[1].constructor !== Uint8Array) add += msg.args[1];
-        else add += msg.args[1].byteLength;
+        if (msg.args[1].constructor !== Uint8Array) {
+          add += msg.args[1];
+        } else {
+          add += msg.args[1].byteLength;
+        }
       }
       console.log('[' + this.pid + '|' + msg.id + '] \tDONE' + add); // ' + JSON.stringify(msg));
     }
@@ -2511,11 +2684,11 @@ export class Task implements ITask {
     // 	console.log('' + this.pid + ' sys:  ' + this.timeSyscallTotal);
     // }
 
-    for (let n in this.files) {
+    for (const n in this.files) {
       if (!this.files.hasOwnProperty(n)) {
         continue;
       }
-      let file = this.files[n];
+      const file = this.files[n];
       if (file === undefined) {
         continue;
       }
@@ -2536,21 +2709,28 @@ export class Task implements ITask {
 
     // our children are now officially orphans.  re-parent them,
     // if possible
-    for (let i = 0; i < this.children.length; i++) {
-      let child = this.children[i];
+    for (const child of this.children) {
       child.parent = this.parent;
       // if our process was careless and left zombies
       // hanging around, deal with that now.
-      if (!child.parent && child.state === TaskState.Zombie) this.kernel.wait(child.pid);
+      if (!child.parent && child.state === TaskState.Zombie) {
+        this.kernel.wait(child.pid);
+      }
     }
 
-    if (this.parent) this.parent.childDied(this.pid, code);
+    if (this.parent) {
+      this.parent.childDied(this.pid, code);
+    }
 
-    if (this.onExit) this.onExit(this.pid, this.exitCode);
+    if (this.onExit) {
+      this.onExit(this.pid, this.exitCode);
+    }
 
     // if we have no parent, and there is no init process yet to
     // reparent to, reap the zombies ourselves.
-    if (!this.parent) this.kernel.wait(this.pid);
+    if (!this.parent) {
+      this.kernel.wait(this.pid);
+    }
   }
 
   private nextMsgId(): number {
@@ -2565,7 +2745,7 @@ export class Task implements ITask {
       return;
     }
 
-    let syscall = Syscall.From(this, ev);
+    const syscall = Syscall.From(this, ev);
     if (!syscall) {
       console.log('bad syscall message, dropping');
       return;
@@ -2574,7 +2754,9 @@ export class Task implements ITask {
     // we might have queued up some messages from a process
     // that is no longer considered alive - silently discard
     // them if that is the case.
-    if (this.state === TaskState.Zombie) return;
+    if (this.state === TaskState.Zombie) {
+      return;
+    }
 
     this.state = TaskState.Interruptable;
 
@@ -2587,9 +2769,7 @@ export class Task implements ITask {
   }
 }
 
-export interface BootCallback {
-  (err: any, kernel?: IKernel): void;
-}
+export type BootCallback = (err: any, kernel?: IKernel) => void;
 
 export interface BootArgs {
   fsType?: string;
@@ -2600,12 +2780,12 @@ export interface BootArgs {
 }
 
 export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: BootArgs = {}): void {
-  let browserfs: any = {};
+  const browserfs: any = {};
   bfs.install(browserfs);
   // this is the 'Buffer' in the file-level/module scope above.
   (Buffer as any) = browserfs.Buffer;
-  if (typeof window !== 'undefined' && !(<any>window).Buffer) {
-    (<any>window).Buffer = browserfs.Buffer;
+  if (typeof window !== 'undefined' && !(window as any).Buffer) {
+    (window as any).Buffer = browserfs.Buffer;
   }
 
   const rootFs = (bfs as any).FileSystem[fsType];
@@ -2624,7 +2804,7 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 
   rootFs.Create((asyncRoot: any) => {
     console.log('got fs: ' + asyncRoot);
-    asyncRoot.supportsSynch = function(): boolean {
+    asyncRoot.supportsSynch = (): boolean => {
       return false;
     };
 
@@ -2634,9 +2814,9 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
     }
 
     const fsClass: any = args.useLocalStorage
-      ? bfs.FileSystem['LocalStorage']
-      : bfs.FileSystem['InMemory'];
-    let writable = new fsClass();
+      ? bfs.FileSystem.LocalStorage
+      : bfs.FileSystem.InMemory;
+    const writable = new fsClass();
     const opts = {
       writable,
       readable: asyncRoot,
@@ -2645,36 +2825,36 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
       finishInit(overlaid);
     };
 
-    bfs.FileSystem['OverlayFS'].Create(opts, overlayCb);
+    bfs.FileSystem.OverlayFS.Create(opts, overlayCb);
   });
 }
 
 export function BootWith(rootFs: any, cb: BootCallback, args: BootArgs = {}): void {
-  let nCPUs = 1;
+  const nCPUs = 1;
 
-  let browserfs: any = {};
+  const browserfs: any = {};
   bfs.install(browserfs);
   // this is the 'Buffer' in the file-level/module scope above.
   (Buffer as any) = browserfs.Buffer;
-  if (typeof window !== 'undefined' && !(<any>window).Buffer) {
-    (<any>window).Buffer = browserfs.Buffer;
+  if (typeof window !== 'undefined' && !(window as any).Buffer) {
+    (window as any).Buffer = browserfs.Buffer;
   }
 
   bfs.initialize(rootFs);
-  let fs = bfs.BFSRequire('fs');
-  let k = new Kernel(fs, nCPUs, args);
+  const fs = bfs.BFSRequire('fs');
+  const k = new Kernel(fs, nCPUs, args);
   // FIXME: this is for debugging purposes
-  (<any>window).kernel = k;
+  (window as any).kernel = k;
   setImmediate(cb, null, k);
 }
 
 export function BrowsixFSes(): any {
-  return (<any>bfs).FileSystem;
+  return (bfs as any).FileSystem;
 }
 
 // install our Boot method in the global scope
 if (typeof window !== 'undefined') {
-  (<any>window).Boot = Boot;
-  (<any>window).BootWith = BootWith;
-  (<any>window).BrowsixFSes = BrowsixFSes;
+  (window as any).Boot = Boot;
+  (window as any).BootWith = BootWith;
+  (window as any).BrowsixFSes = BrowsixFSes;
 }

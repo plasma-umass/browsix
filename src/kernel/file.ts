@@ -4,11 +4,11 @@
 
 'use strict';
 
-import { SyscallContext, IKernel, IFile } from './types';
-import { Marshal, fs } from 'node-binary-marshal';
-import { EFAULT } from './constants';
 import Stats from 'browserfs-browsix-tmp/dist/node/core/node_fs_stats';
 import { FileType } from 'browserfs-browsix-tmp/dist/node/core/node_fs_stats';
+import { fs, Marshal } from 'node-binary-marshal';
+import { EFAULT } from './constants';
+import { IFile, IKernel, SyscallContext } from './types';
 
 const SEEK_SET = 0;
 const SEEK_CUR = 1;
@@ -29,12 +29,12 @@ function assertPath(path: any): void {
 // (so also no leading and trailing slashes - it does not distinguish
 // relative and absolute paths)
 function normalizeArray(parts: string[], allowAboveRoot: boolean): string[] {
-  let res: string[] = [];
-  for (let i = 0; i < parts.length; i++) {
-    let p = parts[i];
-
+  const res: string[] = [];
+  for (const p of parts) {
     // ignore empty parts
-    if (!p || p === '.') continue;
+    if (!p || p === '.') {
+      continue;
+    }
 
     if (p === '..') {
       if (res.length && res[res.length - 1] !== '..') {
@@ -58,12 +58,14 @@ export function resolve(...args: string[]): string {
   let resolvedAbsolute = false;
 
   for (let i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-    let path = i >= 0 ? args[i] : '/';
+    const path = i >= 0 ? args[i] : '/';
 
     assertPath(path);
 
     // Skip empty entries
-    if (path === '') continue;
+    if (path === '') {
+      continue;
+    }
 
     resolvedPath = path + '/' + resolvedPath;
     resolvedAbsolute = path[0] === '/';
@@ -94,31 +96,44 @@ export class RegularFile implements IFile {
   }
 
   read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
-    if (pos < 0) pos = this.pos;
+    if (pos < 0) {
+      pos = this.pos;
+    }
 
     this.kernel.fs.read(this.fd, buf, 0, buf.length, pos, (err: any, len?: number) => {
-      if (!err && len) this.pos += len;
+      if (!err && len) {
+        this.pos += len;
+      }
       cb(err, len);
     });
   }
 
   write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
-    if (pos < 0) pos = this.pos;
+    if (pos < 0) {
+      pos = this.pos;
+    }
 
     this.kernel.fs.write(this.fd, buf, 0, buf.length, pos, (err: any, len?: number) => {
-      if (!err && len) this.pos += len;
+      if (!err && len) {
+        this.pos += len;
+      }
       cb(err, len);
     });
   }
 
   stat(cb: (err: any, stats: any) => void): void {
-    this.kernel.fs.fstat(this.fd, function(err: any, stats: any): void {
-      if (!err && stats) {
-        if (!stats.mode) stats.mode = 0o666;
-        stats.mode |= S_IFREG;
-      }
-      cb(err, stats);
-    });
+    this.kernel.fs.fstat(
+      this.fd,
+      (err: any, stats: any): void => {
+        if (!err && stats) {
+          if (!stats.mode) {
+            stats.mode = 0o666;
+          }
+          stats.mode |= S_IFREG;
+        }
+        cb(err, stats);
+      },
+    );
   }
 
   readdir(cb: (err: any, files: string[]) => void): void {
@@ -137,7 +152,9 @@ export class RegularFile implements IFile {
       this.pos = offlo;
     } else if (whence === SEEK_END) {
       this.kernel.fs.fstat(this.fd, (err: any, stats?: any) => {
-        if (err || !stats) return cb(err, -1);
+        if (err || !stats) {
+          return cb(err, -1);
+        }
         this.pos = stats.size + offlo;
         cb(0, this.pos);
       });
@@ -211,14 +228,15 @@ export class DirFile implements IFile {
       files.sort();
       files = files.slice(this.off);
 
-      let dents = files.map(n => new fs.Dirent(-1, fs.DT.UNKNOWN, n));
-      let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+      const dents = files.map(n => new fs.Dirent(-1, fs.DT.UNKNOWN, n));
+      const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
       let voff = 0;
 
-      for (let i = 0; i < dents.length; i++) {
-        let dent = dents[i];
-        if (voff + dent.reclen > buf.byteLength) break;
-        let [len, err] = Marshal(view, voff, dent, fs.DirentDef);
+      for (const dent of dents) {
+        if (voff + dent.reclen > buf.byteLength) {
+          break;
+        }
+        const [len, err] = Marshal(view, voff, dent, fs.DirentDef);
         if (err) {
           console.log('dirent marshal failed: ' + err);
           cb(-EFAULT);

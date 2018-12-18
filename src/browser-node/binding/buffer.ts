@@ -20,12 +20,15 @@ export function utf8Slice(buf: any, start: number, end: number): any {
   const res: any[] = [];
 
   for (let i = start; i < end; ) {
-    let firstByte = buf[i];
+    const firstByte = buf[i];
     let codePoint: any = null;
     let bytesPerSequence = firstByte > 0xef ? 4 : firstByte > 0xdf ? 3 : firstByte > 0xbf ? 2 : 1;
 
     if (i + bytesPerSequence <= end) {
-      let secondByte: any, thirdByte: any, fourthByte: any, tempCodePoint: any;
+      let secondByte: any;
+      let thirdByte: any;
+      let fourthByte: any;
+      let tempCodePoint: any;
 
       switch (bytesPerSequence) {
         case 1:
@@ -99,7 +102,7 @@ export function utf8Slice(buf: any, start: number, end: number): any {
 const MAX_ARGUMENTS_LENGTH = 0x1000;
 
 function decodeCodePointsArray(codePoints: any): any {
-  let len = codePoints.length;
+  const len = codePoints.length;
   if (len <= MAX_ARGUMENTS_LENGTH) {
     return String.fromCharCode.apply(String, codePoints); // avoid extra slice()
   }
@@ -113,15 +116,15 @@ function decodeCodePointsArray(codePoints: any): any {
   return res;
 }
 
-export function utf8ToBytes(string: string, units?: number): any {
+export function utf8ToBytes(str: string, units?: number): any {
   units = units || Infinity;
   let codePoint: any;
-  let length = string.length;
+  const length = str.length;
   let leadSurrogate: any = null;
-  let bytes: any[] = [];
+  const bytes: any[] = [];
 
   for (let i = 0; i < length; i++) {
-    codePoint = string.charCodeAt(i);
+    codePoint = str.charCodeAt(i);
 
     // is surrogate component
     if (codePoint > 0xd7ff && codePoint < 0xe000) {
@@ -130,11 +133,15 @@ export function utf8ToBytes(string: string, units?: number): any {
         // no lead yet
         if (codePoint > 0xdbff) {
           // unexpected trail
-          if ((units -= 3) > -1) bytes.push(0xef, 0xbf, 0xbd);
+          if ((units -= 3) > -1) {
+            bytes.push(0xef, 0xbf, 0xbd);
+          }
           continue;
         } else if (i + 1 === length) {
           // unpaired lead
-          if ((units -= 3) > -1) bytes.push(0xef, 0xbf, 0xbd);
+          if ((units -= 3) > -1) {
+            bytes.push(0xef, 0xbf, 0xbd);
+          }
           continue;
         }
 
@@ -146,7 +153,9 @@ export function utf8ToBytes(string: string, units?: number): any {
 
       // 2 leads in a row
       if (codePoint < 0xdc00) {
-        if ((units -= 3) > -1) bytes.push(0xef, 0xbf, 0xbd);
+        if ((units -= 3) > -1) {
+          bytes.push(0xef, 0xbf, 0xbd);
+        }
         leadSurrogate = codePoint;
         continue;
       }
@@ -155,27 +164,37 @@ export function utf8ToBytes(string: string, units?: number): any {
       codePoint = ((leadSurrogate - 0xd800) << 10) | (codePoint - 0xdc00) | 0x10000;
     } else if (leadSurrogate) {
       // valid bmp char, but last char was a lead
-      if ((units -= 3) > -1) bytes.push(0xef, 0xbf, 0xbd);
+      if ((units -= 3) > -1) {
+        bytes.push(0xef, 0xbf, 0xbd);
+      }
     }
 
     leadSurrogate = null;
 
     // encode utf8
     if (codePoint < 0x80) {
-      if ((units -= 1) < 0) break;
+      if ((units -= 1) < 0) {
+        break;
+      }
       bytes.push(codePoint);
     } else if (codePoint < 0x800) {
-      if ((units -= 2) < 0) break;
+      if ((units -= 2) < 0) {
+        break;
+      }
       bytes.push((codePoint >> 0x6) | 0xc0, (codePoint & 0x3f) | 0x80);
     } else if (codePoint < 0x10000) {
-      if ((units -= 3) < 0) break;
+      if ((units -= 3) < 0) {
+        break;
+      }
       bytes.push(
         (codePoint >> 0xc) | 0xe0,
         ((codePoint >> 0x6) & 0x3f) | 0x80,
         (codePoint & 0x3f) | 0x80,
       );
     } else if (codePoint < 0x110000) {
-      if ((units -= 4) < 0) break;
+      if ((units -= 4) < 0) {
+        break;
+      }
       bytes.push(
         (codePoint >> 0x12) | 0xf0,
         ((codePoint >> 0xc) & 0x3f) | 0x80,
@@ -221,30 +240,50 @@ export function setupBufferJS(prototype: any, bindingObj: any): void {
     start: number,
     end: number,
   ): number {
-    if (!start) start = 0;
-    if (!end && end !== 0) end = this.length;
-    if (targetStart >= target.length) targetStart = target.length;
-    if (!targetStart) targetStart = 0;
-    if (end > 0 && end < start) end = start;
+    if (!start) {
+      start = 0;
+    }
+    if (!end && end !== 0) {
+      end = this.length;
+    }
+    if (targetStart >= target.length) {
+      targetStart = target.length;
+    }
+    if (!targetStart) {
+      targetStart = 0;
+    }
+    if (end > 0 && end < start) {
+      end = start;
+    }
 
     // Copy 0 bytes; we're done
-    if (end === start) return 0;
-    if (target.length === 0 || this.length === 0) return 0;
+    if (end === start) {
+      return 0;
+    }
+    if (target.length === 0 || this.length === 0) {
+      return 0;
+    }
 
     // Fatal error conditions
     if (targetStart < 0) {
       throw new RangeError('targetStart out of bounds');
     }
-    if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds');
-    if (end < 0) throw new RangeError('sourceEnd out of bounds');
+    if (start < 0 || start >= this.length) {
+      throw new RangeError('sourceStart out of bounds');
+    }
+    if (end < 0) {
+      throw new RangeError('sourceEnd out of bounds');
+    }
 
     // Are we oob?
-    if (end > this.length) end = this.length;
+    if (end > this.length) {
+      end = this.length;
+    }
     if (target.length - targetStart < end - start) {
       end = target.length - targetStart + start;
     }
 
-    let len = end - start;
+    const len = end - start;
     let i: number;
 
     if (this === target && start < targetStart && targetStart < end) {
@@ -292,7 +331,7 @@ export function compare(a: any, b: any): void {
   console.log('TODO: compare');
 }
 export function byteLengthUtf8(str: string): number {
-  return (<any>utf8ToBytes(str)).length;
+  return (utf8ToBytes(str) as any).length;
 }
 export function indexOfString(buf: any, val: any, byteOffset: number): void {
   console.log('TODO: indexOfString');

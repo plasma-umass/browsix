@@ -5,7 +5,7 @@
 'use strict';
 
 import { EINVAL, ESPIPE } from './constants';
-import { SyscallContext, IFile, OutputCallback, RWCallback } from './types';
+import { IFile, OutputCallback, RWCallback, SyscallContext } from './types';
 
 declare var Buffer: any;
 
@@ -14,20 +14,20 @@ const CUTOFF = 8192;
 export class Pipe {
   bufs: Buffer[] = [];
   refcount: number = 1; // maybe more accurately a reader count
-  readWaiter?: Function = undefined;
-  writeWaiter?: Function = undefined;
+  readWaiter?: () => void = undefined;
+  writeWaiter?: () => void = undefined;
   closed: boolean = false;
 
   write(s: string): void {
-    let b = new Buffer(s);
+    const b = new Buffer(s);
     this.writeBuffer(b, (err: number, len?: number) => {});
   }
 
   get bufferLength(): number {
     let len = 0;
-
-    for (let i = 0; i < this.bufs.length; i++) len += this.bufs[i].length;
-
+    for (const buf of this.bufs) {
+      len += buf.length;
+    }
     return len;
   }
 
@@ -53,22 +53,22 @@ export class Pipe {
     }
 
     if (this.bufs.length || this.closed) {
-      let n = this.copy(buf, len, pos);
+      const n = this.copy(buf, len, pos);
       this.releaseWriter();
       return cb(0, n);
     }
 
     // at this point, we're waiting on more data or an EOF.
     this.readWaiter = () => {
-      let n = this.copy(buf, len, pos);
+      const n = this.copy(buf, len, pos);
       this.releaseWriter();
       cb(0, n);
     };
   }
 
   readSync(): Buffer {
-    let len = this.bufferLength;
-    let buf = new Buffer(len);
+    const len = this.bufferLength;
+    const buf = new Buffer(len);
     this.copy(buf, len, 0);
     return buf;
   }
@@ -80,10 +80,14 @@ export class Pipe {
   unref(): void {
     this.refcount--;
     // if we have a non-zero refcount, or noone is waiting on reads
-    if (this.refcount) return;
+    if (this.refcount) {
+      return;
+    }
 
     this.closed = true;
-    if (!this.readWaiter) return;
+    if (!this.readWaiter) {
+      return;
+    }
 
     this.readWaiter();
     this.readWaiter = undefined;
@@ -95,15 +99,18 @@ export class Pipe {
     pos = pos ? pos : 0;
 
     while (this.bufs.length > 0 && len > 0) {
-      let src = this.bufs[0];
+      const src = this.bufs[0];
 
-      let n = src.copy(dst, pos);
+      const n = src.copy(dst, pos);
       pos += n;
       result += n;
       len -= n;
 
-      if (src.length === n) this.bufs.shift();
-      else this.bufs[0] = src.slice(n);
+      if (src.length === n) {
+        this.bufs.shift();
+      } else {
+        this.bufs[0] = src.slice(n);
+      }
     }
 
     return result;
@@ -113,7 +120,7 @@ export class Pipe {
   // capacity) unblock them
   private releaseWriter(): void {
     if (this.writeWaiter) {
-      let waiter = this.writeWaiter;
+      const waiter = this.writeWaiter;
       this.writeWaiter = undefined;
       waiter();
     }
@@ -121,7 +128,7 @@ export class Pipe {
 
   private releaseReader(): void {
     if (this.readWaiter) {
-      let waiter = this.readWaiter;
+      const waiter = this.readWaiter;
       this.readWaiter = undefined;
       waiter();
     }
@@ -137,7 +144,9 @@ export class PipeFile implements IFile {
   writeListener: OutputCallback;
 
   constructor(pipe?: Pipe) {
-    if (!pipe) pipe = new Pipe();
+    if (!pipe) {
+      pipe = new Pipe();
+    }
     this.pipe = pipe;
   }
 
@@ -151,15 +160,21 @@ export class PipeFile implements IFile {
   }
 
   read(buf: Buffer, pos: number, cb: RWCallback): void {
-    if (pos !== -1) return cb(-ESPIPE);
+    if (pos !== -1) {
+      return cb(-ESPIPE);
+    }
     this.pipe.read(buf, 0, buf.length, 0, cb);
   }
 
   write(buf: Buffer, pos: number, cb: RWCallback): void {
-    if (pos !== -1) return cb(-ESPIPE);
+    if (pos !== -1) {
+      return cb(-ESPIPE);
+    }
     this.pipe.writeBuffer(buf, cb);
 
-    if (this.writeListener) this.writeListener(-1, buf.toString('utf-8'));
+    if (this.writeListener) {
+      this.writeListener(-1, buf.toString('utf-8'));
+    }
   }
 
   stat(cb: (err: any, stats: any) => void): void {

@@ -5,9 +5,11 @@ export const kMaxLength = 0x3fffffff; // 1024 MB aught to be enough for anybody.
 
 // from browserify :(
 function blitBuffer(src: any, dst: any, offset: number, length: number): number {
-  let i: number;
+  let i: number = 0;
   for (i = 0; i < length; i++) {
-    if (i + offset >= dst.length || i >= src.length) break;
+    if (i + offset >= dst.length || i >= src.length) {
+      break;
+    }
     dst[i + offset] = src[i];
   }
   return i;
@@ -15,10 +17,9 @@ function blitBuffer(src: any, dst: any, offset: number, length: number): number 
 
 export function utf8Slice(buf: any, start: number, end: number): any {
   end = Math.min(buf.length, end);
-  let res: any[] = [];
+  const res: any[] = [];
 
-  let i = start;
-  while (i < end) {
+  for (let i = start; i < end; ) {
     let firstByte = buf[i];
     let codePoint: any = null;
     let bytesPerSequence = firstByte > 0xef ? 4 : firstByte > 0xdf ? 3 : firstByte > 0xbf ? 2 : 1;

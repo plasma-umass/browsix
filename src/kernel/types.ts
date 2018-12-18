@@ -4,18 +4,12 @@
 
 'use strict';
 
-export interface ExitCallback {
-  (pid: number, code: number): void;
-}
+export type ExitCallback = (pid: number, code: number) => void;
 
-export interface OutputCallback {
-  // TODO: change from string to Buffer
-  (pid: number, output: string): void;
-}
+// TODO: change from string to Buffer
+export type OutputCallback = (pid: number, output: string) => void;
 
-export interface RWCallback {
-  (err: number, len?: number): void;
-}
+export type RWCallback = (err: number, len?: number) => void;
 
 export interface SyscallResult {
   id: number;
@@ -23,9 +17,7 @@ export interface SyscallResult {
   args: any[];
 }
 
-export interface ConnectCallback {
-  (err?: number): void;
-}
+export type ConnectCallback = (err?: number) => void;
 
 export interface IKernel {
   fs: any; // FIXME
@@ -45,7 +37,7 @@ export interface IKernel {
   connect(s: IFile, addr: string, port: number, cb: ConnectCallback): void;
   unbind(s: IFile, addr: string, port: number): any;
 
-  once(event: string, cb: Function): any;
+  once(event: string, cb: (port: number) => void): any;
 }
 
 export interface Environment {
@@ -103,7 +95,7 @@ export interface ITask {
     options: number,
     cb: (pid: number, wstatus?: number, rusage?: any) => void,
   ): void;
-  chdir(path: string, cb: Function): void;
+  chdir(path: string, cb: (err: number) => void): void;
 }
 
 export class SyscallContext {
@@ -113,7 +105,7 @@ export class SyscallContext {
     this.task.schedule({
       id: this.id,
       name: undefined,
-      args: args,
+      args,
     });
   }
 }
@@ -122,11 +114,15 @@ export class Syscall {
   private static requiredOnData: string[] = ['id', 'name', 'args'];
 
   static From(task: ITask, ev: MessageEvent): Syscall | undefined {
-    if (!ev.data) return;
-    for (let i = 0; i < Syscall.requiredOnData.length; i++) {
-      if (!ev.data.hasOwnProperty(Syscall.requiredOnData[i])) return;
+    if (!ev.data) {
+      return;
     }
-    let ctx = new SyscallContext(task, ev.data.id);
+    for (const property of Syscall.requiredOnData) {
+      if (!ev.data.hasOwnProperty(property)) {
+        return;
+      }
+    }
+    const ctx = new SyscallContext(task, ev.data.id);
     return new Syscall(ctx, ev.data.name, ev.data.args);
   }
 

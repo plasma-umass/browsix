@@ -7,7 +7,7 @@
     "needs-format": "prettier -l \"src/**/*.ts\" \"test/*.ts\"",
     "format": "prettier --write \"src/**/*.ts\" \"test/*.ts\"",
     "lint": "yarn run tslint -c tslint.json --project tsconfig.json",
-    "build:pre": "node suppoyrt/mkdirp.js lib-dist/kernel lib/kernel",
+    "build:pre": "node support/mkdirp.js lib-dist/kernel lib/kernel",
     "build:kernel": "tsc -p tsconfig.json",
     "build:browser": "rollup -c .rollup.kernel.js",
     "build": "npm-run-all build:pre build:kernel",

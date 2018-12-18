@@ -1591,7 +1591,7 @@ export class Kernel implements IKernel {
   debug: boolean = DEBUG;
 
   // TODO: make this private
-  portWaiters: { [port: number]: Function } = {};
+  portWaiters: { [port: number]: (port: number) => void } = {};
 
   syscallsCommon: Syscalls;
 
@@ -1617,7 +1617,7 @@ export class Kernel implements IKernel {
     }
   }
 
-  once(event: string, cb: Function): any {
+  once(event: string, cb: (port: number) => void): any {
     let parts = event.split(':');
     if (parts.length !== 2 || parts[0] !== 'port') return 'only supported event is currently port';
 
@@ -2172,7 +2172,7 @@ export class Task implements ITask {
     });
   }
 
-  chdir(path: string, cb: Function): void {
+  chdir(path: string, cb: (err: number) => void): void {
     if (!path.length) {
       cb(-constants.ENOENT);
     }

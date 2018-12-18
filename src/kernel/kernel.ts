@@ -29,8 +29,7 @@ import * as marshal from 'node-binary-marshal';
 
 import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
 
-// FIXME
-const Buffer: any = bfs.BFSRequire('buffer');
+const Buffer = bfs.BFSRequire('buffer').Buffer;
 
 // controls the default of whether to delay the initialization message
 // to a Worker to aid in debugging.
@@ -1862,7 +1861,7 @@ export class Kernel implements IKernel {
         mime = 'text/plain';
       }
       const response = Buffer.concat(resp);
-      const data = new Uint8Array((response as any).data.buff.buffer, 0, response.length);
+      const data = new Uint8Array((response as any).buffer, 0, response.length);
 
       // FIXME: only convert to blob if
       // xhr.responseType === 'blob'
@@ -2480,7 +2479,8 @@ export class Task implements ITask {
       return;
     }
 
-    const jsBytes = new Uint8Array((buf as any).data.buff.buffer);
+    // tslint:disable-next-line
+    let jsBytes = new Uint8Array((buf as any).buffer);
     const blob = new Blob([jsBytes], { type: 'text/javascript' });
     (jsBytes as any) = undefined;
     const blobUrl = window.URL.createObjectURL(blob);
@@ -2782,7 +2782,7 @@ export interface BootArgs {
   useLocalStorage?: boolean;
 }
 
-export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: BootArgs = {}): void {
+export function Boot(fsType: string, fsArgs: any, cb: BootCallback, args: BootArgs = {}): void {
   // this is the 'Buffer' in the file-level/module scope above.
   if (typeof window !== 'undefined' && !(window as any).Buffer) {
     (window as any).Buffer = bfs.BFSRequire('buffer');
@@ -2802,8 +2802,11 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
     BootWith(root, cb, args);
   };
 
-  rootFs.Create((asyncRoot: any) => {
-    console.log('got fs: ' + asyncRoot);
+  rootFs.Create(fsArgs, (err: any, asyncRoot: any) => {
+    if (err) {
+      cb(err);
+      return;
+    }
     asyncRoot.supportsSynch = (): boolean => {
       return false;
     };
@@ -2821,8 +2824,8 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
       writable,
       readable: asyncRoot,
     };
-    const overlayCb = (overlaid: any) => {
-      finishInit(overlaid);
+    const overlayCb = (err: any, overlaid: any) => {
+      finishInit(overlaid, err);
     };
 
     bfs.FileSystem.OverlayFS.Create(opts, overlayCb);

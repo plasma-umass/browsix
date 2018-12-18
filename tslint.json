@@ -1,5 +1,5 @@
 {
-  "extends": ["tslint:recommended", "tslint-react"],
+  "extends": ["tslint:recommended"],
   "rules": {
     "interface-name": false,
     "arrow-parens": [true, "ban-single-arg-parens"],

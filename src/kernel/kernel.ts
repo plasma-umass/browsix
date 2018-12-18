@@ -226,12 +226,12 @@ function syncSyscalls(
 
   function bufferAt(off: number, len: number): Buffer {
     if (dataViewWorks) {
-      return new Buffer(new DataView(task.sheap, off, len) as unknown as ArrayBuffer);
+      return new Buffer((new DataView(task.sheap, off, len) as unknown) as ArrayBuffer);
     } else {
       let tmp = new Uint8Array(task.sheap, off, len);
       let notShared = new ArrayBuffer(len);
       new Uint8Array(notShared).set(tmp);
-      return new Buffer(new DataView(notShared) as unknown as ArrayBuffer);
+      return new Buffer((new DataView(notShared) as unknown) as ArrayBuffer);
     }
   }
 

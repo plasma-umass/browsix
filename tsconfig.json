@@ -13,7 +13,7 @@
   "compilerOptions": {
     "target": "es2017",
     "module": "commonjs",
-    "outDir": "lib/kernel",
+    "outDir": "lib",
 
     "lib": [
       "dom",

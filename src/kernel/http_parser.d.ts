@@ -1,7 +1,10 @@
+interface StringIndexer<T> {
+	[name: string]: T;
+}
+
 interface HTTPInfo {
-	headers: {
+	headers: StringIndexer<string> & {
 		length: number;
-		[name: string]: string;
 	};
 	statusCode: number;
 }
@@ -20,7 +23,7 @@ export class HTTPParser {
 	info: HTTPInfo;
 	isUserCall: boolean;
 
-	constructor(kind: string): HTTPParser;
+	constructor(kind: string);
 
 	[n: number]: Function; // state machine callbacks
 

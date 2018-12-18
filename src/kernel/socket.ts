@@ -5,7 +5,7 @@
 'use strict';
 
 import { EINVAL, ESPIPE } from './constants';
-import { ConnectCallback, RWCallback, SyscallContext, IFile, ITask } from './types';
+import { ConnectCallback, RWCallback, SyscallContext, IFile, IKernel } from './types';
 import { Pipe } from './pipe';
 
 export interface AcceptCallback {
@@ -13,7 +13,7 @@ export interface AcceptCallback {
 }
 
 export function isSocket(f: IFile): f is SocketFile {
-	return f instanceof SocketFile;
+	return f !== undefined && f instanceof SocketFile;
 }
 
 export interface Incoming {
@@ -24,7 +24,7 @@ export interface Incoming {
 }
 
 export class SocketFile implements IFile {
-	task:          ITask;
+	kernel:          IKernel;
 	isListening:   boolean    = false;
 	parent?:        SocketFile = undefined;
 	refCount:      number     = 1;
@@ -40,8 +40,8 @@ export class SocketFile implements IFile {
 	incomingQueue: Incoming[] = [];
 	acceptQueue:   AcceptCallback[] = [];
 
-	constructor(task: ITask) {
-		this.task = task;
+	constructor(kernel: IKernel) {
+		this.kernel = kernel;
 	}
 
 	stat(cb: (err: any, stats: any) => void): void {
@@ -65,7 +65,7 @@ export class SocketFile implements IFile {
 		}
 
 		let remote = queued.s;
-		let local = new SocketFile(this.task);
+		let local = new SocketFile(this.kernel);
 		local.addr = queued.addr;
 		local.port = queued.port;
 
@@ -97,7 +97,7 @@ export class SocketFile implements IFile {
 			return;
 		}
 
-		let local = new SocketFile(this.task);
+		let local = new SocketFile(this.kernel);
 		local.addr = remoteAddr;
 		local.port = remotePort;
 
@@ -118,7 +118,7 @@ export class SocketFile implements IFile {
 	}
 
 	connect(addr: string, port: number, cb: ConnectCallback): void {
-		this.task.kernel.connect(this, addr, port, cb);
+		this.kernel.connect(this, addr, port, cb);
 	}
 
 
@@ -167,7 +167,7 @@ export class SocketFile implements IFile {
 		this.refCount--;
 		if (!this.refCount) {
 			if (this.isListening)
-				this.task.kernel.unbind(this, this.addr, this.port);
+				this.kernel.unbind(this, this.addr, this.port);
 		}
 	}
 }

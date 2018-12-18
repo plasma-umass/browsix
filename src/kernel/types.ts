@@ -63,7 +63,7 @@ export interface IFile {
 
 export interface ITask {
 	kernel: IKernel;
-	parent: ITask;
+	parent: ITask | undefined;
 	worker: Worker;
 
 	pid: number;

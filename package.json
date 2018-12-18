@@ -6,13 +6,9 @@
   "scripts": {
     "needs-format": "prettier -l \"src/*.ts\" \"test/*.ts\"",
     "format": "prettier --write \"src/*.ts\" \"test/*.ts\"",
-    "lint": "yarn run tslint -c .tslint.json --project .tsconfig.lib-cjs.json",
-    "test": "tsc -p .tsconfig.test.json && mocha",
+    "lint": "yarn run tslint -c tslint.json --project tsconfig.json",
     "build:pre": "node support/mkdirp.js lib-dist/kernel lib/kernel",
-    "build:runtime0": "tsc -p .tsconfig.rt.json",
-    "build:runtime1": "node support/build-runtime.js src/runtime.ts",
-    "build:kernel": "tsc -p tsconfig.kernel.json",
-    "build:build": "tsc -p .tsconfig.lib.json",
+    "build:kernel": "tsc -p tsconfig.json",
     "build:browser": "rollup -c .rollup.lib.js",
     "build": "npm-run-all build:pre build:kernel",
     "prepublishOnly": "make clean && npm run-script build"

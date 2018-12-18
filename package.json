@@ -9,7 +9,7 @@
     "lint": "yarn run tslint -c tslint.json --project tsconfig.json",
     "build:pre": "node support/mkdirp.js lib-dist/kernel lib/kernel",
     "build:kernel": "tsc -p tsconfig.json",
-    "build:browser": "rollup -c .rollup.lib.js",
+    "build:browser": "rollup -c .rollup.kernel.js",
     "build": "npm-run-all build:pre build:kernel",
     "prepublishOnly": "make clean && npm run-script build"
   },

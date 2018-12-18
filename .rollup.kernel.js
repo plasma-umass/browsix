@@ -10,7 +10,8 @@ export default {
   ],
   output: {
     name: 'kernel',
-    format: 'umd'
+    format: 'umd',
     file: 'lib-dist/kernel/kernel.js',
+    exports: 'named',
   },
 };

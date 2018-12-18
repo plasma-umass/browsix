@@ -34,16 +34,6 @@ import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
 let DEBUG = false;
 let STRACE = false;
 
-let Buffer: any;
-
-// Polyfill.  Previously, Atomics.wait was called Atomics.futexWait and
-// Atomics.wake was called Atomics.futexWake.
-declare var Atomics: any;
-if (typeof Atomics !== 'undefined') {
-  if (!Atomics.wait && Atomics.futexWait) Atomics.wait = Atomics.futexWait;
-  if (!Atomics.wake && Atomics.futexWake) Atomics.wake = Atomics.futexWake;
-}
-
 // returns a random, non-reserved port between 1024 and 65
 function getRandomPort(): number {
   const min = 2 << 9;
@@ -93,22 +83,6 @@ if (true /*typeof setImmediate === 'undefined'*/) {
     };
   }
 }
-
-// the following boilerplate allows us to use WebWorkers both in the
-// browser and under node, and give the typescript compiler full
-// information on the Worker type.  We have to disable tslint for this
-// little dance, as it tries to tell us what we're doing is poor
-// sportsmanship.
-/* tslint:disable */
-interface WorkerStatic {
-  prototype: Worker;
-  new (stringUrl: string): Worker;
-}
-declare var Worker: WorkerStatic;
-if (typeof window === 'undefined' || typeof (<any>window).Worker === 'undefined')
-  var Worker = <WorkerStatic>require('webworker-threads').Worker;
-else var Worker = <WorkerStatic>(<any>window).Worker;
-/* tslint:enable */
 
 const PER_NONBLOCK = 0x40;
 const PER_BLOCKING = 0x80;
@@ -252,12 +226,12 @@ function syncSyscalls(
 
   function bufferAt(off: number, len: number): Buffer {
     if (dataViewWorks) {
-      return new Buffer(new DataView(task.sheap, off, len));
+      return new Buffer(new DataView(task.sheap, off, len) as unknown as ArrayBuffer);
     } else {
       let tmp = new Uint8Array(task.sheap, off, len);
       let notShared = new ArrayBuffer(len);
       new Uint8Array(notShared).set(tmp);
-      return new Buffer(new DataView(notShared));
+      return new Buffer(new DataView(notShared) as unknown as ArrayBuffer);
     }
   }
 
@@ -1759,7 +1733,7 @@ export class Kernel implements IKernel {
         mime = 'text/plain';
       }
       let response = Buffer.concat(resp);
-      let data = new Uint8Array(response.data.buff.buffer, 0, response.length);
+      let data = new Uint8Array((response as any).data.buff.buffer, 0, response.length);
 
       // FIXME: only convert to blob if
       // xhr.responseType === 'blob'
@@ -2629,7 +2603,7 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
   let browserfs: any = {};
   bfs.install(browserfs);
   // this is the 'Buffer' in the file-level/module scope above.
-  Buffer = browserfs.Buffer;
+  (Buffer as any) = browserfs.Buffer;
   if (typeof window !== 'undefined' && !(<any>window).Buffer) {
     (<any>window).Buffer = browserfs.Buffer;
   }
@@ -2681,7 +2655,7 @@ export function BootWith(rootFs: any, cb: BootCallback, args: BootArgs = {}): vo
   let browserfs: any = {};
   bfs.install(browserfs);
   // this is the 'Buffer' in the file-level/module scope above.
-  Buffer = browserfs.Buffer;
+  (Buffer as any) = browserfs.Buffer;
   if (typeof window !== 'undefined' && !(<any>window).Buffer) {
     (<any>window).Buffer = browserfs.Buffer;
   }

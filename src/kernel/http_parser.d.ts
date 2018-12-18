@@ -1,31 +1,31 @@
 interface StringIndexer<T> {
-	[name: string]: T;
+  [name: string]: T;
 }
 
 interface HTTPInfo {
-	headers: StringIndexer<string> & {
-		length: number;
-	};
-	statusCode: number;
+  headers: StringIndexer<string> & {
+    length: number;
+  };
+  statusCode: number;
 }
 
 export class HTTPParser {
-	static REQUEST: string;
-	static RESPONSE: string;
+  static REQUEST: string;
+  static RESPONSE: string;
 
-	static kOnHeaders: number;
-	static kOnHeadersComplete: number;
-	static kOnBody: number;
-	static kOnMessageComplete: number;
+  static kOnHeaders: number;
+  static kOnHeadersComplete: number;
+  static kOnBody: number;
+  static kOnMessageComplete: number;
 
-	static methods: string[];
+  static methods: string[];
 
-	info: HTTPInfo;
-	isUserCall: boolean;
+  info: HTTPInfo;
+  isUserCall: boolean;
 
-	constructor(kind: string);
+  constructor(kind: string);
 
-	[n: number]: Function; // state machine callbacks
+  [n: number]: Function; // state machine callbacks
 
-	execute(buffer: Buffer): void;
+  execute(buffer: Buffer): void;
 }

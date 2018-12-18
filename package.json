@@ -4,8 +4,8 @@
   "description": "in-browser, multi-process operating system",
   "main": "lib/kernel/kernel.js",
   "scripts": {
-    "needs-format": "prettier -l \"src/*.ts\" \"test/*.ts\"",
-    "format": "prettier --write \"src/*.ts\" \"test/*.ts\"",
+    "needs-format": "prettier -l \"src/*.ts\" \"src/kernel/*.ts\" \"src/bin/*.ts\" \"src/browser-node/*.ts\" \"src/syscall-api/*.ts\" \"src/hello-sync/*.ts\" \"test/*.ts\"",
+    "format": "prettier --write \"src/*.ts\" \"src/kernel/*.ts\" \"src/bin/*.ts\" \"src/browser-node/*.ts\" \"src/syscall-api/*.ts\" \"src/hello-sync/*.ts\" \"test/*.ts\"",
     "lint": "yarn run tslint -c tslint.json --project tsconfig.json",
     "build:pre": "node support/mkdirp.js lib-dist/kernel lib/kernel",
     "build:kernel": "tsc -p tsconfig.json",

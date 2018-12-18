@@ -16,12 +16,11 @@ const SEEK_END = 2;
 
 const S_IFREG = 0x8000;
 
-
 // originally from node.js 4.3
 function assertPath(path: any): void {
-	if (typeof path !== 'string') {
-		throw new TypeError('Path must be a string. Received ' + path);
-	}
+  if (typeof path !== 'string') {
+    throw new TypeError('Path must be a string. Received ' + path);
+  }
 }
 
 // originally from node.js 4.3
@@ -30,255 +29,261 @@ function assertPath(path: any): void {
 // (so also no leading and trailing slashes - it does not distinguish
 // relative and absolute paths)
 function normalizeArray(parts: string[], allowAboveRoot: boolean): string[] {
-	let res: string[] = [];
-	for (let i = 0; i < parts.length; i++) {
-		let p = parts[i];
+  let res: string[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    let p = parts[i];
 
-		// ignore empty parts
-		if (!p || p === '.')
-			continue;
+    // ignore empty parts
+    if (!p || p === '.') continue;
 
-		if (p === '..') {
-			if (res.length && res[res.length - 1] !== '..') {
-				res.pop();
-			} else if (allowAboveRoot) {
-				res.push('..');
-			}
-		} else {
-			res.push(p);
-		}
-	}
+    if (p === '..') {
+      if (res.length && res[res.length - 1] !== '..') {
+        res.pop();
+      } else if (allowAboveRoot) {
+        res.push('..');
+      }
+    } else {
+      res.push(p);
+    }
+  }
 
-	return res;
+  return res;
 }
 
 // originally from node.js 4.3
 // path.resolve([from ...], to)
 // posix version
 export function resolve(...args: string[]): string {
-	let resolvedPath = '';
-	let resolvedAbsolute = false;
+  let resolvedPath = '';
+  let resolvedAbsolute = false;
 
-	for (let i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-		let path = (i >= 0) ? args[i] : '/';
+  for (let i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+    let path = i >= 0 ? args[i] : '/';
 
-		assertPath(path);
+    assertPath(path);
 
-		// Skip empty entries
-		if (path === '')
-			continue;
+    // Skip empty entries
+    if (path === '') continue;
 
-		resolvedPath = path + '/' + resolvedPath;
-		resolvedAbsolute = path[0] === '/';
-	}
+    resolvedPath = path + '/' + resolvedPath;
+    resolvedAbsolute = path[0] === '/';
+  }
 
-	// At this point the path should be resolved to a full
-	// absolute path, but handle relative paths to be safe (might
-	// happen when process.cwd() fails)
+  // At this point the path should be resolved to a full
+  // absolute path, but handle relative paths to be safe (might
+  // happen when process.cwd() fails)
 
-	// Normalize the path
-	resolvedPath = normalizeArray(resolvedPath.split('/'), !resolvedAbsolute).join('/');
+  // Normalize the path
+  resolvedPath = normalizeArray(resolvedPath.split('/'), !resolvedAbsolute).join('/');
 
-	return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
+  return (resolvedAbsolute ? '/' : '') + resolvedPath || '.';
 }
 
 export class RegularFile implements IFile {
-	kernel:   IKernel;
-	fd?:       number;
-	pos:      number;
+  kernel: IKernel;
+  fd?: number;
+  pos: number;
 
-	refCount: number;
+  refCount: number;
 
-	constructor(kernel: IKernel, fd: number) {
-		this.kernel = kernel;
-		this.fd = fd;
-		this.refCount = 1;
-		this.pos = 0;
-	}
+  constructor(kernel: IKernel, fd: number) {
+    this.kernel = kernel;
+    this.fd = fd;
+    this.refCount = 1;
+    this.pos = 0;
+  }
 
-	read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
-		if (pos < 0)
-			pos = this.pos;
+  read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+    if (pos < 0) pos = this.pos;
 
-		this.kernel.fs.read(this.fd, buf, 0, buf.length, pos, (err: any, len?: number) => {
-			if (!err && len)
-				this.pos += len;
-			cb(err, len);
-		});
-	}
+    this.kernel.fs.read(this.fd, buf, 0, buf.length, pos, (err: any, len?: number) => {
+      if (!err && len) this.pos += len;
+      cb(err, len);
+    });
+  }
 
-	write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
-		if (pos < 0)
-			pos = this.pos;
+  write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+    if (pos < 0) pos = this.pos;
 
-		this.kernel.fs.write(this.fd, buf, 0, buf.length, pos, (err: any, len?: number) => {
-			if (!err && len)
-				this.pos += len;
-			cb(err, len);
-		});
-	}
+    this.kernel.fs.write(this.fd, buf, 0, buf.length, pos, (err: any, len?: number) => {
+      if (!err && len) this.pos += len;
+      cb(err, len);
+    });
+  }
 
-	stat(cb: (err: any, stats: any) => void): void {
-		this.kernel.fs.fstat(this.fd, function(err: any, stats: any): void {
-			if (!err && stats) {
-				if (!stats.mode)
-					stats.mode = 0o666;
-				stats.mode |= S_IFREG;
-			}
-			cb(err, stats);
-		});
-	}
+  stat(cb: (err: any, stats: any) => void): void {
+    this.kernel.fs.fstat(this.fd, function(err: any, stats: any): void {
+      if (!err && stats) {
+        if (!stats.mode) stats.mode = 0o666;
+        stats.mode |= S_IFREG;
+      }
+      cb(err, stats);
+    });
+  }
 
-	readdir(cb: (err: any, files: string[]) => void): void {
-		setTimeout(cb, 0, 'cant readdir on normal file');
-	}
+  readdir(cb: (err: any, files: string[]) => void): void {
+    setTimeout(cb, 0, 'cant readdir on normal file');
+  }
 
-	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off?: number) => void): void {
-		if (whence === SEEK_CUR) {
-			this.pos += offlo;
-		} else if (whence === SEEK_SET) {
-			this.pos = offlo;
-		} else if (whence === SEEK_END) {
-			this.kernel.fs.fstat(this.fd, (err: any, stats?: any) => {
-				if (err || !stats)
-					return cb(err, -1);
-				this.pos = stats.size + offlo;
-				cb(0, this.pos);
-			});
-			return;
-		}
-		cb(0, this.pos);
-	}
+  llseek(
+    offhi: number,
+    offlo: number,
+    whence: number,
+    cb: (err: number, off?: number) => void,
+  ): void {
+    if (whence === SEEK_CUR) {
+      this.pos += offlo;
+    } else if (whence === SEEK_SET) {
+      this.pos = offlo;
+    } else if (whence === SEEK_END) {
+      this.kernel.fs.fstat(this.fd, (err: any, stats?: any) => {
+        if (err || !stats) return cb(err, -1);
+        this.pos = stats.size + offlo;
+        cb(0, this.pos);
+      });
+      return;
+    }
+    cb(0, this.pos);
+  }
 
-	ref(): void {
-		this.refCount++;
-	}
+  ref(): void {
+    this.refCount++;
+  }
 
-	unref(): void {
-		this.refCount--;
-		// FIXME: verify this is what we want.
-		if (!this.refCount) {
-			this.kernel.fs.close(this.fd);
-			this.fd = undefined;
-		}
-	}
+  unref(): void {
+    this.refCount--;
+    // FIXME: verify this is what we want.
+    if (!this.refCount) {
+      this.kernel.fs.close(this.fd);
+      this.fd = undefined;
+    }
+  }
 }
 
 export class DirFile implements IFile {
-	kernel:   IKernel;
-	path?:     string;
-	off:      number;
+  kernel: IKernel;
+  path?: string;
+  off: number;
 
-	refCount: number;
+  refCount: number;
 
-	constructor(kernel: IKernel, path: string) {
-		this.kernel = kernel;
-		this.path = path;
-		this.off = 0;
-		this.refCount = 1;
-	}
+  constructor(kernel: IKernel, path: string) {
+    this.kernel = kernel;
+    this.path = path;
+    this.off = 0;
+    this.refCount = 1;
+  }
 
-	read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
-		setTimeout(cb, 0, 'cant read from a dir -- use readdir');
-	}
+  read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+    setTimeout(cb, 0, 'cant read from a dir -- use readdir');
+  }
 
-	write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
-		setTimeout(cb, 0, 'cant write to a dir');
-	}
+  write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+    setTimeout(cb, 0, 'cant write to a dir');
+  }
 
-	stat(cb: (err: any, stats: any) => void): void {
-		this.kernel.fs.stat(this.path || '', cb);
-	}
+  stat(cb: (err: any, stats: any) => void): void {
+    this.kernel.fs.stat(this.path || '', cb);
+  }
 
-	readdir(cb: (err: any, files: string[]) => void): void {
-		this.kernel.fs.readdir(this.path || '', cb);
-	}
+  readdir(cb: (err: any, files: string[]) => void): void {
+    this.kernel.fs.readdir(this.path || '', cb);
+  }
 
-	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off?: number) => void): void {
-		console.log('TODO: dir.llseek');
-		cb(0, 0);
-	}
+  llseek(
+    offhi: number,
+    offlo: number,
+    whence: number,
+    cb: (err: number, off?: number) => void,
+  ): void {
+    console.log('TODO: dir.llseek');
+    cb(0, 0);
+  }
 
-	getdents(buf: Uint8Array, cb: (err: number) => void): void {
-		this.readdir((derr: any, files: string[]) => {
-			if (derr) {
-				console.log('readdir: ' + derr);
-				cb(-EFAULT);
-				return;
-			}
-			files = files.filter((s: string) => s !== '.deletedFiles.log');
-			files.sort();
-			files = files.slice(this.off);
+  getdents(buf: Uint8Array, cb: (err: number) => void): void {
+    this.readdir((derr: any, files: string[]) => {
+      if (derr) {
+        console.log('readdir: ' + derr);
+        cb(-EFAULT);
+        return;
+      }
+      files = files.filter((s: string) => s !== '.deletedFiles.log');
+      files.sort();
+      files = files.slice(this.off);
 
-			let dents = files.map((n) => new fs.Dirent(-1, fs.DT.UNKNOWN, n));
-			let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
-			let voff = 0;
+      let dents = files.map(n => new fs.Dirent(-1, fs.DT.UNKNOWN, n));
+      let view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+      let voff = 0;
 
-			for (let i = 0; i < dents.length; i++) {
-				let dent = dents[i];
-				if (voff + dent.reclen > buf.byteLength)
-					break;
-				let [len, err] = Marshal(view, voff, dent, fs.DirentDef);
-				if (err) {
-					console.log('dirent marshal failed: ' + err);
-					cb(-EFAULT);
-					return;
-				}
-				voff += len;
-				this.off++;
-			}
+      for (let i = 0; i < dents.length; i++) {
+        let dent = dents[i];
+        if (voff + dent.reclen > buf.byteLength) break;
+        let [len, err] = Marshal(view, voff, dent, fs.DirentDef);
+        if (err) {
+          console.log('dirent marshal failed: ' + err);
+          cb(-EFAULT);
+          return;
+        }
+        voff += len;
+        this.off++;
+      }
 
-			cb(voff);
-		});
-	}
+      cb(voff);
+    });
+  }
 
-	ref(): void {
-		this.refCount++;
-	}
+  ref(): void {
+    this.refCount++;
+  }
 
-	unref(): void {
-		this.refCount--;
-		if (!this.refCount) {
-			this.path = undefined;
-		}
-	}
+  unref(): void {
+    this.refCount--;
+    if (!this.refCount) {
+      this.path = undefined;
+    }
+  }
 }
 
 export class NullFile implements IFile {
-	refCount: number;
-	pos:      number;
+  refCount: number;
+  pos: number;
 
-	constructor() {
-		this.refCount = 1;
-		this.pos = 0;
-	}
+  constructor() {
+    this.refCount = 1;
+    this.pos = 0;
+  }
 
-	read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
-		cb(null, 0);
-	}
+  read(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+    cb(null, 0);
+  }
 
-	write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
-		cb(null, buf.length);
-	}
+  write(buf: Buffer, pos: number, cb: (err: any, len?: number) => void): void {
+    cb(null, buf.length);
+  }
 
-	stat(cb: (err: any, stats: any) => void): void {
-		cb(null, new Stats(FileType.FILE, 0, 0x309));
-	}
+  stat(cb: (err: any, stats: any) => void): void {
+    cb(null, new Stats(FileType.FILE, 0, 0x309));
+  }
 
-	readdir(cb: (err: any, files: string[]) => void): void {
-		setTimeout(cb, 0, 'cant readdir on /dev/null');
-	}
+  readdir(cb: (err: any, files: string[]) => void): void {
+    setTimeout(cb, 0, 'cant readdir on /dev/null');
+  }
 
-	llseek(offhi: number, offlo: number, whence: number, cb: (err: number, off?: number) => void): void {
-		this.pos = 0;
-		cb(0, this.pos);
-	}
+  llseek(
+    offhi: number,
+    offlo: number,
+    whence: number,
+    cb: (err: number, off?: number) => void,
+  ): void {
+    this.pos = 0;
+    cb(0, this.pos);
+  }
 
-	ref(): void {
-		this.refCount++;
-	}
+  ref(): void {
+    this.refCount++;
+  }
 
-	unref(): void {
-		this.refCount--;
-	}
+  unref(): void {
+    this.refCount--;
+  }
 }

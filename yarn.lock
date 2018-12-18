@@ -402,10 +402,10 @@ browser-sync@^2.24.4:
     ua-parser-js "0.7.17"
     yargs "6.4.0"
 
-browserfs-browsix-tmp@1.9.0:
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/browserfs-browsix-tmp/-/browserfs-browsix-tmp-1.9.0.tgz#aa5580e4d30acde2054e7a98bbfb397eb17e12f2"
-  integrity sha512-pO7Rzmpb7nmsCnOmcRJiPPV1CqBVnl+jsrvLip+AiKb9SPxngO5Xvhx0pqV3e1xYqvBK7N92dLriqROs/CPV7w==
+browserfs-browsix-tmp@1.9.1:
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/browserfs-browsix-tmp/-/browserfs-browsix-tmp-1.9.1.tgz#e0c3b2ce41a96bf93b67f4f0ad1a3da0c0fd8eca"
+  integrity sha512-hr4ELWiPiGsW3m04s2rZH0P3z1Knes53AqO19UdNbIg6TYEOARuKtG2F+R77qma2cebzzODoUsZn/8dhgTvxUw==
   dependencies:
     async "~2.6.1"
     pako "~1.0.6"

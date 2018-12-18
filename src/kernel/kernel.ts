@@ -29,6 +29,9 @@ import * as marshal from 'node-binary-marshal';
 
 import { utf8Slice, utf8ToBytes } from '../browser-node/binding/buffer';
 
+// FIXME
+const Buffer: any = bfs.BFSRequire('buffer');
+
 // controls the default of whether to delay the initialization message
 // to a Worker to aid in debugging.
 const DEBUG = false;
@@ -2780,12 +2783,9 @@ export interface BootArgs {
 }
 
 export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: BootArgs = {}): void {
-  const browserfs: any = {};
-  bfs.install(browserfs);
   // this is the 'Buffer' in the file-level/module scope above.
-  (Buffer as any) = browserfs.Buffer;
   if (typeof window !== 'undefined' && !(window as any).Buffer) {
-    (window as any).Buffer = browserfs.Buffer;
+    (window as any).Buffer = bfs.BFSRequire('buffer');
   }
 
   const rootFs = (bfs as any).FileSystem[fsType];
@@ -2832,12 +2832,9 @@ export function Boot(fsType: string, fsArgs: any[], cb: BootCallback, args: Boot
 export function BootWith(rootFs: any, cb: BootCallback, args: BootArgs = {}): void {
   const nCPUs = 1;
 
-  const browserfs: any = {};
-  bfs.install(browserfs);
   // this is the 'Buffer' in the file-level/module scope above.
-  (Buffer as any) = browserfs.Buffer;
   if (typeof window !== 'undefined' && !(window as any).Buffer) {
-    (window as any).Buffer = browserfs.Buffer;
+    (window as any).Buffer = bfs.BFSRequire('buffer');
   }
 
   bfs.initialize(rootFs);

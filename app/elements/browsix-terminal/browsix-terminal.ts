@@ -31,7 +31,7 @@ namespace Terminal {
 			super();
 			(<any>window).Boot(
 				'XmlHttpRequest',
-				['index.json', 'fs', true],
+				{ index:'index.json', baseUrl:'fs', preferXHR: true },
 				(err: any, k: Kernel) => {
 					if (err) {
 						console.log(err);

@@ -116,15 +116,14 @@ function decodeCodePointsArray(codePoints: any): any {
   return res;
 }
 
-export function utf8ToBytes(str: string, units?: number): any {
+export function utf8ToBytes(str: string, units?: number): Uint8Array {
   units = units || Infinity;
-  let codePoint: any;
   const length = str.length;
-  let leadSurrogate: any = null;
-  const bytes: any[] = [];
+  const bytes: number[] = [];
 
   for (let i = 0; i < length; i++) {
-    codePoint = str.charCodeAt(i);
+    let codePoint = str.charCodeAt(i);
+    let leadSurrogate: number | undefined = undefined;
 
     // is surrogate component
     if (codePoint > 0xd7ff && codePoint < 0xe000) {
@@ -169,7 +168,7 @@ export function utf8ToBytes(str: string, units?: number): any {
       }
     }
 
-    leadSurrogate = null;
+    leadSurrogate = undefined;
 
     // encode utf8
     if (codePoint < 0x80) {
@@ -206,7 +205,10 @@ export function utf8ToBytes(str: string, units?: number): any {
     }
   }
 
-  return bytes;
+  // C strings have a trailing null byte
+  bytes.push(0);
+
+  return Uint8Array.from(bytes);
 }
 
 function asciiSlice(buf: any, start: number, end: number): any {

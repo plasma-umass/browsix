@@ -2209,8 +2209,8 @@ export class Task implements ITask {
   waitOff: number;
 
   // used during fork, unset after that.
-  heap: ArrayBuffer;
-  forkArgs: any;
+  heap: ArrayBuffer | undefined;
+  forkArgs: any | undefined;
 
   parent: Task | undefined;
   children: Task[] = [];
@@ -2539,7 +2539,7 @@ export class Task implements ITask {
     const heap = this.heap;
     const args = this.forkArgs;
 
-    this.heap = new ArrayBuffer(0);
+    this.heap = undefined;
     this.forkArgs = undefined;
 
     this.args = this.pendingArgs;

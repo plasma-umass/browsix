@@ -224,9 +224,10 @@ function syncSyscalls(
   task: Task,
   sysret: (ret: number) => void,
 ): (n: number, args: number[]) => void {
-
   function bufferAt(off: number, len: number): Buffer {
-    return new Buffer(arrayAt(off, len));
+    const buf = arrayAt(off, len);
+    ((buf as unknown) as any).__proto__ = Buffer.prototype;
+    return (buf as unknown) as Buffer;
   }
 
   function arrayAt(off: number, len: number): Uint8Array {
@@ -2641,12 +2642,12 @@ export class Task implements ITask {
     this.blobUrl = undefined;
 
     // only show perf information for emscripten programs for now
-    // if (this.timeFirstMsg) {
-    // 	let exit = performance.now();
-    // 	console.log('' + this.pid + ' real: ' + (exit - this.timeWorkerStart));
-    // 	console.log('' + this.pid + ' init: ' + (this.timeFirstMsg - this.timeWorkerStart));
-    // 	console.log('' + this.pid + ' sys:  ' + this.timeSyscallTotal);
-    // }
+    if (this.timeFirstMsg) {
+      let exit = performance.now();
+      console.log('' + this.pid + ' real: ' + (exit - this.timeWorkerStart));
+      console.log('' + this.pid + ' init: ' + (this.timeFirstMsg - this.timeWorkerStart));
+      console.log('' + this.pid + ' sys:  ' + this.timeSyscallTotal);
+    }
 
     for (const n in this.files) {
       if (!this.files.hasOwnProperty(n)) {

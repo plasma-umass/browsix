@@ -223,10 +223,10 @@ function syncSyscalls(
   sys: Syscalls,
   task: Task,
   sysret: (ret: number) => void,
-): (n: number, args: number[]) => void {
+): (n: number, a1: number, a2: number, a3: number, a4: number, a5: number, a6: number) => void {
   function bufferAt(off: number, len: number): Buffer {
     const buf = arrayAt(off, len);
-    ((buf as unknown) as any).__proto__ = Buffer.prototype;
+    (buf as unknown as any).__proto__ = Buffer.prototype;
     return (buf as unknown) as Buffer;
   }
 
@@ -290,7 +290,7 @@ function syncSyscalls(
       const path = stringAt(pathp);
       const sflags: string = flagsToString(flags);
 
-      sys.open(task, path, sflags, mode, (err: number, fd: number) => {
+      sys.open(task, path, sflags, mode, (err: number | undefined, fd: number) => {
         if (typeof err === 'number' && err < 0) {
           fd = err;
         }
@@ -509,17 +509,17 @@ function syncSyscalls(
     },
   };
 
-  return (n: number, args: number[]) => {
+  return (n: number, a1: number, a2: number, a3: number, a4: number, a5: number, a6: number) => {
     if (!(n in table)) {
       console.log('sync syscall: unknown ' + n);
       sysret(-constants.ENOTSUP);
       return;
     }
     if (STRACE) {
-      console.log('[' + task.pid + '] \tsys_' + n + '\t' + args[0]);
+      console.log('[' + task.pid + '] \tsys_' + n + '\t' + a1);
     }
 
-    table[n].apply(undefined, args);
+    table[n](a1, a2, a3, a4, a5, a6);
   };
 }
 
@@ -1427,7 +1427,7 @@ export class Syscalls {
     path: string,
     flags: string,
     mode: number,
-    cb: (err: number, fd: number) => void,
+    cb: (err: number | undefined, fd: number) => void,
   ): void {
     const fullpath = resolve(task.cwd, path);
     // FIXME: support CLOEXEC
@@ -1437,7 +1437,7 @@ export class Syscalls {
     if (fullpath === '/dev/null') {
       f = new NullFile();
       const n = task.addFile(f);
-      cb(0, n);
+      cb(undefined, n);
       return;
     }
 
@@ -1458,7 +1458,7 @@ export class Syscalls {
         return;
       }
       const n = task.addFile(f);
-      cb(0, n);
+      cb(undefined, n);
     });
   }
 
@@ -1969,7 +1969,7 @@ export class Kernel implements IKernel {
     if (syscall.name in this.syscalls) {
       if (STRACE) {
         const argfmt = (arg: any): string => {
-          if (arg.constructor === Uint8Array) {
+          if (arg !== undefined && arg.constructor === Uint8Array) {
             let len = arg.length;
             if (len > 0 && arg[len - 1] === 0) {
               len--;
@@ -1985,7 +1985,7 @@ export class Kernel implements IKernel {
         if (syscall.args === undefined) {
           syscall.args = [undefined];
         }
-        let arg = argfmt(syscall.args[0]);
+        let arg = argfmt(syscall.args.length ? syscall.args[0] : undefined);
         if (syscall.args[1]) {
           arg += '\t' + argfmt(syscall.args[1]);
         }
@@ -2184,7 +2184,7 @@ export class Task implements ITask {
   private msgIdSeq: number = 1;
   private onRunnable?: (err: number | undefined, pid?: number) => void;
 
-  private syncSyscall: (n: number, args: number[]) => void;
+  private syncSyscall: (n: number, a1: number, a2: number, a3: number, a4: number, a5: number, a6: number) => void;
   private syncSyscallStart: number = 0.0;
 
   private timeWorkerStart: number = 0.0;
@@ -2258,11 +2258,15 @@ export class Task implements ITask {
     this.heap32 = new Int32Array(sab);
     this.waitOff = off;
     this.syncSyscall = syncSyscalls((this.kernel as Kernel).syscallsCommon, this, (ret: number) => {
+      ret = ret | 0;
+
+      const waitOff32 = this.waitOff >> 2;
+
       this.timeSyscallTotal += performance.now() - this.syncSyscallStart;
 
-      Atomics.store(this.heap32, (this.waitOff >> 2) + 1, ret);
-      Atomics.store(this.heap32, this.waitOff >> 2, 1);
-      Atomics.wake(this.heap32, this.waitOff >> 2, 1);
+      this.heap32[waitOff32 + 8] = ret;
+      Atomics.store(this.heap32, waitOff32, 1);
+      Atomics.wake(this.heap32, waitOff32, 1);
       // console.log('[' + this.pid + '] \t\tDONE \t' + ret);
     });
 
@@ -2461,7 +2465,9 @@ export class Task implements ITask {
     }
     this.timeWorkerStart = performance.now();
     this.worker = new Worker(blobUrl);
-    this.worker.onmessage = this.syscallHandler.bind(this);
+    this.worker.onmessage = (ev: MessageEvent): void => {
+      this.syscallHandler(ev);
+    };
     this.worker.onerror = (err: ErrorEvent): void => {
       // if we're already a zombie, we have already
       // exited the process (according to the
@@ -2704,9 +2710,18 @@ export class Task implements ITask {
 
   private syscallHandler(ev: MessageEvent): void {
     // TODO: there is probably a better way to handle this :\
-    if (ev.data.trap) {
+    if (ev.data.id === undefined) {
       this.syncSyscallStart = performance.now();
-      this.syncSyscall(ev.data.trap, ev.data.args);
+      const waitOff32 = this.waitOff >> 2;
+      const heap32 = this.heap32;
+      const trap = heap32[waitOff32+1];
+      const a1 = heap32[waitOff32+2];
+      const a2 = heap32[waitOff32+3];
+      const a3 = heap32[waitOff32+4];
+      const a4 = heap32[waitOff32+5];
+      const a5 = heap32[waitOff32+6];
+      const a6 = heap32[waitOff32+7];
+      this.syncSyscall(trap, a1, a2, a3, a4, a5, a6);
       return;
     }
 

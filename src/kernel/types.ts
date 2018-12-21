@@ -78,6 +78,7 @@ export interface ITask {
   env: Environment;
   cwd: string;
   priority: number;
+  waitOff: number;
 
   personality(kind: number, sab: SharedArrayBuffer, off: number, cb: (err?: number) => void): void;
   exec(

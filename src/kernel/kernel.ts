@@ -224,36 +224,13 @@ function syncSyscalls(
   task: Task,
   sysret: (ret: number) => void,
 ): (n: number, args: number[]) => void {
-  // Firefox doesn't support DataViews on SharedArrayBuffers:
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=1246597
-  let dataViewWorks = true;
-  try {
-    const _ = new DataView(new SharedArrayBuffer(32), 0, 32);
-  } catch (e) {
-    dataViewWorks = false;
-  }
 
   function bufferAt(off: number, len: number): Buffer {
-    if (dataViewWorks) {
-      return new Buffer((new DataView(task.sheap, off, len) as unknown) as ArrayBuffer);
-    } else {
-      const tmp = new Uint8Array(task.sheap, off, len);
-      const notShared = new ArrayBuffer(len);
-      new Uint8Array(notShared).set(tmp);
-      return new Buffer((new DataView(notShared) as unknown) as ArrayBuffer);
-    }
+    return new Buffer(arrayAt(off, len));
   }
 
   function arrayAt(off: number, len: number): Uint8Array {
-    if (dataViewWorks) {
-      return task.heapu8.subarray(off, off + len);
-    } else {
-      const tmp = new Uint8Array(task.sheap, off, len);
-      const notShared = new ArrayBuffer(len);
-      const notSharedArray = new Uint8Array(notShared);
-      notSharedArray.set(tmp);
-      return notSharedArray;
-    }
+    return task.heapu8.subarray(off, off + len);
   }
 
   function stringAt(ptr: number): string {
@@ -268,11 +245,6 @@ function syncSyscalls(
   }
 
   function stringArrayAt(ptr: number): string[] {
-    if (!dataViewWorks) {
-      console.log('FIXME: get data view working');
-      return [];
-    }
-
     const arr: string[] = [];
     const i = 0;
     for (let i = 0; task.heap32[(ptr + i) >> 2] !== 0; i += 4) {
@@ -457,10 +429,6 @@ function syncSyscalls(
       const len = marshal.fs.StatDef.length || 0;
       const buf = arrayAt(bufp, len);
       sys.stat(task, path, buf, (err: number) => {
-        // workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1246597
-        if (!dataViewWorks) {
-          task.heapu8.subarray(bufp, bufp + len).set(buf);
-        }
         sysret(err);
       });
     },
@@ -471,10 +439,6 @@ function syncSyscalls(
       const len = marshal.fs.StatDef.length || 0;
       const buf = arrayAt(bufp, len);
       sys.lstat(task, path, buf, (err: number) => {
-        // workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1246597
-        if (!dataViewWorks) {
-          task.heapu8.subarray(bufp, bufp + len).set(buf);
-        }
         sysret(err);
       });
     },
@@ -484,9 +448,6 @@ function syncSyscalls(
       const len = marshal.fs.StatDef.length || 0;
       const buf = arrayAt(bufp, len);
       sys.fstat(task, fd, buf, (err: number) => {
-        if (!dataViewWorks) {
-          task.heapu8.subarray(bufp, bufp + len).set(buf);
-        }
         sysret(err);
       });
     },

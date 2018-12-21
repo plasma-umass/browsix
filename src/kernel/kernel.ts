@@ -268,7 +268,7 @@ function syncSyscalls(
             len = -1;
           }
         }
-        sysret(len || -1);
+        sysret(len === undefined? -1 : len);
       });
     },
     4: (fd: number, bufp: number, len: number): void => {
@@ -282,7 +282,7 @@ function syncSyscalls(
             len = -1;
           }
         }
-        sysret(len || -1);
+        sysret(len === undefined? -1 : len);
       });
     },
     5: (pathp: number, flags: number, mode: number): void => {

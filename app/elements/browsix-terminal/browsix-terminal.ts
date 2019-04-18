@@ -1,4 +1,6 @@
-/// <reference path="../../../bower_components/polymer-ts/polymer-ts.d.ts"/>
+/// <reference path="../../../node_modules/xterm/typings/xterm.d.ts"/>
+
+//import { Terminal } from 'xterm';
 
 interface ExitCallback {
 	(pid: number, code: number): void;
@@ -14,98 +16,95 @@ interface Kernel {
 	kill(pid: number): void;
 }
 
-namespace Terminal {
+namespace BrowsixTerminal {
 	'use strict';
 
 	const ERROR = 'FLAGRANT SYSTEM ERROR';
 
-	@component('browsix-terminal')
-	class Terminal extends polymer.Base {
-		@property({type: Object})
-		kernel: any;
+	class BrowsixTerminal {
+		kernel: Kernel;
+		stdin: any;
+		terminal: Terminal;
+		line: string = "";
+		lineidx: number = 0;
 
-		@property({type: String})
-		ps1: string = '$ ';
+		constructor(element: HTMLElement) {
+			this.terminal = new Terminal({
+				// According to xterm.js docs, unnecessary with pty
+				"convertEol": true
+			});
+			this.terminal.open(element);
+			this.terminal.on('key', (key: string, ev: KeyboardEvent) => this.keyCallback(key, ev));
 
-		constructor() {
-			super();
 			(<any>window).Boot(
 				'XmlHttpRequest',
 				['index.json', 'fs', true],
 				(err: any, k: Kernel) => {
 					if (err) {
 						console.log(err);
-						this.$.output.innerHTML = ERROR;
+						this.terminal.clear();
+						this.terminal.writeln(ERROR);
 						throw new Error(err);
 					}
 					this.kernel = k;
+
+					let completed = (pid: number, code: number) => {
+						this.stdin = null;
+						this.terminal.writeln("'sh' exited with status " + code);
+					};
+
+					let onInput = (pid: number, out: string ) => {
+						this.terminal.write(out);
+					};
+
+					let onHaveStdin = (stdin: any) => {
+						this.stdin = stdin;
+					}
+
+					this.kernel.system("sh", completed, onInput, onInput, onHaveStdin);
 				},
 				{readOnly: false});
 		}
 
-		attached(): void {
-			this.$.input.addEventListener('keypress', this.onInput.bind(this));
-			(<any>document).body.addEventListener('click', this.focus.bind(this));
-		}
-
-		onInput(ev: any): void {
-			// If key pressed is not Return/Enter, skip
-			if (ev.keyCode !== 13) return;
-
-			let cmd = this.$.input.value;
-			this.$.output.innerHTML += this.ps1 + cmd + '<br>';
-			if (cmd === '') {
-				this.scrollBottom();
-				return;
+		keyCallback(key: string, ev: KeyboardEvent): void {
+			// Newline
+			if (ev.keyCode == 13) {
+				this.terminal.writeln("");
+				this.line += '\n'
+				if (this.stdin !== null) {
+					this.stdin.write(new Buffer(this.line), -1, (error: any) => {});
+				}
+				this.line = '';
+				this.lineidx = 0;
+			// Backspace
+			} else if (ev.keyCode == 8) {
+				const previous = this.line.slice(0, this.lineidx - 1);
+				const rest = this.line.slice(this.lineidx);
+				this.terminal.write('\b' + rest + ' ' + '\b'.repeat(rest.length + 1));
+				this.line = previous + rest;
+				this.lineidx--;
+			// Up and down arrows
+			} else if (ev.keyCode == 38 || ev.keyCode == 40) {
+			// Left arrow
+			} else if (ev.keyCode == 37) {
+				this.terminal.write(key);
+				this.lineidx--;
+				if (this.lineidx == -1) {
+					this.lineidx = 0;
+				}
+			// Right arrow
+			} else if (ev.keyCode == 39) {
+				if (this.lineidx < this.line.length) {
+					this.lineidx++;
+					this.terminal.write(key);
+				}
+			} else {
+				this.terminal.write(key);
+				this.line += key;
+				this.lineidx++;
 			}
-			this.setEditable(false);
-			let bg = cmd[cmd.length - 1] === '&';
-			if (bg) {
-				cmd = cmd.slice(0, -1).trim();
-				setTimeout(() => { this.setEditable(true); }, 0);
-			}
-
-			let completed = (pid: number, code: number) => {
-				this.setEditable(true);
-				this.$.input.value = '';
-				this.focus();
-				this.scrollBottom();
-			};
-
-			let onInput = (pid: number, out: string) => {
-				// Replace all LF with HTML breaks
-				out = out.split('\n').join('<br>');
-				this.$.output.innerHTML += out;
-				this.scrollBottom();
-			};
-
-			this.kernel.system(cmd, completed, onInput, onInput);
-		}
-
-		@observe('kernel')
-		kernelChanged(_: Kernel, oldKernel: Kernel): void {
-			// we expect this to be called once, after
-			// we've booted the kernel.
-			if (oldKernel) {
-				console.log('unexpected kernel change');
-				return;
-			}
-		}
-
-		focus(): void {
-			this.$.input.focus();
-		}
-
-		setEditable(editable: boolean): void {
-			// Hide input if not editable
-			this.$.input_container.style.visibility = (editable) ? '' : 'hidden';
-		}
-
-		scrollBottom(): void {
-			(<any>window).scrollTo(0, document.documentElement.scrollHeight
-				|| document.body.scrollHeight);
 		}
 	}
 
-	Terminal.register();
+	var terminal = new BrowsixTerminal(document.getElementById('browsix-terminal'));
 }

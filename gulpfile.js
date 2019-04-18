@@ -439,7 +439,10 @@ function gulp_app_tasks (app_path) {
         var fs = gulp.src(['fs/**/*'])
             .pipe(gulp.dest('dist/fs'));
 
-        return merge(app, bower, elements, vulcanized, swBootstrap, swToolbox, fs)
+        var xterm = gulp.src(['node_modules/xterm/dist/**/*'])
+            .pipe(gulp.dest('dist/xterm'));
+
+        return merge(app, bower, elements, vulcanized, swBootstrap, swToolbox, fs, xterm)
             .pipe($.size({title: 'copy'}));
     });
 
@@ -523,6 +526,7 @@ gulp.task('serve', ['app:build', 'app:styles', 'app:elements', 'app:images'], fu
                 '/bower_components': 'bower_components',
                 '/fs': 'fs',
                 '/benchfs': 'benchfs',
+                '/xterm': 'node_modules/xterm/dist',
             },
             middleware: [],
         }

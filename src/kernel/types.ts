@@ -17,6 +17,10 @@ export interface RWCallback {
 	(err: number, len?: number): void;
 }
 
+export interface StdinCallback {
+	(stdin: IFile): void;
+}
+
 export interface SyscallResult {
 	id: number;
 	name: string;
@@ -33,7 +37,7 @@ export interface IKernel {
 	nCPUs: number;
 	debug: boolean;
 
-	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void;
+	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback, onHaveStdin: StdinCallback): void;
 	exit(task: ITask, code: number): void;
 	wait(pid: number): void;
 	doSyscall(syscall: Syscall): void;

@@ -2,6 +2,13 @@
 # yarn lockfile v1
 
 
+"@polymer/polymer@^3.0.0-pre.12":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@polymer/polymer/-/polymer-3.2.0.tgz#b41fddec4ecac63b12936b93726678d23add7afd"
+  integrity sha512-L6uV1oM6T6xbwbVx6t3biG5T2VSSB03LxnIrUd9M2pr6RkHVPFHJ37pC5MUwBAEhkGFJif7eks7fdMMSGZTeEQ==
+  dependencies:
+    "@webcomponents/shadycss" "^1.8.0"
+
 "@types/chai@^4.0.4":
   version "4.1.7"
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.1.7.tgz#1b8e33b61a8c09cbe1f85133071baa0dbf9fa71a"
@@ -33,6 +40,11 @@
   version "10.12.18"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.18.tgz#1d3ca764718915584fcd9f6344621b7672665c67"
   integrity sha512-fh+pAqt4xRzPfqA6eh3Z2y6fyZavRIumvjhaCL753+TVkGKGhpPeyrJG2JftD0T9q4GF00KjefsQ+PQNDdWQaQ==
+
+"@webcomponents/shadycss@^1.8.0":
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/@webcomponents/shadycss/-/shadycss-1.9.1.tgz#d769fbadfa504f11b84caeef26701f89070ec49a"
+  integrity sha512-IaZOnWOKXHghqk/WfPNDRIgDBi3RsVPY2IFAw6tYiL9UBGvQRy5R6uC+Fk7qTZsReTJ0xh5MTT8yAcb3MUR4mQ==
 
 abbrev@1:
   version "1.1.1"
@@ -366,7 +378,7 @@ browser-sync-ui@^2.26.2:
     socket.io-client "^2.0.4"
     stream-throttle "^0.1.3"
 
-browser-sync@^2.24.4:
+browser-sync@^2.26:
   version "2.26.3"
   resolved "https://registry.yarnpkg.com/browser-sync/-/browser-sync-2.26.3.tgz#1b59bd5935938a5b0fa73b3d78ef1050bd2bf912"
   integrity sha512-VLzpjCA4uXqfzkwqWtMM6hvPm2PNHp2RcmzBXcbi6C9WpkUhhFb8SVAr4CFrCsFxDg+oY6HalOjn8F+egyvhag==
@@ -2465,6 +2477,11 @@ pinkie@^2.0.0:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/pinkie/-/pinkie-2.0.4.tgz#72556b80cfa0d48a974e80e77248e80ed4f7f870"
   integrity sha1-clVrgM+g1IqXToDnckjoDtT3+HA=
+
+polymer-ts@^0.1.26:
+  version "0.1.26"
+  resolved "https://registry.yarnpkg.com/polymer-ts/-/polymer-ts-0.1.26.tgz#1ceb286e8c139fdeb9cf04ec92cfee07c448e5f3"
+  integrity sha1-HOsobowTn965zwTsks/uB8RI5fM=
 
 portscanner@2.1.1:
   version "2.1.1"

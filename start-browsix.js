@@ -1,5 +1,5 @@
 var browserSync = require('browser-sync');
-var historyApiFallback = require('connect-history-api-fallback');
+//var historyApiFallback = require('connect-history-api-fallback');
 
 browserSync({
   port: 5000,

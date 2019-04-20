@@ -11,7 +11,8 @@
     "build:kernel": "tsc -p tsconfig.json",
     "build:browser": "rollup -c .rollup.kernel.js",
     "build:terminal": "node support/mkdirp.js app/elements lib/app/elements/browsix-terminal",
-    "build": "npm-run-all build:pre build:kernel build:browser build:terminal",
+    "build:bin": "node support/mkdirp.js lib-dist/bin lib/bin",
+    "build": "npm-run-all build:pre build:kernel build:browser build:terminal build:bin",
     "prepublishOnly": "make clean && npm run-script build"
   },
   "repository": {
@@ -23,7 +24,7 @@
   },
   "homepage": "https://github.com/plasma-umass/browsix",
   "devDependencies": {
-    "browser-sync": "^2.24.4",
+    "browser-sync": "^2.26.3",
     "browserfs-browsix-tmp": "1.9.3",
     "chai": "^4.1.2",
     "karma": "^3.1.3",
@@ -43,9 +44,13 @@
     "@types/mocha": "^2.2.43"
   },
   "dependencies": {
+    "@polymer/polymer": "^3.0.0-pre.12",
     "@types/filesystem": "0.0.28",
+    "bower": "^1.8.8",
     "dropbox": "~4.0.9",
     "node-binary-marshal": "^0.4.2",
+    "polymer-cli": "^1.9.8",
+    "polymer-ts": "^0.1.26",
     "term.js": "github:bpowers/term.js"
   },
   "engines": {

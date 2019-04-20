@@ -7,13 +7,15 @@
     "src/kernel/constants.ts",
     "src/kernel/ipc.ts",
     "src/kernel/kernel.ts",
-    "src/kernel/http_parser.d.ts"
+    "src/kernel/http_parser.d.ts",
+    "app/elements/browsix-terminal/browsix-terminal.ts",
   ],
 
   "compilerOptions": {
     "target": "es2017",
     "module": "commonjs",
     "outDir": "lib",
+    "experimentalDecorators" : true,
 
     "lib": [
       "dom",

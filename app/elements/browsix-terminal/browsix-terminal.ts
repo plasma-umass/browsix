@@ -1,4 +1,5 @@
-/// <reference path="../../../bower_components/polymer-ts/polymer-ts.d.ts"/>
+import {PolymerElement} from "@polymer/polymer/polymer-element";
+import {customElement, property, observe} from "@polymer/decorators";
 
 interface ExitCallback {
 	(pid: number, code: number): void;
@@ -19,8 +20,8 @@ namespace Terminal {
 
 	const ERROR = 'FLAGRANT SYSTEM ERROR';
 
-	@component('browsix-terminal')
-	class Terminal extends polymer.Base {
+	@customElement('browsix-terminal')
+	class Terminal extends PolymerElement {
 		@property({type: Object})
 		kernel: any;
 
@@ -52,7 +53,7 @@ namespace Terminal {
 			// If key pressed is not Return/Enter, skip
 			if (ev.keyCode !== 13) return;
 
-			let cmd = this.$.input.value;
+			let cmd = '';//this.$.input.value;
 			this.$.output.innerHTML += this.ps1 + cmd + '<br>';
 			if (cmd === '') {
 				this.scrollBottom();
@@ -67,7 +68,7 @@ namespace Terminal {
 
 			let completed = (pid: number, code: number) => {
 				this.setEditable(true);
-				this.$.input.value = '';
+				//this.$.input.value = '';
 				this.focus();
 				this.scrollBottom();
 			};
@@ -93,12 +94,12 @@ namespace Terminal {
 		}
 
 		focus(): void {
-			this.$.input.focus();
+			//this.$.input.focus();
 		}
 
 		setEditable(editable: boolean): void {
 			// Hide input if not editable
-			this.$.input_container.style.visibility = (editable) ? '' : 'hidden';
+			//this.$.input_container.style.visibility = (editable) ? '' : 'hidden';
 		}
 
 		scrollBottom(): void {
@@ -107,5 +108,5 @@ namespace Terminal {
 		}
 	}
 
-	Terminal.register();
+	//Terminal.register();
 }

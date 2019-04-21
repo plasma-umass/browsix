@@ -7,12 +7,12 @@
     "needs-format": "prettier -l \"src/**/*.ts\" \"test/*.ts\"",
     "format": "prettier --write \"src/**/*.ts\" \"test/*.ts\"",
     "lint": "yarn run tslint -c tslint.json --project tsconfig.json",
-    "build:pre": "node support/mkdirp.js lib-dist/kernel lib/kernel",
+    "build:pre": "node support/mkdirp.js lib-dist/kernel lib/src/kernel",
     "build:kernel": "tsc -p tsconfig.json",
     "build:browser": "rollup -c .rollup.kernel.js",
     "build:terminal": "node support/mkdirp.js app/elements lib/app/elements/browsix-terminal",
     "build:bin": "node support/mkdirp.js lib-dist/bin lib/bin",
-    "build": "npm-run-all build:pre build:kernel build:browser build:terminal build:bin",
+    "build": "npm-run-all build:kernel build:pre build:browser build:terminal build:bin",
     "prepublishOnly": "make clean && npm run-script build"
   },
   "repository": {

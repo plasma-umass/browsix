@@ -3,7 +3,7 @@ import commonjs from 'rollup-plugin-commonjs';
 import pkg from './package.json';
 
 export default {
-  input: 'lib/kernel/kernel.js',
+  input: 'lib/src/kernel/kernel.js',
   plugins: [
     resolve(),
     commonjs(),

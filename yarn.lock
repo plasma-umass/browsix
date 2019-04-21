@@ -2,7 +2,14 @@
 # yarn lockfile v1
 
 
-"@polymer/polymer@^3.0.0-pre.12":
+"@polymer/decorators@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@polymer/decorators/-/decorators-3.0.0.tgz#e4212ac976d9abd1210f560b6e1be4165c1c0183"
+  integrity sha512-qh+VID9nDV9q3ABvIfWgm7/+udl7v2HKsMLPXFm8tj1fI7qr7yWJMFwS3xWBkMmuNPtmkS8MDP0vqLAQIEOWzg==
+  dependencies:
+    "@polymer/polymer" "^3.0.5"
+
+"@polymer/polymer@^3.0.0-pre.13", "@polymer/polymer@^3.0.5":
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/@polymer/polymer/-/polymer-3.2.0.tgz#b41fddec4ecac63b12936b93726678d23add7afd"
   integrity sha512-L6uV1oM6T6xbwbVx6t3biG5T2VSSB03LxnIrUd9M2pr6RkHVPFHJ37pC5MUwBAEhkGFJif7eks7fdMMSGZTeEQ==
@@ -41,10 +48,27 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.18.tgz#1d3ca764718915584fcd9f6344621b7672665c67"
   integrity sha512-fh+pAqt4xRzPfqA6eh3Z2y6fyZavRIumvjhaCL753+TVkGKGhpPeyrJG2JftD0T9q4GF00KjefsQ+PQNDdWQaQ==
 
+"@types/polymer@^1.2.7":
+  version "1.2.7"
+  resolved "https://registry.yarnpkg.com/@types/polymer/-/polymer-1.2.7.tgz#004434ddb1d2c2b8a386a170e999fe356ebde375"
+  integrity sha512-6IKEXHpVV6xhhGYULNvI1FTUW8usTNzqWKLkE4HHmyEsHs/01ViOnMhXDKrBWqAQL1Y+taWj/RdQn/qsf0cxlA==
+  dependencies:
+    "@types/webcomponents.js" "*"
+
+"@types/webcomponents.js@*":
+  version "0.6.34"
+  resolved "https://registry.yarnpkg.com/@types/webcomponents.js/-/webcomponents.js-0.6.34.tgz#6992a5268e4e05a65de12693945c376e0ed4c017"
+  integrity sha512-Stji5P0jwEoaxyueV8x0PGeiv+EOE7NiZIQ5+gatyysHpcpbuSafqJUU/TQGcwuSBIKwIQD7TVUxOCyQZrAVwQ==
+
 "@webcomponents/shadycss@^1.8.0":
   version "1.9.1"
   resolved "https://registry.yarnpkg.com/@webcomponents/shadycss/-/shadycss-1.9.1.tgz#d769fbadfa504f11b84caeef26701f89070ec49a"
   integrity sha512-IaZOnWOKXHghqk/WfPNDRIgDBi3RsVPY2IFAw6tYiL9UBGvQRy5R6uC+Fk7qTZsReTJ0xh5MTT8yAcb3MUR4mQ==
+
+"@webcomponents/webcomponentsjs@^1.0.8":
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/@webcomponents/webcomponentsjs/-/webcomponentsjs-1.3.3.tgz#5bb82a0d3210c836bd4623e13a4a93145cb9dc27"
+  integrity sha512-eLH04VBMpuZGzBIhOnUjECcQPEPcmfhWEijW9u1B5I+2PPYdWf3vWUExdDxu4Y3GljRSTCOlWnGtS9tpzmXMyQ==
 
 abbrev@1:
   version "1.1.1"
@@ -378,7 +402,7 @@ browser-sync-ui@^2.26.2:
     socket.io-client "^2.0.4"
     stream-throttle "^0.1.3"
 
-browser-sync@^2.26:
+browser-sync@^2.26.3:
   version "2.26.3"
   resolved "https://registry.yarnpkg.com/browser-sync/-/browser-sync-2.26.3.tgz#1b59bd5935938a5b0fa73b3d78ef1050bd2bf912"
   integrity sha512-VLzpjCA4uXqfzkwqWtMM6hvPm2PNHp2RcmzBXcbi6C9WpkUhhFb8SVAr4CFrCsFxDg+oY6HalOjn8F+egyvhag==
@@ -2477,11 +2501,6 @@ pinkie@^2.0.0:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/pinkie/-/pinkie-2.0.4.tgz#72556b80cfa0d48a974e80e77248e80ed4f7f870"
   integrity sha1-clVrgM+g1IqXToDnckjoDtT3+HA=
-
-polymer-ts@^0.1.26:
-  version "0.1.26"
-  resolved "https://registry.yarnpkg.com/polymer-ts/-/polymer-ts-0.1.26.tgz#1ceb286e8c139fdeb9cf04ec92cfee07c448e5f3"
-  integrity sha1-HOsobowTn965zwTsks/uB8RI5fM=
 
 portscanner@2.1.1:
   version "2.1.1"

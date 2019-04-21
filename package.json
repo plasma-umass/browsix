@@ -44,13 +44,13 @@
     "@types/mocha": "^2.2.43"
   },
   "dependencies": {
-    "@polymer/polymer": "^3.0.0-pre.12",
+    "@polymer/decorators": "^3.0.0",
+    "@polymer/polymer": "^3.0.0-pre.13",
     "@types/filesystem": "0.0.28",
-    "bower": "^1.8.8",
+    "@types/polymer": "^1.2.7",
+    "@webcomponents/webcomponentsjs": "^1.0.8",
     "dropbox": "~4.0.9",
     "node-binary-marshal": "^0.4.2",
-    "polymer-cli": "^1.9.8",
-    "polymer-ts": "^0.1.26",
     "term.js": "github:bpowers/term.js"
   },
   "engines": {

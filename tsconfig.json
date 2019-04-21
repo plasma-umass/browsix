@@ -9,7 +9,7 @@
     "src/kernel/kernel.ts",
     "src/kernel/http_parser.d.ts",
     "app/elements/browsix-terminal/browsix-terminal.ts",
-    "src/bin/cat.ts",
+    /*"src/bin/cat.ts",
     "src/bin/cp.ts",
     "src/bin/curl.ts",
     "src/bin/echo.ts",
@@ -32,11 +32,11 @@
     "src/bin/tee.ts",
     "src/bin/touch.ts",
     "src/bin/wc.ts",
-    "src/bin/xargs.ts"
+    "src/bin/xargs.ts"*/
   ],
 
   "compilerOptions": {
-    "target": "es6",
+    "target": "es2015",
     "module": "commonjs",
     "outDir": "lib",
     "experimentalDecorators" : true,

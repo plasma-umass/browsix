@@ -50,10 +50,11 @@ namespace Terminal {
 		}
 
 		onInput(ev: any): void {
+			console.log (ev);
 			// If key pressed is not Return/Enter, skip
 			if (ev.keyCode !== 13) return;
 
-			let cmd = '';//this.$.input.value;
+			let cmd = (this.$.input.nodeValue != null) ? this.$.input.nodeValue.toString () : "";
 			this.$.output.innerHTML += this.ps1 + cmd + '<br>';
 			if (cmd === '') {
 				this.scrollBottom();
@@ -68,7 +69,7 @@ namespace Terminal {
 
 			let completed = (pid: number, code: number) => {
 				this.setEditable(true);
-				//this.$.input.value = '';
+				this.$.input.nodeValue = '';
 				this.focus();
 				this.scrollBottom();
 			};
@@ -94,12 +95,12 @@ namespace Terminal {
 		}
 
 		focus(): void {
-			//this.$.input.focus();
+			this.$.input.focus();
 		}
 
 		setEditable(editable: boolean): void {
 			// Hide input if not editable
-			//this.$.input_container.style.visibility = (editable) ? '' : 'hidden';
+			this.$.input_container.style.visibility = (editable) ? '' : 'hidden';
 		}
 
 		scrollBottom(): void {
@@ -108,5 +109,5 @@ namespace Terminal {
 		}
 	}
 
-	//Terminal.register();
+	Terminal.register ();
 }

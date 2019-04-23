@@ -110,6 +110,8 @@ function tsTask(subdir, options) {
         globals['Buffer'] = function() { return ""; };
     }
 
+    globals['setImmediate'] = undefined;
+    globals['clearImmediate'] = undefined;
     gulp.task('dist-'+subdir, ['build-'+subdir], function() {
         var b = browserify({
             entries: ['./lib/'+subdir+'/'+subdir+'.js'],

@@ -35,6 +35,8 @@ var globalVars = {
     'buffer': function() { return 'require("browserfs-browsix-tmp").BFSRequire("buffer")'; },
     'Buffer': function() { return 'require("browserfs-browsix-tmp").BFSRequire("buffer").Buffer'; },
     'process': function() { return "" },
+    'setImmediate' : undefined,
+    'clearImmediate' : undefined,
 };
 
 var builtins = {
@@ -110,8 +112,6 @@ function tsTask(subdir, options) {
         globals['Buffer'] = function() { return ""; };
     }
 
-    globals['setImmediate'] = undefined;
-    globals['clearImmediate'] = undefined;
     gulp.task('dist-'+subdir, ['build-'+subdir], function() {
         var b = browserify({
             entries: ['./lib/'+subdir+'/'+subdir+'.js'],

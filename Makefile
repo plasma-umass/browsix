@@ -55,6 +55,10 @@ serve: $(BUILD_DEPS)
 	@echo "  SERVE"
 	$(GULP) serve
 
+browsix-spec: $(BUILD_DEPS)
+	@echo "  Browsix SPEC"
+	$(GULP) browsix-spec
+
 node_modules: bower_components package.json
 	@echo "  NPM"
 	npm install

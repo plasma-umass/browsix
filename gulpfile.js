@@ -390,98 +390,105 @@ var optimizeHtmlTask = function (src, dest) {
         .pipe($.size({title: 'html'}));
 };
 
-// Compile and automatically prefix stylesheets
-gulp.task('app:styles', function () {
-    return styleTask('styles', ['**/*.css']);
-});
+function gulp_app_tasks (app_path) {
+    // Compile and automatically prefix stylesheets
+    gulp.task(app_path+':styles', function () {
+        return styleTask('styles', ['**/*.css']);
+    });
 
-gulp.task('app:elements', ['app:build', 'app:copy', 'app:styles'], function () {
-    return styleTask('elements', ['**/*.css']);
-});
+    gulp.task(app_path+':elements', [app_path+':build', app_path+':copy', app_path+':styles'], function () {
+        return styleTask('elements', ['**/*.css']);
+    });
 
-// Optimize images
-gulp.task('app:images', function () {
-    return imageOptimizeTask('app/images/**/*', 'dist/images');
-});
+    // Optimize images
+    gulp.task(app_path+':images', function () {
+        return imageOptimizeTask(app_path+'/images/**/*', 'dist/images');
+    });
 
-// Copy all files at the root level (app)
-gulp.task('app:copy', ['index-fs'], function () {
-    var app = gulp.src([
-        'app/*',
-        '!app/test',
-        '!app/cache-config.json',
-    ], {
-        dot: true
-    }).pipe(gulp.dest('dist'));
+    // Copy all files at the root level (app)
+    gulp.task(app_path+':copy', ['index-fs'], function () {
+        var app = gulp.src([
+            app_path+'/*',
+            '!'+app_path+'/test',
+            '!'+app_path+'/cache-config.json',
+        ], {
+            dot: true
+        }).pipe(gulp.dest('dist'));
 
-    var bower = gulp.src([
-        'bower_components/**/*'
-    ]).pipe(gulp.dest('dist/bower_components'));
+        var bower = gulp.src([
+            'bower_components/**/*'
+        ]).pipe(gulp.dest('dist/bower_components'));
 
-    var elements = gulp.src([
-        'app/elements/**/*.html',
-        'app/elements/**/*.css',
-        'app/elements/**/*.js',
-    ])
-        .pipe(gulp.dest('dist/elements'));
+        var elements = gulp.src([
+            app_path+'/elements/**/*.html',
+            app_path+'/elements/**/*.css',
+            app_path+'/elements/**/*.js',
+        ])
+            .pipe(gulp.dest('dist/elements'));
 
-    var swBootstrap = gulp.src(['bower_components/platinum-sw/bootstrap/*.js'])
-        .pipe(gulp.dest('dist/elements/bootstrap'));
+        var swBootstrap = gulp.src(['bower_components/platinum-sw/bootstrap/*.js'])
+            .pipe(gulp.dest('dist/elements/bootstrap'));
 
-    var swToolbox = gulp.src(['bower_components/sw-toolbox/*.js'])
-        .pipe(gulp.dest('dist/sw-toolbox'));
+        var swToolbox = gulp.src(['bower_components/sw-toolbox/*.js'])
+            .pipe(gulp.dest('dist/sw-toolbox'));
 
-    var vulcanized = gulp.src(['app/elements/elements.html'])
-        .pipe($.rename('elements.vulcanized.html'))
-        .pipe(gulp.dest('dist/elements'));
+        var vulcanized = gulp.src([app_path+'/elements/elements.html'])
+            .pipe($.rename('elements.vulcanized.html'))
+            .pipe(gulp.dest('dist/elements'));
 
-    var fs = gulp.src(['fs/**/*'])
-        .pipe(gulp.dest('dist/fs'));
+        var fs = gulp.src(['fs/**/*'])
+            .pipe(gulp.dest('dist/fs'));
 
-    return merge(app, bower, elements, vulcanized, swBootstrap, swToolbox, fs)
-        .pipe($.size({title: 'copy'}));
-});
+        return merge(app, bower, elements, vulcanized, swBootstrap, swToolbox, fs)
+            .pipe($.size({title: 'copy'}));
+    });
 
-// Copy web fonts to dist
-gulp.task('app:fonts', function () {
-    return gulp.src(['app/fonts/**'])
-        .pipe(gulp.dest('dist/fonts'))
-        .pipe($.size({title: 'fonts'}));
-});
+    // Copy web fonts to dist
+    gulp.task(app_path+':fonts', function () {
+        return gulp.src(['app/fonts/**'])
+            .pipe(gulp.dest('dist/fonts'))
+            .pipe($.size({title: 'fonts'}));
+    });
 
-// Scan your HTML for assets & optimize them
-gulp.task('app:html', ['app:elements'], function () {
-    return optimizeHtmlTask(
-        ['app/**/*.html', '!app/{elements,test}/**/*.html'],
-        'dist');
-});
+    // Scan your HTML for assets & optimize them
+    gulp.task(app_path+':html', [app_path+':elements'], function () {
+        return optimizeHtmlTask(
+            [app_path+'/**/*.html', '!'+app_path+'app/{elements,test}/**/*.html'],
+            'dist');
+    });
 
-// Vulcanize granular configuration
-gulp.task('app:vulcanize', ['app:images', 'app:fonts', 'app:html'], function () {
-    var DEST_DIR = 'dist/elements';
-    return gulp.src('dist/elements/elements.vulcanized.html')
-        .pipe($.vulcanize({
-            stripComments: true,
-            inlineCss: true,
-            inlineScripts: true
-        }))
-        .pipe(gulp.dest(DEST_DIR))
-        .pipe($.size({title: 'vulcanize'}));
-});
+    // Vulcanize granular configuration
+    gulp.task(app_path+':vulcanize', [app_path+':images', app_path+':fonts', app_path+':html'], function () {
+        var DEST_DIR = 'dist/elements';
+        return gulp.src('dist/elements/elements.vulcanized.html')
+            .pipe($.vulcanize({
+                stripComments: true,
+                inlineCss: true,
+                inlineScripts: true
+            }))
+            .pipe(gulp.dest(DEST_DIR))
+            .pipe($.size({title: 'vulcanize'}));
+    });
 
-// Clean output directory
-gulp.task('app:clean', function (cb) {
-    del(['.tmp', 'dist'], cb);
-});
+    // Clean output directory
+    gulp.task(app_path+':clean', function (cb) {
+        del(['.tmp', 'dist'], cb);
+    });
 
-gulp.task('app:build', ['index-fs'], function (cb) {
-    return gulp.src([
-        'app/elements/**/*.ts',
-    ])
-        .pipe(project()).js
-        .pipe(gulp.dest('app/elements'));
+    gulp.task(app_path+':build', ['index-fs'], function (cb) {
+        return gulp.src([
+            app_path+'/elements/**/*.ts',
+        ])
+            .pipe(project()).js
+            .pipe(gulp.dest(app_path+'/elements'));
 
-});
+    });
+}
+
+gulp_app_tasks ('app');
+gulp_app_tasks ('app-spec');
+
+gulp.task ('browsix-spec', ['app-spec:build', 'app-spec:styles', 'app-spec:elements', 'app-spec:images']);
 
 // Watch files for changes & reload
 gulp.task('serve', ['app:build', 'app:styles', 'app:elements', 'app:images'], function () {

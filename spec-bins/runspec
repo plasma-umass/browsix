@@ -1,0 +1,109 @@
+#!/bin/sh
+
+size=ref
+
+if [ '-size=test' = "$1" ]; then
+    size=test
+    shift
+fi
+
+if [ '-size=ref' = "$1" ]; then
+    size=ref
+    shift
+fi
+
+if [ '-no-perf' = "$1" ]; then
+    PERF='no'
+    shift
+else
+    PERF='yes'
+fi
+
+PERF='yes'
+
+if [ $# = 1 ]; then
+    echo "filtering benchmarks ($1)"
+    benchmarks="$(ls /spec/cpu2006_asmjs/benchspec/CPU2006 | grep $1)"
+else
+    echo "running all available benchmarks"
+    benchmarks="$(ls /spec/cpu2006_asmjs/benchspec/CPU2006)"
+fi
+
+benchdirs=''
+for b in $benchmarks; do
+    echo "invoking $b"
+    if [ $PERF = 'yes' ]; then
+	export BROWSIX_PERF=$b
+    fi
+    benchdirs="$benchdirs cpu2006_asmjs/benchspec/CPU2006/$b"
+    cd /spec/cpu2006_asmjs/benchspec/CPU2006/$b/run/run_base_${size}_browsix-asmjs.0000 && specinvoke
+    sleep 5
+done
+
+unset BROWSIX_PERF
+
+echo "removing large inputs ($size)"
+# find fs -type f | xargs ls -laht | awk '{print($5 "\t" $9)}' | sort -h | grep 'run/run_base_ref' | grep -v '\.out$' | tail -n 100 | cut -f 2 | while read f; do echo "rm $f"; done | sed -e 's| fs/| /|g'
+
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/450.soplex/run/run_base_ref_browsix-asmjs.0000/soplex_base.browsix-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/450.soplex/run/run_base_ref_browsix-asmjs.0000/soplex_base.browsix-wasm-2
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/450.soplex/run/run_base_ref_browsix-asmjs.0000/ref.mps
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/450.soplex/run/run_base_ref_browsix-asmjs.0000/pds-50.mps
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/450.soplex/run/run_base_test_browsix-asmjs.0000/soplex_base.browsix-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/482.sphinx3/run/run_base_ref_browsix-asmjs.0000/model/hmm/hub4/hub4opensrc.6000.mdef
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/482.sphinx3/run/run_base_ref_browsix-asmjs.0000/model/hmm/hub4/variances
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/482.sphinx3/run/run_base_ref_browsix-asmjs.0000/model/hmm/hub4/8gau.6000sen.quant
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/482.sphinx3/run/run_base_ref_browsix-asmjs.0000/model/hmm/hub4/means
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/482.sphinx3/run/run_base_test_browsix-asmjs.0000/sphinx_livepretend_base.browsix-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/482.sphinx3/run/run_base_test_browsix-asmjs.0000/model/hmm/hub4/hub4opensrc.6000.mdef
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/482.sphinx3/run/run_base_test_browsix-asmjs.0000/model/hmm/hub4/variances
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/482.sphinx3/run/run_base_test_browsix-asmjs.0000/model/hmm/hub4/8gau.6000sen.quant
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/482.sphinx3/run/run_base_test_browsix-asmjs.0000/model/hmm/hub4/means
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/401.bzip2/run/run_base_ref_browsix-asmjs.0000/input.combined
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/401.bzip2/run/run_base_ref_browsix-asmjs.0000/input.program
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/401.bzip2/run/run_base_ref_browsix-asmjs.0000/input.source
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/401.bzip2/run/run_base_test_browsix-asmjs.0000/input.combined
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/401.bzip2/run/run_base_test_browsix-asmjs.0000/input.program
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/464.h264ref/run/run_base_ref_browsix-asmjs.0000/h264ref_base.browsix-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/464.h264ref/run/run_base_ref_browsix-asmjs.0000/foreman_qcif.yuv
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/464.h264ref/run/run_base_ref_browsix-asmjs.0000/sss.yuv
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/464.h264ref/run/run_base_test_browsix-asmjs.0000/h264ref_base.browsix-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/464.h264ref/run/run_base_test_browsix-asmjs.0000/foreman_qcif.yuv
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/641.leela_s/run/run_base_ref_browsix-asmjs.0000/leela_s_base.mytest-m64
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/641.leela_s/run/run_base_ref_browsix-asmjs.0000/leela_s_base.mytest-m64-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/641.leela_s/run/run_base_test_browsix-asmjs.0000/leela_s_base.browsix-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/444.namd/run/run_base_ref_browsix-asmjs.0000/namd_base.browsix-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/444.namd/run/run_base_ref_browsix-asmjs.0000/namd.input
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/444.namd/run/run_base_test_browsix-asmjs.0000/namd_base.browsix-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/444.namd/run/run_base_test_browsix-asmjs.0000/namd.input
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/429.mcf/run/run_base_ref_browsix-asmjs.0000/inp.in
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/429.mcf/run/run_base_test_browsix-asmjs.0000/inp.in
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/638.imagick_s/run/run_base_ref_browsix-asmjs.0000/refspeed_input.tga
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/638.imagick_s/run/run_base_ref_browsix-asmjs.0000/imagick_s_base.mytest-m64
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/638.imagick_s/run/run_base_test_browsix-asmjs.0000/imagick_s_base.mytest-m64
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/657.xz_s/run/run_base_ref_browsix-asmjs.0000/cpu2006docs.tar.xz
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/657.xz_s/run/run_base_ref_browsix-asmjs.0000/input.combined.xz
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/657.xz_s/run/run_base_ref_browsix-asmjs.0000/cld.tar.xz
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/657.xz_s/run/run_base_ref_browsix-asmjs.0000/xz_s_base.mytest-m64
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/657.xz_s/run/run_base_test_browsix-asmjs.0000/cpu2006docs.tar.xz
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/657.xz_s/run/run_base_test_browsix-asmjs.0000/input.combined.xz
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/657.xz_s/run/run_base_test_browsix-asmjs.0000/cld.tar.xz
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/657.xz_s/run/run_base_test_browsix-asmjs.0000/xz_s_base.mytest-m64
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/470.lbm/run/run_base_ref_browsix-asmjs.0000/100_100_130_ldc.of
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/470.lbm/run/run_base_test_browsix-asmjs.0000/100_100_130_cf_a.of
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/445.gobmk/run/run_base_ref_browsix-asmjs.0000/gobmk_base.browsix-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/445.gobmk/run/run_base_test_browsix-asmjs.0000/gobmk_base.browsix-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/458.sjeng/run/run_base_test_browsix-asmjs.0000/sjeng_base.browsix-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/644.nab_s/run/run_base_ref_browsix-asmjs.0000/nab_s_base.mytest-m64
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/644.nab_s/run/run_base_ref_browsix-asmjs.0000/3j1n/3j1n.prm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/644.nab_s/run/run_base_ref_browsix-asmjs.0000/3j1n/3j1n.pdb
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/644.nab_s/run/run_base_test_browsix-asmjs.0000/nab_s_base.mytest-m64
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/471.omnetpp/run/run_base_ref_browsix-asmjs.0000/omnetpp_base.browsix-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/471.omnetpp/run/run_base_test_browsix-asmjs.0000/omnetpp_base.browsix-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/453.povray/run/run_base_ref_browsix-asmjs.0000/povray_base.browsix-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/453.povray/run/run_base_ref_browsix-asmjs.0000/povray_base.browsix-wasm-first
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/453.povray/run/run_base_test_browsix-asmjs.0000/povray_base.browsix-wasm
+rm /spec/cpu2006_asmjs/benchspec/CPU2006/473.astar/run/run_base_ref_browsix-asmjs.0000/BigLakes2048.bin
+
+echo "tarring up results"
+cd /spec && tar -cf /spec.tar $benchdirs

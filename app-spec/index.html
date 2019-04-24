@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="">
+    <head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Browsix</title>
+	<meta name="theme-color" content="#171a1b">
+	<meta name="msapplication-TileColor" content="#171a1b">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="application-name" content="630 Project 1">
+	<link rel="icon" sizes="192x192" href="images/touch/chrome-touch-icon-192x192.png">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="apple-mobile-web-app-title" content="630 Project 1">
+	<link rel="apple-touch-icon" href="images/touch/apple-touch-icon.png">
+	<meta name="msapplication-TileImage" content="images/touch/ms-touch-icon-144x144-precomposed.png">
+	<link rel="stylesheet" href="styles/main.css">
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/font-hack/2.015/css/hack-extended.min.css">
+	<script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+	<script src="fs/boot/kernel.js"></script>
+	<link rel="import" href="elements/elements.vulcanized.html">
+	<style is="custom-style" include="shared-styles"></style>
+	<style>
+	.term-fit {
+	  position: relative;
+	  width: 100%;
+	  height: 100%;
+	}
+	.status-display {
+	    font-size: 18px;
+	    font-style: italic;
+	}
+	</style>
+    </head>
+    <body unresolved="" class="fullbleed layout vertical">
+	<div>
+	    <button id="dl-button">Download</button>
+	    <span id="status" class="status-display"></span>
+	    <span id="completion" class="status-display"></span>
+	</div>
+	<browsix-terminal class="term-fit"></browsix-terminal>
+	<span id="browser-sync-binding"></span>
+	<script src="scripts/main.js"></script>
+    </body>
+</html>

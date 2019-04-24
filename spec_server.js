@@ -72,12 +72,16 @@ var rawEvents = [
     'r1c0',
 ];
 //let argv = process.argv.slice(2);
+child_process_1.exec ('./xhrfs-index fs > fs/index.json');
+if (!fs.existsSync ('perf_data')) {
+    fs.mkdirSync ('perf_data');
+}
 var events;
 var app = express();
 app.use(bodyParser.raw({ type: 'application/x-tar' }));
 //app.use(cors());
 app.use('/', express.static('.'));
-app.use('/', express.static('app'));
+app.use('/', express.static('app-spec'));
 var perfProcesses = [];
 function findWorkerTids(pid, workerName) {
     try {

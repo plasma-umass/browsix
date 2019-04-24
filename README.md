@@ -157,7 +157,7 @@ After building Browsix, build Browsix-SPEC through make:
 ```
 make browsix-spec
 ```
-Follow the instructions on [Mind the Gap Artifact](https://github.com/plasma-umass/mind-the-gap-artifact/).
+Follow the instructions in browsix-spec.md.
 
 In-browser node limitations
 ---------------------------

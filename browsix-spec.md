@@ -96,7 +96,8 @@ cd ../../../../../../../../
 cp /spec-cpu2006/benchspec/CPU2006/401.bzip2/build/build_base_browsix-wasm.0000/bzip2.js fs/spec/cpu2006_asmjs/benchspec/CPU2006/401.bzip2/run/run_base_ref_browsix-asmjs.0000/bzip2_base.browsix-wasm
 ```
 To copy `bzip2.js` for asm.js, replace `run_base_ref_browsix-wasm.0000` with `run_base_ref_browsix-asmjs.0000`.
-5. Update Browsix-WASM's filesystem index.
+5. Build `specinvoke` binary provided by SPEC CPU2006 Benchmarks using Emscripten and copy that binary to `browsix-spec2006/fs/usr/bin`.
+6. Update Browsix-WASM's filesystem index.
 ```
 ./xhrfs-index fs > fs/index.json
 ```

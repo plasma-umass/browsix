@@ -488,7 +488,15 @@ function gulp_app_tasks (app_path) {
 gulp_app_tasks ('app');
 gulp_app_tasks ('app-spec');
 
-gulp.task ('browsix-spec', ['app-spec:build', 'app-spec:styles', 'app-spec:elements', 'app-spec:images']);
+gulp.task ('copy-spec-bins', [], function (cb) {
+    return gulp.src (['spec-bins',]).pipe (gulp.dest ('fs/usr/bin/'));
+});
+
+gulp.task ('create-spec-dirs', [], function (cb) {
+    return gulp.src("*.js", {read:false}).pipe (gulp.dest ('fs/spec/cpu2006_asmjs/benchspec/CPU2006/'));
+});
+
+gulp.task ('browsix-spec', ['copy-spec-bins', 'create-spec-dirs', 'app-spec:build', 'app-spec:styles', 'app-spec:elements', 'app-spec:images']);
 
 // Watch files for changes & reload
 gulp.task('serve', ['app:build', 'app:styles', 'app:elements', 'app:images'], function () {

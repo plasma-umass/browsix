@@ -25,6 +25,7 @@
     "chai": "^4.0.2",
     "connect-history-api-fallback": "^1.1.0",
     "del": "^3.0.0",
+    "express": "^4.16.4",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^4.0.0",
     "gulp-cache": "^0.4.5",
@@ -64,6 +65,7 @@
     "@types/dropboxjs": "0.0.29",
     "@types/filesystem": "0.0.28",
     "@types/mocha": "^2.2.41",
+    "child_process": "^1.0.2",
     "node-binary-marshal": "^0.4.2",
     "term.js": "github:bpowers/term.js"
   },

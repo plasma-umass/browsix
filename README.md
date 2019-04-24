@@ -82,6 +82,10 @@ now](https://github.com/bpowers/browsix-gopherjs/issues/2)), and C/C++
 with [modifications to
 Emscripten](https://github.com/bpowers/emscripten/tree/_browsix).
 
+### Browsix-SPEC
+
+Browsix supports executing SPEC CPU2006 and SPEC CPU2017 benchmarks using Browsix-SPEC
+interface. 
 
 Using Browsix
 -------------
@@ -146,6 +150,14 @@ root@3695ed0cdf45:~/browsix# make test-once serve
 [13:07:06] Starting 'build-browser-node'...
 ...
 ```
+
+Building and using Browsix-SPEC
+-------------------------------
+After building Browsix, build Browsix-SPEC through make:
+```
+make browsix-spec
+```
+Follow the instructions on [Mind the Gap Artifact](https://github.com/plasma-umass/mind-the-gap-artifact/).
 
 In-browser node limitations
 ---------------------------

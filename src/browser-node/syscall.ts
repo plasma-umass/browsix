@@ -142,215 +142,146 @@ export class USyscalls {
 	}
 
 	exit(code: number): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = function(...args: any[]): void {
+		const cb = function(...args: any[]): void {
 			console.log('received callback for exit(), should clean up');
 		};
-		this.post(msgId, 'exit', code);
+		this.post(cb, 'exit', code);
 	}
 
 	fork(heap: ArrayBuffer, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'fork', heap);
+		this.post(cb, 'fork', heap);
 	}
 
 	kill(pid: number, sig: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'kill', pid, sig);
+		this.post(cb, 'kill', pid, sig);
 	}
 
 	wait4(pid: number, options: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'wait4', pid, options);
+		this.post(cb, 'wait4', pid, options);
 	}
 
 	socket(domain: AF, type: SOCK, protocol: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'socket', domain, type, protocol);
+		this.post(cb, 'socket', domain, type, protocol);
 	}
 
 	getsockname(fd: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'getsockname', fd);
+		this.post(cb, 'getsockname', fd);
 	}
 
 	getpeername(fd: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'getpeername', fd);
+		this.post(cb, 'getpeername', fd);
 	}
 
 	bind(fd: number, sockInfo: Uint8Array, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'bind', fd, sockInfo);
+		this.post(cb, 'bind', fd, sockInfo);
 	}
 
 	listen(fd: number, backlog: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'listen', fd, backlog);
+		this.post(cb, 'listen', fd, backlog);
 	}
 
 	accept(fd: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'accept', fd);
+		this.post(cb, 'accept', fd);
 	}
 
 	connect(fd: number, addr: Uint8Array, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'connect', fd, addr);
+		this.post(cb, 'connect', fd, addr);
 	}
 
 	getcwd(cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'getcwd');
+		this.post(cb, 'getcwd');
 	}
 
 	getpid(cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'getpid');
+		this.post(cb, 'getpid');
 	}
 
 	getppid(cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'getppid');
+		this.post(cb, 'getppid');
 	}
 
 	spawn(cwd: string, name: string, args: string[], env: string[], files: number[], cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'spawn', cwd, name, args, env, files);
+		this.post(cb, 'spawn', cwd, name, args, env, files);
 	}
 
 	pipe2(flags: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'pipe2', flags);
+		this.post(cb, 'pipe2', flags);
 	}
 
 	getpriority(which: number, who: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'getpriority', which, who);
+		this.post(cb, 'getpriority', which, who);
 	}
 
 	setpriority(which: number, who: number, prio: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'setpriority', which, who, prio);
+		this.post(cb, 'setpriority', which, who, prio);
 	}
 
 	open(path: string|Uint8Array, flags: number|string, mode: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'open', path, flags, mode);
+		this.post(cb, 'open', path, flags, mode);
 	}
 
 	unlink(path: string, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'unlink', path);
+		this.post(cb, 'unlink', path);
 	}
 
 	utimes(path: string, atime: number, mtime: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'utimes', path, atime, mtime);
+		this.post(cb, 'utimes', path, atime, mtime);
 	}
 
 	futimes(fd: number, atime: number, mtime: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'futimes', fd, atime, mtime);
+		this.post(cb, 'futimes', fd, atime, mtime);
 	}
 
 	rmdir(path: string, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'rmdir', path);
+		this.post(cb, 'rmdir', path);
 	}
 
 	mkdir(path: string, mode: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'mkdir', path);
+		this.post(cb, 'mkdir', path);
 	}
 
 	close(fd: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'close', fd);
+		this.post(cb, 'close', fd);
 	}
 
 	pwrite(fd: number, buf: string|Uint8Array, pos: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'pwrite', fd, buf, pos);
+		this.post(cb, 'pwrite', fd, buf, pos);
 	}
 
 	readdir(path: string, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'readdir', path);
+		this.post(cb, 'readdir', path);
 	}
 
 	fstat(fd: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'fstat', fd);
+		this.post(cb, 'fstat', fd);
 	}
 
 	lstat(path: string, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'lstat', path);
+		this.post(cb, 'lstat', path);
 	}
 
 	chdir(path: string, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'chdir', path);
+		this.post(cb, 'chdir', path);
 	}
 
 	stat(path: string, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'stat', path);
+		this.post(cb, 'stat', path);
 	}
 
 	ioctl(fd: number, request: number, length: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'ioctl', fd, request, length);
+		this.post(cb, 'ioctl', fd, request, length);
 	}
 
 	readlink(path: string|Uint8Array, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'readlink', path);
+		this.post(cb, 'readlink', path);
 	}
 
 	getdents(fd: number, length: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'getdents', fd, length);
+		this.post(cb, 'getdents', fd, length);
 	}
 
 	pread(fd: number, length: number, offset: number, cb: SyscallCallback): void {
-		const msgId = this.nextMsgId();
-		this.outstanding[msgId] = cb;
-		this.post(msgId, 'pread', fd, length, offset);
+		this.post(cb, 'pread', fd, length, offset);
 	}
 
 	addEventListener(type: string, handler: SignalHandler): void {
@@ -402,7 +333,9 @@ export class USyscalls {
 		return ++this.msgIdSeq;
 	}
 
-	private post(msgId: number, name: string, ...args: any[]): void {
+	private post(cb: SyscallCallback, name: string, ...args: any[]): void {
+		const msgId = this.nextMsgId();
+		this.outstanding[msgId] = cb;
 		this.port.postMessage({
 			id: msgId,
 			name: name,

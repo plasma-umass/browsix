@@ -9,7 +9,7 @@ import { now } from './ipc';
 import { Pipe, PipeFile, isPipe } from './pipe';
 import { SocketFile, isSocket } from './socket';
 import { DirFile, RegularFile, NullFile, resolve } from './file';
-import { ExitCallback, OutputCallback, SyscallContext, SyscallResult,
+import { ExitCallback, OutputCallback, StdinCallback, SyscallContext, SyscallResult,
 	Syscall, ConnectCallback, IKernel, ITask, IFile, Environment } from './types';
 
 import { HTTPParser } from './http_parser';
@@ -1569,7 +1569,7 @@ export class Kernel implements IKernel {
 		this.portWaiters[port] = cb;
 	}
 
-	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback): void {
+	system(cmd: string, onExit: ExitCallback, onStdout: OutputCallback, onStderr: OutputCallback, onHaveStdin: StdinCallback): void {
 		let splitParts: string[] = cmd.split(' ');
 		let parts: string[];
 		// only check for an = in the first part of a command,
@@ -1609,8 +1609,11 @@ export class Kernel implements IKernel {
 			let t = this.tasks[pid];
 			t.onExit = onExit;
 
+			let stdin = <PipeFile>t.files[0];
 			let stdout = <PipeFile>t.files[1];
 			let stderr = <PipeFile>t.files[2];
+
+			onHaveStdin(stdin);
 
 			stdout.addEventListener('write', onStdout);
 			stderr.addEventListener('write', onStderr);
@@ -1859,7 +1862,7 @@ export class Kernel implements IKernel {
 				files[i].ref();
 			}
 		} else {
-			files[0] = new NullFile();
+			files[0] = new PipeFile();
 			files[1] = new PipeFile();
 			files[2] = new PipeFile();
 		}

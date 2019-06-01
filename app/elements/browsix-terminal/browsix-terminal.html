@@ -1,63 +1,6 @@
-<link rel="import" href="../../bower_components/polymer-ts/polymer-ts.html">
+<link rel="stylesheet" href="../../xterm/xterm.css" />
 
-<dom-module id="browsix-terminal">
-    <template>
-        <style>
+<div id="browsix-terminal"></div>
 
-        #output, #input_container, #input {
-          background: #171a1b;
-          font-size: 24px;
-          font-family: 'Hack', 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-          color: #eeeeec;
-          -webkit-box-sizing: border-box;
-          -moz-box-sizing: border-box;
-          box-sizing: border-box;
-          width: 100%;
-          word-break: break-all;
-        }
-
-        #output, #input_container {
-          padding-left: 24px;
-          padding-right: 24px;
-        }
-
-        #output {
-          padding-top: 24px;
-        }
-
-        #output:empty {
-          display: none;
-        }
-
-        #input_container {
-          padding-bottom: 24px;
-        }
-
-        #output:empty + #input_container {
-          padding-top: 24px;
-        }
-
-        #input {
-          display: inline;
-          width: 90%;
-          background: transparent;
-          border: 0;
-          outline: 0;
-          color: #eeeeec;
-          font-size: 24px;
-          font-family: 'Hack', 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        }
-        
-        </style>
-
-        <div id="output"></div>
-
-        <div id="input_container">
-          $ 
-          <input id="input" autofocus/>
-        </div>
-
-    </template>
-</dom-module>
-
+<script type="text/javascript" src="../../xterm/xterm.js"></script>
 <script type="text/javascript" src="browsix-terminal.js"></script>

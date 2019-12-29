@@ -103,12 +103,15 @@ Get browsix through npm:
 Building & Testing
 ------------------
 
-Browsix requires **nodejs 4.3.0** or later, which is more recent than
-the version packaged in Ubuntu Wiley.  To get a recent version of
-node, follow the instructions on the [node.js
+Browsix requires **nodejs 6.x** or later, which is more recent than
+the version packaged in Ubuntu Wiley.  It has specifically been tested
+with node 6.17.1.
+To get a recent version of node, follow the instructions on the [node.js
 website](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions).
-If you don't know whether you should choose node 4.x or 5.x, choose
-4.x (it is the long-term support branch).
+[nvm](https://github.com/nvm-sh/nvm) can be used to install and manage
+multiple versions of node on a single machine.
+Note that Browsix uses gulp v3.x, which has limited compatibility with
+newer versions of node.  For example, it's known to not work with node 12.x.
 
 Browsix has three other dependencies: `git`, `npm` (usually installed
 along with node), and `make`, and builds on OSX and Linux systems.

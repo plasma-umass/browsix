@@ -22,25 +22,25 @@
   },
   "homepage": "https://browsix.org",
   "devDependencies": {
+    "@types/chai": "^4.2.11",
+    "@types/filesystem": "0.0.29",
+    "@types/mocha": "^8.0.0",
+    "@types/node": "^14.0.22",
     "browser-sync": "^2.26.7",
-    "browserfs-browsix-tmp": "1.9.3",
+    "browserfs-browsix-tmp": "1.9.5",
     "chai": "^4.1.2",
     "karma": "^5.1.0",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^3.1.0",
     "karma-firefox-launcher": "^1.3.0",
     "karma-mocha": "^2.0.1",
+    "mocha": "^8.0.1",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.0.5",
-    "mocha": "^8.0.1",
     "tslint": "^6.1.2",
-    "typescript": "^3.9.6",
-    "@types/filesystem": "0.0.29",
-    "@types/chai": "^4.2.11",
-    "@types/mocha": "^8.0.0"
+    "typescript": "^3.9.6"
   },
   "dependencies": {
-    "dropbox": "^5.2.0",
     "node-binary-marshal": "^0.4.2"
   },
   "engines": {

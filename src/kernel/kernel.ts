@@ -2266,7 +2266,7 @@ export class Task implements ITask {
 
       this.heap32[waitOff32 + 8] = ret;
       Atomics.store(this.heap32, waitOff32, 1);
-      Atomics.wake(this.heap32, waitOff32, 1);
+      Atomics.notify(this.heap32, waitOff32, 1);
       // console.log('[' + this.pid + '] \t\tDONE \t' + ret);
     });
 

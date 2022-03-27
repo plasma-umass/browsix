@@ -1,0 +1,33 @@
+<link rel="import" href="../../bower_components/polymer-ts/polymer-ts.html">
+
+<dom-module id="browsix-terminal">
+    <template>
+        <style>
+        #term {
+          background: #171a1b;
+          font-size: 24px;
+          font-family: 'Hack', 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+          color: #eeeeec;
+          resize:  none;
+          padding: 24px;
+          outline: 0px solid transparent;
+          border: 0px;
+          -webkit-box-sizing: border-box;
+          -moz-box-sizing: border-box;
+          box-sizing: border-box;
+          width: 100%;
+          height: 100%;
+          margin: 0px;
+        }
+        #term:focus {
+          outline: 0px solid transparent;
+        }
+        </style>
+
+        <textarea
+            class="fit" id="term" disabled="[[!editable]]"
+            spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
+    </template>
+</dom-module>
+
+<script type="text/javascript" src="browsix-terminal.js"></script>

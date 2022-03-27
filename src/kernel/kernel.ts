@@ -15,7 +15,6 @@ import { ExitCallback, OutputCallback, SyscallContext, SyscallResult,
 	Syscall, ConnectCallback, IKernel, ITask, IFile, Environment } from './types';
 
 import { HTTPParser } from './http_parser';
-
 import * as bfs from 'browserfs-browsix-tmp';
 import * as marshal from 'node-binary-marshal';
 
@@ -51,7 +50,7 @@ function getRandomPort(): number {
 
 // from + for John's BrowserFS
 // TODO: don't copy paste code :\
-if (true/*typeof setImmediate === 'undefined'*/) {
+if (true) {
 	let g: any = global;
 
 	let timeouts: [Function, any[]][] = [];

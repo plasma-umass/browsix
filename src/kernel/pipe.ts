@@ -13,6 +13,7 @@ const CUTOFF = 8192;
 const READ_CUTOFF = 1024 * 80;
 
 export class Pipe {
+
 	fileBuffer: Buffer = new Buffer(4096);
 	offset: number = 0;
 	readOffset: number = 0;
@@ -28,6 +29,7 @@ export class Pipe {
 	}
 
 	get bufferLength(): number {
+
 		return this.fileBuffer.length;
 	}
 
@@ -37,6 +39,7 @@ export class Pipe {
 			let tempBuffer = new Buffer(this.bufferLength * 2);
 			this.fileBuffer.copy(tempBuffer, 0);
 			this.fileBuffer = tempBuffer;
+
 		}
 
 		b.copy(this.fileBuffer, this.offset);
@@ -50,6 +53,7 @@ export class Pipe {
 		if (off !== 0) {
 			console.log('ERROR: Pipe.read w/ non-zero offset');
 		}
+
 		console.log("read params");
 		console.log(off);
 		console.log(len);
@@ -58,6 +62,7 @@ export class Pipe {
 		if (this.offset > this.readOffset || this.closed) {
 			let n = this.copy(buf, len, pos);
 			this.readOffset += n;
+
 			this.releaseWriter();
 			return cb(undefined, n);
 		}
@@ -65,7 +70,9 @@ export class Pipe {
 		// at this point, we're waiting on more data or an EOF.
 		this.readWaiter = () => {
 			let n = this.copy(buf, len, pos);
+
 			this.readOffset += n;
+
 			this.releaseWriter();
 			cb(undefined, n);
 		};
@@ -117,6 +124,7 @@ export class Pipe {
 		}
 		//console.log(dst.toString());
 		return n;
+
 	}
 
 	// if any writers are blocked (because the buffer was at
